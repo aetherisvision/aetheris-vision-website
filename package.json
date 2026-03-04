@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "check:env": "node scripts/check-env.js",
+    "diagnostics": "bash scripts/diagnostics.sh",
     "build": "npm run check:env && next build",
     "start": "next start",
     "lint": "eslint"
