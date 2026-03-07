@@ -1,13 +1,18 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
-import { CheckIcon, ClockIcon, ShieldCheckIcon, CpuChipIcon, ArrowRightIcon, BoltIcon, LockClosedIcon, CloudArrowUpIcon, WrenchScrewdriverIcon, ServerStackIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, ClockIcon, ShieldCheckIcon, CpuChipIcon, ArrowRightIcon, BoltIcon, LockClosedIcon, CloudArrowUpIcon, WrenchScrewdriverIcon, ServerStackIcon, ChartBarIcon, DocumentTextIcon, GlobeAltIcon, ShareIcon, EnvelopeIcon, MagnifyingGlassIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
 export const metadata = {
   title: "Website Development Portfolio | Aetheris Vision",
   description:
     "AI-assisted website development for small businesses. Professional, fast, and affordable — delivered in 5–10 business days. View demo sites and pricing.",
+  openGraph: {
+    title: "Professional Websites Delivered in Days | Aetheris Vision",
+    description: "AI-accelerated website development for small businesses. Flat-rate pricing, Lighthouse 90+ scores, SSL A+ rated, full source code handoff. From $800.",
+    type: "website",
+  },
 };
 
 const tiers = [
@@ -21,7 +26,10 @@ const tiers = [
       "Up to 5 pages (Home, About, Services, Contact + 1 more)",
       "Mobile-first responsive design",
       "Contact form with email delivery",
-      "SEO metadata on all pages",
+      "SEO metadata + Open Graph tags on all pages",
+      "Lighthouse 90+ performance score",
+      "SSL/HTTPS with A+ security rating",
+      "Privacy Policy page included",
       "Deployment to Vercel (free tier)",
       "1 round of revision",
       "Delivered in 5 business days",
@@ -40,8 +48,14 @@ const tiers = [
       "Custom design to match your brand",
       "Integrated booking / scheduling (Cal.com or similar)",
       "Blog or news section",
-      "Google Analytics + basic SEO",
+      "Google Analytics + Plausible dashboard",
+      "Structured data / schema markup for Google rich results",
+      "Privacy Policy + Terms of Service pages",
+      "Open Graph & social media preview cards",
+      "Lighthouse 90+ across all categories",
+      "SSL/HTTPS with A+ security rating",
       "Contact & inquiry forms",
+      "Domain & professional email setup assistance",
       "2 rounds of revision",
       "Delivered in 10 business days",
     ],
@@ -58,8 +72,12 @@ const tiers = [
       "Unlimited pages",
       "E-commerce or membership capability",
       "Custom API integrations",
-      "Advanced SEO & performance optimization",
+      "Advanced SEO, schema markup & performance tuning",
       "Accessibility (WCAG 2.1 AA)",
+      "Full legal pages (Privacy, Terms, Cookie consent)",
+      "Google Business Profile setup",
+      "Analytics dashboard with monthly reporting",
+      "Domain, DNS & professional email configuration",
       "Ongoing maintenance retainer available",
       "Dedicated project timeline",
     ],
@@ -153,6 +171,22 @@ const faqs = [
     q: "Is this AI-generated slop?",
     a: "No. AI accelerates the workflow — layout ideation, copy drafts, component generation. Every site is reviewed, refined, and tested by a human engineer before it ships.",
   },
+  {
+    q: "What's included in the Lighthouse 90+ guarantee?",
+    a: "Every site is tested against Google Lighthouse before launch. I optimize images, code-split bundles, implement lazy loading, and configure caching to hit 90+ in Performance, Accessibility, Best Practices, and SEO. You get the report.",
+  },
+  {
+    q: "Do I really get a Privacy Policy and Terms of Service?",
+    a: "Yes. Every site includes a Privacy Policy page tailored to your business. Growth and Pro tiers also include Terms of Service and a cookie consent banner — no extra charge.",
+  },
+  {
+    q: "What happens if my site goes down?",
+    a: "Your site is backed up across GitHub and GitLab with full version history. If anything breaks, I can restore and redeploy within hours. Maintenance plan clients get proactive uptime monitoring and same-day response.",
+  },
+  {
+    q: "Can you help with my Google Business Profile?",
+    a: "Yes — included in the Pro tier. I'll connect your site to Google Business Profile so your business shows up in Google Maps with hours, reviews, and a link to your site.",
+  },
 ];
 
 const demos = [
@@ -236,12 +270,14 @@ export default function PortfolioPage() {
 
           {/* ── Trust bar ── */}
           <FadeIn delay={0.3}>
-            <div className="mb-24 grid grid-cols-2 gap-4 sm:grid-cols-4 rounded-xl border border-white/5 bg-white/[0.03] p-6">
+            <div className="mb-24 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6 rounded-xl border border-white/5 bg-white/[0.03] p-6">
               {[
                 { icon: ClockIcon, label: "5–10 Day Delivery", sub: "Launch to Growth tiers" },
                 { icon: CpuChipIcon, label: "AI-Accelerated Build", sub: "Human-reviewed & tested" },
                 { icon: ShieldCheckIcon, label: "You Own Everything", sub: "Full source code handoff" },
                 { icon: CheckIcon, label: "14-Day Bug Guarantee", sub: "Free fixes post-launch" },
+                { icon: SparklesIcon, label: "Lighthouse 90+", sub: "Performance, SEO, A11y" },
+                { icon: LockClosedIcon, label: "SSL A+ Rated", sub: "Qualys SSL Labs verified" },
               ].map(({ icon: Icon, label, sub }) => (
                 <div key={label} className="flex items-start gap-3">
                   <Icon className="h-5 w-5 text-blue-400 mt-0.5 shrink-0" />
@@ -372,6 +408,27 @@ export default function PortfolioPage() {
             ))}
           </div>
 
+          {/* ── Every Site Includes ── */}
+          <FadeIn>
+            <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Included With Every Site</p>
+            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">More Than Just a Pretty Page</h2>
+            <p className="text-gray-400 mb-12 max-w-xl">
+              Every build comes loaded with features that agencies charge extra for. Performance, legal compliance, SEO markup, and social media polish — all included.
+            </p>
+          </FadeIn>
+
+          <div className="mb-24 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {includedFeatures.map((feat, i) => (
+              <FadeIn key={feat.title} delay={i * 0.06}>
+                <div className="flex flex-col gap-3 rounded-xl border border-white/8 bg-white/[0.03] p-6 h-full">
+                  <feat.icon className="h-6 w-6 text-blue-400 shrink-0" />
+                  <h3 className="font-semibold text-white">{feat.title}</h3>
+                  <p className="text-sm text-gray-400 leading-relaxed">{feat.desc}</p>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+
           {/* ── Demo Gallery ── */}
           <div id="demos">
             <FadeIn>
@@ -403,6 +460,43 @@ export default function PortfolioPage() {
                     </div>
                   </div>
                 </Link>
+              </FadeIn>
+            ))}
+          </div>
+
+          {/* ── Maintenance Plans ── */}
+          <FadeIn>
+            <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Ongoing Support</p>
+            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">Keep Your Site Running Smoothly</h2>
+            <p className="text-gray-400 mb-12 max-w-xl">
+              Optional monthly retainers for businesses that want ongoing updates, monitoring, and peace of mind. Cancel anytime.
+            </p>
+          </FadeIn>
+
+          <div className="mb-24 grid gap-6 sm:grid-cols-2 max-w-3xl">
+            {maintenancePlans.map((plan, i) => (
+              <FadeIn key={plan.name} delay={i * 0.1}>
+                <div className="flex flex-col rounded-xl border border-white/8 bg-white/[0.03] p-6 h-full">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1">{plan.name}</p>
+                  <div className="flex items-end gap-1.5 mb-6">
+                    <span className="text-3xl font-bold text-white">{plan.price}</span>
+                    <span className="text-sm text-gray-500 mb-1">/month</span>
+                  </div>
+                  <ul className="flex-1 space-y-2.5 mb-8">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-sm text-gray-300">
+                        <CheckIcon className="h-4 w-4 text-blue-400 mt-0.5 shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <a
+                    href="/book"
+                    className="block rounded-md border border-white/10 py-2.5 text-center text-sm font-semibold text-white hover:bg-white/5 transition-colors"
+                  >
+                    Add to Any Plan
+                  </a>
+                </div>
               </FadeIn>
             ))}
           </div>
@@ -445,6 +539,43 @@ export default function PortfolioPage() {
       </main>
 
       <Footer />
+
+      {/* JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Service",
+            name: "Website Development",
+            provider: {
+              "@type": "Organization",
+              name: "Aetheris Vision LLC",
+              url: "https://aetherisvision.com",
+            },
+            description:
+              "AI-assisted website development for small businesses. Professional, mobile-first websites delivered in 5–10 business days with flat-rate pricing.",
+            offers: [
+              {
+                "@type": "Offer",
+                name: "Launch Package",
+                price: "800",
+                priceCurrency: "USD",
+                description: "Up to 5 pages, mobile-first design, SSL A+ rated, Lighthouse 90+, delivered in 5 business days.",
+              },
+              {
+                "@type": "Offer",
+                name: "Growth Package",
+                price: "1500",
+                priceCurrency: "USD",
+                description: "Up to 10 pages, booking integration, blog, schema markup, analytics, delivered in 10 business days.",
+              },
+            ],
+            areaServed: "US",
+            serviceType: "Web Development",
+          }),
+        }}
+      />
     </div>
   );
 }
