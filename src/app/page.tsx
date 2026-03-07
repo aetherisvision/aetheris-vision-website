@@ -25,7 +25,7 @@ export default function Home() {
               className="w-full h-full object-cover opacity-50 contrast-125"
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/90 to-[#050505] -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/40 via-[#0d0c0f]/90 to-[#0d0c0f] -z-10" />
           
           <div className="mx-auto max-w-5xl px-6 relative z-10">
             <FadeIn delay={0.1}>
@@ -70,7 +70,7 @@ export default function Home() {
         </section>
 
         {/* About Our Name & Philosophy Section */}
-        <section id="about" className="py-24 bg-[#0a0a0a] border-t border-white/5 relative overflow-hidden">
+        <section id="about" className="py-24 bg-[#111014] border-t border-white/5 relative overflow-hidden">
           {/* Subtle atmospheric background */}
           <div className="absolute inset-0 -z-20">
             <img 
@@ -79,7 +79,7 @@ export default function Home() {
               className="w-full h-full object-cover opacity-[0.15] mix-blend-screen"
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0d0c0f] via-[#0d0c0f]/80 to-transparent -z-10" />
 
           <div className="mx-auto max-w-5xl px-6">
             <div className="max-w-2xl">
@@ -116,7 +116,7 @@ export default function Home() {
         </section>
 
         {/* Expertise Grid */}
-        <section id="expertise" className="py-24 bg-[#050505] border-t border-white/5 relative overflow-hidden">
+        <section id="expertise" className="py-24 bg-[#0d0c0f] border-t border-white/5 relative overflow-hidden">
           <div className="absolute inset-0 -z-20">
             <img 
               src="https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?q=80&w=2500" 
@@ -124,7 +124,7 @@ export default function Home() {
               className="w-full h-full object-cover opacity-10 mix-blend-screen sepia-[0.2] hue-rotate-180"
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-[#050505]/95 to-black/80 -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0d0c0f] via-[#0d0c0f]/95 to-[#0d0c0f]/80 -z-10" />
 
           <div className="mx-auto max-w-5xl px-6 relative z-10">
             <FadeIn>
@@ -228,7 +228,7 @@ export default function Home() {
         </section>
 
         {/* Contact CTA Section */}
-        <section className="py-24 bg-[#0a0a0a] border-t border-white/5">
+        <section className="py-24 bg-[#111014] border-t border-white/5">
           <div className="mx-auto max-w-5xl px-6">
             <FadeIn>
               <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-10 md:p-14 flex flex-col md:flex-row md:items-center justify-between gap-10 relative overflow-hidden">

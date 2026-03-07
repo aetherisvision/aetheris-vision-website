@@ -1,112 +1,64 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
-  <!-- Enhanced glowing effects for dark mode -->
+  <!--
+    Aetheris Vision — Orthographic Globe Wireframe + AV Monogram
+    Globe center (200, 195), radius 164.
+    Meridian half-ellipses: rx = R·sin(λ), ry = R.
+    Parallels clipped to globe circle.
+  -->
   <defs>
-    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="8" result="blur" />
-      <feMerge>
-        <feMergeNode in="blur" />
-        <feMergeNode in="SourceGraphic" />
-      </feMerge>
-    </filter>
-    <filter id="atmosphere-glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="12" result="blur" />
-      <feMerge>
-        <feMergeNode in="blur" />
-        <feMergeNode in="SourceGraphic" />
-      </feMerge>
-    </filter>
-    <filter id="sun-rays" x="-100%" y="-100%" width="300%" height="300%">
-      <feGaussianBlur stdDeviation="4" result="blur" />
-      <feMerge>
-        <feMergeNode in="blur" />
-        <feMergeNode in="SourceGraphic" />
-      </feMerge>
-    </filter>
-    <!-- Earth gradient - clean blue ocean -->
-    <radialGradient id="earth-gradient" cx="30%" cy="30%" r="70%">
-      <stop offset="0%" stop-color="#1e3a8a"/>
-      <stop offset="50%" stop-color="#2563eb"/>
-      <stop offset="100%" stop-color="#1e40af"/>
-    </radialGradient>
-    <radialGradient id="land-gradient" cx="30%" cy="30%" r="70%">
-      <stop offset="0%" stop-color="#22c55e"/>
-      <stop offset="50%" stop-color="#16a34a"/>
-      <stop offset="100%" stop-color="#15803d"/>
-    </radialGradient>
-    <!-- Atmosphere gradient - thin cyan layer -->
-    <linearGradient id="atmosphere-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.4"/>
-      <stop offset="50%" stop-color="#3b82f6" stop-opacity="0.3"/>
-      <stop offset="100%" stop-color="#00e5ff" stop-opacity="0.2"/>
-    </linearGradient>
-    <!-- Sun gradient - warm glow -->
-    <radialGradient id="sun-gradient" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#ffd700"/>
-      <stop offset="50%" stop-color="#ff8c00"/>
-      <stop offset="100%" stop-color="#ff4500"/>
-    </radialGradient>
-    <!-- Letter gradient -->
-    <linearGradient id="letter-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="100%" stop-color="#e2e8f0"/>
-    </linearGradient>
+    <clipPath id="globe-clip">
+      <circle cx="200" cy="195" r="164"/>
+    </clipPath>
   </defs>
 
-  <!-- Connected A and V - Large geometric framing -->
-  <g fill="none" stroke="url(#letter-gradient)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)" opacity="0.95">
-    <!-- Left upward diagonal (left side of A) -->
-    <path d="M70 320 L150 70"/>
-    <!-- Middle downward diagonal (right side of A / left side of V) -->
-    <path d="M150 70 L210 320"/>
-    <!-- Right upward diagonal (right side of V) -->
-    <path d="M210 320 L330 70"/>
-    
-    <!-- Crossbar of the A -->
-    <path d="M100 240 L195 240" stroke-width="10"/>
+  <!-- ── Globe grid lines (clipped to sphere boundary) ── -->
+  <g stroke="rgba(200,200,200,0.42)" stroke-width="1.25" fill="none" clip-path="url(#globe-clip)">
+
+    <!-- Longitude meridians — half-ellipses from north pole (200,31) to south pole (200,359) -->
+    <!-- 0° meridian (vertical diameter) -->
+    <line x1="200" y1="31" x2="200" y2="359"/>
+
+    <!-- ±22.5°: rx = 164·sin 22.5° ≈ 62.8 -->
+    <path d="M200,31 A62.8,164 0 0,1 200,359"/>
+    <path d="M200,31 A62.8,164 0 0,0 200,359"/>
+
+    <!-- ±45°: rx = 164·sin 45° ≈ 115.9 -->
+    <path d="M200,31 A115.9,164 0 0,1 200,359"/>
+    <path d="M200,31 A115.9,164 0 0,0 200,359"/>
+
+    <!-- ±67.5°: rx = 164·sin 67.5° ≈ 151.5 -->
+    <path d="M200,31 A151.5,164 0 0,1 200,359"/>
+    <path d="M200,31 A151.5,164 0 0,0 200,359"/>
+
+    <!-- Latitude parallels — horizontal lines clipped to globe -->
+    <!-- Equator: y = 195 -->
+    <line x1="20" y1="195" x2="380" y2="195"/>
+
+    <!-- ±25°: y = 195 ∓ 164·sin 25° ≈ 195 ∓ 69.3 -->
+    <line x1="20" y1="125.7" x2="380" y2="125.7"/>
+    <line x1="20" y1="264.3" x2="380" y2="264.3"/>
+
+    <!-- ±50°: y = 195 ∓ 164·sin 50° ≈ 195 ∓ 125.6 -->
+    <line x1="20" y1="69.4"  x2="380" y2="69.4"/>
+    <line x1="20" y1="320.6" x2="380" y2="320.6"/>
+
+    <!-- ±75°: y = 195 ∓ 164·sin 75° ≈ 195 ∓ 158.4 -->
+    <line x1="20" y1="36.6"  x2="380" y2="36.6"/>
+    <line x1="20" y1="353.4" x2="380" y2="353.4"/>
+
   </g>
 
-  <!-- Sun with rays - Centered visually within the V's open space (cx=234) -->
-  <g filter="url(#sun-rays)">
-    <!-- Sun rays around (234, 150) -->
-    <line x1="234" y1="120" x2="234" y2="100" stroke="#ffd700" stroke-width="3" opacity="0.8"/>
-    <line x1="264" y1="150" x2="284" y2="150" stroke="#ffd700" stroke-width="3" opacity="0.8"/>
-    <line x1="234" y1="180" x2="234" y2="200" stroke="#ffd700" stroke-width="3" opacity="0.8"/>
-    <line x1="204" y1="150" x2="184" y2="150" stroke="#ffd700" stroke-width="3" opacity="0.8"/>
-    <line x1="255" y1="129" x2="266" y2="118" stroke="#ffd700" stroke-width="2" opacity="0.6"/>
-    <line x1="255" y1="171" x2="266" y2="182" stroke="#ffd700" stroke-width="2" opacity="0.6"/>
-    <line x1="213" y1="129" x2="202" y2="118" stroke="#ffd700" stroke-width="2" opacity="0.6"/>
-    <line x1="213" y1="171" x2="202" y2="182" stroke="#ffd700" stroke-width="2" opacity="0.6"/>
-  </g>
-  <!-- Sun core -->
-  <circle cx="234" cy="150" r="20" fill="url(#sun-gradient)" filter="url(#glow)" stroke="#ffffff" stroke-width="2"/>
+  <!-- Globe boundary circle (drawn over grid for clean crisp edge) -->
+  <circle cx="200" cy="195" r="164" stroke="rgba(210,210,210,0.54)" stroke-width="1.5" fill="none"/>
 
-  <!-- Earth - Visually centered under the A crossbar (cx=146) -->
-  <g>
-    <!-- Main Earth body near (146, 245) with smaller radius 23 -->
-    <circle cx="146" cy="245" r="23" fill="url(#earth-gradient)" stroke="#1e3a8a" stroke-width="1"/>
-    
-    <!-- Coastlines / Landmasses inside circle clipping path -->
-    <clipPath id="earth-clip">
-      <circle cx="146" cy="245" r="23"/>
-    </clipPath>
-    
-    <g clip-path="url(#earth-clip)" fill="url(#land-gradient)" opacity="0.7">
-      <!-- Adapted North America (shifted to cx=146) -->
-      <path d="M 128,228 Q 140,231 146,234 T 143,245 Q 148,239 151,231 Q 146,222 131,225 Z"/>
-      <!-- Adapted South America (shifted to cx=146) -->
-      <path d="M 140,248 Q 146,251 148,256 T 143,268 Q 140,256 137,251 Z"/>
-      <!-- Adapted Europe/Africa (shifted to cx=146) -->
-      <path d="M 157,228 Q 162,234 166,239 T 164,253 Q 154,250 154,242 Q 160,236 154,233 Z"/>
-    </g>
+  <!-- ── AV Monogram — white serif letterforms ── -->
+  <text
+    x="38"
+    y="328"
+    font-family="Georgia, 'Times New Roman', 'Palatino Linotype', serif"
+    font-size="220"
+    font-weight="400"
+    fill="white"
+    letter-spacing="-12">AV</text>
 
-    <!-- Earth shadow/highlight for 3D effect -->
-    <ellipse cx="138" cy="237" rx="11" ry="8" fill="#1e40af" opacity="0.4"/>
-    <ellipse cx="154" cy="253" rx="8" ry="5" fill="#1e3a8a" opacity="0.3"/>
-
-    <!-- Thin atmospheric layer - subtle glow around Earth -->
-    <circle cx="146" cy="245" r="25" fill="none" stroke="url(#atmosphere-gradient)" stroke-width="2" filter="url(#atmosphere-glow)" opacity="0.7"/>
-  </g>
-
-  <!-- Vision arc connecting Earth and Sun -->
-  <path d="M174 220 Q193 200, 213 180" fill="none" stroke="url(#atmosphere-gradient)" stroke-width="2" filter="url(#glow)" opacity="0.6"/>
 </svg>

@@ -42,8 +42,8 @@ export default function Navbar() {
       className={clsx(
         "fixed top-0 w-full z-50 border-b transition-all duration-300",
         scrolled
-          ? "border-white/10 bg-black/80 backdrop-blur-md shadow-[0_1px_30px_rgba(0,0,0,0.6)]"
-          : "border-white/5 bg-black/40 backdrop-blur-sm"
+          ? "border-white/10 bg-[#0d0c0f]/88 backdrop-blur-md shadow-[0_1px_30px_rgba(0,0,0,0.5)]"
+          : "border-white/5 bg-[#0d0c0f]/50 backdrop-blur-sm"
       )}
     >
       <div
@@ -112,7 +112,7 @@ export default function Navbar() {
 
       {/* Mobile Menu Panel */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-white/5 bg-black/95 backdrop-blur-md">
+        <div className="md:hidden border-t border-white/5 bg-[#0d0c0f]/97 backdrop-blur-md">
           <nav className="mx-auto max-w-5xl px-6 py-4 flex flex-col gap-1">
             {navLinks.map((link) => (
               <a

@@ -10,7 +10,7 @@ const footerLinks = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/5 bg-black">
+    <footer className="border-t border-white/5 bg-[#0d0c0f]">
       <div className="mx-auto max-w-5xl px-6 py-12">
         {/* Top row: logo + nav */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-10">
