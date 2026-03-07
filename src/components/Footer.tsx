@@ -2,6 +2,7 @@ const footerLinks = [
   { label: "Expertise", href: "/#expertise" },
   { label: "About", href: "/about" },
   { label: "Capabilities", href: "/capabilities" },
+  { label: "Portfolio", href: "/portfolio" },
   { label: "Blog", href: "/blog" },
   { label: "Book a Call", href: "/book" },
   { label: "Contact", href: "/contact" },
