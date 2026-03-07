@@ -1,7 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
-import { CheckIcon, ClockIcon, ShieldCheckIcon, CpuChipIcon, ArrowRightIcon, BoltIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, ClockIcon, ShieldCheckIcon, CpuChipIcon, ArrowRightIcon, BoltIcon, LockClosedIcon, CloudArrowUpIcon, WrenchScrewdriverIcon, ServerStackIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
 export const metadata = {
@@ -102,6 +102,30 @@ const sla = [
   { label: "Final launch", value: "5 business days (Launch) / 10 days (Growth)" },
   { label: "Post-launch bug fixes", value: "Free for 14 days after launch" },
   { label: "Response time (email)", value: "Same business day" },
+];
+
+const securityFeatures = [
+  {
+    icon: LockClosedIcon,
+    title: "SSL & HTTPS by Default — A+ Rated",
+    desc: "Every site ships with automatic SSL certificates and enforced HTTPS — verified with an A+ rating from Qualys SSL Labs (ssllabs.com/ssltest). No extra cost, no configuration needed.",
+    link: "https://www.ssllabs.com/ssltest/",
+  },
+  {
+    icon: CloudArrowUpIcon,
+    title: "Automated Daily Backups",
+    desc: "Your site code is version-controlled with Git and backed up to multiple cloud providers (GitHub + GitLab). Every change is tracked and recoverable.",
+  },
+  {
+    icon: ServerStackIcon,
+    title: "99.9% Uptime on Vercel Edge",
+    desc: "Sites are deployed to Vercel's global edge network — automatic failover, DDoS protection, and CDN-cached assets worldwide.",
+  },
+  {
+    icon: WrenchScrewdriverIcon,
+    title: "Same-Day Recovery",
+    desc: "If something goes wrong, I can restore your site from backup and redeploy within hours — not days. Your business doesn't wait.",
+  },
 ];
 
 const faqs = [
@@ -314,6 +338,39 @@ export default function PortfolioPage() {
               ))}
             </div>
           </FadeIn>
+
+          {/* ── Security & Backup ── */}
+          <FadeIn>
+            <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Security &amp; Backup</p>
+            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">Your Site Stays Up — Guaranteed</h2>
+            <p className="text-gray-400 mb-12 max-w-xl">
+              Every build includes production-grade security, automated backups, and a recovery plan. If your site goes down, turnaround is measured in hours, not weeks.
+            </p>
+          </FadeIn>
+
+          <div className="mb-24 grid gap-6 sm:grid-cols-2">
+            {securityFeatures.map((feat, i) => (
+              <FadeIn key={feat.title} delay={i * 0.08}>
+                <div className="flex gap-4 rounded-xl border border-white/8 bg-white/[0.03] p-6">
+                  <feat.icon className="h-6 w-6 text-blue-400 shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="mb-1.5 font-semibold text-white">{feat.title}</h3>
+                    <p className="text-sm text-gray-400 leading-relaxed">{feat.desc}</p>
+                    {"link" in feat && feat.link && (
+                      <a
+                        href={feat.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 inline-flex items-center text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        Verify at ssllabs.com <ArrowRightIcon className="ml-1 h-3 w-3" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
 
           {/* ── Demo Gallery ── */}
           <div id="demos">
