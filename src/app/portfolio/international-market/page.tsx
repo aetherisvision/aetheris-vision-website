@@ -1,6 +1,4 @@
 import { Metadata } from "next";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
 import { SITE } from "@/lib/constants";
 import { 
@@ -10,14 +8,35 @@ import {
   GlobeAltIcon,
   SparklesIcon,
   TruckIcon,
-  ClockIcon,
-  HeartIcon
+  ClockIcon
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
+
+// Types
+interface Product {
+  id: number;
+  name: string;
+  category: Category;
+  price: string;
+  origin: string;
+  image: string;
+  inStock: boolean;
+  description: string;
+}
+
+interface CulturalSection {
+  title: string;
+  description: string;
+  color: string;
+  icon: string;
+}
+
+type Category = "Asian" | "European" | "African" | "Latin American" | "Middle Eastern";
 
 export const metadata: Metadata = {
   title: `Global Harvest Market Demo | ${SITE.name}`,
   description: "International food market demo site featuring product search, cultural sections, and online ordering system.",
+  keywords: "international food, global market, specialty ingredients, cultural foods, online grocery",
   openGraph: {
     title: `Global Harvest Market - International Foods Demo | ${SITE.name}`,
     description: "Modern food market with vibrant emerald & gold design, showcasing global cuisine and cultural diversity.",
@@ -26,7 +45,7 @@ export const metadata: Metadata = {
 };
 
 // Sample products data
-const products = [
+const products: Product[] = [
   {
     id: 1,
     name: "Thai Jasmine Rice",
@@ -89,9 +108,9 @@ const products = [
   }
 ];
 
-const categories = ["All", "Asian", "European", "African", "Latin American", "Middle Eastern"];
+const categories = ["All", "Asian", "European", "African", "Latin American", "Middle Eastern"] as const;
 
-const culturalSections = [
+const culturalSections: CulturalSection[] = [
   {
     title: "Asian Pantry",
     description: "Essential ingredients from across Asia",
@@ -121,12 +140,19 @@ const culturalSections = [
 export default function InternationalMarketDemo() {
   return (
     <div className="flex flex-col min-h-[100dvh] bg-gradient-to-br from-emerald-50 via-white to-amber-50">
-      <Navbar />
+      {/* Demo Banner */}
+      <div className="bg-black py-2 text-center text-xs font-semibold text-gray-300">
+        ✦ DEMO SITE — built by{" "}
+        <Link href="/portfolio" className="text-blue-400 underline hover:text-blue-300">{SITE.name}</Link>
+        {" "}·{" "}
+        <Link href="/portfolio" className="text-gray-400 hover:text-white transition-colors">← Back to Portfolio</Link>
+      </div>
 
-      <main id="main" className="flex-1 pt-28 pb-20">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-amber-500 text-white relative z-10">
-          <div className="mx-auto max-w-6xl px-6 py-16 pt-20">
+      <main className="flex-1">
+
+      {/* Header */}
+      <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-amber-500 text-white">
+        <div className="mx-auto max-w-6xl px-6 py-16">
             <FadeIn delay={0.1}>
               <div className="flex items-center gap-3 mb-4">
                 <GlobeAltIcon className="h-8 w-8" />
@@ -170,12 +196,16 @@ export default function InternationalMarketDemo() {
                   <input
                     type="text"
                     placeholder="Search for ingredients, spices, or products..."
+                    aria-label="Search products"
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   />
                 </div>
                 <div className="relative">
                   <FunnelIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <select className="pl-10 pr-8 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent appearance-none bg-white">
+                  <select 
+                    aria-label="Filter by category"
+                    className="pl-10 pr-8 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent appearance-none bg-white"
+                  >
                     {categories.map((category) => (
                       <option key={category} value={category}>{category}</option>
                     ))}
@@ -218,7 +248,7 @@ export default function InternationalMarketDemo() {
                   <div className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="p-6">
                       <div className="flex items-start justify-between mb-4">
-                        <div className="text-4xl">{product.image}</div>
+                        <div className="text-4xl" role="img" aria-label={product.name}>{product.image}</div>
                         <div className={`px-2 py-1 rounded-full text-xs font-medium ${
                           product.inStock 
                             ? 'bg-green-100 text-green-800' 
@@ -303,8 +333,6 @@ export default function InternationalMarketDemo() {
           </FadeIn>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
