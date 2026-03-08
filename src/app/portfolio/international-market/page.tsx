@@ -125,8 +125,8 @@ export default function InternationalMarketDemo() {
 
       <main id="main" className="flex-1 pt-28 pb-20">
         {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-amber-500 text-white">
-          <div className="mx-auto max-w-6xl px-6 py-16">
+        <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-amber-500 text-white relative z-10">
+          <div className="mx-auto max-w-6xl px-6 py-16 pt-20">
             <FadeIn delay={0.1}>
               <div className="flex items-center gap-3 mb-4">
                 <GlobeAltIcon className="h-8 w-8" />
