@@ -290,6 +290,20 @@ export const demos = [
     desc: "Mission-driven nonprofit — impact stats, programs, donate & volunteer CTAs. Red, white & blue.",
     color: "from-[#b91c1c] to-[#7f1d1d]",
   },
+  {
+    slug: "analytics-dashboard",
+    title: "DataViz Pro Analytics",
+    industry: "SaaS Platform",
+    desc: "Enterprise analytics dashboard — real-time metrics, interactive charts, performance monitoring. Advanced data visualization.",
+    color: "from-[#0f172a] via-[#1e293b] to-[#334155]",
+  },
+  {
+    slug: "international-market",
+    title: "Global Harvest Market",
+    industry: "International Foods",
+    desc: "Modern food market — product search & filtering, cultural sections, online ordering. Vibrant emerald & gold design.",
+    color: "from-[#059669] via-[#10b981] to-[#d97706]",
+  },
 ];
 
 /* ── Maintenance Plans ── */
