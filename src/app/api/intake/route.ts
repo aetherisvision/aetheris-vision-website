@@ -1,267 +1,179 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { google } from 'googleapis';
-
-// Google Drive API setup
-const auth = new google.auth.GoogleAuth({
-  credentials: {
-    client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    private_key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  },
-  scopes: ['https://www.googleapis.com/auth/drive.file'],
-});
-
-const drive = google.drive({ version: 'v3', auth });
 
 // Email notification setup (using Resend or similar)
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
 interface IntakeFormData {
+  // Business Information
   companyName: string;
   industry: string;
+  currentWebsite: string;
+  location: string;
+  revenue: string;
   contactName: string;
-  contactEmail: string;
   contactTitle: string;
-  contactPhone?: string;
-  budgetRange: string;
-  timeline: string;
+  contactEmail: string;
+  contactPhone: string;
+  
+  // Project Goals
   objectives: string[];
-  portfolioReference: string;
   successMetrics: string;
-  specialRequirements?: string;
-  submittedAt: string;
+  primaryAudience: string;
+  secondaryAudience: string;
+  geographicFocus: string;
+  
+  // Portfolio Reference
+  portfolioReference: string;
+  visualStyle: string;
+  referenceWebsites: string;
+  
+  // Technical Requirements
+  contentPages: string[];
+  estimatedPages: string;
+  interactiveFeatures: string[];
+  ecommerceFeatures: string[];
+  userAccountFeatures: string[];
+  
+  // Backend Complexity
+  dataComplexity: string;
+  integrations: string[];
+  contentManagement: string[];
+  
+  // Infrastructure
+  trafficExpectations: string;
+  geographicReach: string;
+  performancePriorities: string[];
+  securityRequirements: string[];
+  complianceNeeds: string[];
+  
+  // Emergency & Backup
+  uptimeRequirements: string;
+  backupNeeds: string;
+  supportRequirements: string;
+  
+  // Timeline & Budget
+  timeline: string;
+  targetDate: string;
+  budgetRange: string;
+  maintenancePreference: string;
+  
+  // Additional
+  specialRequirements: string;
+  questionsForUs: string;
+  
+  // Metadata
+  submittedAt?: string;
   userAgent?: string;
   referrer?: string;
-  // ... other fields
 }
 
-async function createClientFolder(formData: IntakeFormData) {
-  try {
-    // Create main client folder
-    const clientFolderName = `${formData.companyName} - ${new Date().toISOString().split('T')[0]}`;
-    
-    const folderMetadata = {
-      name: clientFolderName,
-      mimeType: 'application/vnd.google-apps.folder',
-      parents: [process.env.GOOGLE_DRIVE_CLIENTS_FOLDER_ID], // Your main "Clients" folder
-    };
+// Fallback handler that works without Google Drive API
+async function handleEmailSubmission(formData: IntakeFormData, analyticsData: any) {
+  const emailContent = generateEmailContent(formData, analyticsData);
+  
+  if (RESEND_API_KEY) {
+    try {
+      // Send to your email
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'system@aetherisvision.com',
+          to: ['contact@aetherisvision.com'],
+          subject: `🚨 NEW INTAKE: ${formData.companyName} - ${formData.budgetRange}`,
+          text: emailContent,
+        }),
+      });
 
-    const folder = await drive.files.create({
-      requestBody: folderMetadata,
-      fields: 'id,name,webViewLink',
-    });
+      // Send confirmation to client
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'projects@aetherisvision.com',
+          to: [formData.contactEmail],
+          subject: `Project Intake Received - ${formData.companyName}`,
+          text: `Hi ${formData.contactName},\n\nWe've received your project intake for ${formData.companyName}. Our team will review your requirements and respond within 4 hours during business days.\n\nThank you,\nAetheris Vision Team`,
+        }),
+      });
 
-    // Create intake document with all form data
-    const intakeDoc = {
-      name: `${formData.companyName} - Project Intake.txt`,
-      parents: [folder.data.id],
-    };
-
-    const intakeContent = generateIntakeDocument(formData);
-    
-    await drive.files.create({
-      requestBody: intakeDoc,
-      media: {
-        mimeType: 'text/plain',
-        body: intakeContent,
-      },
-    });
-
-    // Create project status doc
-    const statusDoc = {
-      name: `${formData.companyName} - Project Status.txt`,
-      parents: [folder.data.id],
-    };
-
-    const statusContent = `Project Status: New Intake
-Submitted: ${formData.submittedAt}
-Next Action: Technical Review & Response (Due: ${new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString()})
-Budget Tier: ${formData.budgetRange}
-Timeline: ${formData.timeline}
-
---- INTERNAL NOTES ---
-[Add internal notes and progress updates here]
-
---- COMMUNICATION LOG ---
-${formData.submittedAt} - Initial intake form submitted
-`;
-
-    await drive.files.create({
-      requestBody: statusDoc,
-      media: {
-        mimeType: 'text/plain',
-        body: statusContent,
-      },
-    });
-
-    return {
-      folderId: folder.data.id,
-      folderName: folder.data.name,
-      folderLink: folder.data.webViewLink,
-    };
-
-  } catch (error) {
-    console.error('Error creating client folder:', error);
-    throw new Error('Failed to create client folder');
+    } catch (emailError) {
+      console.error('Email error:', emailError);
+      // Fallback to console log if email fails
+      console.log('📧 INTAKE SUBMISSION (EMAIL FALLBACK):', emailContent);
+    }
+  } else {
+    // Ultimate fallback - log to console
+    console.log('📧 INTAKE SUBMISSION (NO EMAIL CONFIG):', emailContent);
   }
+
+  return true;
 }
 
-function generateIntakeDocument(formData: IntakeFormData): string {
+function generateEmailContent(formData: IntakeFormData, analyticsData: any): string {
   return `
-🏢 CLIENT INTAKE FORM
-=====================================
+🚨 NEW PROJECT INTAKE SUBMITTED
 
 BUSINESS INFORMATION
--------------------
-Company Name: ${formData.companyName}
+===================
+Company: ${formData.companyName}
 Industry: ${formData.industry}
 Location: ${formData.location || 'Not specified'}
-Revenue Range: ${formData.revenue || 'Not specified'}
-Current Website: ${formData.currentWebsite || 'None'}
+Revenue: ${formData.revenue || 'Not specified'}
 
 PRIMARY CONTACT
---------------
+==============
 Name: ${formData.contactName}
 Title: ${formData.contactTitle}
 Email: ${formData.contactEmail}
 Phone: ${formData.contactPhone || 'Not provided'}
 
-PROJECT GOALS & VISION
----------------------
-Primary Objectives: ${formData.objectives.join(', ')}
-Success Metrics: ${formData.successMetrics}
-Primary Audience: ${formData.primaryAudience}
-Secondary Audience: ${formData.secondaryAudience || 'Not specified'}
-Geographic Focus: ${formData.geographicFocus || 'Not specified'}
-
-PORTFOLIO REFERENCE & STYLE
----------------------------
+PROJECT DETAILS
+==============
+Budget Range: ${formData.budgetRange}
+Timeline: ${formData.timeline}
+Target Date: ${formData.targetDate || 'Not specified'}
 Portfolio Reference: ${formData.portfolioReference}
+Objectives: ${formData.objectives.join(', ')}
+
+SUCCESS METRICS
+==============
+${formData.successMetrics}
+
+AUDIENCES
+=========
+Primary: ${formData.primaryAudience}
+Secondary: ${formData.secondaryAudience || 'Not specified'}
+
+STYLE PREFERENCES
+================
 Visual Style: ${formData.visualStyle || 'Not specified'}
 Reference Websites: ${formData.referenceWebsites || 'None provided'}
 
-TIMELINE & BUDGET
-----------------
-Timeline Preference: ${formData.timeline}
-Target Launch Date: ${formData.targetDate || 'Not specified'}
-Budget Range: ${formData.budgetRange}
-Maintenance Preference: ${formData.maintenancePreference || 'Not specified'}
-
-ADDITIONAL INFORMATION
----------------------
+ADDITIONAL INFO
+==============
 Special Requirements: ${formData.specialRequirements || 'None'}
-Questions for Us: ${formData.questionsForUs || 'None'}
+Questions: ${formData.questionsForUs || 'None'}
 
 TECHNICAL METADATA
------------------
+=================
 Submitted: ${formData.submittedAt}
-User Agent: ${formData.userAgent || 'Unknown'}
+IP: ${analyticsData.ipAddress}
+Country: ${analyticsData.geography}
+User Agent: ${formData.userAgent}
 Referrer: ${formData.referrer || 'Direct'}
-
-=====================================
-Auto-generated from website intake form
-`;
-}
-
-async function sendEmailNotifications(formData: IntakeFormData, folderInfo: any) {
-  if (!RESEND_API_KEY) {
-    console.log('No email API key configured, skipping email notifications');
-    return;
-  }
-
-  // Client confirmation email
-  const clientEmailContent = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Project Intake Received</title>
-</head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; line-height: 1.6; color: #333;">
-    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h1 style="color: #2563eb;">Thank you for your project submission!</h1>
-        
-        <p>Hi ${formData.contactName},</p>
-        
-        <p>We've received your website project intake for <strong>${formData.companyName}</strong> and have created a dedicated project folder in our system.</p>
-        
-        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="margin: 0 0 10px 0; color: #1e40af;">Next Steps:</h3>
-            <ol style="margin: 0;">
-                <li><strong>Review (within 4 hours):</strong> Our team will analyze your requirements</li>
-                <li><strong>Technical Assessment:</strong> We'll evaluate complexity and recommend the best service tier</li>
-                <li><strong>Consultation Call:</strong> 30-minute discussion about approach and timeline</li>
-                <li><strong>Detailed Proposal:</strong> Transparent pricing and project scope</li>
-            </ol>
-        </div>
-        
-        <p><strong>Budget Tier:</strong> ${formData.budgetRange}<br>
-        <strong>Timeline:</strong> ${formData.timeline}</p>
-        
-        <p>If you have any immediate questions, feel free to reply to this email or call us directly.</p>
-        
-        <p>Best regards,<br>
-        The Aetheris Vision Team</p>
-    </div>
-</body>
-</html>
-`;
-
-  // Internal notification email
-  const internalEmailContent = `
-🚨 NEW PROJECT INTAKE SUBMITTED
-
-Company: ${formData.companyName} (${formData.industry})
-Contact: ${formData.contactName} (${formData.contactTitle})
-Email: ${formData.contactEmail}
-Budget: ${formData.budgetRange}
-Timeline: ${formData.timeline}
-
-Portfolio Reference: ${formData.portfolioReference}
-Primary Goals: ${formData.objectives.join(', ')}
-
-Google Drive Folder: ${folderInfo.folderLink}
 
 ⏰ RESPONSE DUE: Within 4 hours (by ${new Date(Date.now() + 4 * 60 * 60 * 1000).toLocaleString()})
 
----
-Full intake details available in the client folder.
+=====================================
+Auto-generated from intake form system
 `;
-
-  try {
-    // Send client confirmation
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'projects@aetherisvision.com',
-        to: [formData.contactEmail],
-        subject: `Project Intake Received - ${formData.companyName}`,
-        html: clientEmailContent,
-      }),
-    });
-
-    // Send internal notification
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'system@aetherisvision.com',
-        to: ['contact@aetherisvision.com'], // Your email
-        subject: `🚨 NEW INTAKE: ${formData.companyName} - ${formData.budgetRange}`,
-        text: internalEmailContent,
-      }),
-    });
-
-  } catch (error) {
-    console.error('Email notification error:', error);
-    // Don't fail the entire request if email fails
-  }
 }
 
 export async function POST(request: NextRequest) {
@@ -286,26 +198,21 @@ export async function POST(request: NextRequest) {
       objectives: formData.objectives,
       userAgent: formData.userAgent,
       referrer: formData.referrer,
-      ipAddress: request.ip || request.headers.get('x-forwarded-for') || 'unknown',
-      geography: request.geo?.country || 'unknown',
+      ipAddress: request.headers.get('x-forwarded-for') || 
+                request.headers.get('x-real-ip') || 
+                'unknown',
+      geography: request.headers.get('cf-ipcountry') || 'unknown',
     };
 
-    // Log analytics (you can send this to your analytics service)
+    // Log analytics
     console.log('📊 INTAKE FORM ANALYTICS:', JSON.stringify(analyticsData, null, 2));
 
-    // Create Google Drive folder
-    const folderInfo = await createClientFolder(formData);
-    
-    // Send email notifications
-    await sendEmailNotifications(formData, folderInfo);
-
-    // Optional: Log to external analytics service
-    // await logToAnalyticsService(analyticsData);
+    // Process submission with email system
+    const result = await handleEmailSubmission(formData, analyticsData);
 
     return NextResponse.json({
       success: true,
       message: 'Intake form submitted successfully',
-      clientFolder: folderInfo,
       nextSteps: [
         'Technical review within 4 hours',
         'Consultation call scheduling',
@@ -326,12 +233,70 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Optional: Analytics service integration
-async function logToAnalyticsService(data: any) {
-  // Example integration with analytics service
-  // await fetch('YOUR_ANALYTICS_ENDPOINT', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(data)
-  // });
+// Fallback handler that works without Google Drive API
+async function handleEmailOnlySubmission(formData: IntakeFormData, analyticsData: any) {
+  const emailContent = generateEmailContent(formData, analyticsData);
+  
+  if (RESEND_API_KEY) {
+    try {
+      // Send to your email
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'system@aetherisvision.com',
+          to: ['contact@aetherisvision.com'],
+          subject: `🚨 NEW INTAKE: ${formData.companyName} - ${formData.budgetRange}`,
+          text: emailContent,
+        }),
+      });
+
+      // Send confirmation to client
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'projects@aetherisvision.com',
+          to: [formData.contactEmail],
+          subject: `Project Intake Received - ${formData.companyName}`,
+          text: `Hi ${formData.contactName},\n\nWe've received your project intake for ${formData.companyName}. Our team will review your requirements and respond within 4 hours during business days.\n\nThank you,\nAetheris Vision Team`,
+        }),
+      });
+
+    } catch (emailError) {
+      console.error('Email error:', emailError);
+      // Fallback to console log if email fails
+      console.log('📧 INTAKE SUBMISSION (EMAIL FALLBACK):', emailContent);
+    }
+  } else {
+    // Ultimate fallback - log to console
+    console.log('📧 INTAKE SUBMISSION (NO EMAIL CONFIG):', emailContent);
+  }
+
+  return NextResponse.json({
+    success: true,
+    message: 'Intake form submitted successfully',
+    nextSteps: [
+      'Technical review within 4 hours',
+      'Consultation call scheduling', 
+      'Detailed proposal delivery'
+    ]
+  });
+}
+
+// Optional: Analytics service integration  
+async function logToAnalyticsService(data: IntakeFormData & { analyticsData: any }) {
+  // Future enhancement: send to analytics service
+  console.log('Intake submitted:', {
+    company: data.companyName,
+    budget: data.budgetRange,
+    timeline: data.timeline,
+    country: data.analyticsData.geography
+  });
 }

@@ -81,10 +81,10 @@ export default function PortfolioPage() {
               {[
                 { icon: ClockIcon, label: "15-21 Day Delivery", sub: "Professional development cycle" },
                 { icon: CpuChipIcon, label: "Enterprise Architecture", sub: "Scalable & maintainable" },
-                { icon: ShieldCheckIcon, label: "Full Code Ownership", sub: "Complete source handoff" },
+                { icon: ShieldCheckIcon, label: "SOC-2 Ready", sub: "Enterprise security standards" },
                 { icon: CheckIcon, label: "30-90 Day Warranty", sub: "Comprehensive guarantee" },
                 { icon: SparklesIcon, label: "Lighthouse 95+", sub: "Performance guaranteed" },
-                { icon: LockClosedIcon, label: "Enterprise Security", sub: "A+ rated & compliant" },
+                { icon: LockClosedIcon, label: "GDPR/CCPA Compliant", sub: "Data protection ready" },
               ].map(({ icon: Icon, label, sub }) => (
                 <div key={label} className="flex items-start gap-3">
                   <Icon className="h-5 w-5 text-blue-400 mt-0.5 shrink-0" />
