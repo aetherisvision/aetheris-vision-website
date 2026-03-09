@@ -304,6 +304,13 @@ export const demos = [
     desc: "Modern food market — product search & filtering, cultural sections, online ordering. Vibrant emerald & gold design.",
     color: "from-[#059669] via-[#10b981] to-[#d97706]",
   },
+  {
+    slug: "portal-pro",
+    title: "Portal Pro Business Suite",
+    industry: "Business Platform",
+    desc: "Full-stack business portal — user management, role-based dashboards, plugin system, CRM features. Modern Drupal replacement.",
+    color: "from-[#6366f1] via-[#8b5cf6] to-[#a855f7]",
+  },
 ];
 
 /* ── Maintenance Plans ── */
