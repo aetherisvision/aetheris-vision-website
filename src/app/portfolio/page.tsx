@@ -330,21 +330,20 @@ export default function PortfolioPage() {
             <div className="rounded-2xl border border-white/8 bg-gradient-to-br from-blue-950/40 to-black p-10 text-center">
               <h2 className="mb-3 text-3xl font-semibold text-white tracking-tight">Ready to get started?</h2>
               <p className="mb-8 text-gray-400 max-w-md mx-auto">
-                Book a free 30-minute discovery call or fill out our comprehensive intake form to get an accurate quote.
+                Start with our comprehensive intake form for accurate pricing, or book a discovery call to discuss your vision.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
                 <a
-                  href="/book"
+                  href="/intake"
                   className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-black transition-colors hover:bg-gray-200"
                 >
-                  Book Discovery Call
+                  Start Project Intake
                 </a>
                 <a
-                  href="/CLIENT_INTAKE_TEMPLATE.md"
-                  download
+                  href="/book"
                   className="inline-flex h-12 items-center justify-center rounded-md border border-white/20 bg-black/50 px-8 text-sm font-medium text-white transition-colors hover:bg-white/5"
                 >
-                  Download Intake Form
+                  Book Discovery Call
                 </a>
               </div>
               <p className="text-xs text-gray-600">Or email directly: <a href={`mailto:${SITE.email}`} className="text-gray-400 hover:text-white transition-colors">{SITE.email}</a></p>

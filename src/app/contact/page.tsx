@@ -76,14 +76,13 @@ export default function ContactPage() {
                     <p className="text-white font-medium text-sm">Project Intake</p>
                   </div>
                   <p className="text-sm text-gray-400 mb-3 leading-relaxed">
-                    For website projects, start with our comprehensive intake form for accurate pricing.
+                    For website projects, complete our comprehensive intake form for immediate, accurate pricing.
                   </p>
                   <a
-                    href="/CLIENT_INTAKE_TEMPLATE.md"
-                    download
+                    href="/intake"
                     className="inline-flex h-9 items-center justify-center rounded-md border border-white/20 bg-black/50 px-4 text-xs font-medium text-white hover:bg-white/5 transition"
                   >
-                    Download Form
+                    Start Intake Form
                   </a>
                 </div>
 

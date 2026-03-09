@@ -35,6 +35,7 @@ export default function Navbar() {
     if (href === "/capabilities") return pathname === "/capabilities";
     if (href === "/portfolio") return pathname.startsWith("/portfolio");
     if (href === "/contact") return pathname === "/contact";
+    if (href === "/intake") return pathname === "/intake";
     return false;
   }
 
