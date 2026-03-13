@@ -11,6 +11,7 @@ import {
   ClockIcon
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import LocationMap from "@/components/LocationMap";
 
 // Types
 interface Product {
@@ -287,6 +288,70 @@ export default function InternationalMarketDemo() {
               ))}
             </div>
           </FadeIn>
+        </div>
+
+        {/* Store Location & Hours */}
+        <div className="bg-gradient-to-b from-emerald-50 to-amber-50 px-6 py-20">
+          <div className="mx-auto max-w-6xl">
+            <FadeIn delay={0.7}>
+              <h2 className="mb-2 text-center text-3xl font-bold text-emerald-800">Visit Our Store</h2>
+              <p className="mb-12 text-center text-zinc-600">Experience global flavors in person at our Oklahoma City location</p>
+              
+              <div className="grid gap-8 lg:grid-cols-2">
+                {/* Interactive Map */}
+                <div>
+                  <LocationMap
+                    businessName="Global Harvest Market"
+                    address="1845 NW 39th Expressway, Oklahoma City, OK 73118"
+                    phone="(405) 555-0175"
+                    hours="Mon-Sat: 8AM-9PM | Sun: 10AM-7PM"
+                    embedUrl="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3244.789!2d-97.5821!3d35.5234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzXCsDMxJzI0LjIiTiA5N8KwMzQnNTUuNiJX!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus"
+                    className="h-full"
+                  />
+                </div>
+                
+                {/* Store Info */}
+                <div className="space-y-6">
+                  <div className="bg-white rounded-2xl shadow-lg border border-emerald-200 p-8">
+                    <h3 className="mb-4 text-xl font-bold text-emerald-800 flex items-center gap-2">
+                      🕐 Store Hours
+                    </h3>
+                    {[
+                      { day: "Monday – Saturday", hours: "8:00 AM – 9:00 PM" },
+                      { day: "Sunday", hours: "10:00 AM – 7:00 PM" },
+                      { day: "Holidays", hours: "Call for special hours" },
+                    ].map((row) => (
+                      <div key={row.day} className="mb-4 flex justify-between items-center border-b border-emerald-100 pb-3 last:border-b-0 last:pb-0 last:mb-0">
+                        <span className="text-zinc-700 font-medium">{row.day}</span>
+                        <span className="font-semibold text-emerald-800">{row.hours}</span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="bg-white rounded-2xl shadow-lg border border-amber-200 p-8">
+                    <h3 className="mb-4 text-xl font-bold text-amber-800 flex items-center gap-2">
+                      🌍 Store Features
+                    </h3>
+                    <div className="grid grid-cols-1 gap-4">
+                      {[
+                        { icon: "🛒", feature: "In-store shopping & curbside pickup" },
+                        { icon: "🚚", feature: "Same-day delivery available" },
+                        { icon: "👨‍🍳", feature: "Cultural cooking demonstrations" },
+                        { icon: "🥘", feature: "Ready-to-eat international meals" },
+                        { icon: "📞", feature: "Phone: (405) 555-0175" },
+                        { icon: "✉️", feature: "Email: hello@globalharvestmarket.com" },
+                      ].map((item) => (
+                        <div key={item.feature} className="flex items-center gap-3">
+                          <span className="text-lg">{item.icon}</span>
+                          <span className="text-zinc-700">{item.feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </FadeIn>
+          </div>
         </div>
 
         {/* CTA Section */}

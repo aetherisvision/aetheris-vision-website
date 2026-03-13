@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
+import LocationMap from "@/components/LocationMap";
 
 export const metadata = {
   title: `Veterans Forward Oklahoma — Nonprofit Demo | ${SITE.name} Portfolio`,
@@ -113,7 +114,84 @@ export default function VeteranNonprofitPage() {
         </div>
       </section>
 
-      {/* Volunteer bar */}
+      {/* Office Location */}
+      <section className="bg-gradient-to-b from-gray-50 to-white px-6 py-20">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="mb-2 text-center text-3xl font-extrabold text-zinc-900">Visit Our Office</h2>
+          <p className="mb-12 text-center text-zinc-500">Located in central Oklahoma City, serving veterans across the state</p>
+          
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Interactive Map */}
+            <div>
+              <LocationMap
+                businessName="Veterans Forward Oklahoma"
+                address="514 N Robinson Ave, Oklahoma City, OK 73102"
+                phone="(405) 555-0260"
+                hours="Mon-Fri: 9AM-5PM | Sat: 10AM-2PM | Emergency: 24/7 Helpline"
+                embedUrl="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3245.234!2d-97.5167!3d35.4711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzXCsDI4JzE2LjAiTiA5N8KwMzEnMDAuMSJX!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus"
+                className="h-full"
+              />
+            </div>
+            
+            {/* Office Info */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl shadow-lg border border-red-200 p-8">
+                <h3 className="mb-4 text-xl font-extrabold text-red-700 flex items-center gap-2">
+                  🏢 Office Hours
+                </h3>
+                {[
+                  { day: "Monday – Friday", hours: "9:00 AM – 5:00 PM" },
+                  { day: "Saturday", hours: "10:00 AM – 2:00 PM" },
+                  { day: "Sunday", hours: "Emergency Line Only" },
+                ].map((row) => (
+                  <div key={row.day} className="mb-4 flex justify-between items-center border-b border-red-100 pb-3 last:border-b-0 last:pb-0 last:mb-0">
+                    <span className="text-zinc-700 font-medium">{row.day}</span>
+                    <span className="font-semibold text-red-700">{row.hours}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+                <h3 className="mb-4 text-xl font-extrabold text-zinc-900 flex items-center gap-2">
+                  📞 Contact Information
+                </h3>
+                <div className="space-y-4 text-zinc-700">
+                  <div className="flex items-start gap-3">
+                    <span className="text-red-600 text-lg">📍</span>
+                    <div>
+                      <p className="font-semibold">Address</p>
+                      <p>514 N Robinson Ave<br />Oklahoma City, OK 73102</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-red-600 text-lg">📞</span>
+                    <div>
+                      <p className="font-semibold">Main Office</p>
+                      <a href="tel:4055550260" className="text-red-700 hover:text-red-800 transition-colors">(405) 555-0260</a>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-red-600 text-lg">🆘</span>
+                    <div>
+                      <p className="font-semibold">24/7 Crisis Line</p>
+                      <a href="tel:4055550911" className="text-red-700 hover:text-red-800 transition-colors">(405) 555-0911</a>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-red-600 text-lg">✉️</span>
+                    <div>
+                      <p className="font-semibold">Email</p>
+                      <a href="mailto:info@veteransforwardok.org" className="text-red-700 hover:text-red-800 transition-colors">info@veteransforwardok.org</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Make a Difference */}
       <section className="bg-[#0f172a] px-6 py-16 text-center text-white">
         <div className="mx-auto max-w-2xl">
           <h2 className="mb-3 text-3xl font-extrabold">Make a Difference Today</h2>

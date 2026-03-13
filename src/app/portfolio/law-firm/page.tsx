@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
 import { HeroImage, CardImage } from "@/components/PortfolioImage";
+import LocationMap from "@/components/LocationMap";
 
 const practiceAreas = [
   { title: "Personal Injury", desc: "Accidents, slip & fall, wrongful death" },
@@ -189,7 +190,77 @@ export default function LawFirmPage() {
         </div>
       </section>
 
-      {/* Contact */}
+      {/* Location & Contact */}
+      <section className="bg-gradient-to-b from-gray-50 to-white px-6 py-20">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="mb-2 text-center text-3xl font-bold text-[#1e3a5f]">Visit Our Office</h2>
+          <p className="mb-12 text-center text-zinc-500">Located in Oklahoma City's legal district, serving clients statewide</p>
+          
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Interactive Map */}
+            <div>
+              <LocationMap
+                businessName="Mitchell & Associates"
+                address="123 N Broadway Ave, Oklahoma City, OK 73102"
+                phone="(405) 555-0100"
+                hours="Mon-Fri: 8AM-6PM | Sat: 9AM-2PM | Emergency: 24/7"
+                embedUrl="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3245.123456789!2d-97.5341!3d35.4719!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzXCsDI4JzE4LjgiTiA5N8KwMzInMDIuOCJX!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus"
+                className="h-full"
+              />
+            </div>
+            
+            {/* Office Info */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+                <h3 className="mb-4 text-xl font-bold text-[#1e3a5f] flex items-center gap-2">
+                  🏢 Office Hours
+                </h3>
+                {[
+                  { day: "Monday – Friday", hours: "8:00 AM – 6:00 PM" },
+                  { day: "Saturday", hours: "9:00 AM – 2:00 PM" },
+                  { day: "Sunday", hours: "Emergency Only" },
+                ].map((row) => (
+                  <div key={row.day} className="mb-4 flex justify-between items-center border-b border-gray-100 pb-3 last:border-b-0 last:pb-0 last:mb-0">
+                    <span className="text-zinc-700 font-medium">{row.day}</span>
+                    <span className="font-semibold text-[#1e3a5f]">{row.hours}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+                <h3 className="mb-4 text-xl font-bold text-[#1e3a5f] flex items-center gap-2">
+                  📍 Contact Information
+                </h3>
+                <div className="space-y-4 text-zinc-700">
+                  <div className="flex items-start gap-3">
+                    <span className="text-yellow-600 text-lg">📍</span>
+                    <div>
+                      <p className="font-semibold">Address</p>
+                      <p>123 N Broadway Ave<br />Oklahoma City, OK 73102</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-yellow-600 text-lg">📞</span>
+                    <div>
+                      <p className="font-semibold">Phone</p>
+                      <a href="tel:4055550100" className="text-[#1e3a5f] hover:text-yellow-600 transition-colors">(405) 555-0100</a>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-yellow-600 text-lg">✉️</span>
+                    <div>
+                      <p className="font-semibold">Email</p>
+                      <a href="mailto:info@mitchellassociateslaw.com" className="text-[#1e3a5f] hover:text-yellow-600 transition-colors">info@mitchellassociateslaw.com</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Form */}
       <section id="contact" className="bg-[#1e3a5f] px-6 py-20">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="mb-3 text-3xl font-bold text-white">Request a Free Consultation</h2>
