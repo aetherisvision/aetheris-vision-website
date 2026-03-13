@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
+import LocationMap from "@/components/LocationMap";
 
 export const metadata = {
   title: `Summit Home Services — Contractor Demo | ${SITE.name} Portfolio`,
@@ -112,6 +113,75 @@ export default function TradesContractorPage() {
                 <p className="mt-4 text-xs font-bold text-zinc-800">— {r.name}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Service Area & Location */}
+      <section className="bg-gradient-to-b from-blue-50 to-white px-6 py-20">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="mb-2 text-center text-3xl font-extrabold text-[#1d4ed8]">Our Service Area</h2>
+          <p className="mb-12 text-center text-zinc-500">Proudly serving the Greater Oklahoma City Metro Area with 15+ years of experience</p>
+          
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Service Area Map */}
+            <div>
+              <LocationMap
+                businessName="Summit Home Services"
+                address="2847 NW 58th St, Oklahoma City, OK 73112"
+                phone="(405) 555-0142"
+                hours="Mon-Fri: 7AM-7PM | Sat: 8AM-5PM | 24/7 Emergency"
+                embedUrl="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d207057.93674745468!2d-97.64305598654094!3d35.48212313751476!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x87b217c327502b5d%3A0x61f4b693b1ed739!2sOklahoma%20City%2C%20OK!5e0!3m2!1sen!2sus!4v1647365890123!5m2!1sen!2sus"
+                className="h-full"
+              />
+            </div>
+            
+            {/* Service Areas & Info */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl shadow-lg border border-blue-200 p-8">
+                <h3 className="mb-4 text-xl font-bold text-[#1d4ed8] flex items-center gap-2">
+                  🏘️ Service Areas
+                </h3>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  {[
+                    "Oklahoma City", "Edmond", "Yukon", "Mustang",
+                    "Moore", "Norman", "Bethany", "Warr Acres",
+                    "The Village", "Nichols Hills", "Del City", "Midwest City"
+                  ].map((city) => (
+                    <div key={city} className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                      <span className="text-zinc-700">{city}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-4 text-xs text-zinc-500">
+                  📍 <strong>Service Radius:</strong> Up to 30 miles from OKC Metro
+                </p>
+              </div>
+              
+              <div className="bg-white rounded-2xl shadow-lg border border-blue-200 p-8">
+                <h3 className="mb-4 text-xl font-bold text-[#1d4ed8] flex items-center gap-2">
+                  🚚 Response Times
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-zinc-700">Emergency Service</span>
+                    <span className="font-bold text-orange-500">Within 2 hours</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-zinc-700">Standard Service</span>
+                    <span className="font-bold text-[#1d4ed8]">Same/Next day</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-zinc-700">Project Estimates</span>
+                    <span className="font-bold text-gray-600">Usually same day</span>
+                  </div>
+                </div>
+                <p className="mt-4 text-xs text-zinc-500">
+                  ⏰ <strong>Emergency Line:</strong> Available 24/7 for urgent repairs
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

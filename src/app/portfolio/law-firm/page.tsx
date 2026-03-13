@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
+import { HeroImage, CardImage } from "@/components/PortfolioImage";
 
 const practiceAreas = [
   { title: "Personal Injury", desc: "Accidents, slip & fall, wrongful death" },
@@ -51,8 +52,21 @@ export default function LawFirmPage() {
       </nav>
 
       {/* Hero */}
-      <section className="bg-[#1e3a5f] px-6 py-24 text-white">
-        <div className="mx-auto max-w-4xl">
+      <section className="relative bg-[#1e3a5f] px-6 py-24 text-white overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 opacity-20">
+          <HeroImage 
+            category="law" 
+            description="courthouse-premium" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+        
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#1e3a5f]/90 via-[#1e3a5f]/75 to-[#1e3a5f]/90" />
+        
+        {/* Content */}
+        <div className="relative mx-auto max-w-4xl">
           <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-yellow-400">Serving Oklahoma Since 1997</p>
           <h1 className="mb-6 text-4xl font-bold leading-tight sm:text-5xl">
             Experienced Legal Representation<br />
@@ -62,8 +76,8 @@ export default function LawFirmPage() {
             Mitchell & Associates provides aggressive, compassionate legal advocacy across Oklahoma. Our team fights for the results you deserve.
           </p>
           <div className="flex flex-wrap gap-4">
-            <a href="#contact" className="rounded bg-yellow-500 px-7 py-3 font-bold text-black hover:bg-yellow-400 transition-colors">Schedule a Free Consultation</a>
-            <a href="#practice" className="rounded border border-zinc-500 px-7 py-3 font-semibold text-white hover:border-yellow-400 hover:text-yellow-400 transition-colors">Our Practice Areas</a>
+            <a href="#contact" className="rounded bg-yellow-500 px-7 py-3 font-bold text-black hover:bg-yellow-400 transition-colors shadow-lg">Schedule a Free Consultation</a>
+            <a href="#practice" className="rounded border border-zinc-500 px-7 py-3 font-semibold text-white hover:border-yellow-400 hover:text-yellow-400 transition-colors backdrop-blur-sm bg-white/10">Our Practice Areas</a>
           </div>
           <div className="mt-12 flex flex-wrap gap-8 text-sm text-zinc-400">
             <div><span className="block text-2xl font-bold text-white">500+</span>Cases Resolved</div>
@@ -88,6 +102,56 @@ export default function LawFirmPage() {
               </div>
             ))}
           </div>
+          
+          {/* Scales of Justice Feature */}
+          <div className="mt-16 flex justify-center">
+            <div className="relative max-w-md">
+              <CardImage 
+                category="law" 
+                type="card" 
+                description="scales-premium"
+                className="w-full h-48 rounded-xl shadow-lg object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent rounded-xl flex items-end">
+                <div className="p-6 text-white">
+                  <h3 className="text-lg font-bold mb-1">Justice & Integrity</h3>
+                  <p className="text-sm opacity-90">Balanced advocacy for every client</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Firm Philosophy with Visual */}
+      <section className="relative bg-gray-50 px-6 py-20 overflow-hidden">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-12 lg:grid-cols-2 items-center">
+            {/* Content */}
+            <div>
+              <h2 className="mb-6 text-3xl font-bold text-[#1e3a5f]">Our Philosophy</h2>
+              <p className="mb-6 text-lg text-gray-700 leading-relaxed">
+                When facing a legal problem, you need a lawyer who will put your interests above all else and represent you with utmost passion controlled by reason.
+              </p>
+              <p className="mb-6 text-gray-600 leading-relaxed">
+                At Mitchell & Associates, we zealously advocate on your behalf, ensure that your legal interests are paramount, and resolve your legal disputes with experience and care.
+              </p>
+              <p className="text-gray-600 leading-relaxed">
+                We believe that the attorney-client relationship is sacrosanct and must be based on understanding, trust, duty, and confidence. These basic principles are at the foundation of our firm's philosophy.
+              </p>
+            </div>
+            
+            {/* Professional Legal Books Image */}
+            <div className="relative">
+              <CardImage 
+                category="law" 
+                type="card" 
+                description="books-premium"
+                className="w-full h-80 rounded-2xl shadow-lg"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1e3a5f]/20 to-transparent rounded-2xl" />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -96,16 +160,29 @@ export default function LawFirmPage() {
         <div className="mx-auto max-w-6xl">
           <h2 className="mb-2 text-center text-3xl font-bold text-[#1e3a5f]">Our Attorneys</h2>
           <p className="mb-12 text-center text-zinc-500">Decades of combined legal experience in your corner</p>
+          
+          {/* Professional Office Interior */}
+          <div className="mb-16 relative">
+            <CardImage 
+              category="law" 
+              type="interior" 
+              description="office"
+              className="w-full h-64 rounded-2xl shadow-xl mx-auto max-w-4xl object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/20 rounded-2xl max-w-4xl mx-auto" />
+          </div>
+          
+          {/* Attorney Profiles */}
           <div className="grid gap-8 sm:grid-cols-3">
             {attorneys.map((atty) => (
-              <div key={atty.name} className="text-center">
-                <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-[#1e3a5f] text-2xl font-bold text-yellow-400">
+              <div key={atty.name} className="text-center bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
+                <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[#1e3a5f] to-[#2d5aa0] text-2xl font-bold text-yellow-400 shadow-lg">
                   {atty.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
                 </div>
                 <h3 className="text-lg font-bold text-[#1e3a5f]">{atty.name}</h3>
-                <p className="text-sm font-semibold text-yellow-600">{atty.title}</p>
-                <p className="mt-1 text-sm text-zinc-500">{atty.focus}</p>
-                <p className="text-xs text-zinc-400">{atty.years}</p>
+                <p className="text-sm font-semibold text-yellow-600 mb-2">{atty.title}</p>
+                <p className="mt-1 text-sm text-zinc-600 mb-1">{atty.focus}</p>
+                <p className="text-xs text-zinc-500">{atty.years}</p>
               </div>
             ))}
           </div>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
+import LocationMap from "@/components/LocationMap";
 
 export const metadata = {
   title: `Casa Verde Kitchen — Restaurant Demo | ${SITE.name} Portfolio`,
@@ -114,28 +115,72 @@ export default function RestaurantPage() {
         </div>
       </section>
 
-      {/* Hours & Location */}
-      <section id="hours" className="bg-[#92400e] px-6 py-16 text-white">
-        <div className="mx-auto grid max-w-4xl gap-12 sm:grid-cols-2">
-          <div>
-            <h3 className="mb-5 text-xl font-bold text-amber-300">Hours</h3>
-            {[
-              { day: "Monday – Thursday", hours: "11:00 AM – 9:00 PM" },
-              { day: "Friday – Saturday", hours: "11:00 AM – 10:30 PM" },
-              { day: "Sunday", hours: "12:00 PM – 8:00 PM" },
-            ].map((row) => (
-              <div key={row.day} className="mb-3 flex justify-between border-b border-amber-700 pb-3 text-sm">
-                <span className="text-amber-100">{row.day}</span>
-                <span className="font-semibold">{row.hours}</span>
+      {/* Hours & Location with Interactive Map */}
+      <section id="hours" className="bg-gradient-to-b from-amber-50 to-orange-50 px-6 py-20">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="mb-2 text-center text-3xl font-bold text-[#92400e]">Visit Us</h2>
+          <p className="mb-12 text-center text-zinc-500">Find us in the heart of Oklahoma City</p>
+          
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Interactive Map */}
+            <div className="lg:order-2">
+              <LocationMap
+                businessName="Casa Verde Kitchen"
+                address="4512 N Western Ave, Oklahoma City, OK 73118"
+                phone="(405) 555-0188"
+                hours="Mon-Thu: 11AM-9PM | Fri-Sat: 11AM-10:30PM | Sun: 12PM-8PM"
+                embedUrl="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3245.123456789!2d-97.5164!3d35.4676!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzXCsDI4JzAzLjQiTiA5N8KwMzAnNTkuMCJX!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus"
+                className="h-full"
+              />
+            </div>
+            
+            {/* Hours & Contact Info */}
+            <div className="lg:order-1 space-y-8">
+              <div className="bg-white rounded-2xl shadow-lg border border-amber-200 p-8">
+                <h3 className="mb-6 text-xl font-bold text-[#92400e] flex items-center gap-2">
+                  🕒 Hours
+                </h3>
+                {[
+                  { day: "Monday – Thursday", hours: "11:00 AM – 9:00 PM" },
+                  { day: "Friday – Saturday", hours: "11:00 AM – 10:30 PM" },
+                  { day: "Sunday", hours: "12:00 PM – 8:00 PM" },
+                ].map((row) => (
+                  <div key={row.day} className="mb-4 flex justify-between items-center border-b border-amber-100 pb-3 last:border-b-0 last:pb-0 last:mb-0">
+                    <span className="text-zinc-700 font-medium">{row.day}</span>
+                    <span className="font-semibold text-[#92400e]">{row.hours}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <div>
-            <h3 className="mb-5 text-xl font-bold text-amber-300">Location</h3>
-            <p className="text-amber-100">4512 N Western Ave</p>
-            <p className="text-amber-100">Oklahoma City, OK 73118</p>
-            <p className="mt-3 text-amber-100">📞 (405) 555-0188</p>
-            <p className="text-amber-100">✉️ hello@casaverdekitchen.com</p>
+              
+              <div className="bg-white rounded-2xl shadow-lg border border-amber-200 p-8">
+                <h3 className="mb-6 text-xl font-bold text-[#92400e] flex items-center gap-2">
+                  📍 Contact & Location
+                </h3>
+                <div className="space-y-4 text-zinc-700">
+                  <div className="flex items-start gap-3">
+                    <span className="text-amber-600 text-lg">📍</span>
+                    <div>
+                      <p className="font-semibold">Address</p>
+                      <p>4512 N Western Ave<br />Oklahoma City, OK 73118</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-amber-600 text-lg">📞</span>
+                    <div>
+                      <p className="font-semibold">Phone</p>
+                      <a href="tel:4055550188" className="text-[#92400e] hover:text-amber-700 transition-colors">(405) 555-0188</a>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-amber-600 text-lg">✉️</span>
+                    <div>
+                      <p className="font-semibold">Email</p>
+                      <a href="mailto:hello@casaverdekitchen.com" className="text-[#92400e] hover:text-amber-700 transition-colors">hello@casaverdekitchen.com</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
