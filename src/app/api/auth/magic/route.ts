@@ -53,10 +53,11 @@ export async function POST(request: NextRequest) {
     ? '__Secure-next-auth.session-token'
     : 'next-auth.session-token'
 
-  // Create NextAuth-compatible JWT (same secret + salt NextAuth uses)
+  // Create NextAuth-compatible JWT.
+  // NextAuth internally calls decode({ ...jwtOptions, token }) where jwtOptions
+  // has no `salt` field, so the effective salt is "" — we must match that.
   const sessionToken = await encode({
     secret: process.env.NEXTAUTH_SECRET!,
-    salt: cookieName,
     token: {
       email: client.email as string,
       name: client.name as string,
