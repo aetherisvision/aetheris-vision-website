@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Incorrect passphrase' }, { status: 401 })
   }
 
-  const redirectTo = next && next.startsWith('/admin') ? next : '/admin/clients'
+  const redirectTo = next && next.startsWith('/admin') && next !== '/admin' ? next : '/admin/clients'
   const response = NextResponse.json({ ok: true, redirectTo })
 
   const useSecure = new URL(request.url).protocol === 'https:'
