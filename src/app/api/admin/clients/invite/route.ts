@@ -13,13 +13,21 @@ export async function POST(request: NextRequest) {
   }
 
   const baseUrl = process.env.NEXTAUTH_URL ?? 'https://aetherisvision.com'
+  const secret = process.env.NEXTAUTH_SECRET ?? ''
   const token = crypto.randomBytes(32).toString('hex')
   const expires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
-  // Store the token (same table NextAuth uses for magic links)
+  // NextAuth v4 hashes tokens as sha256(token + secret) before storing.
+  // We must match that so the callback can verify the token.
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(`${token}${secret}`)
+    .digest('hex')
+
+  // Store the hashed token (same table NextAuth uses for magic links)
   await sql`
     INSERT INTO verification_tokens (identifier, token, expires)
-    VALUES (${email}, ${token}, ${expires})
+    VALUES (${email}, ${hashedToken}, ${expires})
     ON CONFLICT (identifier, token) DO NOTHING
   `
 
