@@ -12,6 +12,8 @@ function buildCsp(nonce: string): string {
   ].join('; ')
 }
 
+const ADMIN_COOKIE = 'av-admin-session'
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -21,6 +23,22 @@ export function proxy(request: NextRequest) {
     pathname.startsWith('/logo/')
   ) {
     return NextResponse.next()
+  }
+
+  // Admin auth guard
+  if (pathname.startsWith('/admin')) {
+    const isLoginPage = pathname === '/admin/login'
+    const hasSession = request.cookies.get(ADMIN_COOKIE)?.value === 'authenticated'
+
+    if (!isLoginPage && !hasSession) {
+      const loginUrl = new URL('/admin/login', request.url)
+      loginUrl.searchParams.set('next', pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+
+    if (isLoginPage && hasSession) {
+      return NextResponse.redirect(new URL('/admin/clients', request.url))
+    }
   }
 
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
