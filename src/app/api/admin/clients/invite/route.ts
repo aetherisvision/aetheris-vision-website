@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     ON CONFLICT (identifier, token) DO NOTHING
   `
 
-  const loginUrl = `${baseUrl}/api/auth/callback/email?token=${token}&email=${encodeURIComponent(email)}&callbackUrl=${encodeURIComponent(baseUrl + '/client/dashboard')}`
+  const loginUrl = `${baseUrl}/client/confirm?token=${token}&email=${encodeURIComponent(email)}`
 
   await resend.emails.send({
     from: 'Aetheris Vision <noreply@aetherisvision.com>',

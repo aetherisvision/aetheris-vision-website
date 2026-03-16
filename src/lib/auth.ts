@@ -17,6 +17,11 @@ export const authOptions: NextAuthOptions = {
     EmailProvider({
       from: 'Aetheris Vision <noreply@aetherisvision.com>',
       async sendVerificationRequest({ identifier: email, url }) {
+        // Route through /client/confirm so scanners can't consume the token
+        const urlObj = new URL(url)
+        const token = urlObj.searchParams.get('token') ?? ''
+        const confirmUrl = `${urlObj.origin}/client/confirm?token=${token}&email=${encodeURIComponent(email)}`
+
         await resend.emails.send({
           from: 'Aetheris Vision <noreply@aetherisvision.com>',
           to: email,
@@ -28,7 +33,7 @@ export const authOptions: NextAuthOptions = {
                 Click the button below to log in to your client portal.
                 This link expires in 24 hours and can only be used once.
               </p>
-              <a href="${url}"
+              <a href="${confirmUrl}"
                  style="display:inline-block;background:#1e3a5f;color:#fff;text-decoration:none;
                         padding:14px 28px;border-radius:6px;font-size:16px;font-weight:600;">
                 Log in to Client Portal
