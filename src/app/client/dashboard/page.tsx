@@ -371,8 +371,8 @@ export default function ClientDashboard() {
         <div style={{ textAlign: 'center', marginTop: '48px' }}>
           <p style={{ color: dark.textDim, fontSize: '13px', margin: 0 }}>
             Questions?{' '}
-            <a href="mailto:marston@aetherisvision.com" style={{ color: dark.blue, fontWeight: '500', textDecoration: 'none' }}>
-              marston@aetherisvision.com
+            <a href="mailto:contact@aetherisvision.com" style={{ color: dark.blue, fontWeight: '500', textDecoration: 'none' }}>
+              contact@aetherisvision.com
             </a>
           </p>
         </div>
