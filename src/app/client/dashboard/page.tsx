@@ -3,6 +3,8 @@
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const dark = {
   bg: '#070f1e',
@@ -31,6 +33,16 @@ interface Project {
   phase_development_date: string | null
   phase_review_date: string | null
   phase_launched_date: string | null
+}
+
+interface Document {
+  id: number
+  title: string
+  updated_at: string
+}
+
+interface FullDocument extends Document {
+  content: string
 }
 
 const PHASES = [
@@ -164,16 +176,31 @@ export default function ClientDashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [projects, setProjects] = useState<Project[]>([])
+  const [docs, setDocs] = useState<Document[]>([])
+  const [openDoc, setOpenDoc] = useState<FullDocument | null>(null)
+  const [docLoading, setDocLoading] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (status === 'loading') return
     if (!session) { router.replace('/client/login'); return }
-    fetch('/api/client/projects')
-      .then(r => r.json())
-      .then(data => { setProjects(data.projects ?? []); setLoading(false) })
-      .catch(() => setLoading(false))
+    Promise.all([
+      fetch('/api/client/projects').then(r => r.json()),
+      fetch('/api/client/documents').then(r => r.json()),
+    ]).then(([projData, docData]) => {
+      setProjects(projData.projects ?? [])
+      setDocs(docData.documents ?? [])
+      setLoading(false)
+    }).catch(() => setLoading(false))
   }, [session, status, router])
+
+  async function openDocument(doc: Document) {
+    setDocLoading(true)
+    const res = await fetch(`/api/client/documents/${doc.id}`)
+    const data = await res.json()
+    setOpenDoc(data.document)
+    setDocLoading(false)
+  }
 
   if (status === 'loading' || loading) {
     return (
@@ -365,6 +392,78 @@ export default function ClientDashboard() {
                 </div>
               )
             })}
+          </div>
+        )}
+
+        {/* Documents */}
+        {docs.length > 0 && (
+          <div style={{ marginTop: '32px' }}>
+            <h2 style={{ fontSize: '11px', fontWeight: '700', color: dark.textDim, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>
+              Documents
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {docs.map(doc => (
+                <button
+                  key={doc.id}
+                  onClick={() => openDocument(doc)}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '14px 18px', borderRadius: '12px', cursor: 'pointer',
+                    border: `1px solid ${openDoc?.id === doc.id ? dark.blue : dark.border}`,
+                    background: openDoc?.id === doc.id ? 'rgba(59,130,246,0.08)' : dark.surface,
+                    textAlign: 'left', transition: 'all 0.15s', width: '100%',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{
+                      width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
+                      background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        <polyline points="14 2 14 8 20 8" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    <span style={{ color: dark.text, fontWeight: '600', fontSize: '14px' }}>{doc.title}</span>
+                  </div>
+                  <span style={{ color: dark.textDim, fontSize: '12px', flexShrink: 0 }}>
+                    {new Date(doc.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Document viewer */}
+            {(openDoc || docLoading) && (
+              <div style={{
+                marginTop: '16px', background: dark.surface,
+                borderRadius: '16px', border: `1px solid ${dark.border}`,
+                overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+              }}>
+                <div style={{
+                  padding: '16px 24px', borderBottom: `1px solid ${dark.border}`,
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                }}>
+                  <span style={{ color: dark.text, fontWeight: '600', fontSize: '15px' }}>
+                    {docLoading ? 'Loading…' : openDoc?.title}
+                  </span>
+                  <button
+                    onClick={() => setOpenDoc(null)}
+                    style={{ background: 'none', border: 'none', color: dark.textDim, cursor: 'pointer', padding: '4px', fontSize: '18px', lineHeight: 1 }}
+                  >
+                    ×
+                  </button>
+                </div>
+                {openDoc && !docLoading && (
+                  <div style={{ padding: '28px 32px' }} className="doc-viewer">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {openDoc.content}
+                    </ReactMarkdown>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 

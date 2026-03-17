@@ -4,9 +4,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const NAV = [
-  { href: '/admin/clients',  label: 'Clients' },
-  { href: '/admin/projects', label: 'Projects' },
-  { href: '/admin/expenses', label: 'Expenses' },
+  { href: '/admin/clients',   label: 'Clients' },
+  { href: '/admin/projects',  label: 'Projects' },
+  { href: '/admin/documents', label: 'Documents' },
+  { href: '/admin/expenses',  label: 'Expenses' },
 ]
 
 const dark = {
