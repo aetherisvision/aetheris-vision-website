@@ -127,14 +127,16 @@ export default function ClientDashboard() {
   useEffect(() => {
     if (status === 'loading') return
     if (!session) { router.replace('/client/login'); return }
-    Promise.all([
-      fetch('/api/client/projects').then(r => r.json()),
-      fetch('/api/client/documents').then(r => r.json()),
-    ]).then(([projData, docData]) => {
+    Promise.allSettled([
+      fetch('/api/client/projects').then(r => r.json()).catch(() => ({})),
+      fetch('/api/client/documents').then(r => r.json()).catch(() => ({})),
+    ]).then(([projResult, docResult]) => {
+      const projData = projResult.status === 'fulfilled' ? projResult.value : {}
+      const docData  = docResult.status  === 'fulfilled' ? docResult.value  : {}
       setProjects(projData.projects ?? [])
       setDocs(docData.documents ?? [])
       setLoading(false)
-    }).catch(() => setLoading(false))
+    })
   }, [session, status, router])
 
   async function selectDoc(doc: Doc) {
