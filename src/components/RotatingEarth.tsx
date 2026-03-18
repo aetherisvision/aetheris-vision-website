@@ -69,6 +69,92 @@ function hashNoise(x: number, y: number): number {
   return value - Math.floor(value);
 }
 
+// Fractional Brownian Motion — layered octaves for organic continent shapes
+function fbmNoise(x: number, y: number, octaves = 6): number {
+  let v = 0, a = 0.5, f = 1;
+  for (let i = 0; i < octaves; i++) {
+    v += hashNoise(x * f, y * f) * a;
+    a *= 0.5;
+    f *= 2.1;
+  }
+  return v;
+}
+
+function createSurfaceTexture(width = 512, height = 256): CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return new CanvasTexture(document.createElement("canvas"));
+
+  const image = ctx.createImageData(width, height);
+  const data = image.data;
+
+  for (let y = 0; y < height; y++) {
+    const lat = (y / (height - 1)) * 2 - 1; // -1 = south pole, 1 = north pole
+    const absLat = Math.abs(lat);
+
+    for (let x = 0; x < width; x++) {
+      const idx = (y * width + x) * 4;
+      const xn = x / width;
+      const yn = y / height;
+
+      const elevation = fbmNoise(xn * 4.5 + 0.3, yn * 3.2 + 0.7);
+      const isLand = elevation > 0.56;
+      const isPolar = absLat > 0.85;
+      const isSubpolar = absLat > 0.72 && !isPolar;
+
+      // Polar ice caps
+      if (isPolar) {
+        const blend = Math.min(1, (absLat - 0.85) / 0.15);
+        data[idx]     = 210;
+        data[idx + 1] = 228;
+        data[idx + 2] = 238;
+        data[idx + 3] = Math.round(blend * 245);
+        continue;
+      }
+
+      if (!isLand) {
+        // Transparent ocean — base sphere colour shows through
+        data[idx + 3] = 0;
+        continue;
+      }
+
+      // Land: colour by latitude + relative elevation
+      const relElev = (elevation - 0.56) / 0.44;
+      const isTropical    = absLat < 0.28;
+      const isSubtropical = absLat < 0.48;
+      const isMountain    = relElev > 0.62;
+      const isDesert      = isSubtropical && !isTropical && fbmNoise(xn * 9, yn * 9) > 0.57;
+
+      let r: number, g: number, b: number;
+      if (isMountain) {
+        r = 128; g = 112; b = 88;   // rocky highland
+      } else if (isDesert) {
+        r = 200; g = 170; b = 95;   // sandy desert
+      } else if (isTropical) {
+        r = 30;  g = 108; b = 38;   // tropical rainforest
+      } else if (isSubpolar) {
+        r = 78;  g = 108; b = 65;   // tundra / boreal
+      } else {
+        r = 58;  g = 122; b = 52;   // temperate forest / grassland
+      }
+
+      data[idx]     = r;
+      data[idx + 1] = g;
+      data[idx + 2] = b;
+      data[idx + 3] = 255;
+    }
+  }
+
+  ctx.putImageData(image, 0, 0);
+  const texture = new CanvasTexture(canvas);
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  texture.needsUpdate = true;
+  return texture;
+}
+
 function createWeatherTexture(config: WeatherModeConfig, width = 320, height = 160): CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = width;
@@ -139,6 +225,7 @@ function EarthModel({ animate, mode }: { animate: boolean; mode: WeatherModeConf
   const weatherRef = useRef<MeshStandardMaterial>(null);
 
   const weatherTexture = useMemo(() => createWeatherTexture(mode), [mode]);
+  const surfaceTexture = useMemo(() => createSurfaceTexture(), []);
 
   useFrame((_, delta) => {
     if (!animate) return;
@@ -162,13 +249,24 @@ function EarthModel({ animate, mode }: { animate: boolean; mode: WeatherModeConf
     };
   }, [weatherTexture]);
 
+  useEffect(() => {
+    return () => {
+      surfaceTexture.dispose();
+    };
+  }, [surfaceTexture]);
+
   return (
     <group rotation={[0.15, -0.55, 0]}>
-      {/* Earth surface — low emissive so directional light creates a real terminator */}
       <group ref={earthRef}>
+        {/* Ocean base */}
         <mesh>
           <sphereGeometry args={[1.3, 64, 64]} />
-          <meshStandardMaterial color="#1a56c4" metalness={0.05} roughness={0.85} emissive="#0f2a6e" emissiveIntensity={0.04} />
+          <meshStandardMaterial color="#0d3b6e" metalness={0.05} roughness={0.9} emissive="#061d3a" emissiveIntensity={0.04} />
+        </mesh>
+        {/* Continent / terrain layer — transparent over ocean */}
+        <mesh>
+          <sphereGeometry args={[1.302, 64, 64]} />
+          <meshStandardMaterial map={surfaceTexture} alphaMap={surfaceTexture} transparent depthWrite={false} roughness={0.9} metalness={0} />
         </mesh>
       </group>
 
