@@ -206,7 +206,6 @@ function Scene({ animate, mode }: { animate: boolean; mode: WeatherModeConfig })
 
   return (
     <>
-      <color attach="background" args={["#0d0c0f"]} />
       <ambientLight intensity={0.45} />
       <directionalLight position={[4, 2, 4]} intensity={2.1} />
       <directionalLight position={[-3, -1, -3]} intensity={0.35} />
