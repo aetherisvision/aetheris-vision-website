@@ -21,6 +21,12 @@ const STATIC_SOURCES: SatelliteSource[] = [
     label: "GOES-18 West",
     region: "Americas · Pacific",
   },
+  {
+    // EUMETSAT EUMETView WMS — public, no auth, updates every 15 min
+    url: "https://view.eumetsat.int/geoserver/wms?service=WMS&version=1.3.0&request=GetMap&layers=msg_fes:rgb_naturalenhncd&format=image/jpeg&crs=EPSG:4326&bbox=-77,-77,77,77&width=1000&height=1000",
+    label: "Meteosat",
+    region: "Europe · Africa · Indian Ocean",
+  },
 ];
 
 async function getEpicSource(): Promise<SatelliteSource | null> {
@@ -46,18 +52,18 @@ async function getEpicSource(): Promise<SatelliteSource | null> {
 
 async function getHimawariSource(): Promise<SatelliteSource | null> {
   try {
-    // RAMMB/CIRA (Colorado State) serves Himawari-9 full-disk GeoColor imagery
-    const timesRes = await fetch(
-      "https://rammb-slider.cira.colostate.edu/data/json/himawari/full_disk/geocolor/latest_times.json",
+    // NICT Japan — latest.json gives the most recent capture timestamp
+    const latestRes = await fetch(
+      "https://himawari8.nict.go.jp/img/D531106/latest/550/latest.json",
       { next: { revalidate: 600 } }
     );
-    if (!timesRes.ok) return null;
-    const times = await timesRes.json();
-    const latest: string = times.timestamps_int?.[0];
-    if (!latest) return null;
-    // Timestamp is 14-digit: YYYYMMDDHHmmss → YYYY/MM/DD
-    const y = latest.slice(0, 4), m = latest.slice(4, 6), d = latest.slice(6, 8);
-    const url = `https://rammb-slider.cira.colostate.edu/data/imagery/${y}/${m}/${d}/himawari___full_disk/geocolor/${latest}_GOES16_FD_GeoColor_1200x1200.jpg`;
+    if (!latestRes.ok) return null;
+    const { date } = await latestRes.json(); // "2024-03-18 16:30:00"
+    const [datePart, timePart] = (date as string).split(" ");
+    const [y, m, d] = datePart.split("-");
+    const time = timePart.replace(/:/g, ""); // "163000"
+    // 1d = full disk in a single 550×550 tile
+    const url = `https://himawari8.nict.go.jp/img/D531106/1d/550/${y}/${m}/${d}/${time}_0_0.png`;
     return { url, label: "Himawari-9", region: "Asia · Pacific" };
   } catch (err) {
     console.error("[Himawari] failed:", err);

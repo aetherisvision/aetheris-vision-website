@@ -64,7 +64,9 @@ export default function SatelliteDisplay({ sources }: { sources: SatelliteSource
           <img
             src={current.url}
             alt={current.label}
+            referrerPolicy="no-referrer"
             className="absolute inset-0 h-full w-full object-contain"
+            onError={() => go((index + 1) % sources.length)}
           />
         </div>
 
