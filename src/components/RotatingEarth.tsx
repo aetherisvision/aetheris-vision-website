@@ -1,13 +1,24 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Stars, useTexture } from "@react-three/drei";
-import type { Mesh } from "three";
+import { Stars } from "@react-three/drei";
+import { TextureLoader } from "three";
+import type { Mesh, Texture } from "three";
 
 function EarthMesh({ animate }: { animate: boolean }) {
   const meshRef = useRef<Mesh>(null);
-  const texture = useTexture("/earth-day.jpg");
+  const [texture, setTexture] = useState<Texture | null>(null);
+
+  useEffect(() => {
+    const loader = new TextureLoader();
+    loader.load(
+      "/earth-day.jpg",
+      (tex) => setTexture(tex),
+      undefined,
+      () => { /* texture missing — globe renders as solid blue fallback */ }
+    );
+  }, []);
 
   useFrame((_, delta) => {
     if (animate && meshRef.current) {
@@ -16,11 +27,15 @@ function EarthMesh({ animate }: { animate: boolean }) {
   });
 
   return (
-    // Outer group handles axial tilt; inner mesh handles spin
     <group rotation={[0.2, 0, 0]}>
       <mesh ref={meshRef}>
         <sphereGeometry args={[1.3, 64, 64]} />
-        <meshStandardMaterial map={texture} metalness={0.05} roughness={0.85} />
+        <meshStandardMaterial
+          map={texture ?? undefined}
+          color={texture ? "#ffffff" : "#0d3b6e"}
+          metalness={0.05}
+          roughness={0.85}
+        />
       </mesh>
     </group>
   );
@@ -32,9 +47,7 @@ function Scene({ animate }: { animate: boolean }) {
       <ambientLight intensity={0.12} />
       <directionalLight position={[5, 3, 4]} intensity={3.5} />
       <directionalLight position={[-4, -1, -3]} intensity={0.15} />
-      <Suspense fallback={null}>
-        <EarthMesh animate={animate} />
-      </Suspense>
+      <EarthMesh animate={animate} />
       <Stars radius={60} depth={30} count={2500} factor={2.6} saturation={0} fade speed={0.2} />
     </>
   );
