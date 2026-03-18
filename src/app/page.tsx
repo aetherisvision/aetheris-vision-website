@@ -14,16 +14,22 @@ async function getEpicImage(): Promise<{ url: string; date: string } | null> {
       `https://api.nasa.gov/EPIC/api/natural/images?api_key=${key}`,
       { next: { revalidate: 3600 } }
     );
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error("[EPIC] API responded", res.status, await res.text());
+      return null;
+    }
     const data = await res.json();
-    if (!Array.isArray(data) || data.length === 0) return null;
+    if (!Array.isArray(data) || data.length === 0) {
+      console.error("[EPIC] Unexpected payload:", JSON.stringify(data).slice(0, 200));
+      return null;
+    }
     const latest = data[data.length - 1];
     const [year, month, day] = latest.date.split(" ")[0].split("-");
-    return {
-      url: `https://epic.gsfc.nasa.gov/archive/natural/${year}/${month}/${day}/jpg/${latest.image}.jpg`,
-      date: latest.date,
-    };
-  } catch {
+    const url = `https://epic.gsfc.nasa.gov/archive/natural/${year}/${month}/${day}/jpg/${latest.image}.jpg`;
+    console.log("[EPIC] Loaded:", url);
+    return { url, date: latest.date };
+  } catch (err) {
+    console.error("[EPIC] Fetch failed:", err);
     return null;
   }
 }
