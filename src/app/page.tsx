@@ -9,21 +9,26 @@ import SatelliteDisplay, { type SatelliteSource } from "@/components/SatelliteDi
 
 export const revalidate = 3600;
 
+/** Route an external satellite image URL through our same-origin proxy. */
+function sat(url: string) {
+  return `/api/satellite?url=${encodeURIComponent(url)}`;
+}
+
 // GOES-16 East and GOES-18 West: static NOAA CDN URLs, update every 10 min
 const STATIC_SOURCES: SatelliteSource[] = [
   {
-    url: "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/FD/GEOCOLOR/678x678.jpg",
+    url: sat("https://cdn.star.nesdis.noaa.gov/GOES16/ABI/FD/GEOCOLOR/678x678.jpg"),
     label: "GOES-16 East",
     region: "Americas · Atlantic",
   },
   {
-    url: "https://cdn.star.nesdis.noaa.gov/GOES18/ABI/FD/GEOCOLOR/678x678.jpg",
+    url: sat("https://cdn.star.nesdis.noaa.gov/GOES18/ABI/FD/GEOCOLOR/678x678.jpg"),
     label: "GOES-18 West",
     region: "Americas · Pacific",
   },
   {
     // EUMETSAT EUMETView WMS — public, no auth, updates every 15 min
-    url: "https://view.eumetsat.int/geoserver/wms?service=WMS&version=1.3.0&request=GetMap&layers=msg_fes:rgb_naturalenhncd&format=image/jpeg&crs=EPSG:4326&bbox=-77,-77,77,77&width=1000&height=1000",
+    url: sat("https://view.eumetsat.int/geoserver/wms?service=WMS&version=1.3.0&request=GetMap&layers=msg_fes:rgb_naturalenhncd&format=image/jpeg&crs=EPSG:4326&bbox=-77,-77,77,77&width=1000&height=1000"),
     label: "Meteosat",
     region: "Europe · Africa · Indian Ocean",
   },
@@ -31,8 +36,10 @@ const STATIC_SOURCES: SatelliteSource[] = [
 
 async function getEpicSource(): Promise<SatelliteSource | null> {
   try {
+    // Fallback: skip EPIC if Vercel's network can't reach NASA directly
     const res = await fetch("https://epic.gsfc.nasa.gov/api/natural/images", {
       next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(8_000),
     });
     if (!res.ok) { console.error("[EPIC]", res.status); return null; }
     const data = await res.json();
@@ -40,7 +47,7 @@ async function getEpicSource(): Promise<SatelliteSource | null> {
     const latest = data[data.length - 1];
     const [year, month, day] = latest.date.split(" ")[0].split("-");
     return {
-      url: `https://epic.gsfc.nasa.gov/archive/natural/${year}/${month}/${day}/jpg/${latest.image}.jpg`,
+      url: sat(`https://epic.gsfc.nasa.gov/archive/natural/${year}/${month}/${day}/jpg/${latest.image}.jpg`),
       label: "NASA EPIC",
       region: "Full Earth Disk",
     };
@@ -55,7 +62,7 @@ async function getHimawariSource(): Promise<SatelliteSource | null> {
     // NICT Japan — latest.json gives the most recent capture timestamp
     const latestRes = await fetch(
       "https://himawari8.nict.go.jp/img/D531106/latest/550/latest.json",
-      { next: { revalidate: 600 } }
+      { next: { revalidate: 600 }, signal: AbortSignal.timeout(8_000) }
     );
     if (!latestRes.ok) return null;
     const { date } = await latestRes.json(); // "2024-03-18 16:30:00"
@@ -63,7 +70,7 @@ async function getHimawariSource(): Promise<SatelliteSource | null> {
     const [y, m, d] = datePart.split("-");
     const time = timePart.replace(/:/g, ""); // "163000"
     // 1d = full disk in a single 550×550 tile
-    const url = `https://himawari8.nict.go.jp/img/D531106/1d/550/${y}/${m}/${d}/${time}_0_0.png`;
+    const url = sat(`https://himawari8.nict.go.jp/img/D531106/1d/550/${y}/${m}/${d}/${time}_0_0.png`);
     return { url, label: "Himawari-9", region: "Asia · Pacific" };
   } catch (err) {
     console.error("[Himawari] failed:", err);
@@ -75,7 +82,7 @@ async function getSpaceSource(): Promise<SatelliteSource | null> {
   try {
     const res = await fetch(
       "https://images-api.nasa.gov/search?q=james+webb+nebula&media_type=image&year_start=2023&page_size=20",
-      { next: { revalidate: 3600 } }
+      { next: { revalidate: 3600 }, signal: AbortSignal.timeout(8_000) }
     );
     if (!res.ok) return null;
     const data = await res.json();
@@ -86,7 +93,7 @@ async function getSpaceSource(): Promise<SatelliteSource | null> {
     const thumb = pick.links?.[0]?.href;
     if (!thumb) return null;
     return {
-      url: thumb.replace("~thumb.jpg", "~orig.jpg"),
+      url: sat(thumb.replace("~thumb.jpg", "~orig.jpg")),
       label: pick.data?.[0]?.title?.slice(0, 40) ?? "JWST Deep Space",
       region: "Deep Space",
     };
