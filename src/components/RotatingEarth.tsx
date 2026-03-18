@@ -277,7 +277,8 @@ export default function RotatingEarth() {
       <div className="relative h-full w-full" aria-hidden="true">
         <Suspense fallback={null}>
           <Canvas
-            camera={{ position: [0, 0, 3.8], fov: 35 }}
+            orthographic
+            camera={{ position: [0, 0, 5], zoom: 155 }}
             dpr={dpr}
             gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
             resize={{ debounce: { scroll: 50, resize: 50 } }}
