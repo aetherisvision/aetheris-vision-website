@@ -44,9 +44,8 @@ function EarthMesh({ animate }: { animate: boolean }) {
 function Scene({ animate }: { animate: boolean }) {
   return (
     <>
-      <ambientLight intensity={0.12} />
-      <directionalLight position={[5, 3, 4]} intensity={3.5} />
-      <directionalLight position={[-4, -1, -3]} intensity={0.15} />
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[5, 3, 4]} intensity={1.4} />
       <EarthMesh animate={animate} />
       <Stars radius={60} depth={30} count={2500} factor={2.6} saturation={0} fade speed={0.2} />
     </>
