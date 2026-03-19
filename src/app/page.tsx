@@ -14,7 +14,7 @@ function sat(url: string) {
   return `/api/satellite?url=${encodeURIComponent(url)}`;
 }
 
-// GOES-16 East and GOES-18 West: static NOAA CDN URLs, update every 10 min
+// Geostationary satellite full disk images
 const STATIC_SOURCES: SatelliteSource[] = [
   {
     url: sat("https://cdn.star.nesdis.noaa.gov/GOES16/ABI/FD/GEOCOLOR/678x678.jpg"),
@@ -27,35 +27,20 @@ const STATIC_SOURCES: SatelliteSource[] = [
     region: "Americas · Pacific",
   },
   {
-    // EUMETSAT EUMETView WMS — public, no auth, updates every 15 min
+    // MSG Prime - Europe/Africa coverage
     url: sat("https://view.eumetsat.int/geoserver/wms?service=WMS&version=1.3.0&request=GetMap&layers=msg_fes:rgb_naturalenhncd&format=image/jpeg&crs=EPSG:4326&bbox=-77,-77,77,77&width=1000&height=1000"),
-    label: "Meteosat",
-    region: "Europe · Africa · Indian Ocean",
+    label: "MSG Prime",
+    region: "Europe · Africa",
+  },
+  {
+    // MSG Indian Ocean - Indian Ocean coverage
+    url: sat("https://view.eumetsat.int/geoserver/wms?service=WMS&version=1.3.0&request=GetMap&layers=iodc_fes:rgb_naturalenhncd&format=image/jpeg&crs=EPSG:4326&bbox=-77,-77,77,77&width=1000&height=1000"),
+    label: "MSG Indian Ocean",
+    region: "Indian Ocean · Asia",
   },
 ];
 
-async function getEpicSource(): Promise<SatelliteSource | null> {
-  try {
-    // Fallback: skip EPIC if Vercel's network can't reach NASA directly
-    const res = await fetch("https://epic.gsfc.nasa.gov/api/natural/images", {
-      next: { revalidate: 3600 },
-      signal: AbortSignal.timeout(8_000),
-    });
-    if (!res.ok) { console.error("[EPIC]", res.status); return null; }
-    const data = await res.json();
-    if (!Array.isArray(data) || !data.length) return null;
-    const latest = data[data.length - 1];
-    const [year, month, day] = latest.date.split(" ")[0].split("-");
-    return {
-      url: sat(`https://epic.gsfc.nasa.gov/archive/natural/${year}/${month}/${day}/jpg/${latest.image}.jpg`),
-      label: "NASA EPIC",
-      region: "Full Earth Disk",
-    };
-  } catch (err) {
-    console.error("[EPIC] failed:", err);
-    return null;
-  }
-}
+
 
 function getHimawariSource(): SatelliteSource {
   // Himawari-9 captures every 10 min; images available ~20 min after capture.
@@ -82,12 +67,9 @@ export const metadata = {
 };
 
 export default async function Home() {
-  const epicSource = await getEpicSource();
-
   const sources: SatelliteSource[] = [
     ...STATIC_SOURCES,
     getHimawariSource(),
-    ...(epicSource ? [epicSource] : []),
   ];
   return (
     <div className="flex flex-col min-h-[100dvh]">
