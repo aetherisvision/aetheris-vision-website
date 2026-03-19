@@ -73,30 +73,7 @@ function getHimawariSource(): SatelliteSource {
   return { url, label: "Himawari-9", region: "Asia · Pacific" };
 }
 
-async function getSpaceSource(): Promise<SatelliteSource | null> {
-  try {
-    const res = await fetch(
-      "https://images-api.nasa.gov/search?q=james+webb+nebula&media_type=image&year_start=2023&page_size=20",
-      { next: { revalidate: 3600 }, signal: AbortSignal.timeout(8_000) }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    const items: { data: { title: string }[]; links: { href: string }[] }[] =
-      data.collection?.items ?? [];
-    if (!items.length) return null;
-    const pick = items[Math.floor(Math.random() * items.length)];
-    const thumb = pick.links?.[0]?.href;
-    if (!thumb) return null;
-    return {
-      url: sat(thumb.replace("~thumb.jpg", "~orig.jpg")),
-      label: pick.data?.[0]?.title?.slice(0, 40) ?? "JWST Deep Space",
-      region: "Deep Space",
-    };
-  } catch (err) {
-    console.error("[Space] failed:", err);
-    return null;
-  }
-}
+
 
 export const metadata = {
   title: `${SITE.name} | ${SITE.tagline}`,
@@ -105,16 +82,12 @@ export const metadata = {
 };
 
 export default async function Home() {
-  const [epicSource, spaceSource] = await Promise.all([
-    getEpicSource(),
-    getSpaceSource(),
-  ]);
+  const epicSource = await getEpicSource();
 
   const sources: SatelliteSource[] = [
     ...STATIC_SOURCES,
     getHimawariSource(),
     ...(epicSource ? [epicSource] : []),
-    ...(spaceSource ? [spaceSource] : []),
   ];
   return (
     <div className="flex flex-col min-h-[100dvh]">
