@@ -215,7 +215,8 @@ Visitor types question → /api/chat (POST)
 | SEO | ✅ | JSON-LD (Organization, WebSite, LocalBusiness), OG images, dynamic sitemap, robots.txt |
 | LocalBusiness schema | ✅ | PMB address (210 N Mustang Mall Terrace PMB 29, Mustang OK 73064) for Google Maps/GBP |
 | AI Chat Assistant | ✅ | Claude Haiku via /api/chat — streaming, rate-limited (20 req/IP/15min), scoped to Aetheris Vision content |
-| Web & Digital Solutions | ✅ | Added as 5th core competency on home + capabilities pages |
+| Web & Digital Solutions | ✅ | Added as 6th core competency on home + capabilities pages |
+| Technical Leadership | ✅ | Added as 5th core competency on home + capabilities pages (IPT direction, emerging tech, workforce development) |
 | Security | ✅ | CSP nonces, HSTS, rate limiting, input validation, Basic auth |
 | Database | ✅ | Neon Postgres — clients, projects, expenses, verification_tokens, documents |
 | Authentication | ✅ | Custom magic-link auth (JWT, NextAuth session), admin passphrase + cookie |

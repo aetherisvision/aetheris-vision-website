@@ -185,6 +185,13 @@ src/app/about/
 
 src/app/capabilities/
   page.tsx              — The /capabilities page. NAICS/PSC codes, competencies.
+                          Six core competencies (3×2 grid):
+                          1. Operational Meteorology
+                          2. AI/ML Integration
+                          3. Technical Advisory
+                          4. Federal Contracting
+                          5. Technical Leadership (IPT direction, emerging tech, workforce development)
+                          6. Web & Digital Solutions
 
 src/app/contact/
   page.tsx              — The /contact page layout. Uses the ContactForm component.
