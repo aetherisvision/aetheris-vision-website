@@ -110,7 +110,7 @@ export default function ChatWidget() {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label="Open chat"
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-black"
+        className="fixed bottom-6 left-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-black"
       >
         {open ? (
           <XMarkIcon className="h-6 w-6" />
@@ -121,7 +121,7 @@ export default function ChatWidget() {
 
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 flex w-[22rem] flex-col rounded-2xl border border-white/10 bg-[#0d0c0f] shadow-2xl overflow-hidden"
+        <div className="fixed bottom-24 left-6 z-50 flex w-[22rem] flex-col rounded-2xl border border-white/10 bg-[#0d0c0f] shadow-2xl overflow-hidden"
           style={{ maxHeight: "min(32rem, calc(100dvh - 8rem))" }}>
 
           {/* Header */}
