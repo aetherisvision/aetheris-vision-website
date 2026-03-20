@@ -2,8 +2,8 @@
 
 ## Aetheris Vision — Complete System Architecture & Business Platform
 
-**Version**: 2.1
-**Date**: March 16, 2026
+**Version**: 2.2
+**Date**: March 19, 2026
 **Author**: Aetheris Vision Engineering
 **Reading Level**: 8th Grade with Technical Details
 
@@ -99,6 +99,14 @@ The Aetheris Vision platform operates as a **professional services sales and del
 - **Why this choice:** Better delivery than regular contact forms, professional formatting
 - **Analogy:** Like having a professional mail service instead of regular postal mail
 
+**AI Layer - Anthropic Claude API**
+
+- **What it does:** Powers the 24/7 AI chat assistant on every page
+- **Model used:** claude-haiku-4-5 (fastest, lowest cost — ~$0.001/conversation)
+- **Why this choice:** Claude understands nuanced business questions; scoped to Aetheris Vision content via system prompt
+- **Rate limiting:** 20 requests per IP per 15-minute window to prevent abuse
+- **Analogy:** Like a knowledgeable receptionist who never sleeps and knows everything about the business
+
 ### Website Stack Components (with Acronyms Expanded)
 
 This is the practical checklist of what a modern website stack contains, written in plain English.
@@ -164,12 +172,21 @@ This is the practical checklist of what a modern website stack contains, written
 **Customer Journey Through System:**
 
 1. **Discovery:** Customer finds website through search/referrals
-2. **Evaluation:** Browses portfolio demos and capabilities
-3. **Engagement:** Fills out detailed intake form
+2. **Evaluation:** Browses portfolio demos and capabilities; may ask the AI chat assistant questions about services, pricing, or contracting
+3. **Engagement:** Fills out detailed intake form or books a discovery call
 4. **Processing:** System validates and formats their information
 5. **Notification:** You receive complete project brief via email
 6. **Confirmation:** Customer receives professional acknowledgment
 7. **Conversion:** You respond with accurate quote and proposal
+
+**AI Chat Flow:**
+```
+Visitor types question → /api/chat (POST)
+  → Rate limit check (20 req/IP/15min)
+  → Message sanitization (role, length, sequence)
+  → Claude Haiku API (streaming)
+  → Token-by-token response → Visitor's browser
+```
 
 ---
 
@@ -190,12 +207,15 @@ This is the practical checklist of what a modern website stack contains, written
 
 | Capability | Status | How |
 |---|---|---|
-| Marketing pages | ✅ | 9 pages (Home, About, Capabilities, Portfolio, Blog, Book, Contact, Privacy, 404) |
-| Portfolio demos | ✅ | 4 live demo sites (law firm, restaurant, contractor, nonprofit) |
+| Marketing pages | ✅ | 10 pages (Home, About, Capabilities, Portfolio, Blog, Book, Intake, Contact, Privacy, Security) |
+| Portfolio demos | ✅ | 7 live demo sites (law firm, restaurant, contractor, nonprofit, analytics dashboard, international market, portal pro) |
 | Contact form | ✅ | Server-validated, rate-limited, honeypot-protected, via Formspree |
 | Blog | ✅ | Markdown-driven with categories, comments (Giscus), subscriptions |
 | Booking | ✅ | Cal.com embedded scheduling |
-| SEO | ✅ | JSON-LD, OG images, dynamic sitemap, robots.txt |
+| SEO | ✅ | JSON-LD (Organization, WebSite, LocalBusiness), OG images, dynamic sitemap, robots.txt |
+| LocalBusiness schema | ✅ | PMB address (210 N Mustang Mall Terrace PMB 29, Mustang OK 73064) for Google Maps/GBP |
+| AI Chat Assistant | ✅ | Claude Haiku via /api/chat — streaming, rate-limited (20 req/IP/15min), scoped to Aetheris Vision content |
+| Web & Digital Solutions | ✅ | Added as 5th core competency on home + capabilities pages |
 | Security | ✅ | CSP nonces, HSTS, rate limiting, input validation, Basic auth |
 | Database | ✅ | Neon Postgres — clients, projects, expenses, verification_tokens, documents |
 | Authentication | ✅ | Custom magic-link auth (JWT, NextAuth session), admin passphrase + cookie |
@@ -205,7 +225,7 @@ This is the practical checklist of what a modern website stack contains, written
 | Expense Tracker | ✅ | Full CRUD, category summaries, Excel export (SheetJS) |
 | Testing | ✅ | 82 tests (unit, integration, regression, BDD) |
 | CI/CD | ✅ | GitHub Actions → Vercel auto-deploy |
-| Analytics | ✅ | Vercel Analytics |
+| Analytics | ✅ | Vercel Analytics + Google Analytics (via NEXT_PUBLIC_GA_MEASUREMENT_ID) |
 
 ### What We Don't Have (Yet — Future Roadmap)
 

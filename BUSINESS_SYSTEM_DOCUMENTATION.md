@@ -1,7 +1,7 @@
 # Aetheris Vision Business System Documentation
 
-**Version**: 2.0  
-**Date**: March 8, 2026  
+**Version**: 2.1
+**Date**: March 19, 2026
 **Reading Level**: 8th Grade  
 **Purpose**: Complete system documentation for business continuity  
 
@@ -55,6 +55,12 @@ Think of your website like a high-end car dealership. When potential customers w
 - Positioned as enterprise-level professional service
 - Includes security compliance for big companies
 
+**🤖 AI Chat Assistant** (24/7 Visitor Support)
+- Floating chat widget on every page
+- Answers questions about services, pricing, and state/federal contracting instantly
+- Powered by Claude AI; scoped to Aetheris Vision content only
+- Rate-limited to prevent abuse; routes serious inquiries to booking
+
 **🔒 Enterprise Security** (SOC-2 Compliance)
 - Documentation that shows you meet enterprise security standards
 - Required for working with large companies
@@ -92,13 +98,15 @@ Think of your website like a high-end car dealership. When potential customers w
 ### Step 2: Evaluation
 **What they browse:**
 - **Portfolio page** (`/portfolio`) - See 7 different project types
-- **Capabilities page** (`/capabilities`) - Understand your skills
+- **Capabilities page** (`/capabilities`) - Understand your skills and state/federal contracting credentials
 - **Security page** (`/security`) - Check your professional standards
+- **AI Chat Assistant** (bottom-right button) - Ask questions instantly without filling out a form
 
 **What they're thinking:**
 - "Can this person build what I need?"
 - "Do they understand businesses like mine?"
 - "Are they professional enough for our company?"
+- "Do they work with state agencies, not just federal?"
 
 ### Step 3: Initial Contact
 **The intake process:**
@@ -761,7 +769,8 @@ Best regards,
 **Primary Services:**
 - **Hosting:** Vercel (vercel.com)
 - **Email:** Resend (resend.com)
-- **Code Storage:** GitHub (github.com)
+- **Code Storage:** GitHub (github.com) — transfer to business org when ready
+- **AI Chat:** Anthropic (console.anthropic.com) — move API key to business account when ready
 - **Domain:** [Your domain registrar]
 
 **Key Account Information:**
@@ -779,5 +788,5 @@ Best regards,
 *This documentation should be reviewed and updated every 3 months to ensure accuracy and completeness.*
 
 **Document Status:** Living document - update as system changes
-**Next Review Date:** June 8, 2026
+**Next Review Date:** June 19, 2026
 **Responsibility:** Business owner or designated successor
