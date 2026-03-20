@@ -192,7 +192,7 @@ export const includedFeatures: IconFeature[] = [
   {
     icon: DocumentTextIcon,
     title: "Privacy Policy Page",
-    desc: "A tailored privacy policy included with every build. Growth and Pro tiers add Terms of Service and cookie consent.",
+    desc: "A tailored privacy policy included with every build. Business and Enterprise tiers add Terms of Service and cookie consent.",
   },
   {
     icon: GlobeAltIcon,
@@ -206,7 +206,7 @@ export const includedFeatures: IconFeature[] = [
   },
   {
     icon: MagnifyingGlassIcon,
-    title: "Schema Markup (Growth+)",
+    title: "Schema Markup (Business+)",
     desc: "Structured data for Google rich results — LocalBusiness, FAQ, Service, and more — so search engines understand your content.",
   },
   {
@@ -249,7 +249,7 @@ export const faqs = [
   },
   {
     q: "Do I really get a Privacy Policy and Terms of Service?",
-    a: "Yes. Every site includes a Privacy Policy page tailored to your business. Growth and Pro tiers also include Terms of Service and a cookie consent banner — no extra charge.",
+    a: "Yes. Every site includes a Privacy Policy page tailored to your business. Business and Enterprise tiers also include Terms of Service and a cookie consent banner — no extra charge.",
   },
   {
     q: "What happens if my site goes down?",
@@ -257,7 +257,7 @@ export const faqs = [
   },
   {
     q: "Can you help with my Google Business Profile?",
-    a: "Yes — included in the Pro tier. I'll connect your site to Google Business Profile so your business shows up in Google Maps with hours, reviews, and a link to your site.",
+    a: "Yes — included in the Business tier and above. I'll connect your site to Google Business Profile so your business shows up in Google Maps with hours, reviews, and a link to your site.",
   },
 ];
 

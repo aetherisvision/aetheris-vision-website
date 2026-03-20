@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 import { SITE } from "@/lib/constants";
-import { organizationJsonLd, websiteJsonLd } from "@/lib/jsonld";
+import { organizationJsonLd, websiteJsonLd, localBusinessJsonLd } from "@/lib/jsonld";
 import "./globals.css";
 import BackToTop from "@/components/BackToTop";
 
@@ -97,7 +97,7 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify([organizationJsonLd, websiteJsonLd]),
+            __html: JSON.stringify([organizationJsonLd, websiteJsonLd, localBusinessJsonLd]),
           }}
         />
       </body>

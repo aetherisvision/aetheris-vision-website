@@ -28,3 +28,23 @@ export const websiteJsonLd = {
   name: SITE.name,
   url: SITE.url,
 };
+
+export const localBusinessJsonLd = {
+  "@context": "https://schema.org" as const,
+  "@type": "LocalBusiness" as const,
+  name: SITE.legalName,
+  url: SITE.url,
+  email: SITE.email,
+  logo: SITE.logoUrl,
+  description: SITE.description,
+  address: {
+    "@type": "PostalAddress" as const,
+    streetAddress: "210 N Mustang Mall Terrace PMB 29",
+    addressLocality: "Mustang",
+    addressRegion: "OK",
+    postalCode: "73064",
+    addressCountry: "US",
+  },
+  areaServed: "US",
+  priceRange: "$$",
+};
