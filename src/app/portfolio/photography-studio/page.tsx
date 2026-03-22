@@ -104,9 +104,7 @@ export default function PhotographyStudioPage() {
             <a href="#gallery" className="hover:text-white transition-colors tracking-wide">Gallery</a>
             <a href="#packages" className="hover:text-white transition-colors tracking-wide">Packages</a>
             <a href="#about" className="hover:text-white transition-colors tracking-wide">About</a>
-            <a href="#book" className="rounded border px-5 py-2 text-sm font-semibold tracking-wide transition-colors" style={{ borderColor: "#c8a882", color: "#c8a882" }}
-              onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = "#c8a882"; (e.currentTarget as HTMLElement).style.color = "#111111"; }}
-              onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "#c8a882"; }}>
+            <a href="#book" className="rounded border px-5 py-2 text-sm font-semibold tracking-wide transition-colors hover:bg-[#c8a882] hover:text-[#111111]" style={{ borderColor: "#c8a882", color: "#c8a882" }}>
               Book a Session
             </a>
           </div>
