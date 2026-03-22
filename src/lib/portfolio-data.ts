@@ -341,6 +341,13 @@ export const demos = [
     desc: "Class schedule, membership tiers, free trial CTA. All-black with neon green accents; aggressive high-contrast typography and bold full-bleed imagery — dark, high-intensity motivational aesthetic.",
     color: "from-[#052e16] via-[#14532d] to-[#22c55e]",
   },
+  {
+    slug: "photography-studio",
+    title: "Lumen & Co. Photography",
+    industry: "Photography / Creative",
+    desc: "Portfolio gallery, session packages, booking form, client testimonials. Deep charcoal & warm gold palette; full-bleed image-first layout with minimal sans type — elegant, gallery-style creative aesthetic.",
+    color: "from-[#1a1a1a] via-[#2d2d2d] to-[#c8a882]",
+  },
 ];
 
 /* ── WordPress Services ── */
