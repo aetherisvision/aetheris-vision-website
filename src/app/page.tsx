@@ -30,24 +30,6 @@ const STATIC_SOURCES: SatelliteSource[] = [
 
 
 
-function getHimawariSource(): SatelliteSource {
-  // Himawari-9 captures every 10 min; images available ~20 min after capture.
-  // Compute the most likely latest tile without calling the API, so this
-  // works even when Vercel can't reach himawari8.nict.go.jp.
-  const t = new Date(Date.now() - 20 * 60 * 1000); // 20-min lag
-  const y = t.getUTCFullYear();
-  const mo = String(t.getUTCMonth() + 1).padStart(2, "0");
-  const d = String(t.getUTCDate()).padStart(2, "0");
-  const h = String(t.getUTCHours()).padStart(2, "0");
-  const min = String(Math.floor(t.getUTCMinutes() / 10) * 10).padStart(2, "0");
-  const url = sat(
-    `https://himawari8.nict.go.jp/img/D531106/1d/550/${y}/${mo}/${d}/${h}${min}00_0_0.png`
-  );
-  return { url, label: "Himawari-9", region: "Asia · Pacific" };
-}
-
-
-
 export const metadata = {
   title: `${SITE.name} | ${SITE.tagline}`,
   description:
@@ -55,10 +37,7 @@ export const metadata = {
 };
 
 export default async function Home() {
-  const sources: SatelliteSource[] = [
-    ...STATIC_SOURCES,
-    getHimawariSource(),
-  ];
+  const sources: SatelliteSource[] = [...STATIC_SOURCES];
   return (
     <div className="flex flex-col min-h-[100dvh]">
       <Navbar />
