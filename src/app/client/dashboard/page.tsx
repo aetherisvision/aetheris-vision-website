@@ -40,6 +40,18 @@ interface Project {
 interface Doc { id: number; title: string; updated_at: string }
 interface FullDoc extends Doc { content: string }
 
+interface Invoice {
+  id: number
+  number: string
+  description: string
+  amount_cents: number
+  status: string
+  stripe_invoice_url: string | null
+  due_date: string | null
+  paid_at: string | null
+  project_name: string | null
+}
+
 const PHASES = [
   { key: 'proposal',    label: 'Proposal',    dateField: 'phase_proposal_date' as const,    description: 'Project proposal and scope of work delivered.' },
   { key: 'kickoff',     label: 'Kickoff',     dateField: 'phase_kickoff_date' as const,     description: 'Project scope, goals, and timeline confirmed.' },
@@ -119,6 +131,7 @@ export default function ClientDashboard() {
   const router = useRouter()
   const [projects, setProjects] = useState<Project[]>([])
   const [docs, setDocs] = useState<Doc[]>([])
+  const [invoices, setInvoices] = useState<Invoice[]>([])
   const [activeDoc, setActiveDoc] = useState<FullDoc | null>(null)
   const [docLoading, setDocLoading] = useState(false)
   const [view, setView] = useState<'overview' | 'document'>('overview')
@@ -130,11 +143,14 @@ export default function ClientDashboard() {
     Promise.allSettled([
       fetch('/api/client/projects').then(r => r.json()).catch(() => ({})),
       fetch('/api/client/documents').then(r => r.json()).catch(() => ({})),
-    ]).then(([projResult, docResult]) => {
+      fetch('/api/client/invoices').then(r => r.json()).catch(() => ({})),
+    ]).then(([projResult, docResult, invResult]) => {
       const projData = projResult.status === 'fulfilled' ? projResult.value : {}
       const docData  = docResult.status  === 'fulfilled' ? docResult.value  : {}
+      const invData  = invResult.status  === 'fulfilled' ? invResult.value  : {}
       setProjects(projData.projects ?? [])
       setDocs(docData.documents ?? [])
+      setInvoices(invData.invoices ?? [])
       setLoading(false)
     })
   }, [session, status, router])
@@ -325,6 +341,51 @@ export default function ClientDashboard() {
                       </div>
                     )
                   })}
+                </div>
+              )}
+
+              {/* Invoices */}
+              {invoices.length > 0 && (
+                <div style={{ marginTop: '40px' }}>
+                  <h2 style={{ color: dark.text, fontSize: '18px', fontWeight: '700', margin: '0 0 16px', letterSpacing: '-0.01em' }}>Invoices</h2>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {invoices.map(inv => {
+                      const isPaid = inv.status === 'paid'
+                      const isOverdue = inv.status === 'overdue'
+                      const statusColor = isPaid ? '#34d399' : isOverdue ? '#f87171' : '#fbbf24'
+                      const statusBg = isPaid ? 'rgba(52,211,153,0.1)' : isOverdue ? 'rgba(220,38,38,0.1)' : 'rgba(251,191,36,0.1)'
+                      const statusBorder = isPaid ? 'rgba(52,211,153,0.25)' : isOverdue ? 'rgba(220,38,38,0.25)' : 'rgba(251,191,36,0.25)'
+                      const statusLabel = isPaid ? 'Paid' : isOverdue ? 'Overdue' : 'Due'
+                      const amount = (inv.amount_cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+
+                      return (
+                        <div key={inv.id} style={{ background: dark.surface, border: `1px solid ${dark.border}`, borderRadius: '12px', padding: '18px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                              <span style={{ fontWeight: '700', fontSize: '14px', color: dark.text }}>{inv.number}</span>
+                              <span style={{ padding: '2px 9px', borderRadius: '999px', fontSize: '11px', fontWeight: '700', color: statusColor, background: statusBg, border: `1px solid ${statusBorder}`, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                {statusLabel}
+                              </span>
+                            </div>
+                            <p style={{ color: dark.textMuted, fontSize: '13px', margin: '0 0 2px' }}>{inv.description}</p>
+                            <p style={{ color: dark.textDim, fontSize: '12px', margin: 0 }}>
+                              {inv.due_date && !isPaid && <>Due {new Date(inv.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</>}
+                              {isPaid && inv.paid_at && <>Paid {new Date(inv.paid_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</>}
+                            </p>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span style={{ fontSize: '20px', fontWeight: '800', color: isPaid ? '#34d399' : dark.text }}>{amount}</span>
+                            {!isPaid && inv.stripe_invoice_url && (
+                              <a href={inv.stripe_invoice_url} target="_blank" rel="noopener noreferrer"
+                                style={{ padding: '9px 20px', borderRadius: '8px', background: 'linear-gradient(135deg, #1e3a5f, #2563eb)', color: '#fff', textDecoration: 'none', fontSize: '13px', fontWeight: '700', boxShadow: '0 4px 16px rgba(59,130,246,0.3)', whiteSpace: 'nowrap' }}>
+                                Pay Now →
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
 

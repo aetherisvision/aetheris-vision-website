@@ -51,6 +51,29 @@ export async function createTables() {
     )
   `
 
+  await sql`
+    CREATE TABLE IF NOT EXISTS invoices (
+      id                    SERIAL PRIMARY KEY,
+      client_id             INTEGER REFERENCES clients(id) ON DELETE CASCADE,
+      project_id            INTEGER REFERENCES projects(id) ON DELETE SET NULL,
+      number                TEXT NOT NULL,
+      description           TEXT NOT NULL,
+      amount_cents          INTEGER NOT NULL,
+      status                TEXT NOT NULL DEFAULT 'draft',
+      stripe_invoice_id     TEXT,
+      stripe_invoice_url    TEXT,
+      due_date              DATE,
+      paid_at               TIMESTAMPTZ,
+      created_at            TIMESTAMPTZ DEFAULT NOW()
+    )
+  `
+
+  // Add stripe_customer_id to clients if it doesn't exist
+  await sql`
+    ALTER TABLE clients
+    ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT
+  `
+
   console.log('Tables created successfully')
 }
 
