@@ -7,11 +7,14 @@ import { SITE } from "@/lib/constants";
 const FORMSPREE_ID = process.env.NEXT_PUBLIC_FORMSPREE_ID;
 
 const requirementTypes = [
-  "Operational Meteorology Consulting",
-  "AI / ML Integration",
-  "Defense Systems Advisory",
-  "Technical Architecture Review",
-  "Federal Contracting / Acquisition Support",
+  "New Website — Custom Build",
+  "Website Redesign",
+  "E-commerce / Online Store",
+  "Client or Member Portal",
+  "WordPress Development",
+  "Website Maintenance",
+  "Meteorology / AI Consulting",
+  "Federal Contracting",
   "Other",
 ];
 
@@ -100,7 +103,7 @@ export default function ContactForm() {
               name="email"
               type="email"
               required
-              placeholder="you@agency.gov"
+              placeholder="you@company.com"
               className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-blue-500/50 focus:bg-white/[0.05] transition"
             />
           </div>

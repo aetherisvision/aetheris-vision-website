@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { SITE } from "@/lib/constants";
+import LocationAutocomplete from "@/components/LocationAutocomplete";
 
 interface FormData {
   // Business Information
@@ -273,13 +274,11 @@ export default function ProjectIntakeForm() {
 
           <div>
             <label className="block text-sm font-medium text-white mb-2">Primary Business Location *</label>
-            <input
-              type="text"
+            <LocationAutocomplete
               required
               value={formData.location}
-              onChange={(e) => handleInputChange("location", e.target.value)}
+              onChange={(val) => handleInputChange("location", val)}
               className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="City, State or Country"
             />
           </div>
 
