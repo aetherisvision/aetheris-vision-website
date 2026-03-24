@@ -12,7 +12,7 @@ import ChatWidget from "@/components/ChatWidget";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: `${SITE.name} | High-End Technical Consulting`,
+  title: `${SITE.name} | Custom Web Development & Technical Consulting`,
   description: SITE.description,
   metadataBase: new URL(SITE.url),
   manifest: "/manifest.json",

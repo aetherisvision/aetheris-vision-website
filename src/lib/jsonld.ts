@@ -35,6 +35,7 @@ export const localBusinessJsonLd = {
   name: SITE.legalName,
   url: SITE.url,
   email: SITE.email,
+  telephone: "+13463819629",
   logo: SITE.logoUrl,
   description: SITE.description,
   address: {

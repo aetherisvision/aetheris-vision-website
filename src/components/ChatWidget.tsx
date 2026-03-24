@@ -189,6 +189,7 @@ export default function ChatWidget() {
                 placeholder="Ask about our services…"
                 rows={1}
                 disabled={streaming}
+                maxLength={500}
                 className="flex-1 resize-none rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 focus:bg-white/[0.07] transition disabled:opacity-50"
                 style={{ maxHeight: "6rem" }}
               />

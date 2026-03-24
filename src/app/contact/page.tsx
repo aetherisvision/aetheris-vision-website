@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ContactForm from "@/components/ContactForm";
 import FadeIn from "@/components/FadeIn";
-import { EnvelopeIcon, CalendarDaysIcon, ClipboardDocumentIcon } from "@heroicons/react/24/outline";
+import { EnvelopeIcon, CalendarDaysIcon, ClipboardDocumentIcon, PhoneIcon } from "@heroicons/react/24/outline";
 import { SITE } from "@/lib/constants";
 
 export const metadata = {
@@ -41,6 +41,19 @@ export default function ContactPage() {
             {/* Sidebar */}
             <FadeIn delay={0.15}>
               <div className="space-y-4">
+                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <PhoneIcon className="h-5 w-5 text-blue-400" />
+                    <p className="text-white font-medium text-sm">Call or text</p>
+                  </div>
+                  <a
+                    href="tel:+13463819629"
+                    className="text-sm text-gray-400 hover:text-white transition"
+                  >
+                    (346) 381-9629
+                  </a>
+                </div>
+
                 <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6">
                   <div className="flex items-center gap-3 mb-3">
                     <EnvelopeIcon className="h-5 w-5 text-blue-400" />

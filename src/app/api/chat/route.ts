@@ -10,7 +10,8 @@ export const runtime = "nodejs";
 // Limits: 20 requests per IP per 15-minute window
 // ---------------------------------------------------------------------------
 const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
-const MAX_REQUESTS = 20;
+const MAX_REQUESTS = 10;
+const MAX_TURNS = 10; // max conversation turns per session
 
 interface RateLimitEntry {
   count: number;
@@ -78,16 +79,16 @@ export async function POST(request: Request) {
       return new Response("Invalid messages", { status: 400 });
     }
 
-    // Sanitize: only user/assistant roles, string content, cap history at 20 turns
+    // Sanitize: only user/assistant roles, string content, cap history at MAX_TURNS
     const sanitized: Anthropic.MessageParam[] = messages
       .filter(
         (m) =>
           (m.role === "user" || m.role === "assistant") &&
           typeof m.content === "string" &&
           m.content.trim().length > 0 &&
-          m.content.length <= 2000 // cap individual message length
+          m.content.length <= 500 // match frontend cap
       )
-      .slice(-20)
+      .slice(-MAX_TURNS)
       .map((m) => ({ role: m.role, content: m.content.trim() }));
 
     if (sanitized.length === 0 || sanitized[0].role !== "user") {
