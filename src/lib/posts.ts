@@ -175,8 +175,8 @@ That remains the standard.
   },
   {
     id: 4,
-    slug: "why-oklahoma-businesses-need-custom-websites",
-    title: "Why Oklahoma Small Businesses Need Custom Websites — Not Templates",
+    slug: "why-businesses-need-custom-websites",
+    title: "Why Small Businesses Need Custom Websites — Not Templates",
     date: "Mar 23, 2026",
     category: "Web Development",
     featured: false,
@@ -211,11 +211,11 @@ Here's what typically happens with a template site:
 
 Custom doesn't mean more expensive for its own sake. It means the site is built around what your business actually needs instead of what a template happens to offer.
 
-For a service business in Oklahoma, that might mean:
+For a service business, that might mean:
 - A booking flow that connects to your actual calendar
 - A contact form that routes inquiries to the right person automatically
 - A client-facing area where customers can view proposals or sign documents
-- Performance optimized for the geographic area you serve
+- A site architecture built around how your customers actually find and evaluate you
 
 None of those require a massive build. They require a developer who listens first and codes second.
 
@@ -227,9 +227,9 @@ A well-built custom site typically pays for itself within the first year through
 
 ## What We Build at Aetheris Vision
 
-We build custom websites and web applications for small businesses in Oklahoma. Next.js, React, TypeScript, deployed on Vercel's global edge infrastructure. Every project is scoped, priced, and delivered with a fixed contract — no hourly surprises, no disappearing after launch.
+We build custom websites and web applications for small businesses — Next.js, React, TypeScript, and WordPress, depending on what the project calls for. Every project is scoped, priced, and delivered with a fixed contract. No hourly surprises, no disappearing after launch.
 
-If you're running a business in the OKC metro and you're not sure whether your website is actually working for you, that's worth a conversation.
+If you're not sure whether your website is actually working for you, that's worth a conversation.
 
 [Start a project →](/intake)
     `.trim(),
