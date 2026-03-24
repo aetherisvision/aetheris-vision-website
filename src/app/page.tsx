@@ -68,7 +68,7 @@ export default async function Home() {
             <FadeIn delay={0.1}>
               <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm text-gray-300 mb-8 backdrop-blur-sm">
                 <span className="flex h-2 w-2 rounded-full bg-blue-500 mr-2 animate-pulse"></span>
-                VOSB, 8(a) Ready & Prior DoD Secret Clearance
+                VOSB Eligible · Active Secret Clearance · SAM.gov Registration In Progress
               </div>
             </FadeIn>
             
@@ -232,7 +232,7 @@ export default async function Home() {
                   </div>
                   <h3 className="text-xl md:text-2xl font-medium text-white mb-3">State & Federal Contracting</h3>
                   <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base">
-                    Registered in SAM.gov with Prior DoD Secret clearance, VOSB certification, and active 8(a) pathway pursuit. Purpose-built to work directly with state and federal agencies on specialized weather, AI, and defense system requirements.
+                    SAM.gov registration in progress, VOSB eligible, and 8(a) eligibility under review. Active DoD Secret clearance. Purpose-built to work directly with state and federal agencies on specialized weather, AI, and defense system requirements.
                   </p>
                 </div>
               </div>
@@ -328,8 +328,15 @@ export default async function Home() {
 
                 <div className="relative z-10 flex flex-col gap-4 shrink-0">
                   <a
-                    href="/book"
+                    href="/intake"
                     className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-white px-8 text-sm font-medium text-black hover:bg-gray-200 transition"
+                  >
+                    <ArrowRightIcon className="h-4 w-4" />
+                    Start a Web Project
+                  </a>
+                  <a
+                    href="/book"
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-white/10 bg-transparent px-8 text-sm font-medium text-white hover:bg-white/5 transition"
                   >
                     <EnvelopeIcon className="h-4 w-4" />
                     Book a Consultation
