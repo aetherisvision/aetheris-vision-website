@@ -17,6 +17,10 @@ export default defineConfig({
       "tests/**/*.test.{ts,tsx}",
       "tests/**/*.spec.{ts,tsx}",
     ],
+    exclude: [
+      "tests/e2e/**",
+      "node_modules/**",
+    ],
     coverage: {
       reporter: ["text", "html"],
       include: ["src/**/*.{ts,tsx}"],

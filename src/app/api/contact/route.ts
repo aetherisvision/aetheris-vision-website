@@ -43,11 +43,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Form not configured" }, { status: 503 });
   }
 
-  const formData = await req.formData();
-  const data: Record<string, string> = {};
-  formData.forEach((value, key) => {
-    data[key] = value.toString();
-  });
+  const data: Record<string, string> = await req.json();
 
   // ── Honeypot check ─────────────────────────────────────────────────────────
   // Bots fill in hidden fields. Humans never see this field so it stays blank.

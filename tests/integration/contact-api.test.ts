@@ -16,15 +16,12 @@ beforeEach(async () => {
 });
 
 function makeRequest(body: Record<string, string>, ip = "127.0.0.1"): Request {
-  const formData = new FormData();
-  for (const [key, value] of Object.entries(body)) {
-    formData.append(key, value);
-  }
   return new Request("http://localhost:3000/api/contact", {
     method: "POST",
-    body: formData,
+    body: JSON.stringify(body),
     headers: {
       "x-forwarded-for": ip,
+      "Content-Type": "application/json",
     },
   });
 }

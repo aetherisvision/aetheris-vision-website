@@ -11,14 +11,10 @@ function makeFormRequest(
   fields: Record<string, string>,
   ip = "127.0.0.1"
 ): Request {
-  const formData = new FormData();
-  for (const [key, value] of Object.entries(fields)) {
-    formData.append(key, value);
-  }
   return new Request("http://localhost:3000/api/contact", {
     method: "POST",
-    body: formData,
-    headers: { "x-forwarded-for": ip },
+    body: JSON.stringify(fields),
+    headers: { "x-forwarded-for": ip, "Content-Type": "application/json" },
   });
 }
 

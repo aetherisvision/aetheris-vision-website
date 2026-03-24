@@ -47,9 +47,9 @@ describe("Regression: portfolio data completeness", () => {
   it("all 3 pricing tiers exist", () => {
     expect(tiers).toHaveLength(3);
     const names = tiers.map((t) => t.name);
-    expect(names).toContain("Launch");
-    expect(names).toContain("Growth");
-    expect(names).toContain("Pro");
+    expect(names).toContain("Professional");
+    expect(names).toContain("Business");
+    expect(names).toContain("Enterprise");
   });
 
   it("processSteps have step numbers and descriptions", () => {
