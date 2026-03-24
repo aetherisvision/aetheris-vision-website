@@ -57,8 +57,8 @@ const competencies = [
       "SAM.gov federal registration — CAGE code and UEI pending issuance",
       "SDVOSB / VOSB — Veterans First Contracting Program eligible",
       "8(a) Business Development Program pathway active",
-      "Oklahoma Supplier Portal — registered bidder and supplier for state solicitations",
-      "Prior DoD Secret clearance — reinstatement pathway available for sensitive program support",
+      "Oklahoma Supplier Portal — registration pending for state solicitations",
+      "Active DoD Secret clearance (personal; facility clearance obtainable for sensitive program support)",
     ],
   },
   {
@@ -116,7 +116,7 @@ export default function CapabilitiesPage() {
                 { label: "Legal Name", value: SITE.legalName },
                 { label: "Business Type", value: "Veteran-Owned Small Business (VOSB)" },
                 { label: "SAM.gov", value: "Registration In Progress" },
-                { label: "8(a) Status", value: "Pathway Active" },
+                { label: "8(a) Status", value: "Eligibility Under Review" },
                 { label: "Security Clearance", value: "Prior DoD Secret" },
                 { label: "Primary Contact", value: SITE.email },
               ].map((item) => (
@@ -205,7 +205,7 @@ export default function CapabilitiesPage() {
                     },
                     {
                       title: "Streamlined Acquisition",
-                      body: "VOSB set-aside and 8(a) sole-source pathways reduce acquisition complexity. Prior DoD Secret clearance supports accelerated onboarding for sensitive programs.",
+                      body: "VOSB set-aside eligibility and active DoD Secret clearance reduce acquisition complexity. SAM.gov registration in progress; SDVOSB/VetCert and 8(a) pathways queued.",
                     },
                   ].map((d) => (
                     <div key={d.title}>
