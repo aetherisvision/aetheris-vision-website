@@ -6,7 +6,7 @@ export const SITE = {
   logoUrl: "https://aetherisvision.com/logo/aetheris-logo.png",
   email: "contact@aetherisvision.com",
   description:
-    "Custom web development for Oklahoma businesses — and advanced AI/ML meteorology for federal missions.",
+    "Revolutionary digital solutions for Oklahoma businesses — and AI systems that make traditional meteorology obsolete for federal missions.",
   ogDescription:
-    "Aetheris Vision builds custom websites, web applications, and client portals for Oklahoma businesses. Veteran-owned. Based in Mustang, OK.",
+    "Aetheris Vision eliminates operational inefficiencies through custom digital solutions and AI-powered atmospheric intelligence. Veteran-owned disruption. Based in Mustang, OK.",
 } as const;

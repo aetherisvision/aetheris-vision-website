@@ -13,39 +13,39 @@ export const metadata = {
 const services = [
   {
     icon: CodeBracketIcon,
-    title: "Custom Website Design & Development",
+    title: "Digital Business Weapons",
     description:
-      "No templates. No page builders. Every site is designed and coded from scratch to match your brand, your audience, and your goals. Built on Next.js and React for speed and reliability.",
+      "Custom-engineered systems, not templated websites. Every solution is architected from scratch to dominate your market, eliminate operational friction, and make competitors' efforts look obsolete. Built on Next.js and React for uncompromising performance.",
   },
   {
     icon: ServerStackIcon,
-    title: "Web Applications & Client Portals",
+    title: "Operational Intelligence Platforms",
     description:
-      "When your business needs more than a brochure site — dashboards, booking systems, document management, secure client logins. We build full-stack applications that work the way your business does.",
+      "When your business demands more than static pages — dashboards that eliminate guesswork, booking systems that maximize revenue, document workflows that cut bureaucracy. Full-stack applications engineered to operate as extensions of your strategic thinking.",
   },
   {
     icon: DevicePhoneMobileIcon,
-    title: "Mobile-First, Performance-Optimized",
+    title: "Performance-Engineered Domination",
     description:
-      "Every project is built mobile-first and optimized for Core Web Vitals. Fast load times, clean code, and deployments on Vercel's global edge network.",
+      "Every deployment optimized for Core Web Vitals supremacy. Mobile-first architecture that renders instantly on any device. Global edge network deployment that makes loading delays irrelevant. Your competitors' slow sites become obvious weaknesses.",
   },
   {
     icon: LockClosedIcon,
-    title: "Authentication & Secure Access",
+    title: "Security-First Architecture",
     description:
-      "Magic-link logins, role-based access, and session management built in from the start. No bolted-on plugins — security is part of the architecture.",
+      "Magic-link authentication, role-based access control, and bulletproof session management built into the foundation. No supplemental plugins or security band-aids — protection is engineered at the architectural level from day one.",
   },
   {
     icon: ChartBarIcon,
-    title: "API Integrations & Automation",
+    title: "Integration & Automation Warfare",
     description:
-      "Connect your site to the tools you already use — CRMs, scheduling platforms, payment processors, e-signature services, and more. We handle the plumbing so you don't have to.",
+      "Direct API conquest of your existing business systems — CRMs, scheduling platforms, payment processors, e-signature services. We eliminate manual processes and data silos, creating a unified command center for your operations.",
   },
   {
     icon: WrenchScrewdriverIcon,
-    title: "Ongoing Maintenance & Support",
+    title: "Evolutionary Maintenance",
     description:
-      "We don't disappear after launch. Monthly maintenance plans keep your site updated, secure, and improving over time. One point of contact, no ticket queues.",
+      "Continuous optimization that transforms your digital presence over time. Monthly enhancement cycles keep your systems ahead of market changes and competitor attempts. One strategic partner, no help desk queues or ticket systems.",
   },
 ];
 
@@ -102,13 +102,13 @@ export default function WebServicesPage() {
               Web Development
             </p>
             <h1 className="text-4xl md:text-6xl font-semibold text-white tracking-tight mb-6 leading-[1.1]">
-              Websites that work<br />
+              Digital Solutions<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">
-                as hard as you do.
+                That Eliminate Competition.
               </span>
             </h1>
             <p className="max-w-2xl text-lg text-gray-400 font-light leading-relaxed mb-10">
-              We build custom websites and web applications for Oklahoma small businesses. No templates, no bloated plugins, no disappearing after launch. Just clean, fast, reliable software built to grow with your business.
+              We engineer custom digital systems that transform Oklahoma businesses into market dominators. No templates, no compromise, no operational inefficiencies. Strategic technology deployment designed to make your competitors obsolete.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
@@ -131,7 +131,7 @@ export default function WebServicesPage() {
         <section className="border-t border-white/5 bg-[#0d0c0f] py-20">
           <div className="mx-auto max-w-5xl px-6">
             <FadeIn>
-              <h2 className="text-2xl md:text-3xl font-semibold text-white mb-12">What we build</h2>
+              <h2 className="text-2xl md:text-3xl font-semibold text-white mb-12">Strategic Digital Weapons</h2>
             </FadeIn>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {services.map((s, i) => (
@@ -153,9 +153,9 @@ export default function WebServicesPage() {
         <section className="border-t border-white/5 py-20">
           <div className="mx-auto max-w-5xl px-6">
             <FadeIn>
-              <h2 className="text-2xl md:text-3xl font-semibold text-white mb-3">Our stack</h2>
+              <h2 className="text-2xl md:text-3xl font-semibold text-white mb-3">Battle-Tested Arsenal</h2>
               <p className="text-gray-400 font-light mb-10">
-                Modern, well-supported tools — chosen for reliability, not trends.
+                Enterprise-grade technologies chosen for reliability and competitive advantage — not novelty.
               </p>
             </FadeIn>
             <div className="flex flex-wrap gap-3">
@@ -175,9 +175,9 @@ export default function WebServicesPage() {
         <section className="border-t border-white/5 bg-[#0d0c0f] py-20">
           <div className="mx-auto max-w-5xl px-6">
             <FadeIn>
-              <h2 className="text-2xl md:text-3xl font-semibold text-white mb-3">How it works</h2>
+              <h2 className="text-2xl md:text-3xl font-semibold text-white mb-3">Deployment Protocol</h2>
               <p className="text-gray-400 font-light mb-12">
-                No surprises. You know what happens at every step.
+                Precision execution. Zero surprises. Predictable transformation.
               </p>
             </FadeIn>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6">

@@ -61,16 +61,16 @@ export default function AboutPage() {
               </p>
               <div className="space-y-4 text-gray-400 font-light leading-relaxed">
                 <p>
-                  Aetheris Vision was founded on a simple premise: the most consequential decisions in defense and government operations are made under atmospheric uncertainty. That uncertainty is solvable — given the right expertise and the right technology.
+                  Aetheris Vision was founded on a disruptive premise: the most consequential defense and government decisions are crippled by atmospheric uncertainty. That uncertainty isn't just solvable — <strong className="text-gray-200">it's already solved by those who possess the right combination of expertise and technology</strong>.
                 </p>
                 <p>
-                  With over 35 years of operational meteorology experience, Marston Ward brings a depth of knowledge shaped by extensive unclassified strategic deployments with the <strong className="text-gray-200">United States Air Force (USAF)</strong> and research collaborations with <strong className="text-gray-200">Stockholm University</strong> and <strong className="text-gray-200">Chalmers University of Technology</strong> in Sweden.
+                  Marston Ward represents a convergence that shouldn't exist: 35 years dismantling atmospheric prediction barriers through <strong className="text-gray-200">United States Air Force</strong> combat deployments, revolutionary research at <strong className="text-gray-200">Stockholm University</strong> and <strong className="text-gray-200">Chalmers University of Technology</strong>, and now pioneering AI systems that make traditional forecasting obsolete.
                 </p>
                 <p>
-                  That career has been defined not just by reading the sky, but by building the systems that help others do it — mapping the limits of traditional numerical weather prediction (NWP) and engineering the pipelines that bring AI-derived forecast products into operational use.
+                  This career has been defined by a simple pattern: <strong className="text-gray-200">encounter broken system, understand its limitations, engineer its replacement</strong>. From revolutionizing military weather operations in the 90s to architecting AI-NWP hybrid models that outperform billion-dollar legacy systems today.
                 </p>
                 <p>
-                  Aetheris Vision is the convergence of that experience: a specialized consultancy positioned at the intersection of deep atmospheric science, machine learning, and federal contracting — purpose-built to serve the missions that matter most.
+                  Aetheris Vision is that pattern weaponized: a precision instrument designed to identify, challenge, and replace inefficient systems with transformational alternatives. We don't adapt to existing paradigms — <strong className="text-gray-200">we make them irrelevant</strong>.
                 </p>
               </div>
             </FadeIn>

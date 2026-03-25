@@ -68,22 +68,22 @@ export default async function Home() {
             <FadeIn delay={0.1}>
               <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm text-gray-300 mb-8 backdrop-blur-sm">
                 <span className="flex h-2 w-2 rounded-full bg-blue-500 mr-2 animate-pulse"></span>
-                VOSB Eligible · Active Secret Clearance · SAM.gov Registration In Progress
+                VOSB Eligible · Active Secret Clearance · Revolutionary By Design
               </div>
             </FadeIn>
             
             <FadeIn delay={0.2}>
               <h1 className="text-5xl md:text-7xl font-semibold tracking-tighter text-white mb-6 leading-[1.1]">
-                Predictive Clarity <br />
+                Disruptive Intelligence <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">
-                  At The Highest Level.
+                  That Eliminates Uncertainty.
                 </span>
               </h1>
             </FadeIn>
             
             <FadeIn delay={0.3}>
               <p className="max-w-2xl text-lg md:text-xl text-gray-400 mb-10 leading-relaxed font-light">
-                Custom websites, web applications, and client portals built for Oklahoma businesses — and advanced AI/ML meteorology for federal defense missions. Veteran-owned. Mustang, OK.
+                Transforming Oklahoma businesses with custom digital solutions that eliminate operational friction — while revolutionizing federal defense systems with AI that makes traditional forecasting obsolete. This is targeted disruption. Veteran-owned. Mustang, OK.
               </p>
             </FadeIn>
             

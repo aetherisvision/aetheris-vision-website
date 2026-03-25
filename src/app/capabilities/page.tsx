@@ -25,58 +25,58 @@ const pscCodes = [
 
 const competencies = [
   {
-    title: "Operational Meteorology",
+    title: "Atmospheric Dominance",
     items: [
-      "Global atmospheric modeling and synoptic-scale forecasting",
-      "Mesoscale convective analysis and prediction",
-      "Arctic and complex terrain boundary layer dynamics",
-      "Tactical weather support for high-consequence operations",
+      "AI-hybrid systems that outperform billion-dollar legacy NWP models (GraphCast, Pangu-Weather integration)",
+      "Mesoscale prediction systems engineered for high-stakes military operations",
+      "Arctic and complex terrain dynamics — mastered through combat deployments",
+      "Real-time decision support for missions where atmospheric uncertainty kills",
     ],
   },
   {
-    title: "AI / ML Integration",
+    title: "AI Revolution Engine",
     items: [
-      "Deep learning models for atmospheric prediction (GraphCast, Pangu-Weather architectures)",
-      "Ensemble uncertainty quantification pipelines",
-      "Large-scale reanalysis data processing (ERA5, MERRA-2)",
-      "Cloud-native deployment on AWS GovCloud and Azure Government",
+      "Deep learning architectures that replace traditional ensemble forecasting systems",
+      "Uncertainty quantification pipelines that transform chaos into actionable intelligence",
+      "Massive-scale reanalysis processing (ERA5, MERRA-2) — optimized for mission-critical deployment",
+      "Cloud-native solutions deployed on AWS GovCloud and Azure Government infrastructure",
     ],
   },
   {
-    title: "Technical Advisory",
+    title: "Strategic Transformation",
     items: [
-      "Architecture assessment for weather data ingestion and processing systems",
-      "AI/ML model validation frameworks for operational deployment",
-      "Workforce training and capability development",
-      "Transition planning from legacy NWP to AI-augmented workflows",
+      "Legacy system assassination — identifying and obsoleting inefficient operational frameworks",
+      "AI/ML validation protocols that eliminate deployment risk in high-consequence environments",
+      "Workforce evolution strategies — transforming traditional meteorologists into AI-augmented operators",
+      "Technology transition leadership — from concept to operational superiority",
     ],
   },
   {
-    title: "State & Federal Contracting",
+    title: "Federal Penetration",
     items: [
-      "SAM.gov federal registration — CAGE code and UEI pending issuance",
-      "SDVOSB / VOSB — Veterans First Contracting Program eligible",
-      "8(a) Business Development Program pathway active",
-      "Oklahoma Supplier Portal — registration pending for state solicitations",
-      "Active DoD Secret clearance (personal; facility clearance obtainable for sensitive program support)",
+      "SAM.gov federal registration — CAGE code and UEI pending final issuance",
+      "SDVOSB / VOSB — Direct access to Veterans First Contracting Program set-asides",
+      "8(a) Business Development Program — Accelerated pathway active",
+      "Oklahoma Supplier Portal — State-level contracting access queued",
+      "Active DoD Secret clearance (personal; facility clearance scalable for classified program support)",
     ],
   },
   {
-    title: "Technical Leadership",
+    title: "Command Authority",
     items: [
-      "Program and project technical direction for defense and civil agency missions",
-      "Integrated product team (IPT) leadership and cross-functional coordination",
-      "Emerging technology assessment and adoption roadmaps for operational environments",
-      "Mentorship and capability development for junior technical staff",
+      "Technical direction for defense and civil agency transformation programs",
+      "Integrated product team (IPT) leadership across multi-agency coordination efforts",
+      "Disruptive technology assessment and rapid deployment for competitive advantage scenarios",
+      "Next-generation workforce development — elevating junior staff through revolutionary methodologies",
     ],
   },
   {
-    title: "Web & Digital Solutions",
+    title: "Digital Precision Weapons",
     items: [
-      "Custom website design and development (Next.js, React, TypeScript)",
-      "Performance-optimized, mobile-first deployments on Vercel and cloud platforms",
-      "API integration, serverless back-end architecture, and database design",
-      "Ongoing maintenance, analytics, and iterative feature development",
+      "Custom applications engineered to eliminate operational inefficiencies (Next.js, React, TypeScript)",
+      "High-performance, mobile-first deployments that dominate user experience expectations",
+      "API integration warfare — connecting and optimizing disparate business systems",
+      "Continuous evolution model — sites that improve and adapt without constant reinvestment",
     ],
   },
 ];
@@ -186,26 +186,26 @@ export default function CapabilitiesPage() {
             </div>
           </div>
 
-          {/* Differentiators */}
+          {/* Revolutionary Differentiators */}
           <FadeIn>
             <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-8 md:p-10 mb-10 relative overflow-hidden">
               <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-blue-600/5 blur-3xl pointer-events-none" />
               <div className="relative z-10">
-                <p className="text-xs font-semibold tracking-widest text-blue-500 uppercase mb-4">Why Aetheris Vision</p>
-                <h2 className="text-2xl font-semibold text-white mb-6">Unique Differentiators</h2>
+                <p className="text-xs font-semibold tracking-widest text-blue-500 uppercase mb-4">The Aetheris Advantage</p>
+                <h2 className="text-2xl font-semibold text-white mb-6">Why Legacy Systems Fear Us</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {[
                     {
-                      title: "Narrow Depth Over Broad Coverage",
-                      body: "We specialize in atmospheric science, AI/ML integration, and defense systems — not general IT consulting. Deep expertise produces better outcomes for specialized missions.",
+                      title: "Surgical Precision Over Generalist Noise",
+                      body: "While others offer everything, we dominate three domains: atmospheric physics, AI transformation, and defense systems. This isn't consulting — it's specialized warfare against inefficiency.",
                     },
                     {
-                      title: "Operational Credibility",
-                      body: "35 years of field-validated meteorology expertise alongside academic research partnerships. We have operated in the environments we advise on.",
+                      title: "Battle-Tested Disruption",
+                      body: "35 years revolutionizing how humans understand the atmosphere. From obsoleting manual forecasting in the 90s to pioneering AI-NWP hybrid models today. We don't just adapt to change — we cause it.",
                     },
                     {
-                      title: "Streamlined Acquisition",
-                      body: "VOSB set-aside eligibility and active DoD Secret clearance reduce acquisition complexity. SAM.gov registration in progress; SDVOSB/VetCert and 8(a) pathways queued.",
+                      title: "Zero-Friction Deployment",
+                      body: "Active Secret clearance, VOSB eligibility, and streamlined federal pathways eliminate bureaucratic obstacles. While competitors navigate red tape, we're already delivering transformational outcomes.",
                     },
                   ].map((d) => (
                     <div key={d.title}>
