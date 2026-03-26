@@ -108,6 +108,19 @@ feat/issue-{N}-{short-description}
 content/issue-{N}-{short-description}
 ```
 
+### GitHub MCP Tools (use these — no Python scripts needed)
+The GitHub MCP is active. Use these tools directly for all GitHub operations:
+- `mcp_github_create_issue` — create new issues
+- `mcp_github_update_issue` — update title, body, state, labels, milestone
+- `mcp_github_add_issue_comment` — add comments to issues
+- `mcp_github_create_branch` — create branches
+- `mcp_github_create_pull_request` — open PRs
+- `mcp_github_get_issue`, `mcp_github_list_issues` — read issues
+- `mcp_github_list_pull_requests`, `mcp_github_get_pull_request_status` — check PRs
+- `mcp_github_merge_pull_request` — merge PRs
+
+**Never write /tmp/*.py scripts for GitHub API calls.** Use MCP tools directly.
+
 ### Workflow for Every Change
 1. Reference the GitHub issue number in branch name and commit message
 2. Create branch from `main`: `git checkout -b fix/issue-5-hardcoded-password`
