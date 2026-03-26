@@ -75,6 +75,50 @@ tests/
 - Deployed automatically via Vercel on push to `main`.
 - Git remotes: `origin` (GitHub), `backup` (GitLab).
 
+## Session Start Protocol
+**At the start of every chat session in this project**, immediately call `mcp_git-vercel_check_deployment` with `project_name="aetheris-vision-website"` and display the result (status, URL, timestamp) before doing anything else. This gives Marston instant visibility into whether the live site is healthy.
+
+## Agile Workflow — GitHub Issues + Branches
+
+All changes to this project use a branch-per-issue workflow:
+
+### Milestones
+| # | Milestone | Due |
+|---|-----------|-----|
+| M3 (GH#4) | Security Phase 1 — Critical Fixes | Apr 5 |
+| M4 (GH#5) | Security Phase 2 — High + Medium | Apr 20 |
+| M1 (GH#1) | SAM.gov Launch Prep | May 1 |
+| M2 (GH#2) | Client Portal v1 | May 15 |
+| M5 (GH#6) | Public Launch | Jun 1 |
+
+### Issue Labels
+- `security:critical` — fix before any other work
+- `security:high` — fix before public launch
+- `security:medium` — fix before public launch
+- `feature` — new pages or capabilities
+- `content` — copy, images, text
+- `admin` — internal tooling only
+- `client-portal` — client portal features
+- `performance` — Core Web Vitals, build
+
+### Branch Convention
+```
+fix/issue-{N}-{short-description}
+feat/issue-{N}-{short-description}
+content/issue-{N}-{short-description}
+```
+
+### Workflow for Every Change
+1. Reference the GitHub issue number in branch name and commit message
+2. Create branch from `main`: `git checkout -b fix/issue-5-hardcoded-password`
+3. Make changes, commit: `git commit -m "fix(#5): remove hardcoded password fallback"`
+4. Push branch, open PR targeting `main`
+5. Merge → Vercel auto-deploys → confirm READY via `mcp_git-vercel_check_deployment`
+6. Close the issue
+
+### Security Priority Order (do these first)
+Issues #1–#8 are security issues in milestones M3/M4. Address in order: C-1 through C-5 (CRITICAL), then H-1 through H-3 (HIGH), then M-1 through M-5 (MEDIUM).
+
 ## Common Patterns
 When adding a new page:
 1. Create `src/app/<route>/page.tsx`
