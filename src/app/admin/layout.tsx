@@ -9,6 +9,9 @@ const NAV = [
   { href: '/admin/documents', label: 'Documents' },
   { href: '/admin/invoices',  label: 'Invoices' },
   { href: '/admin/expenses',  label: 'Expenses' },
+  { href: '/performance',     label: 'Performance' },
+  { href: '/api-docs',        label: 'API Docs' },
+  { href: '/metrics',         label: 'Metrics' },
 ]
 
 const dark = {

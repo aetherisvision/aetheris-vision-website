@@ -286,7 +286,7 @@ async def cmd_git_push(remote: str = "origin", branch: Optional[str] = None, rep
             
     return "\n".join(result)
 
-async def cmd_check_deployment(project_name: str = "website") -> str:
+async def cmd_check_deployment(project_name: str = "aetheris-vision-website") -> str:
     """Check current Vercel deployment status"""
     try:
         client = VercelClient()
@@ -318,7 +318,7 @@ async def cmd_check_deployment(project_name: str = "website") -> str:
         logger.error(f"Error checking deployment: {e}")
         return f"❌ **Error**: {str(e)}"
 
-async def cmd_monitor_deployment(project_name: str = "website", timeout_minutes: int = 10) -> str:
+async def cmd_monitor_deployment(project_name: str = "aetheris-vision-website", timeout_minutes: int = 10) -> str:
     """Monitor deployment until completion"""
     try:
         client = VercelClient()
@@ -366,7 +366,7 @@ async def cmd_monitor_deployment(project_name: str = "website", timeout_minutes:
         logger.error(f"Error monitoring deployment: {e}")
         return f"❌ **Error**: {str(e)}"
 
-async def cmd_deploy_and_monitor(remote: str = "origin", branch: Optional[str] = None, project_name: str = "website", repo_path: str = ".") -> str:
+async def cmd_deploy_and_monitor(remote: str = "origin", branch: Optional[str] = None, project_name: str = "aetheris-vision-website", repo_path: str = ".") -> str:
     """Push code and monitor Vercel deployment"""
     result = ["🚀 **Deploy and Monitor: Complete Git + Vercel Workflow**", ""]
     
@@ -399,7 +399,7 @@ async def cmd_deploy_and_monitor(remote: str = "origin", branch: Optional[str] =
     
     return "\n".join(result)
 
-async def cmd_list_deployments(project_name: str = "website", limit: int = 5) -> str:
+async def cmd_list_deployments(project_name: str = "aetheris-vision-website", limit: int = 5) -> str:
     """List recent deployments"""
     try:
         client = VercelClient()
@@ -474,22 +474,22 @@ async def handle_mcp_request(tool_name: str, arguments: Dict[str, Any]) -> str:
             return await cmd_deploy_and_monitor(
                 arguments.get("remote", "origin"),
                 arguments.get("branch"),
-                arguments.get("project_name", "website"),
+                arguments.get("project_name", "aetheris-vision-website"),
                 arguments.get("repo_path", ".")
             )
             
         elif tool_name == "check_deployment":
-            return await cmd_check_deployment(arguments.get("project_name", "website"))
+            return await cmd_check_deployment(arguments.get("project_name", "aetheris-vision-website"))
             
         elif tool_name == "monitor_deployment":
             return await cmd_monitor_deployment(
-                arguments.get("project_name", "website"),
+                arguments.get("project_name", "aetheris-vision-website"),
                 arguments.get("timeout_minutes", 10)
             )
             
         elif tool_name == "list_deployments":
             return await cmd_list_deployments(
-                arguments.get("project_name", "website"),
+                arguments.get("project_name", "aetheris-vision-website"),
                 arguments.get("limit", 5)
             )
             
@@ -564,8 +564,8 @@ async def list_tools() -> List[Tool]:
                     },
                     "project_name": {
                         "type": "string",
-                        "description": "Vercel project name (default: website)",
-                        "default": "website"
+                        "description": "Vercel project name (default: aetheris-vision-website)",
+                        "default": "aetheris-vision-website"
                     },
                     "repo_path": {
                         "type": "string",
@@ -583,8 +583,8 @@ async def list_tools() -> List[Tool]:
                 "properties": {
                     "project_name": {
                         "type": "string",
-                        "description": "Vercel project name (default: website)",
-                        "default": "website"
+                        "description": "Vercel project name (default: aetheris-vision-website)",
+                        "default": "aetheris-vision-website"
                     }
                 }
             }
@@ -597,8 +597,8 @@ async def list_tools() -> List[Tool]:
                 "properties": {
                     "project_name": {
                         "type": "string",
-                        "description": "Vercel project name (default: website)",
-                        "default": "website"
+                        "description": "Vercel project name (default: aetheris-vision-website)",
+                        "default": "aetheris-vision-website"
                     },
                     "limit": {
                         "type": "integer",
