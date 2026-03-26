@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { SITE } from "@/lib/constants";
+import { ShieldCheckIcon, StarIcon, IdentificationIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
 
 const footerLinks = [
   { label: "Expertise", href: "/#expertise" },
@@ -43,6 +44,43 @@ export default function Footer() {
               </a>
             ))}
           </nav>
+        </div>
+
+        {/* Security Credentials Bar */}
+        <div className="mb-8">
+          <div className="rounded-lg border border-white/10 bg-white/[0.02] p-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span className="text-sm font-medium text-white">Security Status</span>
+              </div>
+              <div className="flex flex-wrap gap-4 text-xs text-gray-400">
+                <div className="flex items-center gap-2">
+                  <ShieldCheckIcon className="h-4 w-4 text-green-400" />
+                  <span className="text-green-400 font-semibold">ACTIVE</span>
+                  <span>DoD Secret Clearance</span>
+                </div>
+                <span className="text-white/20">·</span>
+                <div className="flex items-center gap-2">
+                  <StarIcon className="h-4 w-4 text-blue-400" />
+                  <span className="text-blue-400 font-semibold">VOSB</span>
+                  <span>Veteran-Owned Small Business</span>
+                </div>
+                <span className="text-white/20">·</span>
+                <div className="flex items-center gap-2">
+                  <IdentificationIcon className="h-4 w-4 text-yellow-400" />
+                  <span className="text-yellow-400 font-semibold">USAF</span>
+                  <span>1988-1998 • SSgt • Honorable Discharge</span>
+                </div>
+                <span className="text-white/20">·</span>
+                <div className="flex items-center gap-2">
+                  <DocumentTextIcon className="h-4 w-4 text-orange-400" />
+                  <span className="text-orange-400 font-semibold">SAM.gov</span>
+                  <span>Registration In Progress</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Divider */}
