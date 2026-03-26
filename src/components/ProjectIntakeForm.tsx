@@ -513,10 +513,102 @@ export default function ProjectIntakeForm() {
         </div>
       </section>
 
-      {/* Budget & Timeline */}
+      {/* Security & Compliance */}
       <section>
         <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-sm font-semibold text-white mr-3">5</span>
+          Security & Compliance Requirements
+        </h3>
+        
+        <div className="space-y-6">
+          <div className="rounded-lg border border-blue-500/20 bg-blue-950/10 p-4 mb-6">
+            <p className="text-sm text-blue-200 leading-relaxed">
+              <strong>Security by Design:</strong> We implement enterprise-grade security from the ground up, not as an afterthought. Select any requirements that apply to your industry or business needs.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-white mb-3">Security Features (Select all that apply)</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {[
+                { id: "ssl-tls", label: "SSL/TLS Encryption (A+ Grade)", desc: "256-bit encryption, HSTS, perfect forward secrecy" },
+                { id: "security-headers", label: "Comprehensive Security Headers", desc: "CSP, XSS protection, clickjacking prevention" },
+                { id: "rate-limiting", label: "Rate Limiting & DDoS Protection", desc: "Automated abuse prevention and traffic throttling" },
+                { id: "mfa", label: "Multi-Factor Authentication", desc: "SMS, TOTP, or hardware key support for admin access" },
+                { id: "data-encryption", label: "Data Encryption at Rest", desc: "Database encryption and secure data storage" },
+                { id: "audit-logging", label: "Comprehensive Audit Logging", desc: "Track all user actions and system changes" },
+                { id: "backup-security", label: "Encrypted Backups", desc: "Automated, encrypted backup with disaster recovery" },
+                { id: "penetration-testing", label: "Security Audit & Penetration Testing", desc: "Professional security assessment and validation" }
+              ].map((option) => (
+                <label key={option.id} className="flex items-start cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.securityRequirements.includes(option.id)}
+                    onChange={(e) => handleCheckboxChange("securityRequirements", option.id, e.target.checked)}
+                    className="h-4 w-4 mt-1 border-white/10 bg-white/5 text-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                  <div className="ml-3">
+                    <div className="text-sm text-white font-medium">{option.label}</div>
+                    <div className="text-xs text-gray-400 mt-0.5">{option.desc}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-white mb-3">Compliance Requirements (Select all that apply)</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {[
+                { id: "soc2", label: "SOC 2 Type II Compliance", desc: "Business operations security framework", tier: "Business/Enterprise" },
+                { id: "gdpr", label: "GDPR Compliance", desc: "European data protection regulation", tier: "All Tiers" },
+                { id: "ccpa", label: "CCPA Compliance", desc: "California Consumer Privacy Act", tier: "Business/Enterprise" },
+                { id: "hipaa", label: "HIPAA Compliance", desc: "Healthcare data protection", tier: "Enterprise" },
+                { id: "pci-dss", label: "PCI DSS Compliance", desc: "Payment card industry standards", tier: "Business/Enterprise" },
+                { id: "nist", label: "NIST Cybersecurity Framework", desc: "Federal cybersecurity guidelines", tier: "Enterprise" },
+                { id: "fisma", label: "FISMA Compliance", desc: "Federal information system security", tier: "Enterprise" },
+                { id: "cmmc", label: "CMMC Level 1-2", desc: "Defense contractor cybersecurity", tier: "Enterprise" }
+              ].map((option) => (
+                <label key={option.id} className="flex items-start cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.complianceNeeds.includes(option.id)}
+                    onChange={(e) => handleCheckboxChange("complianceNeeds", option.id, e.target.checked)}
+                    className="h-4 w-4 mt-1 border-white/10 bg-white/5 text-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                  <div className="ml-3">
+                    <div className="text-sm text-white font-medium">{option.label}</div>
+                    <div className="text-xs text-gray-400 mt-0.5">{option.desc}</div>
+                    <div className="text-xs text-blue-400 mt-0.5 font-medium">{option.tier}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-white/10 bg-white/[0.02] p-4">
+            <h4 className="text-sm font-medium text-white mb-2">Industry-Specific Security Needs</h4>
+            <textarea
+              value={formData.specialRequirements}
+              onChange={(e) => handleInputChange("specialRequirements", e.target.value)}
+              rows={3}
+              className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="Describe any industry-specific security requirements, government contracts, or special compliance needs..."
+            />
+          </div>
+
+          <div className="bg-gray-900 border border-white/5 rounded-lg p-4">
+            <p className="text-xs text-gray-400 leading-relaxed">
+              <strong className="text-gray-300">Security Expertise:</strong> Our team has active DoD Secret clearance, 35+ years of operational security experience, and implements security frameworks from NIST to CMMC. We don't just check compliance boxes—we engineer defense-grade protection into every system.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Budget & Timeline */}
+      <section>
+        <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-sm font-semibold text-white mr-3">6</span>
           Timeline & Budget
         </h3>
 
@@ -583,7 +675,7 @@ export default function ProjectIntakeForm() {
       {/* Additional Information */}
       <section>
         <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-sm font-semibold text-white mr-3">6</span>
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-sm font-semibold text-white mr-3">7</span>
           Additional Information
         </h3>
 
