@@ -1,29 +1,40 @@
 #!/usr/bin/env python3
 """
 Git + Vercel MCP Server for deployment automation and monitoring.
-Self-contained server that handles git operations and Vercel deployment monitoring.
-
-Usage:
-    python git-vercel-mcp.py <command> [args]
-
-Commands:
-    git-status              - Show git repository status
-    git-push [remote] [branch]  - Push code to git repository  
-    deploy-and-monitor      - Push code and monitor Vercel deployment
-    check-deployment        - Check current Vercel deployment status
-    monitor-deployment      - Monitor deployment progress
-    list-deployments [limit] - List recent deployments
-    get-logs <deployment-id> - Get deployment logs
+Provides tools to push code and monitor Vercel deployments.
 
 Environment Variables:
     VERCEL_TOKEN    - Required: Your Vercel API token
     VERCEL_TEAM_ID  - Optional: Your Vercel team ID
 """
 
-import asyncio
-import json
 import os
 import sys
+
+# Fix sys.path FIRST: the local mcp/ directory shadows the installed 'mcp' package.
+# Insert the venv site-packages at position 0 before any third-party imports.
+import site
+_site_pkgs = site.getsitepackages()
+for _sp in reversed(_site_pkgs):
+    if _sp not in sys.path:
+        sys.path.insert(0, _sp)
+# Also remove the script's own directory from the path to prevent self-shadowing.
+_this_dir = os.path.dirname(os.path.abspath(__file__))
+if _this_dir in sys.path:
+    sys.path.remove(_this_dir)
+
+# Load .env.local from the project root (one level up from this file's directory)
+_env_path = os.path.join(os.path.dirname(_this_dir), ".env.local")
+if os.path.exists(_env_path):
+    with open(_env_path) as _f:
+        for _line in _f:
+            _line = _line.strip()
+            if _line and not _line.startswith("#") and "=" in _line:
+                _k, _, _v = _line.partition("=")
+                os.environ.setdefault(_k.strip(), _v.strip().strip('"').strip("'"))
+
+import asyncio
+import json
 import subprocess
 from typing import Any, Dict, List, Optional, Union
 import time
@@ -33,17 +44,23 @@ import logging
 try:
     import httpx
 except ImportError:
-    print("❌ Error: httpx not installed. Run: pip3 install httpx")
+    print("❌ Error: httpx not installed in venv.")
     sys.exit(1)
 
 try:
     from pydantic import BaseModel
 except ImportError:
-    print("❌ Error: pydantic not installed. Run: pip3 install pydantic") 
+    print("❌ Error: pydantic not installed in venv.")
     sys.exit(1)
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+from mcp.server import Server
+from mcp.server.models import InitializationOptions
+from mcp.server.stdio import stdio_server
+from mcp.server.lowlevel.server import NotificationOptions
+from mcp.types import Tool, TextContent, CallToolResult
+
+# Configure logging — WARNING only; INFO on stderr breaks MCP client initialization
+logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 class GitRepository:
@@ -486,36 +503,152 @@ async def handle_mcp_request(tool_name: str, arguments: Dict[str, Any]) -> str:
         logger.error(f"Error executing {tool_name}: {e}")
         return f"❌ **Error executing {tool_name}**: {str(e)}"
 
-# CLI Interface
+# MCP Server
+server = Server("git-vercel-ops")
+
+@server.list_tools()
+async def list_tools() -> List[Tool]:
+    """List available git and Vercel tools"""
+    return [
+        Tool(
+            name="git_status",
+            description="Show git repository status including branch, changes, and sync state",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "repo_path": {
+                        "type": "string",
+                        "description": "Path to the git repository (default: website root)",
+                        "default": "/Users/marston.ward/Documents/GitHub/website"
+                    }
+                }
+            }
+        ),
+        Tool(
+            name="git_push",
+            description="Push local commits to the remote git repository",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "remote": {
+                        "type": "string",
+                        "description": "Git remote name (default: origin)",
+                        "default": "origin"
+                    },
+                    "branch": {
+                        "type": "string",
+                        "description": "Branch to push (default: current branch)"
+                    },
+                    "repo_path": {
+                        "type": "string",
+                        "description": "Path to the git repository",
+                        "default": "/Users/marston.ward/Documents/GitHub/website"
+                    }
+                }
+            }
+        ),
+        Tool(
+            name="deploy_and_monitor",
+            description="Push code to git and then monitor the resulting Vercel deployment to completion",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "remote": {
+                        "type": "string",
+                        "description": "Git remote name (default: origin)",
+                        "default": "origin"
+                    },
+                    "branch": {
+                        "type": "string",
+                        "description": "Branch to push (default: current branch)"
+                    },
+                    "project_name": {
+                        "type": "string",
+                        "description": "Vercel project name (default: website)",
+                        "default": "website"
+                    },
+                    "repo_path": {
+                        "type": "string",
+                        "description": "Path to the git repository",
+                        "default": "/Users/marston.ward/Documents/GitHub/website"
+                    }
+                }
+            }
+        ),
+        Tool(
+            name="check_deployment",
+            description="Check the status of the most recent Vercel deployment",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "project_name": {
+                        "type": "string",
+                        "description": "Vercel project name (default: website)",
+                        "default": "website"
+                    }
+                }
+            }
+        ),
+        Tool(
+            name="list_deployments",
+            description="List recent Vercel deployments for a project",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "project_name": {
+                        "type": "string",
+                        "description": "Vercel project name (default: website)",
+                        "default": "website"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Number of deployments to return (default: 5)",
+                        "default": 5
+                    }
+                }
+            }
+        ),
+        Tool(
+            name="get_deployment_logs",
+            description="Get build logs for a specific Vercel deployment",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "deployment_id": {
+                        "type": "string",
+                        "description": "Vercel deployment ID"
+                    }
+                },
+                "required": ["deployment_id"]
+            }
+        )
+    ]
+
+@server.call_tool()
+async def call_tool(name: str, arguments: Dict[str, Any]) -> CallToolResult:
+    """Handle tool calls by delegating to cmd_* functions"""
+    try:
+        result = await handle_mcp_request(name, arguments)
+    except Exception as e:
+        logger.error(f"Error executing {name}: {e}")
+        result = f"❌ **Error executing {name}**: {str(e)}"
+    return CallToolResult(content=[TextContent(type="text", text=result)])
+
 async def main():
-    if len(sys.argv) < 2:
-        print(__doc__)
-        return
-    
-    command = sys.argv[1]
-    args = sys.argv[2:]
-    
-    # Map CLI commands to functions
-    command_map = {
-        "git-status": lambda: cmd_git_status(),
-        "git-push": lambda: cmd_git_push(args[0] if args else "origin", args[1] if len(args) > 1 else None),
-        "deploy-and-monitor": lambda: cmd_deploy_and_monitor(),
-        "check-deployment": lambda: cmd_check_deployment(),
-        "monitor-deployment": lambda: cmd_monitor_deployment(),
-        "list-deployments": lambda: cmd_list_deployments(limit=int(args[0]) if args else 5),
-        "get-logs": lambda: cmd_get_logs(args[0]) if args else cmd_get_logs("")
-    }
-    
-    if command in command_map:
-        try:
-            result = await command_map[command]()
-            print(result)
-        except Exception as e:
-            print(f"❌ **Error**: {str(e)}")
-            return
-    else:
-        print(f"❌ **Unknown command**: {command}")
-        print(__doc__)
+    """Run the git-vercel-ops MCP server"""
+    async with stdio_server() as (read_stream, write_stream):
+        await server.run(
+            read_stream,
+            write_stream,
+            InitializationOptions(
+                server_name="git-vercel-ops",
+                server_version="1.0.0",
+                capabilities=server.get_capabilities(
+                    notification_options=NotificationOptions(),
+                    experimental_capabilities={}
+                )
+            )
+        )
 
 if __name__ == "__main__":
     asyncio.run(main())

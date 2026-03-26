@@ -1,1 +1,61 @@
-import { NextRequest, NextResponse } from 'next/server'\n\n// API endpoint to demonstrate security features\nexport async function GET(request: NextRequest) {\n  // Get security headers from the request\n  const headers = {\n    'csp': request.headers.get('content-security-policy') || 'Not Set',\n    'hsts': request.headers.get('strict-transport-security') || 'Not Set',\n    'xframe': request.headers.get('x-frame-options') || 'Not Set',\n    'xcontent': request.headers.get('x-content-type-options') || 'Not Set',\n    'xss': request.headers.get('x-xss-protection') || 'Not Set',\n    'referrer': request.headers.get('referrer-policy') || 'Not Set',\n  }\n\n  // Get rate limiting info\n  const rateLimitInfo = {\n    remaining: request.headers.get('x-rate-limit-remaining') || 'N/A',\n    limit: '100 per 15 minutes',\n    window: '15 minutes'\n  }\n\n  // Security scan results\n  const securityScan = {\n    timestamp: new Date().toISOString(),\n    ssl: {\n      grade: 'A+',\n      protocol: 'TLS 1.3',\n      cipher: 'TLS_AES_256_GCM_SHA384',\n      verified: true\n    },\n    headers: headers,\n    rateLimit: rateLimitInfo,\n    vulnerabilities: {\n      high: 0,\n      medium: 0,\n      low: 0,\n      info: 0\n    },\n    compliance: {\n      'SOC 2': 'Compliant',\n      'GDPR': 'Compliant',\n      'NIST CSF': 'Implemented',\n      'OWASP Top 10': 'Mitigated'\n    }\n  }\n\n  return NextResponse.json({\n    status: 'secure',\n    message: 'Security scan completed successfully',\n    data: securityScan\n  })\n}\n\n// POST endpoint to test rate limiting\nexport async function POST(request: NextRequest) {\n  return NextResponse.json({\n    status: 'success',\n    message: 'Rate limiting test endpoint',\n    timestamp: new Date().toISOString()\n  })\n}
+import { NextRequest, NextResponse } from 'next/server'
+
+// API endpoint to demonstrate security features
+export async function GET(request: NextRequest) {
+  // Get security headers from the request
+  const headers = {
+    'csp': request.headers.get('content-security-policy') || 'Not Set',
+    'hsts': request.headers.get('strict-transport-security') || 'Not Set',
+    'xframe': request.headers.get('x-frame-options') || 'Not Set',
+    'xcontent': request.headers.get('x-content-type-options') || 'Not Set',
+    'xss': request.headers.get('x-xss-protection') || 'Not Set',
+    'referrer': request.headers.get('referrer-policy') || 'Not Set',
+  }
+
+  // Get rate limiting info
+  const rateLimitInfo = {
+    remaining: request.headers.get('x-rate-limit-remaining') || 'N/A',
+    limit: '100 per 15 minutes',
+    window: '15 minutes'
+  }
+
+  // Security scan results
+  const securityScan = {
+    timestamp: new Date().toISOString(),
+    ssl: {
+      grade: 'A+',
+      protocol: 'TLS 1.3',
+      cipher: 'TLS_AES_256_GCM_SHA384',
+      verified: true
+    },
+    headers: headers,
+    rateLimit: rateLimitInfo,
+    vulnerabilities: {
+      high: 0,
+      medium: 0,
+      low: 0,
+      info: 0
+    },
+    compliance: {
+      'SOC 2': 'Compliant',
+      'GDPR': 'Compliant',
+      'NIST CSF': 'Implemented',
+      'OWASP Top 10': 'Mitigated'
+    }
+  }
+
+  return NextResponse.json({
+    status: 'secure',
+    message: 'Security scan completed successfully',
+    data: securityScan
+  })
+}
+
+// POST endpoint to test rate limiting
+export async function POST(request: NextRequest) {
+  return NextResponse.json({
+    status: 'success',
+    message: 'Rate limiting test endpoint',
+    timestamp: new Date().toISOString()
+  })
+}
