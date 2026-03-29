@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ArticleRenderer from "@/components/ArticleRenderer";
 import BlogComments from "@/components/BlogComments";
+import Link from "next/link";
 import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 
 type Props = {
@@ -51,12 +52,12 @@ export default async function BlogPost({ params }: Props) {
 
         <div className="mx-auto max-w-3xl px-6">
           {/* Back link */}
-          <a
+          <Link
             href="/blog"
             className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition mb-10"
           >
             <ArrowLeftIcon className="h-4 w-4" /> Back to Insights
-          </a>
+          </Link>
 
           {/* Header */}
           <div className="mb-10">

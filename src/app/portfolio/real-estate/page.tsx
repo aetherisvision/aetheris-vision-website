@@ -209,7 +209,7 @@ export default function RealEstatePage() {
       {/* Home Valuation CTA */}
       <section id="valuation" className="px-6 py-20" style={{ background: "#1c1917" }}>
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="mb-3 text-3xl font-bold text-white">What's Your Home Worth?</h2>
+          <h2 className="mb-3 text-3xl font-bold text-white">What&apos;s Your Home Worth?</h2>
           <p className="mb-10 text-stone-400">Get a free, no-obligation comparative market analysis from one of our agents — usually delivered within 24 hours.</p>
           <div className="rounded-2xl bg-[#faf9f7] p-8 text-left">
             <div className="grid gap-4 sm:grid-cols-2">

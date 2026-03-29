@@ -171,7 +171,7 @@ export default function WpEditorialPage() {
             <div>
               <p className="font-semibold text-gray-900">Powered by Headless WordPress</p>
               <p className="mt-1 text-sm text-gray-600">
-                This publication's editors manage all content — articles, authors, categories, and media — inside a familiar WordPress dashboard.
+                This publication&apos;s editors manage all content — articles, authors, categories, and media — inside a familiar WordPress dashboard.
                 The frontend is built in Next.js and fetches content via WPGraphQL, delivering fast load times with full editorial control.
                 No developer needed for day-to-day publishing.
               </p>

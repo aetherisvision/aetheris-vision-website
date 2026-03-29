@@ -687,7 +687,7 @@ function CustomerDashboard({ user }: { user: User }) {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {user.name.split(' ')[0]}!</h1>
-        <p className="text-gray-600">Here's an overview of your account and projects</p>
+        <p className="text-gray-600">Here&apos;s an overview of your account and projects</p>
       </div>
 
       {/* Quick Stats */}

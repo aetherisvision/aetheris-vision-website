@@ -78,7 +78,7 @@ export default function FitnessPage() {
           <div className="max-w-3xl">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#22c55e]/30 bg-[#22c55e]/10 px-4 py-1.5 text-sm font-semibold text-[#22c55e]">
               <span className="h-2 w-2 rounded-full bg-[#22c55e] animate-pulse" />
-              OKC's Most Results-Driven Gym
+              OKC&apos;s Most Results-Driven Gym
             </div>
             <h1 className="mb-6 text-6xl font-black leading-none uppercase sm:text-8xl" style={{ letterSpacing: "-0.03em" }}>
               Train<br />
@@ -118,7 +118,7 @@ export default function FitnessPage() {
         <div className="mx-auto max-w-6xl">
           <div className="mb-12">
             <p className="mb-2 text-xs font-black uppercase tracking-widest text-[#22c55e]">Schedule</p>
-            <h2 className="text-4xl font-black uppercase text-white" style={{ letterSpacing: "-0.02em" }}>This Week's Classes</h2>
+            <h2 className="text-4xl font-black uppercase text-white" style={{ letterSpacing: "-0.02em" }}>This Week&apos;s Classes</h2>
             <p className="mt-3 text-gray-500">Reserve your spot in the app. Classes fill fast.</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -185,7 +185,7 @@ export default function FitnessPage() {
       <section id="join" className="px-6 py-20 border-t border-white/5">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="mb-3 text-4xl font-black uppercase text-white" style={{ letterSpacing: "-0.02em" }}>Start Your 7-Day Trial</h2>
-          <p className="mb-10 text-gray-500">No credit card needed. Just show up. If you're not in, no charge.</p>
+          <p className="mb-10 text-gray-500">No credit card needed. Just show up. If you&apos;re not in, no charge.</p>
           <div className="rounded-2xl border border-white/5 bg-white/[0.04] p-8 text-left">
             <div className="grid gap-4 sm:grid-cols-2">
               <div><label className="mb-1 block text-xs font-bold uppercase tracking-widest text-gray-500">First Name</label><div className="h-10 rounded border border-white/10 bg-white/[0.05]" /></div>
@@ -194,7 +194,7 @@ export default function FitnessPage() {
               <div><label className="mb-1 block text-xs font-bold uppercase tracking-widest text-gray-500">Phone</label><div className="h-10 rounded border border-white/10 bg-white/[0.05]" /></div>
             </div>
             <button className="mt-6 w-full rounded bg-[#22c55e] py-3 text-sm font-black uppercase tracking-wide text-black hover:bg-green-400 transition-colors">Claim My Free Trial</button>
-            <p className="mt-3 text-center text-xs text-gray-600">We'll reach out within a few hours to set up your first visit.</p>
+            <p className="mt-3 text-center text-xs text-gray-600">We&apos;ll reach out within a few hours to set up your first visit.</p>
           </div>
         </div>
       </section>

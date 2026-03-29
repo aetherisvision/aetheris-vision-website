@@ -7,7 +7,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { encode } from 'next-auth/jwt'
 import { sql } from '@/lib/db'
 
+function isAdmin(req: NextRequest) {
+  return req.cookies.get('av-admin-session')?.value === 'authenticated'
+}
+
 export async function POST(request: NextRequest) {
+  if (!isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const { clientId } = await request.json()
 
   if (!clientId) {

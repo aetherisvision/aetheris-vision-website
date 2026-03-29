@@ -1,5 +1,6 @@
 import { ArrowRightIcon, GlobeAltIcon, CpuChipIcon, ShieldCheckIcon, ChartBarIcon, EnvelopeIcon, CodeBracketIcon, AcademicCapIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
+import Link from "next/link";
 import { SITE } from "@/lib/constants";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -131,7 +132,7 @@ export default async function Home() {
               
               <FadeIn delay={0.15}>
                 <p className="text-lg md:text-xl text-gray-300 font-light leading-relaxed mb-6">
-                  Derived from the ancient Latin and Greek word <span className="text-white italic">aetheris</span>—meaning "the clear sky" or "the pure, fresh air breathed by the gods"—our name reflects a profound commitment to mapping the unknown.
+                  Derived from the ancient Latin and Greek word <span className="text-white italic">aetheris</span>—meaning &quot;the clear sky&quot; or &quot;the pure, fresh air breathed by the gods&quot;—our name reflects a profound commitment to mapping the unknown.
                 </p>
               </FadeIn>
               
@@ -325,7 +326,7 @@ export default async function Home() {
                     Ready to build something?
                   </h2>
                   <p className="text-gray-400 font-light leading-relaxed">
-                    Tell us about your project and we'll respond within one business day. No pressure, no sales pitch — just an honest conversation about what you need and whether we're the right fit.
+                    Tell us about your project and we&apos;ll respond within one business day. No pressure, no sales pitch — just an honest conversation about what you need and whether we&apos;re the right fit.
                   </p>
                 </div>
 
@@ -344,12 +345,12 @@ export default async function Home() {
                     <EnvelopeIcon className="h-4 w-4" />
                     Book a Consultation
                   </a>
-                  <a
+                  <Link
                     href="/blog"
                     className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 bg-transparent px-8 text-sm font-medium text-white hover:bg-white/5 transition"
                   >
                     Read Our Insights
-                  </a>
+                  </Link>
                 </div>
               </div>
             </FadeIn>

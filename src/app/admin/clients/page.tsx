@@ -41,14 +41,15 @@ export default function AdminClientsPage() {
   const [successMsg, setSuccessMsg] = useState('')
   const [form, setForm] = useState({ name: '', contact_name: '', email: '', phone: '' })
 
-  useEffect(() => { fetchClients() }, [])
-
   async function fetchClients() {
     const r = await fetch('/api/admin/clients')
     const data = await r.json()
     setClients(data.clients ?? [])
     setLoading(false)
   }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
+  useEffect(() => { fetchClients() }, [])
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()

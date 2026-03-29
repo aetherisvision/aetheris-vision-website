@@ -143,6 +143,7 @@ const MiniChart: React.FC<MiniChartProps> = ({ data, type, color }) => {
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const AlertItem: React.FC<{ alert: any; onResolve: (id: number) => void }> = ({ alert, onResolve }) => {
   const iconMap = {
     error: ExclamationTriangleIcon,

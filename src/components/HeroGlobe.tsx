@@ -21,6 +21,7 @@ export default function HeroGlobe() {
     // Returning null here means the dynamic import never fires on mobile.
     const isDesktop = window.innerWidth >= 768;
     if (isDesktop && checkWebGL()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShow(true);
     }
   }, []);

@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 
-export async function GET() {
+function isAdmin(req: NextRequest) {
+  return req.cookies.get('av-admin-session')?.value === 'authenticated'
+}
+
+export async function GET(req: NextRequest) {
+  if (!isAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const projects = await sql`
     SELECT p.id, p.name, p.status, p.current_phase, p.start_date,
            p.phase_proposal_date, p.phase_kickoff_date, p.phase_design_date,
@@ -15,6 +21,8 @@ export async function GET() {
 }
 
 export async function PATCH(request: NextRequest) {
+  if (!isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const { id, current_phase, phase_proposal_date, phase_kickoff_date, phase_design_date,
           phase_development_date, phase_review_date, phase_launched_date } = await request.json()
 

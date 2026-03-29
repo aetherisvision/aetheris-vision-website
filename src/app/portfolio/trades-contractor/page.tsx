@@ -109,7 +109,7 @@ export default function TradesContractorPage() {
             {reviews.map((r) => (
               <div key={r.name} className="rounded-2xl bg-white p-6 shadow-sm">
                 <p className="mb-3 text-xl text-orange-500">{"★".repeat(r.stars)}</p>
-                <p className="text-sm leading-relaxed text-zinc-600">"{r.text}"</p>
+                <p className="text-sm leading-relaxed text-zinc-600">&quot;{r.text}&quot;</p>
                 <p className="mt-4 text-xs font-bold text-zinc-800">— {r.name}</p>
               </div>
             ))}
@@ -190,7 +190,7 @@ export default function TradesContractorPage() {
       <section id="quote" className="px-6 py-20">
         <div className="mx-auto max-w-xl">
           <h2 className="mb-2 text-center text-3xl font-extrabold text-zinc-900">Get a Free Quote</h2>
-          <p className="mb-8 text-center text-zinc-500">No pressure. We'll visit, assess, and give you a firm price — usually same day.</p>
+          <p className="mb-8 text-center text-zinc-500">No pressure. We&apos;ll visit, assess, and give you a firm price — usually same day.</p>
           <div className="rounded-2xl border border-zinc-200 p-8 shadow-sm">
             <div className="grid gap-4 sm:grid-cols-2">
               {["Name", "Phone", "Email", "Service Needed"].map((label) => (

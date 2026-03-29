@@ -138,7 +138,7 @@ export default function LawFirmPage() {
                 At Mitchell & Associates, we zealously advocate on your behalf, ensure that your legal interests are paramount, and resolve your legal disputes with experience and care.
               </p>
               <p className="text-gray-600 leading-relaxed">
-                We believe that the attorney-client relationship is sacrosanct and must be based on understanding, trust, duty, and confidence. These basic principles are at the foundation of our firm's philosophy.
+                We believe that the attorney-client relationship is sacrosanct and must be based on understanding, trust, duty, and confidence. These basic principles are at the foundation of our firm&apos;s philosophy.
               </p>
             </div>
             
@@ -194,7 +194,7 @@ export default function LawFirmPage() {
       <section className="bg-gradient-to-b from-gray-50 to-white px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <h2 className="mb-2 text-center text-3xl font-bold text-[#1e3a5f]">Visit Our Office</h2>
-          <p className="mb-12 text-center text-zinc-500">Located in Oklahoma City's legal district, serving clients statewide</p>
+          <p className="mb-12 text-center text-zinc-500">Located in Oklahoma City&apos;s legal district, serving clients statewide</p>
           
           <div className="grid gap-8 lg:grid-cols-2">
             {/* Interactive Map */}

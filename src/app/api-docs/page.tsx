@@ -20,10 +20,10 @@ const apiEndpoints = [
 
 export default function ApiDocsPage() {
   const [selectedEndpoint, setSelectedEndpoint] = useState(apiEndpoints[0])
-  const [responses, setResponses] = useState<Record<string, any>>({})
+  const [responses, setResponses] = useState<Record<string, { status: number; data: unknown }>>({})
   const [loading, setLoading] = useState<string | null>(null)
 
-  const testEndpoint = async (endpoint: any) => {
+  const testEndpoint = async (endpoint: typeof apiEndpoints[number]) => {
     if (loading) return
     
     setLoading(endpoint.id)
