@@ -6,8 +6,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { encode } from 'next-auth/jwt'
 import { sql } from '@/lib/db'
+import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 
 export async function POST(request: NextRequest) {
+  if (!isAdmin(request)) return unauthorizedResponse()
+
   const { clientId } = await request.json()
 
   if (!clientId) {
