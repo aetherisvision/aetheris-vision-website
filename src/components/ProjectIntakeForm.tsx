@@ -154,7 +154,7 @@ export default function ProjectIntakeForm() {
         window.gtag('event', 'form_submit', {
           event_category: 'engagement',
           event_label: 'project_intake_form',
-          value: formData.budgetRange
+          value: 0
         });
       }
 
