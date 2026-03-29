@@ -9,9 +9,9 @@ declare global {
         page_location?: string;
         event_category?: string;
         event_label?: string;
-        value?: any;
+        value?: number;
         send_to?: string;
-        [key: string]: any;
+        [key: string]: string | number | boolean | undefined;
       }
     ) => void;
   }

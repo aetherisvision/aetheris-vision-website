@@ -21,6 +21,66 @@ interface PerformanceGrade {
   color: string
 }
 
+function MetricCard({
+  title,
+  value,
+  unit,
+  thresholds,
+  icon: Icon,
+  description,
+  calculateGrade,
+}: {
+  title: string
+  value: number | null
+  unit: string
+  thresholds: number[]
+  icon: React.ComponentType<{ className?: string }>
+  description: string
+  calculateGrade: (metric: number | null, thresholds: number[]) => PerformanceGrade
+}) {
+  const grade = calculateGrade(value, thresholds)
+
+  return (
+    <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <Icon className="h-6 w-6 text-slate-600 dark:text-slate-400" />
+          <h3 className="font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
+        </div>
+        <div className={`text-2xl font-bold ${grade.color}`}>
+          {grade.score < 0 ? '—' : grade.grade}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex items-baseline gap-2">
+          <span className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+            {value !== null ? value.toLocaleString() : '—'}
+          </span>
+          <span className="text-sm text-slate-500 dark:text-slate-400">{unit}</span>
+        </div>
+
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          {description}
+        </p>
+
+        {/* Performance bar */}
+        <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+          <div
+            className={`h-2 rounded-full transition-all duration-500 ${
+              grade.score >= 90 ? 'bg-emerald-500' :
+              grade.score >= 80 ? 'bg-green-500' :
+              grade.score >= 70 ? 'bg-yellow-500' :
+              grade.score >= 60 ? 'bg-orange-500' : 'bg-red-500'
+            }`}
+            style={{ width: `${Math.max(grade.score, 5)}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function PerformancePage() {
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -39,6 +99,7 @@ export default function PerformancePage() {
         ttfb: navigation ? Math.round(navigation.responseStart - navigation.requestStart) : 0,
         loadTime: navigation ? Math.round(navigation.loadEventEnd - navigation.fetchStart) : 0,
         domNodes: document.querySelectorAll('*').length,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         memoryUsage: (performance as any).memory ? Math.round((performance as any).memory.usedJSHeapSize / 1024 / 1024) : null,
         timestamp: Date.now()
       }
@@ -100,64 +161,6 @@ export default function PerformancePage() {
     if (metric <= thresholds[2]) return { score: 75, grade: 'B', color: 'text-yellow-500' }
     if (metric <= thresholds[3]) return { score: 65, grade: 'C', color: 'text-orange-500' }
     return { score: 40, grade: 'F', color: 'text-red-500' }
-  }
-
-  const MetricCard = ({ 
-    title, 
-    value, 
-    unit, 
-    thresholds, 
-    icon: Icon, 
-    description 
-  }: { 
-    title: string
-    value: number | null
-    unit: string
-    thresholds: number[]
-    icon: React.ComponentType<{ className?: string }>
-    description: string
-  }) => {
-    const grade = calculateGrade(value, thresholds)
-    
-    return (
-      <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <Icon className="h-6 w-6 text-slate-600 dark:text-slate-400" />
-            <h3 className="font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
-          </div>
-          <div className={`text-2xl font-bold ${grade.color}`}>
-            {grade.score < 0 ? '—' : grade.grade}
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-slate-900 dark:text-slate-100">
-              {value !== null ? value.toLocaleString() : '—'}
-            </span>
-            <span className="text-sm text-slate-500 dark:text-slate-400">{unit}</span>
-          </div>
-          
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            {description}
-          </p>
-          
-          {/* Performance bar */}
-          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-            <div 
-              className={`h-2 rounded-full transition-all duration-500 ${
-                grade.score >= 90 ? 'bg-emerald-500' :
-                grade.score >= 80 ? 'bg-green-500' :
-                grade.score >= 70 ? 'bg-yellow-500' :
-                grade.score >= 60 ? 'bg-orange-500' : 'bg-red-500'
-              }`}
-              style={{ width: `${Math.max(grade.score, 5)}%` }}
-            />
-          </div>
-        </div>
-      </div>
-    )
   }
 
   if (isLoading) {
@@ -227,8 +230,9 @@ export default function PerformancePage() {
               thresholds={[2500, 4000, 6000, 8000]}
               icon={EyeIcon}
               description="Measures loading performance. Good LCP is 2.5s or faster."
+              calculateGrade={calculateGrade}
             />
-            
+
             <MetricCard
               title="First Contentful Paint"
               value={metrics?.fcp || null}
@@ -236,8 +240,9 @@ export default function PerformancePage() {
               thresholds={[1800, 3000, 4500, 6000]}
               icon={BoltIcon}
               description="Time when first content appears. Good FCP is 1.8s or faster."
+              calculateGrade={calculateGrade}
             />
-            
+
             <MetricCard
               title="Time to First Byte"
               value={metrics?.ttfb || null}
@@ -245,6 +250,7 @@ export default function PerformancePage() {
               thresholds={[200, 500, 800, 1200]}
               icon={ClockIcon}
               description="Server response time. Good TTFB is 200ms or faster."
+              calculateGrade={calculateGrade}
             />
           </div>
 
@@ -261,8 +267,9 @@ export default function PerformancePage() {
               thresholds={[3000, 5000, 8000, 12000]}
               icon={ChartBarIcon}
               description="Complete page load time. Good load is 3s or faster."
+              calculateGrade={calculateGrade}
             />
-            
+
             <MetricCard
               title="DOM Complexity"
               value={metrics?.domNodes || null}
@@ -270,8 +277,9 @@ export default function PerformancePage() {
               thresholds={[800, 1500, 3000, 5000]}
               icon={ChartBarIcon}
               description="Total DOM elements. Lower count improves performance."
+              calculateGrade={calculateGrade}
             />
-            
+
             <MetricCard
               title="Memory Usage"
               value={metrics?.memoryUsage || null}
@@ -279,6 +287,7 @@ export default function PerformancePage() {
               thresholds={[20, 50, 100, 200]}
               icon={ChartBarIcon}
               description="JavaScript heap size. Lower usage improves performance."
+              calculateGrade={calculateGrade}
             />
           </div>
 

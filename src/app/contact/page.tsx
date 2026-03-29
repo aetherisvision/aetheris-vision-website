@@ -28,7 +28,7 @@ export default function ContactPage() {
               Contact Us
             </h1>
             <p className="text-gray-400 font-light text-lg max-w-2xl leading-relaxed mb-10">
-              Have a web project in mind, or just want to ask a question? Send a message and we'll respond within one business day. No sales pitch — just a straight answer.
+              Have a web project in mind, or just want to ask a question? Send a message and we&apos;ll respond within one business day. No sales pitch — just a straight answer.
             </p>
           </FadeIn>
 

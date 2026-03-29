@@ -60,6 +60,7 @@ export default function RotatingEarth() {
     try {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("webgl") ?? canvas.getContext("experimental-webgl");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (!ctx) setHasWebGL(false);
     } catch {
       setHasWebGL(false);
@@ -74,9 +75,9 @@ export default function RotatingEarth() {
       media.addEventListener("change", onChange);
       return () => media.removeEventListener("change", onChange);
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
+       
       media.addListener(onChange);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
+       
       return () => media.removeListener(onChange);
     }
   }, []);

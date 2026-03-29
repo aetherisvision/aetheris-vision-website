@@ -229,9 +229,9 @@ export default function PhotographyStudioPage() {
           <div className="grid gap-16 sm:grid-cols-2 items-center">
             <div>
               <p className="mb-4 text-xs font-semibold uppercase tracking-[0.25em]" style={{ color: "#c8a882" }}>About</p>
-              <h2 className="mb-5 text-3xl font-light tracking-tight text-white">Hi, I'm Mariah Lumen.</h2>
+              <h2 className="mb-5 text-3xl font-light tracking-tight text-white">Hi, I&apos;m Mariah Lumen.</h2>
               <p className="mb-4 font-light leading-relaxed text-stone-400">
-                I've spent over a decade photographing the moments that matter most — weddings, new families, professional milestones, and creative campaigns across Oklahoma City and beyond.
+                I&apos;ve spent over a decade photographing the moments that matter most — weddings, new families, professional milestones, and creative campaigns across Oklahoma City and beyond.
               </p>
               <p className="font-light leading-relaxed text-stone-500">
                 My approach is unhurried and intentional. I believe the best photographs come from genuine connection, not manufactured poses. Every session is designed to feel as natural as the light I shoot in.
@@ -264,7 +264,7 @@ export default function PhotographyStudioPage() {
           <div className="grid gap-6 sm:grid-cols-3">
             {testimonials.map((t) => (
               <div key={t.name} className="rounded-xl border border-white/5 p-7" style={{ background: "#161616" }}>
-                <p className="mb-6 text-sm font-light leading-relaxed text-stone-300">"{t.quote}"</p>
+                <p className="mb-6 text-sm font-light leading-relaxed text-stone-300">&quot;{t.quote}&quot;</p>
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold text-[#111111]"
                     style={{ background: "linear-gradient(135deg, #c8a882, #a0784a)" }}>
@@ -286,7 +286,7 @@ export default function PhotographyStudioPage() {
         <div className="mx-auto max-w-2xl text-center">
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.25em]" style={{ color: "#c8a882" }}>Get in Touch</p>
           <h2 className="mb-3 text-3xl font-light tracking-tight text-white">Book Your Session</h2>
-          <p className="mb-12 font-light text-stone-500">Tell us a little about what you have in mind and we'll reach out within 24 hours.</p>
+          <p className="mb-12 font-light text-stone-500">Tell us a little about what you have in mind and we&apos;ll reach out within 24 hours.</p>
           <div className="rounded-2xl border border-white/6 p-8 text-left" style={{ background: "#161616" }}>
             <div className="grid gap-5 sm:grid-cols-2">
               <div>

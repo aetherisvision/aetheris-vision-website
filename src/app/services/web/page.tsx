@@ -224,7 +224,7 @@ export default function WebServicesPage() {
             <FadeIn>
               <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4">Ready to get started?</h2>
               <p className="text-gray-400 font-light mb-8 max-w-xl mx-auto">
-                Fill out the intake form and we'll follow up within one business day. No obligation.
+                Fill out the intake form and we&apos;ll follow up within one business day. No obligation.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a

@@ -61,7 +61,7 @@ export default function AboutPage() {
               </p>
               <div className="space-y-4 text-gray-400 font-light leading-relaxed">
                 <p>
-                  Aetheris Vision introduces a disruptive convergence: revolutionary capabilities that shouldn't exist in a single entity. We don't solve atmospheric uncertainty — <strong className="text-gray-200">we eliminate it through systematic obsolescence of traditional methods</strong>.
+                  Aetheris Vision introduces a disruptive convergence: revolutionary capabilities that shouldn&apos;t exist in a single entity. We don&apos;t solve atmospheric uncertainty — <strong className="text-gray-200">we eliminate it through systematic obsolescence of traditional methods</strong>.
                 </p>
                 <p>
                   Marston Ward represents an impossibility: 35 years dismantling predictive barriers through <strong className="text-gray-200">United States Air Force</strong> combat operations, groundbreaking research at <strong className="text-gray-200">Stockholm University</strong> and <strong className="text-gray-200">Chalmers University of Technology</strong>, and now pioneering AI systems that render billion-dollar legacy forecasting infrastructure irrelevant.
@@ -70,7 +70,7 @@ export default function AboutPage() {
                   This career follows a disruptive pattern: <strong className="text-gray-200">identify broken paradigm, engineer superior replacement, make old methods obsolete</strong>. From revolutionizing military weather operations in the 90s to architecting AI-NWP fusion systems that outperform traditional models while consuming 1% of the computational resources.
                 </p>
                 <p>
-                  Aetheris Vision weaponizes that pattern: a precision instrument designed to introduce revolutionary capabilities that transform entire operational frameworks. We don't adapt to existing markets — <strong className="text-gray-200">we create new paradigms that make conventional approaches irrelevant</strong>.
+                  Aetheris Vision weaponizes that pattern: a precision instrument designed to introduce revolutionary capabilities that transform entire operational frameworks. We don&apos;t adapt to existing markets — <strong className="text-gray-200">we create new paradigms that make conventional approaches irrelevant</strong>.
                 </p>
               </div>
             </FadeIn>

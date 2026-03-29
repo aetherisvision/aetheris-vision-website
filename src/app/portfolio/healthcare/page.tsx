@@ -157,7 +157,7 @@ export default function HealthcarePage() {
               <span key={ins} className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700">{ins}</span>
             ))}
           </div>
-          <p className="mt-8 text-sm text-gray-400">Don't see your plan? Call us — we may still be in-network.</p>
+          <p className="mt-8 text-sm text-gray-400">Don&apos;t see your plan? Call us — we may still be in-network.</p>
         </div>
       </section>
 

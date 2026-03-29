@@ -38,6 +38,7 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMobileOpen(false), [pathname]);
 
   function isActive(href: string) {

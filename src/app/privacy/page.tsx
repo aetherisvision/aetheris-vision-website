@@ -26,7 +26,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">1. Who We Are</h2>
             <p>
-              Aetheris Vision LLC ("Aetheris Vision", "we", "us", or "our") is a
+              Aetheris Vision LLC (&quot;Aetheris Vision&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) is a
               Veteran-Owned Small Business (VOSB) incorporated in the United States,
               providing operational meteorology consulting, AI/ML integration, and
               defense systems advisory services to state and federal agencies.
@@ -57,7 +57,7 @@ export default function PrivacyPage() {
                 </p>
                 <p className="mt-2 text-sm text-gray-500">
                   Legal basis (GDPR): Legitimate interest (responding to a business inquiry you
-                  initiated). For California residents: disclosed under CCPA as "business purpose."
+                  initiated). For California residents: disclosed under CCPA as &quot;business purpose.&quot;
                 </p>
               </div>
 
@@ -70,7 +70,7 @@ export default function PrivacyPage() {
                   solely to conduct the scheduled meeting.
                 </p>
                 <p className="mt-2 text-sm text-gray-500">
-                  Cal.com's privacy policy applies to data processed on their platform:
+                  Cal.com&apos;s privacy policy applies to data processed on their platform:
                   cal.com/privacy
                 </p>
               </div>
@@ -81,7 +81,7 @@ export default function PrivacyPage() {
                   Blog comment functionality is provided by <strong className="text-gray-300">Giscus</strong>,
                   which uses GitHub Discussions as its backend. To leave a comment, you must
                   authenticate via your GitHub account. All comment data is stored by GitHub and
-                  subject to GitHub's privacy policy: docs.github.com/en/site-policy/privacy-policies.
+                  subject to GitHub&apos;s privacy policy: docs.github.com/en/site-policy/privacy-policies.
                   We do not receive or store GitHub account data on our servers.
                 </p>
               </div>
@@ -95,7 +95,7 @@ export default function PrivacyPage() {
                   <a href="mailto:contact@aetherisvision.com" className="text-blue-400 hover:underline">
                     contact@aetherisvision.com
                   </a>{" "}
-                  with "Unsubscribe" in the subject.
+                  with &quot;Unsubscribe&quot; in the subject.
                 </p>
               </div>
 
@@ -109,7 +109,7 @@ export default function PrivacyPage() {
                   marketing or tracking.
                 </p>
                 <p className="mt-2 text-sm text-gray-500">
-                  Vercel's privacy policy: vercel.com/legal/privacy-policy
+                  Vercel&apos;s privacy policy: vercel.com/legal/privacy-policy
                 </p>
               </div>
             </div>
@@ -182,9 +182,9 @@ export default function PrivacyPage() {
                   <li><strong className="text-gray-300">Project intake submissions</strong> — retained for the duration of the project engagement plus 2 years, or up to 3 years from submission if no engagement results.</li>
                   <li><strong className="text-gray-300">Client portal accounts</strong> — retained for the duration of the client relationship plus 1 year after the final project is closed.</li>
                   <li><strong className="text-gray-300">Blog subscription emails</strong> — retained until you unsubscribe.</li>
-                  <li><strong className="text-gray-300">Booking records</strong> — retained per Cal.com's data retention policy.</li>
+                  <li><strong className="text-gray-300">Booking records</strong> — retained per Cal.com&apos;s data retention policy.</li>
                   <li><strong className="text-gray-300">Magic link authentication tokens</strong> — automatically deleted upon use or expiry (24-hour window), whichever comes first.</li>
-                  <li><strong className="text-gray-300">Server logs</strong> — retained per Vercel's data retention policy (typically 30 days).</li>
+                  <li><strong className="text-gray-300">Server logs</strong> — retained per Vercel&apos;s data retention policy (typically 30 days).</li>
                 </ul>
               </div>
               <div>
@@ -194,7 +194,7 @@ export default function PrivacyPage() {
                   <a href="mailto:contact@aetherisvision.com" className="text-blue-400 hover:underline">
                     contact@aetherisvision.com
                   </a>{" "}
-                  with the subject line <strong className="text-gray-300">"Data Deletion Request"</strong> and
+                  with the subject line <strong className="text-gray-300">&quot;Data Deletion Request&quot;</strong> and
                   include the email address associated with your account or submission. We will confirm receipt
                   within 5 business days and complete the deletion within 30 days, except where retention is
                   required by law (e.g., tax or contractual records).
@@ -216,7 +216,7 @@ export default function PrivacyPage() {
                 <ul className="mt-2 ml-4 space-y-1 list-disc list-outside">
                   <li>Access the personal data we hold about you</li>
                   <li>Request correction of inaccurate data</li>
-                  <li>Request deletion ("right to be forgotten")</li>
+                  <li>Request deletion (&quot;right to be forgotten&quot;)</li>
                   <li>Object to processing based on legitimate interest</li>
                   <li>Request restriction of processing</li>
                   <li>Data portability</li>

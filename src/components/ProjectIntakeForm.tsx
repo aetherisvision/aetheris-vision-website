@@ -154,7 +154,7 @@ export default function ProjectIntakeForm() {
         window.gtag('event', 'form_submit', {
           event_category: 'engagement',
           event_label: 'project_intake_form',
-          value: formData.budgetRange
+          value: 0
         });
       }
 
@@ -204,10 +204,10 @@ export default function ProjectIntakeForm() {
         </div>
         <h3 className="text-2xl font-semibold text-white mb-4">Thank You!</h3>
         <p className="text-gray-400 mb-6 max-w-lg mx-auto">
-          Your project intake has been submitted successfully. We've created a dedicated folder for your project and will review your requirements within 4 hours.
+          Your project intake has been submitted successfully. We&apos;ve created a dedicated folder for your project and will review your requirements within 4 hours.
         </p>
         <p className="text-sm text-gray-500">
-          You'll receive an email confirmation at <span className="text-white">{formData.contactEmail}</span> shortly.
+          You&apos;ll receive an email confirmation at <span className="text-white">{formData.contactEmail}</span> shortly.
         </p>
         <div className="mt-8">
           <a
@@ -489,7 +489,7 @@ export default function ProjectIntakeForm() {
           Platform Preference
         </h3>
         <div className="space-y-4">
-          <p className="text-sm text-gray-400">Not sure? Leave this on "Help me decide" and we'll recommend the right stack based on your goals.</p>
+          <p className="text-sm text-gray-400">Not sure? Leave this on &quot;Help me decide&quot; and we&apos;ll recommend the right stack based on your goals.</p>
           <div className="grid grid-cols-1 gap-3">
             {[
               { id: "nextjs", label: "Custom Next.js — Fast, modern, fully custom frontend. Best for performance and brand differentiation." },
@@ -606,7 +606,7 @@ export default function ProjectIntakeForm() {
 
           <div className="bg-gray-900 border border-white/5 rounded-lg p-4">
             <p className="text-xs text-gray-400 leading-relaxed">
-              <strong className="text-gray-300">Security Expertise:</strong> Our team has active DoD Secret clearance, 35+ years of operational security experience, and implements security frameworks from NIST to CMMC. We don't just check compliance boxes—we engineer defense-grade protection into every system.
+              <strong className="text-gray-300">Security Expertise:</strong> Our team has active DoD Secret clearance, 35+ years of operational security experience, and implements security frameworks from NIST to CMMC. We don&apos;t just check compliance boxes—we engineer defense-grade protection into every system.
             </p>
           </div>
         </div>
@@ -670,10 +670,10 @@ export default function ProjectIntakeForm() {
               className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="">Select preference</option>
-              <option value="self-managed">Self-managed - I'll handle updates</option>
+              <option value="self-managed">Self-managed - I&apos;ll handle updates</option>
               <option value="professional-care">Professional Care - $149/mo</option>
               <option value="business-care">Business Care - $299/mo</option>
-              <option value="custom">Custom plan - Let's discuss</option>
+              <option value="custom">Custom plan - Let&apos;s discuss</option>
             </select>
           </div>
         </div>
@@ -730,7 +730,7 @@ export default function ProjectIntakeForm() {
         </button>
         
         <p className="mt-3 text-xs text-gray-500 text-center">
-          By submitting this form, you agree to our privacy policy. We'll respond within 4 hours during business days.
+          By submitting this form, you agree to our privacy policy. We&apos;ll respond within 4 hours during business days.
         </p>
       </div>
     </form>

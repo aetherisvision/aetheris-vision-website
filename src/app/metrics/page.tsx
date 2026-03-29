@@ -122,6 +122,7 @@ export default function MetricsPage() {
         ])
         
         const securityResult = securityData.status === 'fulfilled' ? securityData.value : {}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const perfResult = performanceData.status === 'fulfilled' ? performanceData.value as any : {}
         
         const mockMetrics: SystemMetrics = {

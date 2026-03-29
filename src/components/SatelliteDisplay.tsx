@@ -13,6 +13,7 @@ const CYCLE_MS = 12_000;
 export default function SatelliteDisplay({ sources }: { sources: SatelliteSource[] }) {
   const [index, setIndex] = useState(0);
   const [opacity, setOpacity] = useState(1);
+  const [allFailed, setAllFailed] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const failedRef = useRef<Set<number>>(new Set());
 
@@ -44,7 +45,10 @@ export default function SatelliteDisplay({ sources }: { sources: SatelliteSource
   const handleError = useCallback(() => {
     failedRef.current.add(index);
     // Stop if everything has failed
-    if (failedRef.current.size >= sources.length) return;
+    if (failedRef.current.size >= sources.length) {
+      setAllFailed(true);
+      return;
+    }
     // Skip to the next source that hasn't failed yet
     let candidate = (index + 1) % sources.length;
     while (failedRef.current.has(candidate) && candidate !== index) {
@@ -60,7 +64,6 @@ export default function SatelliteDisplay({ sources }: { sources: SatelliteSource
   if (!sources.length) return null;
 
   const current = sources[index];
-  const allFailed = failedRef.current.size >= sources.length;
 
   return (
     <div className="absolute inset-y-0 right-8 z-0 hidden w-[48vw] max-w-[640px] items-center justify-center md:flex">

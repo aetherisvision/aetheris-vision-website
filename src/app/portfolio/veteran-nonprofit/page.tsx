@@ -74,7 +74,7 @@ export default function VeteranNonprofitPage() {
             <span className="text-red-400">Now We Serve Them.</span>
           </h1>
           <p className="mb-10 max-w-xl text-lg text-gray-300">
-            Veterans Forward Oklahoma delivers direct-impact programs in housing, employment, mental wellness, and entrepreneurship for Oklahoma's 300,000+ veterans.
+            Veterans Forward Oklahoma delivers direct-impact programs in housing, employment, mental wellness, and entrepreneurship for Oklahoma&apos;s 300,000+ veterans.
           </p>
           <div className="flex flex-wrap gap-4">
             <a href="#get-involved" className="rounded-full bg-red-600 px-8 py-3 font-bold text-white shadow-lg hover:bg-red-700 transition-colors">Donate Now</a>
