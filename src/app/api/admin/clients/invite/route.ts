@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sendMagicLink } from '@/lib/send-magic-link'
+import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 
 export async function POST(request: NextRequest) {
+  if (!isAdmin(request)) return unauthorizedResponse()
+
   const { email } = await request.json()
 
   if (!email) {
