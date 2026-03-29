@@ -21,7 +21,8 @@ function buildCsp(nonce: string): string {
 }
 
 const ADMIN_COOKIE = 'av-admin-session'
-const PREVIEW_PASSWORD = process.env.PREVIEW_PASSWORD ?? 'marston-av'
+const PREVIEW_PASSWORD = process.env.PREVIEW_PASSWORD
+if (!PREVIEW_PASSWORD) throw new Error('PREVIEW_PASSWORD env var must be set')
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
