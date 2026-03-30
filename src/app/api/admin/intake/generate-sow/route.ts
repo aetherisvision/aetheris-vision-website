@@ -92,7 +92,22 @@ const TIER_DETAILS = {
 `.trim(),
 };
 
+// Detect if client expressed interest in e-commerce
+function hasEcommerceInterest(submission: Record<string, unknown>): boolean {
+  const fields = [
+    submission.objectives,
+    submission.special_requirements,
+    submission.questions_for_us,
+  ]
+  const text = fields
+    .map(f => (Array.isArray(f) ? f.join(' ') : String(f ?? '')))
+    .join(' ')
+    .toLowerCase()
+  return /e-?commerce|shop|store|cart|checkout|order|payment|sell|product/.test(text)
+}
+
 function buildPrompt(submission: Record<string, unknown>, tier: string, tierRationale: string): string {
+  const wantsEcommerce = hasEcommerceInterest(submission)
   return `
 You are drafting a Statement of Work (SOW) for Aetheris Vision LLC, a technology consulting firm owned by Marston Ward.
 
@@ -143,6 +158,10 @@ Provide a realistic price range for the ${tier} tier given their budget (${submi
 
 8. **Out of Scope**
 List 4-6 items clearly excluded (e.g., logo design, copywriting, third-party licensing fees, ongoing hosting fees after launch).
+${wantsEcommerce
+  ? `IMPORTANT: The client expressed interest in e-commerce. Do NOT list "e-commerce" as a blanket exclusion. Instead, include this nuanced item: "E-commerce functionality (live shopping cart, payment processing, online ordering) is not included in this ${tier} tier engagement. This capability is available as an upgrade to the Business or Enterprise tier and can be scoped as a future phase — contact Aetheris Vision to discuss options."`
+  : 'Include "E-commerce functionality" as a standard OOS item for this tier.'
+}
 
 9. **Change Order Policy**
 Standard 1-paragraph policy: changes to agreed scope require written change order with revised timeline and cost estimate.

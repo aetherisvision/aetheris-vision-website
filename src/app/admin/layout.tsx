@@ -11,9 +11,12 @@ const NAV = [
   { href: '/admin/documents', label: 'Documents' },
   { href: '/admin/invoices',  label: 'Invoices' },
   { href: '/admin/expenses',  label: 'Expenses' },
-  { href: '/performance',     label: 'Performance' },
-  { href: '/api-docs',        label: 'API Docs' },
-  { href: '/metrics',         label: 'Metrics' },
+]
+
+const MORE_NAV = [
+  { href: '/performance', label: 'Performance' },
+  { href: '/api-docs',    label: 'API Docs' },
+  { href: '/metrics',     label: 'Metrics' },
 ]
 
 const dark = {
@@ -25,6 +28,17 @@ const dark = {
   textDim: 'rgba(255,255,255,0.25)',
   blue: '#3b82f6',
   activeNav: 'rgba(59,130,246,0.15)',
+}
+
+function useMoreDropdown() {
+  const [open, setOpen] = useState(false)
+  useEffect(() => {
+    if (!open) return
+    const close = () => setOpen(false)
+    document.addEventListener('click', close)
+    return () => document.removeEventListener('click', close)
+  }, [open])
+  return { open, setOpen }
 }
 
 function useNewIntakeCount() {
@@ -50,6 +64,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname()
   const isLoginPage = pathname === '/admin/login'
   const newIntakeCount = useNewIntakeCount()
+  const { open: moreOpen, setOpen: setMoreOpen } = useMoreDropdown()
 
   if (isLoginPage) {
     return <>{children}</>
@@ -80,18 +95,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <span style={{ fontWeight: '700', fontSize: '14px', color: dark.text }}>Admin</span>
             </div>
-            <nav style={{ display: 'flex', gap: '4px' }}>
+            <nav style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
               {NAV.map(n => {
                 const active = pathname.startsWith(n.href)
                 const showBadge = n.href === '/admin/intake' && newIntakeCount > 0
                 return (
                   <Link key={n.href} href={n.href} style={{
-                    padding: '6px 12px', borderRadius: '6px', fontSize: '14px',
+                    padding: '6px 10px', borderRadius: '6px', fontSize: '13px',
                     fontWeight: active ? '600' : '500',
                     color: active ? dark.blue : dark.textMuted,
                     background: active ? dark.activeNav : 'transparent',
                     textDecoration: 'none', transition: 'all 0.15s',
-                    display: 'flex', alignItems: 'center', gap: '5px',
+                    display: 'flex', alignItems: 'center', gap: '4px',
+                    whiteSpace: 'nowrap',
                   }}>
                     {n.label}
                     {showBadge && (
@@ -107,6 +123,42 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   </Link>
                 )
               })}
+
+              {/* More dropdown for utility pages */}
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setMoreOpen(!moreOpen) }}
+                  style={{
+                    padding: '6px 10px', borderRadius: '6px', fontSize: '13px',
+                    fontWeight: '500', color: dark.textMuted, background: 'transparent',
+                    border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  More
+                  <span style={{ fontSize: '10px', opacity: 0.6 }}>{moreOpen ? '▲' : '▾'}</span>
+                </button>
+                {moreOpen && (
+                  <div style={{
+                    position: 'absolute', top: '100%', left: 0, marginTop: '4px',
+                    background: dark.surface, border: `1px solid ${dark.border}`,
+                    borderRadius: '8px', padding: '4px', zIndex: 100,
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.4)', minWidth: '140px',
+                  }}>
+                    {MORE_NAV.map(n => (
+                      <Link key={n.href} href={n.href} style={{
+                        display: 'block', padding: '8px 12px', borderRadius: '5px',
+                        fontSize: '13px', fontWeight: '500', color: dark.textMuted,
+                        textDecoration: 'none', transition: 'all 0.1s',
+                      }}
+                        onClick={() => setMoreOpen(false)}
+                      >
+                        {n.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             </nav>
           </div>
           <button
