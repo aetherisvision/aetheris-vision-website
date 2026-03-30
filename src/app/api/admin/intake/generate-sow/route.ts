@@ -198,7 +198,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { intake_id, pro_bono: proBono } = await request.json();
+    const { intake_id } = await request.json();
     if (!intake_id) {
       return NextResponse.json({ error: 'intake_id required' }, { status: 400 });
     }
@@ -211,6 +211,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Intake submission not found' }, { status: 404 });
     }
     const submission = rows[0];
+    // Always use the DB-stored pro_bono value — never trust client-sent state
+    const proBono = !!submission.pro_bono;
 
     // Detect tier
     const rawData = (submission.raw_data ?? {}) as Record<string, unknown>;
@@ -258,6 +260,10 @@ export async function POST(request: NextRequest) {
       document_id: documentId,
       title,
       content: sowContent,
+      // Return authoritative DB state so client stays in sync
+      pro_bono: proBono,
+      platform_preference: submission.platform_preference ?? null,
+      status: 'in_review',
     });
 
   } catch (error) {

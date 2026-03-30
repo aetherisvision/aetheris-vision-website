@@ -101,19 +101,25 @@ export default function AdminIntakePage() {
 
   useEffect(() => { fetchSubmissions() }, [])
 
-  async function generateSow(id: number, proBono = false) {
+  async function generateSow(id: number) {
     setGeneratingSow(id)
     try {
       const r = await fetch('/api/admin/intake/generate-sow', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ intake_id: id, pro_bono: proBono }),
+        body: JSON.stringify({ intake_id: id }),
       })
       const data = await r.json()
       if (data.content) {
         setSowDrafts(prev => ({ ...prev, [id]: { tier: data.tier, content: data.content, title: data.title, documentId: data.document_id } }))
         setSowEdits(prev => ({ ...prev, [id]: data.content }))
-        setSubmissions(subs => subs.map(s => s.id === id ? { ...s, status: 'in_review' } : s))
+        // Sync authoritative DB state back into local submissions — never lose pro_bono, platform, etc.
+        setSubmissions(subs => subs.map(s => s.id === id ? {
+          ...s,
+          status: data.status ?? 'in_review',
+          pro_bono: data.pro_bono ?? s.pro_bono,
+          platform_preference: data.platform_preference ?? s.platform_preference,
+        } : s))
       }
     } catch (e) {
       console.error('SOW generation failed:', e)
@@ -475,7 +481,7 @@ export default function AdminIntakePage() {
                           {togglingProBono === sub.id ? '…' : sub.pro_bono ? '★ Pro Bono' : '☆ Pro Bono'}
                         </button>
                         <button
-                          onClick={() => generateSow(sub.id, sub.pro_bono)}
+                          onClick={() => generateSow(sub.id)}
                           disabled={generatingSow === sub.id}
                           style={{
                             padding: '7px 14px', borderRadius: '7px', fontSize: '13px', fontWeight: '600',
