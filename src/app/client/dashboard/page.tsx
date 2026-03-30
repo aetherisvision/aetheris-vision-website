@@ -35,6 +35,7 @@ interface Project {
   phase_development_date: string | null
   phase_review_date: string | null
   phase_launched_date: string | null
+  preview_url: string | null
 }
 
 interface Doc { id: number; title: string; updated_at: string }
@@ -324,10 +325,16 @@ export default function ClientDashboard() {
                                 <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: s.dot, display: 'inline-block', boxShadow: `0 0 5px ${s.dot}` }} />
                                 {s.label}
                               </span>
-                              {p.docuseal_submission_id && p.status !== 'signed' && (
+                              {p.docuseal_submission_id && !p.signed_at && (
                                 <a href={`https://docuseal.com/s/${p.docuseal_submission_id}`} target="_blank" rel="noopener noreferrer" style={{ padding: '9px 18px', borderRadius: '8px', background: 'linear-gradient(135deg, #1e3a5f, #2563eb)', color: '#fff', textDecoration: 'none', fontSize: '13px', fontWeight: '700', boxShadow: '0 4px 16px rgba(59,130,246,0.3)', letterSpacing: '0.02em' }}>
                                   Sign document →
                                 </a>
+                              )}
+                              {p.signed_at && (
+                                <span style={{ padding: '5px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: '600', color: '#34d399', background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.25)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                  Signed
+                                </span>
                               )}
                             </div>
                           </div>
@@ -335,6 +342,21 @@ export default function ClientDashboard() {
                             <>
                               <div style={{ borderTop: `1px solid ${dark.border}`, margin: '24px 0' }} />
                               <ProjectTimeline project={p} />
+                            </>
+                          )}
+                          {p.preview_url && (
+                            <>
+                              <div style={{ borderTop: `1px solid ${dark.border}`, margin: '24px 0' }} />
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                                <div>
+                                  <p style={{ fontSize: '11px', fontWeight: '700', color: dark.textDim, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px' }}>Site Preview</p>
+                                  <p style={{ fontSize: '13px', color: dark.textMuted, margin: 0 }}>View the current state of your website in development.</p>
+                                </div>
+                                <a href={p.preview_url} target="_blank" rel="noopener noreferrer" style={{ padding: '9px 18px', borderRadius: '8px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)', color: dark.blue, textDecoration: 'none', fontSize: '13px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                  View Site →
+                                </a>
+                              </div>
                             </>
                           )}
                         </div>
