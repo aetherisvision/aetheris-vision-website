@@ -94,6 +94,7 @@ export async function createTables() {
       special_requirements TEXT,
       questions_for_us     TEXT,
       raw_data             JSONB,
+      pro_bono             BOOLEAN NOT NULL DEFAULT FALSE,
       submitted_at         TIMESTAMPTZ DEFAULT NOW(),
       created_at           TIMESTAMPTZ DEFAULT NOW()
     )

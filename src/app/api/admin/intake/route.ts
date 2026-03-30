@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
         i.questions_for_us,
         i.client_id,
         i.project_id,
+        i.pro_bono,
         i.submitted_at
       FROM intake_submissions i
       ORDER BY i.submitted_at DESC
@@ -47,15 +48,21 @@ export async function PATCH(request: NextRequest) {
   }
 
   try {
-    const { id, status } = await request.json();
+    const body = await request.json();
+    const { id } = body;
+
+    if ('pro_bono' in body) {
+      await sql`UPDATE intake_submissions SET pro_bono = ${!!body.pro_bono} WHERE id = ${id}`;
+      return NextResponse.json({ success: true });
+    }
+
+    const { status } = body;
     const validStatuses = ['new', 'in_review', 'sow_sent', 'won', 'lost'];
     if (!validStatuses.includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
     }
 
-    await sql`
-      UPDATE intake_submissions SET status = ${status} WHERE id = ${id}
-    `;
+    await sql`UPDATE intake_submissions SET status = ${status} WHERE id = ${id}`;
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Failed to update intake status:', error);

@@ -106,7 +106,7 @@ function hasEcommerceInterest(submission: Record<string, unknown>): boolean {
   return /e-?commerce|shop|store|cart|checkout|order|payment|sell|product/.test(text)
 }
 
-function buildPrompt(submission: Record<string, unknown>, tier: string, tierRationale: string): string {
+function buildPrompt(submission: Record<string, unknown>, tier: string, tierRationale: string, proBono = false): string {
   const wantsEcommerce = hasEcommerceInterest(submission)
   return `
 You are drafting a Statement of Work (SOW) for Aetheris Vision LLC, a technology consulting firm owned by Marston Ward.
@@ -151,10 +151,19 @@ Break the project into phases with realistic durations based on the ${tier} tier
 - Phase 5: Launch & Handoff (week X)
 
 7. **Investment**
-Provide a realistic price range for the ${tier} tier given their budget (${submission.budget_range ?? 'TBD'}) and scope. Format as:
+${proBono
+  ? `This is a pro bono (complimentary) engagement. Write the Investment section as follows:
+
+**Project Fee: Complimentary — $0**
+
+*This engagement is provided at no charge as a courtesy to ${submission.company_name as string}. Aetheris Vision LLC is pleased to offer this project on a pro bono basis. All deliverables, timelines, and quality standards described in this Statement of Work are identical to our paid engagements.*
+
+Do not include a payment schedule. Do not include add-on pricing. Close with a single sentence expressing genuine enthusiasm for supporting the client.`
+  : `Provide a realistic price range for the ${tier} tier given their budget (${submission.budget_range ?? 'TBD'}) and scope. Format as:
 - Project Fee: $X,XXX – $X,XXX
 - Payment Schedule: 50% deposit / 25% mid-project / 25% on launch
-- Optional add-ons if relevant (e.g., content writing, SEO audit, ongoing retainer)
+- Optional add-ons if relevant (e.g., content writing, SEO audit, ongoing retainer)`
+}
 
 8. **Out of Scope**
 List 4-6 items clearly excluded (e.g., logo design, copywriting, third-party licensing fees, ongoing hosting fees after launch).
@@ -179,7 +188,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { intake_id } = await request.json();
+    const { intake_id, pro_bono: proBono } = await request.json();
     if (!intake_id) {
       return NextResponse.json({ error: 'intake_id required' }, { status: 400 });
     }
@@ -206,7 +215,7 @@ export async function POST(request: NextRequest) {
 
     // Generate SOW via Claude API (lazy init — ANTHROPIC_API_KEY is Vercel-only)
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const prompt = buildPrompt(submission as Record<string, unknown>, tier, rationale);
+    const prompt = buildPrompt(submission as Record<string, unknown>, tier, rationale, !!proBono);
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 4096,

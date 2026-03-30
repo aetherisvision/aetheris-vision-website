@@ -62,6 +62,7 @@ interface Submission {
   questions_for_us: string | null
   client_id: number | null
   project_id: number | null
+  pro_bono: boolean
   submitted_at: string
 }
 
@@ -78,6 +79,7 @@ export default function AdminIntakePage() {
   const [copySuccess, setCopySuccess] = useState<number | null>(null)
   const [sendingSignature, setSendingSignature] = useState<number | null>(null)
   const [signatureSent, setSignatureSent] = useState<Record<number, boolean>>({})
+  const [togglingProBono, setTogglingProBono] = useState<number | null>(null)
 
   async function fetchSubmissions() {
     const r = await fetch('/api/admin/intake')
@@ -88,13 +90,13 @@ export default function AdminIntakePage() {
 
   useEffect(() => { fetchSubmissions() }, [])
 
-  async function generateSow(id: number) {
+  async function generateSow(id: number, proBono = false) {
     setGeneratingSow(id)
     try {
       const r = await fetch('/api/admin/intake/generate-sow', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ intake_id: id }),
+        body: JSON.stringify({ intake_id: id, pro_bono: proBono }),
       })
       const data = await r.json()
       if (data.content) {
@@ -161,6 +163,17 @@ export default function AdminIntakePage() {
       alert('Send for signature failed — check console')
     }
     setSendingSignature(null)
+  }
+
+  async function toggleProBono(id: number, current: boolean) {
+    setTogglingProBono(id)
+    await fetch('/api/admin/intake', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, pro_bono: !current }),
+    })
+    setSubmissions(subs => subs.map(s => s.id === id ? { ...s, pro_bono: !current } : s))
+    setTogglingProBono(null)
   }
 
   async function updateStatus(id: number, status: Status) {
@@ -248,6 +261,11 @@ export default function AdminIntakePage() {
                       <span style={{ fontSize: '11px', background: sc.bg, border: `1px solid ${sc.border}`, color: sc.color, borderRadius: '999px', padding: '2px 9px', fontWeight: '600' }}>
                         {STATUS_LABELS[sub.status]}
                       </span>
+                      {sub.pro_bono && (
+                        <span style={{ fontSize: '11px', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#fcd34d', borderRadius: '999px', padding: '2px 9px', fontWeight: '600' }}>
+                          Pro Bono
+                        </span>
+                      )}
                     </div>
                     <p style={{ color: dark.textMuted, fontSize: '13px', margin: 0 }}>
                       {sub.contact_name}{sub.contact_title ? ` · ${sub.contact_title}` : ''} · {sub.contact_email}
@@ -380,7 +398,20 @@ export default function AdminIntakePage() {
                       {/* Links */}
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         <button
-                          onClick={() => generateSow(sub.id)}
+                          onClick={() => toggleProBono(sub.id, sub.pro_bono)}
+                          disabled={togglingProBono === sub.id}
+                          style={{
+                            padding: '7px 14px', borderRadius: '7px', fontSize: '13px', fontWeight: '600',
+                            border: sub.pro_bono ? '1px solid rgba(245,158,11,0.4)' : `1px solid ${dark.border}`,
+                            background: sub.pro_bono ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.04)',
+                            color: sub.pro_bono ? '#fcd34d' : dark.textDim,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {togglingProBono === sub.id ? '…' : sub.pro_bono ? '★ Pro Bono' : '☆ Pro Bono'}
+                        </button>
+                        <button
+                          onClick={() => generateSow(sub.id, sub.pro_bono)}
                           disabled={generatingSow === sub.id}
                           style={{
                             padding: '7px 14px', borderRadius: '7px', fontSize: '13px', fontWeight: '600',

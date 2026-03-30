@@ -56,7 +56,8 @@ export async function POST(request: NextRequest) {
         c.contact_name,
         c.stripe_customer_id,
         i.id AS intake_id,
-        i.budget_range
+        i.budget_range,
+        i.pro_bono
       FROM projects p
       JOIN clients c ON c.id = p.client_id
       LEFT JOIN intake_submissions i ON i.project_id = p.id
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
       project_id, project_name,
       client_id, client_name, client_email, contact_name,
       stripe_customer_id,
-      intake_id, budget_range,
+      intake_id, budget_range, pro_bono,
     } = rows[0]
 
     // Store signed PDF and mark project as signed
@@ -89,6 +90,22 @@ export async function POST(request: NextRequest) {
     // Update intake status if linked
     if (intake_id) {
       await sql`UPDATE intake_submissions SET status = 'won' WHERE id = ${intake_id}`
+    }
+
+    // --- Skip invoicing for pro bono engagements ---
+    if (pro_bono) {
+      console.log(`✅ Pro bono engagement — skipping Stripe invoice for project ${project_id}`)
+      try {
+        await resend.emails.send({
+          from: 'system@aetherisvision.com',
+          to: ['marston@aetherisvision.com'],
+          subject: `✅ SOW Signed (Pro Bono) — ${client_name}`,
+          text: `${contact_name} at ${client_name} has signed the pro bono SOW for "${project_name}".\n\nNo invoice has been generated — this is a complimentary engagement.\n\nProject ID: ${project_id} | Client ID: ${client_id}`,
+        })
+      } catch (e) {
+        console.error('Notification failed (non-fatal):', e)
+      }
+      return NextResponse.json({ received: true })
     }
 
     // --- Auto-create Stripe customer if needed ---
