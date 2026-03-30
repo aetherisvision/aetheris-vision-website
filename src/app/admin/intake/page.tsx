@@ -70,6 +70,9 @@ export default function AdminIntakePage() {
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState<number | null>(null)
   const [updating, setUpdating] = useState<number | null>(null)
+  const [generatingSow, setGeneratingSow] = useState<number | null>(null)
+  const [sowDrafts, setSowDrafts] = useState<Record<number, { tier: string; content: string; title: string }>>({})
+  const [copySuccess, setCopySuccess] = useState<number | null>(null)
 
   async function fetchSubmissions() {
     const r = await fetch('/api/admin/intake')
@@ -79,6 +82,33 @@ export default function AdminIntakePage() {
   }
 
   useEffect(() => { fetchSubmissions() }, [])
+
+  async function generateSow(id: number) {
+    setGeneratingSow(id)
+    try {
+      const r = await fetch('/api/admin/intake/generate-sow', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ intake_id: id }),
+      })
+      const data = await r.json()
+      if (data.content) {
+        setSowDrafts(prev => ({ ...prev, [id]: { tier: data.tier, content: data.content, title: data.title } }))
+        setSubmissions(subs => subs.map(s => s.id === id ? { ...s, status: 'in_review' } : s))
+      }
+    } catch (e) {
+      console.error('SOW generation failed:', e)
+    }
+    setGeneratingSow(null)
+  }
+
+  async function copySow(id: number) {
+    const draft = sowDrafts[id]
+    if (!draft) return
+    await navigator.clipboard.writeText(draft.content)
+    setCopySuccess(id)
+    setTimeout(() => setCopySuccess(null), 2000)
+  }
 
   async function updateStatus(id: number, status: Status) {
     setUpdating(id)
@@ -95,6 +125,7 @@ export default function AdminIntakePage() {
 
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto', padding: '40px 24px' }}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
@@ -220,6 +251,29 @@ export default function AdminIntakePage() {
                       )}
                     </div>
 
+                    {/* SOW Draft */}
+                    {sowDrafts[sub.id] && (
+                      <div style={{ marginBottom: '20px', borderRadius: '10px', border: `1px solid rgba(16,185,129,0.25)`, background: 'rgba(16,185,129,0.05)', overflow: 'hidden' }}>
+                        <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid rgba(16,185,129,0.15)` }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '13px', fontWeight: '700', color: '#6ee7b7' }}>✓ SOW Draft Generated</span>
+                            <span style={{ fontSize: '11px', background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', color: '#6ee7b7', borderRadius: '5px', padding: '2px 7px', fontWeight: '600' }}>
+                              {sowDrafts[sub.id].tier} Tier
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => copySow(sub.id)}
+                            style={{ padding: '5px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', border: `1px solid rgba(16,185,129,0.3)`, background: 'rgba(16,185,129,0.1)', color: '#6ee7b7', cursor: 'pointer' }}
+                          >
+                            {copySuccess === sub.id ? '✓ Copied!' : 'Copy'}
+                          </button>
+                        </div>
+                        <pre style={{ margin: 0, padding: '16px', fontSize: '12px', color: dark.textMuted, whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: '320px', overflowY: 'auto', fontFamily: 'ui-monospace, monospace', lineHeight: '1.6' }}>
+                          {sowDrafts[sub.id].content}
+                        </pre>
+                      </div>
+                    )}
+
                     {/* Actions */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                       {/* Status selector */}
@@ -252,7 +306,26 @@ export default function AdminIntakePage() {
                       </div>
 
                       {/* Links */}
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <button
+                          onClick={() => generateSow(sub.id)}
+                          disabled={generatingSow === sub.id}
+                          style={{
+                            padding: '7px 14px', borderRadius: '7px', fontSize: '13px', fontWeight: '600',
+                            border: '1px solid rgba(139,92,246,0.4)',
+                            background: generatingSow === sub.id ? 'rgba(139,92,246,0.08)' : 'rgba(139,92,246,0.15)',
+                            color: generatingSow === sub.id ? 'rgba(196,181,253,0.5)' : '#c4b5fd',
+                            cursor: generatingSow === sub.id ? 'not-allowed' : 'pointer',
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                          }}
+                        >
+                          {generatingSow === sub.id ? (
+                            <>
+                              <span style={{ display: 'inline-block', width: '10px', height: '10px', border: '2px solid rgba(196,181,253,0.3)', borderTopColor: '#c4b5fd', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                              Drafting SOW…
+                            </>
+                          ) : sowDrafts[sub.id] ? '↻ Regenerate SOW' : '✦ Generate SOW Draft'}
+                        </button>
                         {sub.client_id && (
                           <Link href="/admin/clients" style={{
                             padding: '7px 13px', borderRadius: '7px', fontSize: '13px', fontWeight: '500',
