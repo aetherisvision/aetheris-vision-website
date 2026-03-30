@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { sql } from '@/lib/db';
 import { sendForSigning } from '@/lib/docuseal';
 
-function isAuthorized(): boolean {
-  const cookieStore = cookies();
-  const passphrase = cookieStore.get('admin_passphrase')?.value;
-  return passphrase === process.env.ADMIN_PASSPHRASE;
+function isAdmin(req: NextRequest): boolean {
+  return req.cookies.get('av-admin-session')?.value === 'authenticated';
 }
 
 // Convert markdown SOW to a clean, styled HTML document
@@ -21,7 +18,7 @@ function markdownToHtml(markdown: string, title: string): string {
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     // Bullet lists — collect consecutive lines starting with -
     .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>\n?)+/gs, (match) => `<ul>${match}</ul>`)
+    .replace(/(<li>[^]*?<\/li>\n?)+/gm, (match) => `<ul>${match}</ul>`)
     // Numbered lists
     .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
     // Horizontal rules
@@ -98,7 +95,7 @@ function markdownToHtml(markdown: string, title: string): string {
 }
 
 export async function POST(request: NextRequest) {
-  if (!isAuthorized()) {
+  if (!isAdmin(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

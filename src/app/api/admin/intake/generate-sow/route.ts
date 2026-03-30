@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { sql } from '@/lib/db';
-import { cookies } from 'next/headers';
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-function isAuthorized(): boolean {
-  const cookieStore = cookies();
-  const passphrase = cookieStore.get('admin_passphrase')?.value;
-  return passphrase === process.env.ADMIN_PASSPHRASE;
+function isAdmin(req: NextRequest): boolean {
+  return req.cookies.get('av-admin-session')?.value === 'authenticated';
 }
 
 // Tier detection based on budget and complexity signals
@@ -160,7 +155,7 @@ Write in clean professional prose. Use markdown formatting (## headings, **bold*
 }
 
 export async function POST(request: NextRequest) {
-  if (!isAuthorized()) {
+  if (!isAdmin(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -190,7 +185,8 @@ export async function POST(request: NextRequest) {
       allFeatures,
     );
 
-    // Generate SOW via Claude API
+    // Generate SOW via Claude API (lazy init — ANTHROPIC_API_KEY is Vercel-only)
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const prompt = buildPrompt(submission as Record<string, unknown>, tier, rationale);
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',

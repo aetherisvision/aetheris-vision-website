@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
-import { cookies } from 'next/headers';
 
-function isAuthorized(): boolean {
-  const cookieStore = cookies();
-  const passphrase = cookieStore.get('admin_passphrase')?.value;
-  return passphrase === process.env.ADMIN_PASSPHRASE;
+function isAdmin(req: NextRequest): boolean {
+  return req.cookies.get('av-admin-session')?.value === 'authenticated';
 }
 
-export async function GET() {
-  if (!isAuthorized()) {
+export async function GET(request: NextRequest) {
+  if (!isAdmin(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -45,7 +42,7 @@ export async function GET() {
 }
 
 export async function PATCH(request: NextRequest) {
-  if (!isAuthorized()) {
+  if (!isAdmin(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
