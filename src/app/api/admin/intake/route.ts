@@ -1,8 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
+import { getSubmission, downloadSignedPdf } from '@/lib/docuseal';
 
 function isAdmin(req: NextRequest): boolean {
   return req.cookies.get('av-admin-session')?.value === 'authenticated';
+}
+
+// Check Docuseal for any sow_sent submissions that were signed, and auto-complete them
+async function syncSignedSubmissions() {
+  const pending = await sql`
+    SELECT i.id AS intake_id, p.id AS project_id, p.docuseal_submission_id
+    FROM intake_submissions i
+    JOIN projects p ON p.id = i.project_id
+    WHERE i.status = 'sow_sent'
+      AND p.docuseal_submission_id IS NOT NULL
+  `;
+
+  for (const row of pending) {
+    try {
+      const sub = await getSubmission(row.docuseal_submission_id);
+      if (sub.status !== 'completed') continue;
+
+      const pdfBuffer = await downloadSignedPdf(row.docuseal_submission_id);
+      const pdfBase64 = pdfBuffer.toString('base64');
+
+      await sql`
+        UPDATE projects
+        SET signed_pdf_base64 = ${pdfBase64}, status = 'signed', signed_at = NOW()
+        WHERE id = ${row.project_id}
+      `;
+      await sql`UPDATE intake_submissions SET status = 'won' WHERE id = ${row.intake_id}`;
+      console.log(`✅ Auto-synced signed SOW for project ${row.project_id}`);
+    } catch (e) {
+      console.error(`Failed to sync submission ${row.docuseal_submission_id}:`, e);
+    }
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -11,6 +43,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // Sync any signed-but-not-yet-updated submissions before returning data
+    await syncSignedSubmissions();
+
     const submissions = await sql`
       SELECT
         i.id,
