@@ -103,23 +103,59 @@ export default function AdminIntakePage() {
 
   async function generateSow(id: number) {
     setGeneratingSow(id)
+    // Seed an empty draft immediately so the SOW panel appears and shows streaming text
+    setSowDrafts(prev => ({ ...prev, [id]: { tier: '…', content: '', title: '…' } }))
+    setSowEdits(prev => ({ ...prev, [id]: '' }))
+
     try {
       const r = await fetch('/api/admin/intake/generate-sow', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ intake_id: id }),
       })
-      const data = await r.json()
-      if (data.content) {
-        setSowDrafts(prev => ({ ...prev, [id]: { tier: data.tier, content: data.content, title: data.title, documentId: data.document_id } }))
-        setSowEdits(prev => ({ ...prev, [id]: data.content }))
-        // Sync authoritative DB state back into local submissions — never lose pro_bono, platform, etc.
-        setSubmissions(subs => subs.map(s => s.id === id ? {
-          ...s,
-          status: data.status ?? 'in_review',
-          pro_bono: data.pro_bono ?? s.pro_bono,
-          platform_preference: data.platform_preference ?? s.platform_preference,
-        } : s))
+      if (!r.body) throw new Error('No response body')
+
+      const reader = r.body.getReader()
+      const decoder = new TextDecoder()
+      let buf = ''
+      let accumulated = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buf += decoder.decode(value, { stream: true })
+
+        // SSE frames are separated by \n\n
+        const frames = buf.split('\n\n')
+        buf = frames.pop() ?? ''
+
+        for (const frame of frames) {
+          if (!frame.startsWith('data: ')) continue
+          const evt = JSON.parse(frame.slice(6))
+
+          if (evt.type === 'text') {
+            accumulated += evt.content
+            // Update the edit buffer live so the textarea types out in real-time
+            setSowEdits(prev => ({ ...prev, [id]: accumulated }))
+            setSowDrafts(prev => ({ ...prev, [id]: { ...prev[id], content: accumulated } }))
+
+          } else if (evt.type === 'done') {
+            setSowDrafts(prev => ({
+              ...prev,
+              [id]: { tier: evt.tier, content: accumulated, title: evt.title, documentId: evt.document_id },
+            }))
+            setSowEdits(prev => ({ ...prev, [id]: accumulated }))
+            setSubmissions(subs => subs.map(s => s.id === id ? {
+              ...s,
+              status: evt.status ?? 'in_review',
+              pro_bono: evt.pro_bono ?? s.pro_bono,
+              platform_preference: evt.platform_preference ?? s.platform_preference,
+            } : s))
+
+          } else if (evt.type === 'error') {
+            console.error('SOW stream error:', evt.message)
+          }
+        }
       }
     } catch (e) {
       console.error('SOW generation failed:', e)

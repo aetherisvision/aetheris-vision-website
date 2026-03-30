@@ -225,45 +225,75 @@ export async function POST(request: NextRequest) {
       allFeatures,
     );
 
-    // Generate SOW via Claude API (lazy init — ANTHROPIC_API_KEY is Vercel-only)
+    const title = `SOW — ${submission.company_name} (${tier} Tier) — Draft`;
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const prompt = buildPrompt(submission as Record<string, unknown>, tier, rationale, !!proBono);
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 4096,
-      system: 'You are a technical consultant and writer at Aetheris Vision LLC. Produce well-structured, professional output. Output the deliverable directly without preamble.',
-      messages: [{ role: 'user', content: prompt }],
+    const prompt = buildPrompt(submission as Record<string, unknown>, tier, rationale, proBono);
+
+    // Stream tokens back to the client so the SOW types out in real-time.
+    // DB writes happen after the stream closes (inside the ReadableStream start fn).
+    const enc = new TextEncoder();
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        const send = (obj: Record<string, unknown>) =>
+          controller.enqueue(enc.encode(`data: ${JSON.stringify(obj)}\n\n`));
+
+        try {
+          let fullContent = '';
+
+          const response = anthropic.messages.stream({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 4096,
+            system: 'You are a technical consultant and writer at Aetheris Vision LLC. Produce well-structured, professional output. Output the deliverable directly without preamble.',
+            messages: [{ role: 'user', content: prompt }],
+          });
+
+          for await (const chunk of response) {
+            if (
+              chunk.type === 'content_block_delta' &&
+              chunk.delta.type === 'text_delta'
+            ) {
+              const text = chunk.delta.text;
+              fullContent += text;
+              send({ type: 'text', content: text });
+            }
+          }
+
+          // DB writes — run after full content is assembled
+          let documentId: number | null = null;
+          if (submission.client_id) {
+            const doc = await sql`
+              INSERT INTO documents (client_id, title, content)
+              VALUES (${submission.client_id}, ${title}, ${fullContent})
+              RETURNING id
+            `;
+            documentId = doc[0].id;
+          }
+          await sql`UPDATE intake_submissions SET status = 'in_review' WHERE id = ${intake_id}`;
+
+          send({
+            type: 'done',
+            tier,
+            title,
+            document_id: documentId,
+            pro_bono: proBono,
+            platform_preference: submission.platform_preference ?? null,
+            status: 'in_review',
+          });
+        } catch (err) {
+          send({ type: 'error', message: err instanceof Error ? err.message : String(err) });
+        } finally {
+          controller.close();
+        }
+      },
     });
 
-    const sowContent = (message.content[0] as { text: string }).text;
-    const title = `SOW — ${submission.company_name} (${tier} Tier) — Draft`;
-
-    // Save to documents table
-    let documentId: number | null = null;
-    if (submission.client_id) {
-      const doc = await sql`
-        INSERT INTO documents (client_id, title, content)
-        VALUES (${submission.client_id}, ${title}, ${sowContent})
-        RETURNING id
-      `;
-      documentId = doc[0].id;
-    }
-
-    // Update intake status to in_review
-    await sql`
-      UPDATE intake_submissions SET status = 'in_review' WHERE id = ${intake_id}
-    `;
-
-    return NextResponse.json({
-      success: true,
-      tier,
-      document_id: documentId,
-      title,
-      content: sowContent,
-      // Return authoritative DB state so client stays in sync
-      pro_bono: proBono,
-      platform_preference: submission.platform_preference ?? null,
-      status: 'in_review',
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'X-Accel-Buffering': 'no', // disable Nginx/Vercel edge buffering
+      },
     });
 
   } catch (error) {
