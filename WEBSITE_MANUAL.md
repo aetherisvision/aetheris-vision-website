@@ -903,4 +903,55 @@ Or go to github.com → your repo → **Commits** → browse history visually.
 
 ---
 
-*End of manual. Last commit at time of writing: `3dc5980`. Repository: github.com/marstonsward/aetheris-vision-website*
+---
+
+## 16. Client Portal — Features and Admin Workflow
+
+**Last updated:** March 30, 2026
+
+### Client portal URL
+
+`https://aetherisvision.com/client` — magic-link login, no password required for clients.
+
+### What clients see on their dashboard
+
+| Section | What it shows | How to control it |
+|---|---|---|
+| Project name + status | Name and current status from `projects` table | Edit in admin |
+| Sign Document button | Only appears if `signed_at` is NULL on the project | Auto-hides once signed |
+| View Signed SOW | Appears once `signed_at` is set AND `signed_doc_url` is set | Fetched from Docuseal, stored in DB |
+| Project timeline / phases | Visual progress bar through proposal → kickoff → design → development → review → launched | Update `current_phase` in admin |
+| View Site → | Appears when `preview_url` is set | Set in admin → projects → preview URL field |
+
+### Setting the preview URL for a client
+
+1. Go to `https://aetherisvision.com/admin/projects`
+2. Click the project
+3. Paste the Vercel preview URL into the **Preview URL** field
+4. Save — client sees "View Site →" button immediately on next page load
+
+### Vercel team
+
+All deployments (aetherisvision.com and all client sites) are under the **Aetheris Vision** Vercel team:
+- Team slug: `aetherisvision`
+- Team ID: `team_UT21rw3ha3xR4r5D7BHZJbI3`
+- Token: stored in 1Password as "Vercel AV Token"
+- GitHub org connected: `github.com/aetherisvision`
+
+### Accounts table (updated Mar 30, 2026)
+
+| Service | URL | What it's for | Account |
+|---|---|---|---|
+| GitHub | github.com | Code for aetherisvision.com | `aetherisvision` org |
+| Vercel | vercel.com | Hosts aetherisvision.com + all client sites | Aetheris Vision team |
+| Cloudflare | cloudflare.com | DNS for aetherisvision.com | info@aetherisvision.com |
+| Neon | neon.tech | Postgres database for aetherisvision.com | marston@aetherisvision.com |
+| Resend | resend.com | Transactional email (contact forms, magic links) | marston@aetherisvision.com |
+| Docuseal | docuseal.com | SOW e-signing | marston@aetherisvision.com |
+| Stripe | stripe.com | Client invoicing + payments | marston@aetherisvision.com |
+| Cal.com | cal.com | Booking calendar | marston@aetherisvision.com |
+| 1Password | 1password.com | All credentials vault | personal account |
+
+---
+
+*End of manual. Repository: github.com/aetherisvision/aetheris-vision-website*

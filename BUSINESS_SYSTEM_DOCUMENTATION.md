@@ -1,7 +1,7 @@
 # Aetheris Vision Business System Documentation
 
-**Version**: 2.1
-**Date**: March 19, 2026
+**Version**: 2.2
+**Date**: March 30, 2026
 **Reading Level**: 8th Grade  
 **Purpose**: Complete system documentation for business continuity  
 
@@ -785,8 +785,49 @@ Best regards,
 
 ---
 
+---
+
+## 11. Client Portal — What Was Built (Mar 2026)
+
+### Infrastructure Migration — Vercel
+
+The website and all client projects were migrated from the personal `marstonsward` Vercel account to the **Aetheris Vision team** (`aetherisvision`, team ID: `team_UT21rw3ha3xR4r5D7BHZJbI3`). All future projects deploy under this team. The personal account retains a locked hobby team that cannot be deleted (Vercel limitation).
+
+### Client Portal Improvements
+
+**Problem:** The portal showed a "Sign Document" button even after the client had already signed, and there was no way for the client to see the current state of their website during development.
+
+**What was fixed and added:**
+
+| Feature | What it does |
+|---|---|
+| "View Signed SOW" button | Appears after signing, links to the Docuseal-hosted signed PDF. Replaces the "Sign Document" button once `signed_at` is set. |
+| "View Site →" preview link | Shows in the client dashboard when `preview_url` is set on the project. Lets the client see their site-in-progress during the design and development phases. |
+| Phase tracking | The "Sign Document" button condition was corrected — it now uses `signed_at` instead of `status !== 'signed'`, which was firing incorrectly. |
+
+**Database columns used:**
+- `projects.signed_doc_url` — URL of the Docuseal signed PDF (fetched from Docuseal API, stored at signing)
+- `projects.preview_url` — Vercel preview URL set by admin; displayed as "View Site →" in client dashboard
+
+### First Client — Tropical Hut OKC
+
+| Field | Value |
+|---|---|
+| Client | Finny Koshy (`finny.koshy1@gmail.com`) |
+| Project | Tropical Hut OKC website rebuild |
+| Agreement | AV-WEB-2026-001 (pro bono) |
+| Stack | Payload CMS 3 + Next.js 16 + Neon Postgres |
+| Repo | `github.com/aetherisvision/tropical-hut-okc` |
+| Status | Design phase — pages built, assets pending from client |
+| Preview | `https://tropical-hut-elyzc2yp6-aetherisvision.vercel.app` |
+
+Pages delivered: Home, About, Contact, Location & Hours, Specials, Menu (CMS-driven), 404.
+Assets still needed from client: logo, store photos, social links, domain access.
+
+---
+
 *This documentation should be reviewed and updated every 3 months to ensure accuracy and completeness.*
 
 **Document Status:** Living document - update as system changes
-**Next Review Date:** June 19, 2026
+**Next Review Date:** June 30, 2026
 **Responsibility:** Business owner or designated successor
