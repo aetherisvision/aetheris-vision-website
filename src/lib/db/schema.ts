@@ -75,6 +75,23 @@ export async function createTables() {
   `
 
   await sql`
+    CREATE TABLE IF NOT EXISTS oauth_tokens (
+      id           SERIAL PRIMARY KEY,
+      account      TEXT NOT NULL UNIQUE,
+      refresh_token TEXT NOT NULL,
+      email        TEXT,
+      updated_at   TIMESTAMPTZ DEFAULT NOW()
+    )
+  `
+
+  // Add Gmail scanner columns to expenses if they don't exist
+  await sql`
+    ALTER TABLE expenses
+    ADD COLUMN IF NOT EXISTS gmail_message_id TEXT UNIQUE,
+    ADD COLUMN IF NOT EXISTS source TEXT
+  `
+
+  await sql`
     CREATE TABLE IF NOT EXISTS intake_submissions (
       id                   SERIAL PRIMARY KEY,
       client_id            INTEGER REFERENCES clients(id) ON DELETE SET NULL,

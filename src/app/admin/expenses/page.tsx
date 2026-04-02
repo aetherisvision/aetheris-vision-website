@@ -53,6 +53,14 @@ type Expense = {
 
 type CategoryTotal = { category: string; total: string }
 
+async function uploadReceipt(file: File): Promise<string> {
+  const fd = new FormData()
+  fd.append('file', file)
+  const res = await fetch('/api/receipts/upload', { method: 'POST', body: fd })
+  if (!res.ok) throw new Error((await res.json()).error ?? 'Upload failed')
+  return (await res.json()).url
+}
+
 const currentYear = new Date().getFullYear()
 const TAX_YEARS = [currentYear, currentYear - 1, currentYear - 2]
 
@@ -62,6 +70,7 @@ export default function ExpensesPage() {
   const [taxYear, setTaxYear] = useState(currentYear)
   const [showForm, setShowForm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [uploadingReceipt, setUploadingReceipt] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editRow, setEditRow] = useState<Partial<Expense>>({})
   const [savingEdit, setSavingEdit] = useState(false)
@@ -83,6 +92,18 @@ export default function ExpensesPage() {
   }
 
   useEffect(() => { fetchExpenses() }, [taxYear])
+
+  async function handleReceiptFile(file: File) {
+    setUploadingReceipt(true)
+    try {
+      const url = await uploadReceipt(file)
+      setForm(f => ({ ...f, receipt_url: url }))
+    } catch {
+      alert('Receipt upload failed. Try again.')
+    } finally {
+      setUploadingReceipt(false)
+    }
+  }
 
   async function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault()
@@ -257,9 +278,41 @@ export default function ExpensesPage() {
                 onChange={e => setForm({ ...form, amount: e.target.value })} style={inputStyle} />
             </div>
             <div>
-              <label style={labelStyle}>Receipt URL (optional)</label>
-              <input type="url" placeholder="https://..." value={form.receipt_url}
-                onChange={e => setForm({ ...form, receipt_url: e.target.value })} style={inputStyle} />
+              <label style={labelStyle}>Receipt (optional)</label>
+              <label
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  border: `1px dashed ${form.receipt_url ? dark.blue : dark.border}`,
+                  borderRadius: '7px', padding: '9px 12px', cursor: 'pointer',
+                  background: form.receipt_url ? dark.blueTag : 'rgba(255,255,255,0.02)',
+                  color: form.receipt_url ? dark.blueTagText : dark.textMuted, fontSize: '13px',
+                }}
+              >
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  capture="environment"
+                  style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleReceiptFile(f) }}
+                />
+                {uploadingReceipt ? (
+                  'Uploading...'
+                ) : form.receipt_url ? (
+                  <>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                      <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Receipt attached — click to replace
+                  </>
+                ) : (
+                  <>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    Upload photo or PDF
+                  </>
+                )}
+              </label>
             </div>
             <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
               <button type="button" onClick={() => setShowForm(false)}
