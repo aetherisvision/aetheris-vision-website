@@ -102,9 +102,10 @@ The Aetheris Vision platform operates as a **professional services sales and del
 **AI Layer - Anthropic Claude API**
 
 - **What it does:** Powers the 24/7 AI chat assistant on every page
-- **Model used:** claude-haiku-4-5 (fastest, lowest cost — ~$0.001/conversation)
+- **Model used:** claude-haiku-4-5-20251001 (fastest, lowest cost — ~$0.001/conversation)
 - **Why this choice:** Claude understands nuanced business questions; scoped to Aetheris Vision content via system prompt
-- **Rate limiting:** 20 requests per IP per 15-minute window to prevent abuse
+- **Rate limiting:** 10 requests per IP per 15-minute window to prevent abuse
+- **Sanitization:** Strips leading assistant greetings, caps at 500 chars/message and 10 turns
 - **Analogy:** Like a knowledgeable receptionist who never sleeps and knows everything about the business
 
 ### Website Stack Components (with Acronyms Expanded)
@@ -182,9 +183,10 @@ This is the practical checklist of what a modern website stack contains, written
 **AI Chat Flow:**
 ```
 Visitor types question → /api/chat (POST)
-  → Rate limit check (20 req/IP/15min)
-  → Message sanitization (role, length, sequence)
-  → Claude Haiku API (streaming)
+  → Rate limit check (10 req/IP/15min)
+  → Message sanitization (strip leading assistant greetings,
+     filter roles, cap 500 chars, limit 10 turns)
+  → Claude Haiku 4.5 API (streaming, model: claude-haiku-4-5-20251001)
   → Token-by-token response → Visitor's browser
 ```
 
@@ -215,7 +217,7 @@ Visitor types question → /api/chat (POST)
 | SEO | ✅ | JSON-LD (Organization, WebSite, LocalBusiness), OG images, dynamic sitemap, robots.txt |
 | Per-page OG images | ✅ | opengraph-image.tsx in /about, /capabilities, /portfolio — page-specific social preview cards |
 | LocalBusiness schema | ✅ | PMB address (210 N Mustang Mall Terrace PMB 29, Mustang OK 73064) for Google Maps/GBP |
-| AI Chat Assistant | ✅ | Claude Haiku via /api/chat — streaming, rate-limited (20 req/IP/15min), scoped to Aetheris Vision content |
+| AI Chat Assistant | ✅ | Claude Haiku 4.5 via /api/chat — streaming, rate-limited (10 req/IP/15min), sanitized input, scoped to Aetheris Vision content |
 | Web & Digital Solutions | ✅ | Added as 6th core competency on home + capabilities pages |
 | Technical Leadership | ✅ | Added as 5th core competency on home + capabilities pages (IPT direction, emerging tech, workforce development) |
 | Security | ✅ | CSP nonces, HSTS, rate limiting, input validation, Basic auth |

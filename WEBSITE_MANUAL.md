@@ -224,8 +224,11 @@ src/app/api/
                           file — it runs invisibly in the background.
   chat/
     route.ts            — The server-side AI chat handler. Receives visitor messages,
-                          enforces rate limiting (20 requests per IP per 15 minutes),
-                          and streams responses from the Claude API (Haiku model).
+                          enforces rate limiting (10 requests per IP per 15 minutes),
+                          sanitizes the conversation history (strips leading assistant
+                          greetings, caps messages at 500 chars, limits to 10 turns),
+                          and streams responses from Claude Haiku 4.5
+                          (model: claude-haiku-4-5-20251001).
                           Requires ANTHROPIC_API_KEY environment variable.
 ```
 
@@ -752,6 +755,16 @@ The CSP is the most complex security feature. Here's how it works:
 2. Check Vercel is building: go to vercel.com → your project → **Deployments** tab
 3. If the deployment shows red (failed), click it to see the error log
 4. If it's green but changes aren't visible, hard refresh your browser: `Cmd+Shift+R`
+
+### "The AI chat says 'Sorry, something went wrong'"
+
+1. Check that `ANTHROPIC_API_KEY` is set in Vercel (Settings → Environment Variables). It should start with `sk-ant-...`
+2. Open browser Developer Tools (Cmd+Option+I) → Network tab → send a chat message → click the failed `chat` request:
+   - **Status 400:** The ChatWidget is sending messages in an unexpected format. Check the request Payload — the `messages` array must start with a `user` role. The route strips leading assistant greetings automatically, but if the array contains no user messages at all, it will reject the request.
+   - **Status 429:** Rate limit hit (10 requests per IP per 15 minutes). Wait and retry.
+   - **Status 500:** Server-side error. Check that the model string in `src/app/api/chat/route.ts` is a valid Anthropic model ID (currently `claude-haiku-4-5-20251001`). Model strings include a date suffix — check Anthropic's docs if the model has been updated.
+3. After changing env vars or code, you must redeploy: push to GitHub or Vercel → Deployments → Redeploy
+4. The chat system prompt lives in `src/lib/chat-context.ts` — edit it to change what the assistant knows and how it behaves.
 
 ### "The contact form shows an error"
 
