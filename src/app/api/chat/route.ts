@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     }
 
     // Sanitize: only user/assistant roles, string content, cap history at MAX_TURNS
-    const sanitized: Anthropic.MessageParam[] = messages
+    const filtered: Anthropic.MessageParam[] = messages
       .filter(
         (m) =>
           (m.role === "user" || m.role === "assistant") &&
@@ -90,6 +90,12 @@ export async function POST(request: Request) {
       )
       .slice(-MAX_TURNS)
       .map((m) => ({ role: m.role, content: m.content.trim() }));
+
+    // Strip any leading assistant messages (e.g. welcome greeting from ChatWidget)
+    // — the Anthropic API requires the first message to be from the user
+    const sanitized = filtered.slice(
+      filtered.findIndex((m) => m.role === "user")
+    );
 
     if (sanitized.length === 0 || sanitized[0].role !== "user") {
       return new Response("Invalid message sequence", { status: 400 });
