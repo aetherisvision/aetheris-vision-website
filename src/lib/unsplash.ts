@@ -12,7 +12,8 @@
  *   Production (after approval): 5,000 req/hr
  */
 
-import { createApi, type OrderBy } from 'unsplash-js';
+import { createApi } from 'unsplash-js';
+import type { SearchOrderBy } from 'unsplash-js/dist/methods/search/types/request';
 
 // ── Singleton client ───────────────────────────────────────────────────────────
 
@@ -76,7 +77,7 @@ export async function searchPhotos(
   query: string,
   perPage = 10,
   page = 1,
-  orderBy: OrderBy = 'relevant'
+  orderBy: SearchOrderBy = 'relevant'
 ): Promise<UnsplashPhoto[]> {
   const result = await unsplash.search.getPhotos({ query, perPage, page, orderBy });
   if (result.type === 'error') {
