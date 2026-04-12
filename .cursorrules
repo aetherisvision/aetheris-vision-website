@@ -1,0 +1,49 @@
+# Aetheris Vision — Website
+# Next.js 16 App Router | TypeScript | Tailwind CSS 4 | Vercel
+
+## Project Identity
+- Business: Aetheris Vision LLC (EIN 33-4818538)
+- Live URL: aetherisvision.com
+- Repo: github.com/aetherisvision/aetheris-vision-website
+- SSH remote: git@github-business:aetherisvision/aetheris-vision-website.git
+- Deploy: push to `main` → Vercel auto-deploys (no manual deploy steps needed)
+
+## Stack
+- Framework: Next.js 16 App Router (src/app/ directory routing)
+- Language: TypeScript — strict mode, no `any` types ever
+- Styling: Tailwind CSS 4
+- Database: Neon serverless Postgres (@neondatabase/serverless) — never use Prisma, use raw SQL
+- Auth: NextAuth.js custom magic-link flow
+  - Use getToken() NOT getServerSession() in App Router
+  - Flow: /api/auth/send-magic → /client/confirm → /api/auth/magic
+- Payments: Stripe (STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET in Vercel env)
+- E-signing: Docuseal API
+- Site lock: src/proxy.ts — basic-auth via PREVIEW_PASSWORD env var (default: marston-av)
+
+## Key Files
+- src/lib/constants.ts — SITE object (legalName, email, tagline, etc.) — always source business facts from here
+- src/lib/chat-context.ts — chat widget context
+- src/lib/posts.ts — blog post helpers
+- src/lib/stripe.ts — Stripe helpers
+
+## Route Structure
+- /admin/* — protected by ADMIN_PASSPHRASE cookie via proxy.ts — flag any changes here
+- /client/* — magic-link authenticated client portal
+- /api/auth/* — auth endpoints
+
+## Database
+- Neon endpoint: ep-frosty-sound-a8jtvtas (Azure East US 2)
+- Always use @neondatabase/serverless for queries
+- No ORM — raw SQL only
+
+## Known Clients in DB
+- Tropical Hut OKC: client id=1, project id=1, finny.koshy1@gmail.com
+- Marston Ward: id=2, marston@aetherisvision.com
+
+## Coding Rules
+- TypeScript strict — never use `any`
+- App Router patterns only — no Pages Router patterns
+- Server Components by default — use `"use client"` only when necessary
+- Always use SSH git remote (never HTTPS)
+- Env vars: never hardcode secrets — all in Vercel environment variables
+- No console.log in production code — use proper error handling
