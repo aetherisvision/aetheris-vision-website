@@ -122,7 +122,7 @@ export default function ChatWidget() {
       {/* Chat panel */}
       {open && (
         <div className="fixed bottom-24 left-6 z-50 flex w-[22rem] flex-col rounded-2xl border border-white/10 bg-[#0d0c0f] shadow-2xl overflow-hidden"
-          style={{ maxHeight: "min(32rem, calc(100dvh - 8rem))" }}>
+          style={{ maxHeight: "min(32rem, calc(100svh - 8rem))" }}>
 
           {/* Header */}
           <div className="flex items-center gap-3 border-b border-white/8 bg-black/40 px-4 py-3 shrink-0">
