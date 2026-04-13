@@ -1,12 +1,12 @@
 export const SITE = {
   name: "Aetheris Vision",
   legalName: "Aetheris Vision LLC",
-  tagline: "Predictive Clarity at the Highest Level",
+  tagline: "Custom Websites & AI Solutions for Oklahoma Businesses",
   url: "https://aetherisvision.com",
   logoUrl: "https://aetherisvision.com/logo/aetheris-logo.png",
   email: "contact@aetherisvision.com",
   description:
-    "Revolutionary solutions that eliminate operational uncertainty — custom digital systems and AI-powered atmospheric intelligence that make traditional approaches obsolete.",
+    "Aetheris Vision builds custom websites, web applications, and AI-powered systems for Oklahoma businesses and government agencies. Veteran-owned. Based in Mustang, OK.",
   ogDescription:
-    "Aetheris Vision introduces revolutionary capabilities: precision digital solutions and AI atmospheric intelligence that eliminate uncertainty and operational inefficiencies. Veteran-owned innovation from Mustang, OK.",
+    "Custom websites, web apps, and client portals for Oklahoma businesses — and AI-powered atmospheric intelligence for government agencies. No templates. No outsourcing. Veteran-owned, based in Mustang, OK.",
 } as const;
