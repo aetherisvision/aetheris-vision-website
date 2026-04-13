@@ -49,22 +49,29 @@ export function proxy(request: NextRequest) {
   ) {
     // Skip basic-auth — fall through to normal security headers below
   } else {
-    // Site-wide basic-auth lock (preview mode)
-    const auth = request.headers.get('authorization')
-    if (auth?.startsWith('Basic ')) {
-      const decoded = Buffer.from(auth.slice(6), 'base64').toString()
-      const password = decoded.includes(':') ? decoded.split(':')[1] : decoded
-      if (password !== PREVIEW_PASSWORD) {
+    // Site-wide basic-auth lock — active on production only.
+    // Vercel preview deployments (VERCEL_ENV = 'preview') bypass this so
+    // preview URLs can be reviewed without a password. When the site launches
+    // fully, remove this entire block.
+    const isVercelPreview = process.env.VERCEL_ENV === 'preview'
+
+    if (!isVercelPreview) {
+      const auth = request.headers.get('authorization')
+      if (auth?.startsWith('Basic ')) {
+        const decoded = Buffer.from(auth.slice(6), 'base64').toString()
+        const password = decoded.includes(':') ? decoded.split(':')[1] : decoded
+        if (password !== PREVIEW_PASSWORD) {
+          return new NextResponse('Authentication required', {
+            status: 401,
+            headers: { 'WWW-Authenticate': 'Basic realm="Aetheris Vision Preview"' },
+          })
+        }
+      } else {
         return new NextResponse('Authentication required', {
           status: 401,
           headers: { 'WWW-Authenticate': 'Basic realm="Aetheris Vision Preview"' },
         })
       }
-    } else {
-      return new NextResponse('Authentication required', {
-        status: 401,
-        headers: { 'WWW-Authenticate': 'Basic realm="Aetheris Vision Preview"' },
-      })
     }
   }
 
