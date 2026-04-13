@@ -72,7 +72,7 @@ export default function ProjectIntakeForm() {
           href="/book"
           className="inline-flex h-11 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
         >
-          Book a call while you wait
+          Book a consultation while you wait
         </a>
       </div>
     );

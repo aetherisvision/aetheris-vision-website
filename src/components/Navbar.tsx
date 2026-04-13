@@ -112,7 +112,7 @@ export default function Navbar() {
             href="/book"
             className="inline-flex h-8 items-center justify-center rounded-md bg-white px-4 text-xs font-medium text-black hover:bg-gray-200 transition"
           >
-            Book a Call
+            Book a Consultation
           </a>
         </div>
 

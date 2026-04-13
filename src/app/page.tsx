@@ -5,7 +5,7 @@ import { SITE } from "@/lib/constants";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
-import type { Review } from "@/lib/db/reviews";
+import { getApprovedReviews, ensureReviewsTable, type Review } from "@/lib/db/reviews";
 
 export const revalidate = 3600;
 
@@ -63,14 +63,8 @@ const WHY_AV = [
 async function ReviewsSection() {
   let reviews: Review[] = []
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://aetherisvision.com'}/api/reviews`,
-      { next: { revalidate: 3600 } }
-    )
-    if (res.ok) {
-      const data = await res.json()
-      reviews = data.reviews ?? []
-    }
+    await ensureReviewsTable()
+    reviews = await getApprovedReviews()
   } catch {
     // Non-fatal — just render nothing
   }
@@ -206,7 +200,7 @@ export default function Home() {
                 Two areas. Deep expertise.
               </h2>
               <p className="text-gray-400 font-light mb-14 max-w-xl">
-                Choose the track that fits your situation — or <a href="/book" className="text-blue-400 hover:text-blue-300 transition">book a call</a> and we'll figure it out together.
+                Choose the track that fits your situation — or <a href="/book" className="text-blue-400 hover:text-blue-300 transition">book a consultation</a> and we'll figure it out together.
               </p>
             </FadeIn>
 
@@ -313,7 +307,7 @@ export default function Home() {
                     href="/book"
                     className="inline-flex h-11 items-center justify-center rounded-md bg-white px-7 text-sm font-medium text-black hover:bg-gray-200 transition"
                   >
-                    Let's fix it — book a free call
+                    Book a free consultation
                   </a>
                 </div>
               </FadeIn>

@@ -9,7 +9,7 @@ const footerLinks = [
   { label: "Capabilities", href: "/capabilities" },
   { label: "Portfolio", href: "/portfolio" },
   { label: "Blog", href: "/blog" },
-  { label: "Book a Call", href: "/book" },
+  { label: "Book a Consultation", href: "/book" },
   { label: "Contact", href: "/contact" },
 ];
 
