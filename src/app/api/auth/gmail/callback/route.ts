@@ -7,20 +7,27 @@ export async function GET(request: NextRequest) {
   const account = searchParams.get('state') // 'biz' or 'per'
   const error = searchParams.get('error')
 
+  const origin = request.nextUrl.origin
+
   if (error || !code || (account !== 'biz' && account !== 'per')) {
     return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL}/admin/gmail?error=${error ?? 'invalid'}`
+      `${origin}/admin/gmail?error=${error ?? 'invalid'}`
     )
   }
 
+  if (!process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_CLIENT_SECRET) {
+    return NextResponse.redirect(`${origin}/admin/gmail?error=missing_gmail_client_config`)
+  }
+
+  const redirectUri = `${origin}/api/auth/gmail/callback`
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       code,
-      client_id: process.env.GMAIL_CLIENT_ID!,
-      client_secret: process.env.GMAIL_CLIENT_SECRET!,
-      redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/gmail/callback`,
+      client_id: process.env.GMAIL_CLIENT_ID,
+      client_secret: process.env.GMAIL_CLIENT_SECRET,
+      redirect_uri: redirectUri,
       grant_type: 'authorization_code',
     }),
   })
@@ -29,7 +36,7 @@ export async function GET(request: NextRequest) {
 
   if (!tokens.refresh_token) {
     return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL}/admin/gmail?error=no_refresh_token`
+      `${origin}/admin/gmail?error=no_refresh_token`
     )
   }
 
@@ -53,6 +60,6 @@ export async function GET(request: NextRequest) {
   `
 
   return NextResponse.redirect(
-    `${process.env.NEXTAUTH_URL}/admin/gmail?connected=${account}`
+    `${origin}/admin/gmail?connected=${account}`
   )
 }
