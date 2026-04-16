@@ -84,7 +84,20 @@ async function gmailGet(token: string, path: string) {
   const res = await fetch(`${GMAIL_API}${path}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
-  return res.json()
+  const text = await res.text()
+  let data: any
+  try {
+    data = text ? JSON.parse(text) : {}
+  } catch {
+    data = { raw: text }
+  }
+  if (!res.ok) {
+    const msg = typeof data?.error === 'object'
+      ? `${data.error.message ?? 'Gmail API error'}`
+      : `Gmail API error`
+    throw new Error(`${msg} (status ${res.status})`)
+  }
+  return data
 }
 
 async function gmailGetAttachment(token: string, userId: string, msgId: string, attachId: string) {
@@ -92,7 +105,14 @@ async function gmailGetAttachment(token: string, userId: string, msgId: string, 
     `${GMAIL_API}/users/${userId}/messages/${msgId}/attachments/${attachId}`,
     { headers: { Authorization: `Bearer ${token}` } }
   )
-  return res.json()
+  const data = await res.json()
+  if (!res.ok) {
+    const msg = typeof (data as any)?.error === 'object'
+      ? `${(data as any).error.message ?? 'Gmail API error'}`
+      : `Gmail API error`
+    throw new Error(`${msg} (status ${res.status})`)
+  }
+  return data
 }
 
 function base64Decode(s: string): string {
@@ -132,7 +152,7 @@ async function processAccount(
   refreshToken: string,
   accountLabel: string,
   daysBack: number
-): Promise<{ logged: number; skipped: number }> {
+): Promise<{ logged: number; skipped: number; queried: number }> {
   const token = await getAccessToken(refreshToken)
   const start = new Date(Date.now() - daysBack * 86400 * 1000)
   const y = start.getFullYear()
@@ -150,7 +170,8 @@ async function processAccount(
   const query = `(${senderFilters}) ((${subjectTerms}) OR (${attachmentTerms})) after:${afterDate}`
 
   const list = await gmailGet(token, `/users/me/messages?q=${encodeURIComponent(query)}&maxResults=100`)
-  if (!list.messages?.length) return { logged: 0, skipped: 0 }
+  const queried = Array.isArray(list.messages) ? list.messages.length : 0
+  if (!queried) return { logged: 0, skipped: 0, queried: 0 }
 
   let logged = 0
   let skipped = 0
@@ -220,7 +241,7 @@ async function processAccount(
     }
   }
 
-  return { logged, skipped }
+  return { logged, skipped, queried }
 }
 
 function authorizeCron(request: NextRequest): boolean {
@@ -260,13 +281,21 @@ export async function GET(request: NextRequest) {
   const rawDays = process.env.GMAIL_RECEIPT_LOOKBACK_DAYS
   const parsed = rawDays ? parseInt(rawDays, 10) : 30
   const daysBack = Number.isFinite(parsed) ? Math.min(90, Math.max(1, parsed)) : 30
-  const results: Record<string, { logged: number; skipped: number }> = {}
+  const results: Record<string, any> = {}
 
   if (tokenMap.biz) {
-    results.business = await processAccount(tokenMap.biz, 'biz', daysBack)
+    try {
+      results.business = await processAccount(tokenMap.biz, 'biz', daysBack)
+    } catch (e) {
+      results.business = { error: e instanceof Error ? e.message : String(e) }
+    }
   }
   if (tokenMap.per) {
-    results.personal = await processAccount(tokenMap.per, 'per', daysBack)
+    try {
+      results.personal = await processAccount(tokenMap.per, 'per', daysBack)
+    } catch (e) {
+      results.personal = { error: e instanceof Error ? e.message : String(e) }
+    }
   }
 
   return NextResponse.json({ ok: true, lookbackDays: daysBack, results })
