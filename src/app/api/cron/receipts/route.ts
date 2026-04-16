@@ -54,6 +54,14 @@ const VENDORS: [string, string, string][] = [
   ['Cloudways',  'cloudways.com',       'Cloud Services'],
   ['Namecheap',  'namecheap.com',       'Domain & Hosting'],
   ['GoDaddy',    'godaddy.com',         'Domain & Hosting'],
+  // Extra common sender domains / brands
+  ['PayPal',     'paypal.com',          'Banking & Financial Fees'],
+  ['PayPal',     'mail.paypal.com',     'Banking & Financial Fees'],
+  ['Best Buy',   'bestbuy.com',         'Office & Equipment'],
+  ['Best Buy',   'emails.bestbuy.com',  'Office & Equipment'],
+  ['Sanity',     'sanity.io',           'Cloud Services'],
+  ['Sanity',     'sanity-mail.com',     'Cloud Services'],
+  ['GitLab',     'gitlab.com',          'Cloud Services'],
 ]
 
 async function getAccessToken(refreshToken: string): Promise<string> {
@@ -134,9 +142,12 @@ async function processAccount(
 
   // Build Gmail search query across all known vendors
   const senderFilters = VENDORS.map(([, domain]) => `from:${domain}`).join(' OR ')
+  // Subject keywords catch many vendors, but some invoices don't include them.
+  // Include attachments/PDFs as a fallback signal to avoid missing invoices.
   const subjectTerms =
-    'subject:receipt OR subject:invoice OR subject:payment OR subject:billing OR subject:charge OR subject:subscription OR subject:order OR subject:confirmation OR subject:statement OR subject:receipts'
-  const query = `(${senderFilters}) (${subjectTerms}) after:${afterDate}`
+    'subject:receipt OR subject:invoice OR subject:payment OR subject:billing OR subject:charge OR subject:subscription OR subject:order OR subject:confirmation OR subject:statement OR subject:receipt'
+  const attachmentTerms = 'has:attachment OR filename:pdf'
+  const query = `(${senderFilters}) ((${subjectTerms}) OR (${attachmentTerms})) after:${afterDate}`
 
   const list = await gmailGet(token, `/users/me/messages?q=${encodeURIComponent(query)}&maxResults=100`)
   if (!list.messages?.length) return { logged: 0, skipped: 0 }
