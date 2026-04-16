@@ -24,7 +24,23 @@ export async function GET(request: NextRequest) {
     state: account,
   })
 
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params}`
+
+  // Debug helper: shows the computed redirect_uri + URL (no secrets) so you can
+  // copy/paste into Google Cloud Console → OAuth client → Authorized redirect URIs.
+  // Usage: /api/auth/gmail/start?account=per&debug=1
+  if (request.nextUrl.searchParams.get('debug') === '1') {
+    return NextResponse.json({
+      ok: true,
+      account,
+      origin: request.nextUrl.origin,
+      redirectUri,
+      authUrl,
+      hint: 'Ensure redirectUri is listed under Google Cloud → APIs & Services → Credentials → OAuth 2.0 Client IDs → Authorized redirect URIs.',
+    })
+  }
+
   return NextResponse.redirect(
-    `https://accounts.google.com/o/oauth2/v2/auth?${params}`
+    authUrl
   )
 }
