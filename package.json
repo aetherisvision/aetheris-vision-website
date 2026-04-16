@@ -9,6 +9,8 @@
     "dev": "next dev",
     "check:env": "node scripts/check-env.js",
     "diagnostics": "bash scripts/diagnostics.sh",
+    "vercel:monitor": "bash scripts/vercel-monitor.sh",
+    "monitor:business": "bash scripts/monitor-business-stack.sh",
     "build": "npm run check:env && next build",
     "start": "next start",
     "lint": "eslint src/",

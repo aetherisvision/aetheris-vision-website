@@ -36,6 +36,21 @@
 - Always use @neondatabase/serverless for queries
 - No ORM — raw SQL only
 
+## Business-only repo
+- **`.envrc`** loads **only** Aetheris Vision LLC secrets (`scripts/bw-envrc-av.sh`). Personal API keys belong in `~/.zshrc.local`, not here. Policy: `../aetherisvision/infrastructure/env_separation.md`.
+- **Monitor business stack:** `npm run monitor:business` (Neon + Vercel) — see `../aetherisvision/infrastructure/business_stack_monitoring.md`.
+
+## Gmail receipt scanner → Neon `expenses` (automated)
+- **Route:** `src/app/api/cron/receipts/route.ts` — `GET /api/cron/receipts`
+- **Trigger:** Vercel Cron (`vercel.json`) — `0 11 * * *` (11:00 UTC daily; ~6 AM US Central in standard time)
+- **Auth:** `Authorization: Bearer <CRON_SECRET>` (Vercel injects); route returns 401 without it
+- **Flow:** Loads Gmail OAuth **refresh tokens** from `oauth_tokens` (`biz` = business account, `per` = personal). For each connected account, queries Gmail for messages from **known vendor domains** + receipt-like subject keywords, parses first `$` amount from body text, dedupes by `gmail_message_id`, optionally uploads first PDF attachment to **Vercel Blob** (`receipts/gmail/...`), then `INSERT` into `expenses` (`source` like `gmail-biz` / `gmail-per`)
+- **Vendor allowlist:** `VENDORS` const in the same file — add a row `[displayName, 'sender-domain.com', 'Category']` to recognize new merchants
+- **OAuth setup:** `/admin/gmail` — connects accounts via `src/app/api/auth/gmail/*` (stores refresh token in `oauth_tokens`)
+- **Manual entry / UI:** `/admin/expenses` — `POST /api/expenses` and receipt upload APIs also write to `expenses`
+- **Env (Vercel):** `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `CRON_SECRET`, plus `BLOB_READ_WRITE_TOKEN` for uploads; Google Cloud project must have Gmail API enabled. One-time token acquisition: `scripts/gmail-auth.ts` (see file header comment in the cron route)
+- **Schema:** `src/lib/db/schema.ts` — `expenses` includes `gmail_message_id` (unique), `receipt_url`, `source`, `tax_year`
+
 ## Known Clients in DB
 - Tropical Hut OKC: client id=1, project id=1, finny.koshy1@gmail.com
 - Marston Ward: id=2, marston@aetherisvision.com

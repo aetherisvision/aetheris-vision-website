@@ -42,9 +42,7 @@ function GmailPageInner() {
   async function runNow() {
     setRunning(true)
     setRunResult(null)
-    const res = await fetch('/api/cron/receipts', {
-      headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET ?? ''}` },
-    })
+    const res = await fetch('/api/cron/receipts', { credentials: 'include' })
     const data = await res.json()
     setRunResult(JSON.stringify(data, null, 2))
     setRunning(false)

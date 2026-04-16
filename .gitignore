@@ -48,4 +48,5 @@ next-env.d.ts
 # playwright
 test-results/
 playwright-report/
-.envrc
+# Local overrides only — tracked .envrc is the AV/personal split (see scripts/bw-envrc-*.sh)
+.envrc.local

@@ -7,9 +7,10 @@
  * Requires these env vars in Vercel:
  *   GMAIL_CLIENT_ID          — OAuth2 client ID from Google Cloud Console
  *   GMAIL_CLIENT_SECRET      — OAuth2 client secret
- *   GMAIL_REFRESH_TOKEN_BIZ  — Refresh token for marston@aetherisvision.com
- *   GMAIL_REFRESH_TOKEN_PER  — Refresh token for marston.s.ward@gmail.com
- *   CRON_SECRET              — Random string to authenticate Vercel cron calls
+ *   CRON_SECRET              — Random string; Vercel Cron sends Authorization: Bearer <CRON_SECRET>
+ *   GMAIL_RECEIPT_LOOKBACK_DAYS — optional; default 30 (how far back to search Gmail)
+ *
+ * Gmail refresh tokens are stored in oauth_tokens (rows biz / per) via /admin/gmail — not in env.
  *
  * Setup steps (one-time):
  *   1. Go to https://console.cloud.google.com
@@ -22,6 +23,8 @@
 import { sql } from '@/lib/db'
 import { put } from '@vercel/blob'
 import { NextRequest, NextResponse } from 'next/server'
+
+const ADMIN_COOKIE = 'av-admin-session'
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const GMAIL_API = 'https://gmail.googleapis.com/gmail/v1'
@@ -123,13 +126,19 @@ async function processAccount(
   daysBack: number
 ): Promise<{ logged: number; skipped: number }> {
   const token = await getAccessToken(refreshToken)
-  const since = Math.floor((Date.now() - daysBack * 86400 * 1000) / 1000)
+  const start = new Date(Date.now() - daysBack * 86400 * 1000)
+  const y = start.getFullYear()
+  const m = String(start.getMonth() + 1).padStart(2, '0')
+  const d = String(start.getDate()).padStart(2, '0')
+  const afterDate = `${y}/${m}/${d}`
 
   // Build Gmail search query across all known vendors
   const senderFilters = VENDORS.map(([, domain]) => `from:${domain}`).join(' OR ')
-  const query = `(${senderFilters}) (subject:receipt OR subject:invoice OR subject:payment OR subject:billing OR subject:charge OR subject:subscription) after:${since}`
+  const subjectTerms =
+    'subject:receipt OR subject:invoice OR subject:payment OR subject:billing OR subject:charge OR subject:subscription OR subject:order OR subject:confirmation OR subject:statement OR subject:receipts'
+  const query = `(${senderFilters}) (${subjectTerms}) after:${afterDate}`
 
-  const list = await gmailGet(token, `/users/me/messages?q=${encodeURIComponent(query)}&maxResults=50`)
+  const list = await gmailGet(token, `/users/me/messages?q=${encodeURIComponent(query)}&maxResults=100`)
   if (!list.messages?.length) return { logged: 0, skipped: 0 }
 
   let logged = 0
@@ -176,7 +185,7 @@ async function processAccount(
       }
     }
 
-    await sql`
+    const inserted = await sql`
       INSERT INTO expenses (date, vendor, description, category, amount, tax_year, receipt_url, gmail_message_id, source)
       VALUES (
         ${date},
@@ -189,17 +198,31 @@ async function processAccount(
         ${msgId},
         ${'gmail-' + accountLabel}
       )
+      ON CONFLICT (gmail_message_id) DO NOTHING
+      RETURNING id
     `
-    logged++
+    if (inserted.length > 0) {
+      logged++
+    } else {
+      // Rare: two overlapping runs raced on the same message id after the SELECT check.
+      skipped++
+    }
   }
 
   return { logged, skipped }
 }
 
-export async function GET(request: NextRequest) {
-  // Vercel Cron authenticates with Authorization: Bearer <CRON_SECRET>
+function authorizeCron(request: NextRequest): boolean {
+  const secret = process.env.CRON_SECRET
   const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (secret && authHeader === `Bearer ${secret}`) return true
+  const admin = request.cookies.get(ADMIN_COOKIE)?.value === 'authenticated'
+  return admin
+}
+
+export async function GET(request: NextRequest) {
+  // Vercel Cron: Authorization: Bearer <CRON_SECRET>. Manual run from /admin/gmail: admin session cookie.
+  if (!authorizeCron(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -219,7 +242,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'No Gmail accounts connected. Visit /admin/gmail to connect.' }, { status: 400 })
   }
 
-  const daysBack = 2 // overlap slightly so we don't miss emails on weekends
+  const rawDays = process.env.GMAIL_RECEIPT_LOOKBACK_DAYS
+  const parsed = rawDays ? parseInt(rawDays, 10) : 30
+  const daysBack = Number.isFinite(parsed) ? Math.min(90, Math.max(1, parsed)) : 30
   const results: Record<string, { logged: number; skipped: number }> = {}
 
   if (tokenMap.biz) {
@@ -229,5 +254,5 @@ export async function GET(request: NextRequest) {
     results.personal = await processAccount(tokenMap.per, 'per', daysBack)
   }
 
-  return NextResponse.json({ ok: true, results })
+  return NextResponse.json({ ok: true, lookbackDays: daysBack, results })
 }

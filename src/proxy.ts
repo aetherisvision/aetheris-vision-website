@@ -41,6 +41,12 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Vercel Cron must reach /api/cron/* without site lock.
+  // Cron routes enforce their own auth (e.g. CRON_SECRET) at the handler level.
+  if (pathname.startsWith('/api/cron/')) {
+    return NextResponse.next()
+  }
+
   // Client portal and auth API routes must be reachable without the site lock
   // so magic-link invites work for clients who don't have the preview password
   if (
