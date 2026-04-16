@@ -26,10 +26,20 @@ type ConnectionStatus = {
   per: { connected: boolean; email: string | null }
 }
 
+type ReceiptRunResult =
+  | {
+      ok: boolean
+      lookbackDays?: number
+      results?: Record<string, { logged?: number; skipped?: number; queried?: number; error?: string }>
+      error?: string
+    }
+  | Record<string, unknown>
+
 function GmailPageInner() {
   const searchParams = useSearchParams()
   const [status, setStatus] = useState<ConnectionStatus | null>(null)
   const [running, setRunning] = useState(false)
+  const [runData, setRunData] = useState<ReceiptRunResult | null>(null)
   const [runResult, setRunResult] = useState<string | null>(null)
 
   const justConnected = searchParams.get('connected')
@@ -42,11 +52,34 @@ function GmailPageInner() {
   async function runNow() {
     setRunning(true)
     setRunResult(null)
+    setRunData(null)
     const res = await fetch('/api/cron/receipts', { credentials: 'include' })
     const data = await res.json()
+    setRunData(data)
     setRunResult(JSON.stringify(data, null, 2))
     setRunning(false)
   }
+
+  const summary = (() => {
+    if (!runData || typeof runData !== 'object' || !('results' in runData)) return null
+    const results = (runData as any).results as Record<string, any> | undefined
+    if (!results) return null
+
+    const entries = Object.entries(results).map(([k, v]) => {
+      if (!v || typeof v !== 'object') return null
+      if (typeof v.error === 'string') return { label: k, error: v.error }
+      const logged = typeof v.logged === 'number' ? v.logged : null
+      const skipped = typeof v.skipped === 'number' ? v.skipped : null
+      const queried = typeof v.queried === 'number' ? v.queried : null
+      return { label: k, logged, skipped, queried }
+    }).filter(Boolean) as Array<
+      | { label: string; error: string }
+      | { label: string; logged: number | null; skipped: number | null; queried: number | null }
+    >
+
+    if (entries.length === 0) return null
+    return entries
+  })()
 
   return (
     <div style={{ padding: '40px 24px' }}>
@@ -75,7 +108,7 @@ function GmailPageInner() {
         {/* Business account */}
         <AccountCard
           label="Business"
-          description="marston@aetherisvision.com"
+          expectedEmail="marston@aetherisvision.com"
           account="biz"
           connected={status?.biz.connected ?? false}
           email={status?.biz.email ?? null}
@@ -84,7 +117,7 @@ function GmailPageInner() {
         {/* Personal account */}
         <AccountCard
           label="Personal"
-          description="marston.s.ward@gmail.com"
+          expectedEmail="marston.s.ward@gmail.com"
           account="per"
           connected={status?.per.connected ?? false}
           email={status?.per.email ?? null}
@@ -102,10 +135,64 @@ function GmailPageInner() {
           >
             {running ? 'Running...' : 'Run scanner now'}
           </button>
+
+          {summary && (
+            <div style={{ marginTop: '14px', background: dark.surfaceAlt, border: `1px solid ${dark.border}`, borderRadius: '10px', padding: '12px 14px' }}>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                <div style={{ color: dark.text, fontSize: '13px', fontWeight: 700 }}>
+                  Last run summary
+                </div>
+                {runData && typeof runData === 'object' && 'lookbackDays' in runData && (
+                  <div style={{ color: dark.textMuted, fontSize: '12px' }}>
+                    Lookback: {(runData as any).lookbackDays ?? '?'} days
+                  </div>
+                )}
+              </div>
+              <div style={{ marginTop: '8px', display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
+                {summary.map((row) => {
+                  if ('error' in row) {
+                    return (
+                      <div key={row.label} style={{ display: 'flex', gap: '10px', alignItems: 'baseline' }}>
+                        <div style={{ width: '86px', color: dark.textMuted, fontSize: '12px', textTransform: 'capitalize' }}>
+                          {row.label}
+                        </div>
+                        <div style={{ color: dark.dangerText, fontSize: '12px' }}>
+                          {row.error}
+                        </div>
+                      </div>
+                    )
+                  }
+                  return (
+                    <div key={row.label} style={{ display: 'flex', gap: '10px', alignItems: 'baseline' }}>
+                      <div style={{ width: '86px', color: dark.textMuted, fontSize: '12px', textTransform: 'capitalize' }}>
+                        {row.label}
+                      </div>
+                      <div style={{ color: dark.text, fontSize: '12px' }}>
+                        queried={row.queried ?? '?'} logged={row.logged ?? '?'} skipped={row.skipped ?? '?'}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           {runResult && (
-            <pre style={{ marginTop: '16px', fontSize: '12px', color: dark.textMuted, background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '14px', overflowX: 'auto' }}>
-              {runResult}
-            </pre>
+            <div style={{ marginTop: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                <div style={{ color: dark.textMuted, fontSize: '12px' }}>Raw response</div>
+                <button
+                  type="button"
+                  onClick={() => navigator.clipboard.writeText(runResult)}
+                  style={{ background: 'transparent', color: dark.textMuted, padding: '6px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 600, border: `1px solid ${dark.border}`, cursor: 'pointer' }}
+                >
+                  Copy
+                </button>
+              </div>
+              <pre style={{ marginTop: '10px', fontSize: '12px', color: dark.textMuted, background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '14px', overflowX: 'auto' }}>
+                {runResult}
+              </pre>
+            </div>
           )}
         </div>
       </div>
@@ -113,13 +200,17 @@ function GmailPageInner() {
   )
 }
 
-function AccountCard({ label, description, account, connected, email }: {
+function AccountCard({ label, expectedEmail, account, connected, email }: {
   label: string
-  description: string
+  expectedEmail: string
   account: 'biz' | 'per'
   connected: boolean
   email: string | null
 }) {
+  const normalizedExpected = expectedEmail.trim().toLowerCase()
+  const normalizedConnected = (email ?? '').trim().toLowerCase()
+  const mismatch = connected && email && normalizedConnected !== normalizedExpected
+
   return (
     <div style={{ background: dark.surface, border: `1px solid ${connected ? 'rgba(34,197,94,0.3)' : dark.border}`, borderRadius: '12px', padding: '20px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
       <div>
@@ -130,9 +221,17 @@ function AccountCard({ label, description, account, connected, email }: {
               Connected
             </span>
           )}
+          {mismatch && (
+            <span style={{ background: dark.danger, color: dark.dangerText, border: `1px solid rgba(220,38,38,0.25)`, padding: '2px 9px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' }}>
+              Mismatch
+            </span>
+          )}
         </div>
         <p style={{ color: dark.textMuted, fontSize: '13px', margin: 0 }}>
-          {connected && email ? email : description}
+          Expected: {expectedEmail}
+        </p>
+        <p style={{ color: connected ? dark.text : dark.textDim, fontSize: '13px', margin: '4px 0 0 0' }}>
+          Connected: {connected ? (email ?? '(unknown)') : '(not connected)'}
         </p>
       </div>
       <a
