@@ -86,33 +86,82 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     to: inv.client_email,
     subject: `Invoice ${inv.number} from Aetheris Vision — ${amount}`,
     html: `
-      <div style="font-family:Arial,sans-serif;max-width:540px;margin:0 auto;padding:32px;">
-        <h2 style="color:#0f172a;margin-bottom:4px;">Aetheris Vision LLC</h2>
-        <p style="color:#64748b;font-size:13px;margin-bottom:28px;">Invoice ${inv.number}</p>
+      <!DOCTYPE html>
+      <html lang="en">
+      <body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:32px 16px;">
+          <tr><td align="center">
+            <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
 
-        <p style="color:#334155;font-size:16px;margin-bottom:8px;">Hi ${inv.client_name},</p>
-        <p style="color:#334155;font-size:15px;margin-bottom:24px;">
-          A new invoice is ready for your review${inv.project_name ? ` for <strong>${inv.project_name}</strong>` : ''}.
-        </p>
+              <!-- Header bar with logo -->
+              <tr>
+                <td style="background:#0A1628;padding:20px 32px;">
+                  <img src="https://aetherisvision.com/logo/av-logo-horizontal-dark.png"
+                       alt="Aetheris Vision" width="220" height="55"
+                       style="display:block;border:0;max-width:220px;" />
+                </td>
+              </tr>
 
-        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px 24px;margin-bottom:28px;">
-          <p style="margin:0 0 8px;color:#64748b;font-size:13px;">AMOUNT DUE</p>
-          <p style="margin:0;color:#0f172a;font-size:28px;font-weight:700;">${amount}</p>
-          ${inv.due_date ? `<p style="margin:8px 0 0;color:#94a3b8;font-size:13px;">Due ${new Date(inv.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>` : ''}
-        </div>
+              <!-- Invoice number strip -->
+              <tr>
+                <td style="background:#1e3a5f;padding:8px 32px;">
+                  <span style="color:#7EABCA;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Invoice ${inv.number}</span>
+                </td>
+              </tr>
 
-        <a href="${invoiceUrl}"
-           style="display:inline-block;background:#29426C;color:#fff;text-decoration:none;
-                  padding:14px 32px;border-radius:6px;font-size:16px;font-weight:600;margin-bottom:28px;">
-          View &amp; Pay Invoice →
-        </a>
+              <!-- Body -->
+              <tr>
+                <td style="padding:32px;">
+                  <p style="color:#334155;font-size:16px;margin:0 0 8px;">Hi ${inv.client_name},</p>
+                  <p style="color:#334155;font-size:15px;margin:0 0 28px;line-height:1.6;">
+                    A new invoice is ready for your review${inv.project_name ? ` for <strong>${inv.project_name}</strong>` : ''}.
+                  </p>
 
-        <p style="color:#94a3b8;font-size:13px;margin-top:24px;">
-          Questions? Reply to this email or contact us at
-          <a href="mailto:marston@aetherisvision.com" style="color:#5BA8D9;">marston@aetherisvision.com</a><br>
-          Aetheris Vision LLC · 210 N Mustang Mall Terrace PMB 29, Mustang, OK 73064
-        </p>
-      </div>
+                  <!-- Amount card -->
+                  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:28px;">
+                    <tr>
+                      <td style="padding:20px 24px;">
+                        <p style="margin:0 0 6px;color:#64748b;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Amount Due</p>
+                        <p style="margin:0;color:#0f172a;font-size:30px;font-weight:700;line-height:1;">${amount}</p>
+                        ${inv.due_date ? `<p style="margin:8px 0 0;color:#94a3b8;font-size:13px;">Due ${new Date(inv.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>` : ''}
+                      </td>
+                    </tr>
+                  </table>
+
+                  <!-- CTA button -->
+                  <table cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+                    <tr>
+                      <td style="background:#29426C;border-radius:6px;">
+                        <a href="${invoiceUrl}"
+                           style="display:inline-block;color:#ffffff;text-decoration:none;padding:14px 36px;font-size:16px;font-weight:600;letter-spacing:0.3px;">
+                          View &amp; Pay Invoice →
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <p style="color:#94a3b8;font-size:13px;line-height:1.6;margin:0;">
+                    Questions? Reply to this email or reach us at
+                    <a href="mailto:marston@aetherisvision.com" style="color:#5BA8D9;text-decoration:none;">marston@aetherisvision.com</a>
+                  </p>
+                </td>
+              </tr>
+
+              <!-- Footer -->
+              <tr>
+                <td style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:16px 32px;">
+                  <p style="margin:0;color:#94a3b8;font-size:12px;line-height:1.6;">
+                    Aetheris Vision LLC · 210 N Mustang Mall Terrace PMB 29, Mustang, OK 73064<br>
+                    <a href="https://aetherisvision.com" style="color:#5BA8D9;text-decoration:none;">aetherisvision.com</a>
+                  </p>
+                </td>
+              </tr>
+
+            </table>
+          </td></tr>
+        </table>
+      </body>
+      </html>
     `,
   })
 

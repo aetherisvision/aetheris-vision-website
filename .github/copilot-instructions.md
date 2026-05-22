@@ -132,6 +132,46 @@ The GitHub MCP is active. Use these tools directly for all GitHub operations:
 ### Security Priority Order (do these first)
 Issues #1–#8 are security issues in milestones M3/M4. Address in order: C-1 through C-5 (CRITICAL), then H-1 through H-3 (HIGH), then M-1 through M-5 (MEDIUM).
 
+## ESMAI Letter Template
+
+All formal client correspondence — SLAs, proposals, engagement letters, cover letters for white papers — must use the ESMAI letter template.
+
+**File:** `src/lib/esmai-letter-template.ts`
+
+```ts
+import { buildEsmaiLetter, buildSalutation, buildClosing } from '@/lib/esmai-letter-template'
+
+const html = buildEsmaiLetter({
+  date: 'April 16, 2026',          // optional — defaults to today
+  referenceNumber: 'SLA-2026-001', // optional
+  recipientName: 'Finny Koshy',
+  recipientTitle: 'Owner',
+  recipientOrg: 'Tropical Hut OKC',
+  recipientAddress: ['Oklahoma City, OK'],
+  subject: 'Website Care Agreement — Essentials Plan',
+  body: `
+    ${buildSalutation('Mr. Koshy')}
+    <p>Your letter body here...</p>
+    ${buildClosing()}
+  `,
+  appendSignature: true,           // default true — static print signature
+  includeSignatureFields: false,   // set true for DocuSeal e-signature flow
+})
+```
+
+**Brand rules (never override):**
+- Colors: `#0f172a` (navy primary) · `#0ea5e9` (sky blue accent)
+- Font: Inter (system fallback stack)
+- Entity: Aetheris Vision LLC · Mustang, OK · EIN 33-4818538
+- Signatory: Marston Ward, Principal — Applied Meteorology & AI
+
+**Pre-rendered SLAs** live in `src/data/sla-*.html`:
+- `src/data/sla-tropical-hut.html` — Tropical Hut OKC, Essentials Plan $49/mo (Apr 2026)
+
+When generating a new SLA or letter: call `buildEsmaiLetter()`, write output to `src/data/<type>-<client-slug>.html`, and record it in this file.
+
+---
+
 ## Common Patterns
 When adding a new page:
 1. Create `src/app/<route>/page.tsx`

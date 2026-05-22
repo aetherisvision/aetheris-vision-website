@@ -14,10 +14,12 @@ export const BRAND = {
 } as const;
 
 export const BRAND_LOGO = {
-  horizontal: "/logo/av-logo-horizontal.png",
+  horizontal: "/logo/av-logo-horizontal-dark.png",
+  horizontalSvg: "/logo/av-logo-horizontal-dark.svg",
   mark: "/logo/av-mark-globe.png",
-  mark192: "/logo/av-mark-globe-192.png",
-  mark512: "/logo/av-mark-globe-512.png",
+  markSvg: "/logo/av-mark-favicon.svg",
+  mark192: "/logo/av-favicon-192.png",
+  mark512: "/logo/av-favicon-512.png",
   favicon32: "/logo/favicon-32.png",
 } as const;
 

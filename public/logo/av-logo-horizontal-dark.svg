@@ -1,0 +1,52 @@
+<svg viewBox="0 0 500 160" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Aetheris Vision">
+  <title>Aetheris Vision</title>
+  <defs>
+    <radialGradient id="globeGradW" cx="38%" cy="32%" r="70%" fx="38%" fy="32%">
+      <stop offset="0%"   stop-color="#7EABCA"/>
+      <stop offset="50%"  stop-color="#486890"/>
+      <stop offset="100%" stop-color="#101820"/>
+    </radialGradient>
+    <clipPath id="globeClipW">
+      <circle cx="80" cy="80" r="28.8"/>
+    </clipPath>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&amp;display=swap');
+    </style>
+  </defs>
+
+  <!-- Eye / aperture mark -->
+  <path d="M8 80 C40 24, 120 24, 152 80 C120 136, 40 136, 8 80 Z"
+        stroke="#5BA8D9" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M24 80 C48 44.8, 112 44.8, 136 80 C112 115.2, 48 115.2, 24 80 Z"
+        stroke="#486890" stroke-width="1.6" stroke-dasharray="4.8 6.4" fill="none"/>
+
+  <!-- Globe -->
+  <circle cx="80" cy="80" r="28.8" fill="url(#globeGradW)" stroke="#F3F7F9" stroke-width="1.2" stroke-opacity="0.5"/>
+  <g clip-path="url(#globeClipW)" stroke="#F3F7F9" stroke-opacity="0.3" stroke-width="1.2" fill="none">
+    <ellipse cx="80" cy="80" rx="28.8" ry="11.2"/>
+    <ellipse cx="80" cy="80" rx="14.4" ry="28.8"/>
+    <line x1="51.2" y1="80" x2="108.8" y2="80"/>
+    <line x1="80"   y1="51.2" x2="80" y2="108.8"/>
+  </g>
+
+  <!-- Orbital arcs -->
+  <ellipse cx="80" cy="80" rx="57.6" ry="16" transform="rotate(25 80 80)"
+           stroke="#5BA8D9" stroke-width="2.4" stroke-linecap="round"
+           stroke-dasharray="19.2 12.8" fill="none" opacity="0.8"/>
+  <ellipse cx="80" cy="80" rx="57.6" ry="16" transform="rotate(-25 80 80)"
+           stroke="#F3F7F9" stroke-width="1.6" stroke-linecap="round"
+           stroke-dasharray="6.4 25.6" fill="none" opacity="0.45"/>
+
+  <!-- Center dot -->
+  <circle cx="80" cy="80" r="4" fill="#5BA8D9"/>
+
+  <!-- Wordmark -->
+  <text x="176" y="86"
+        font-family="'Orbitron', 'Futura', 'Gill Sans', 'Helvetica Neue', Helvetica, sans-serif"
+        font-weight="700" font-size="52" letter-spacing="4"
+        fill="#F3F7F9">AETHERIS</text>
+  <text x="180" y="130"
+        font-family="'Orbitron', 'Futura', 'Gill Sans', 'Helvetica Neue', Helvetica, sans-serif"
+        font-weight="400" font-size="34" letter-spacing="16"
+        fill="#5BA8D9">VISION</text>
+</svg>
