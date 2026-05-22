@@ -55,6 +55,16 @@
 - Tropical Hut OKC: client id=1, project id=1, finny.koshy1@gmail.com
 - Marston Ward: id=2, marston@aetherisvision.com
 
+## ESMAI Letter Template
+- **File:** `src/lib/esmai-letter-template.ts`
+- **Purpose:** Official correspondence template for ESMAI (Environmental & Spatial Meteorology AI), a project of Aetheris Vision LLC.
+- **Usage:** `import { buildEsmaiLetter, buildSalutation, buildClosing } from '@/lib/esmai-letter-template'`
+- **Returns:** Self-contained, print-ready HTML string — compatible with DocuSeal (`includeSignatureFields: true`) and direct PDF/print rendering.
+- **Key options:** `recipientName`, `recipientOrg`, `recipientAddress[]`, `subject`, `body` (HTML), `referenceNumber`, `date`, `appendSignature`, `includeSignatureFields`.
+- **When to use:** Any formal client communication — SLAs, proposals, engagement letters, white-paper cover letters, or invoices needing letterhead.
+- **Brand:** ESMAI navy/sky-blue palette (`#0f172a` / `#0ea5e9`), Inter font, Aetheris Vision LLC as parent entity, Marston Ward as signatory.
+- **Stored SLAs:** `src/data/sla-*.html` — pre-rendered letters for specific clients (e.g., `sla-tropical-hut.html`).
+
 ## Coding Rules
 - TypeScript strict — never use `any`
 - App Router patterns only — no Pages Router patterns

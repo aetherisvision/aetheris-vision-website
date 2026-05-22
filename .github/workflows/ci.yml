@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches-ignore:
-      - main        # feature/fix branches only — Vercel owns the main pipeline
+      - main        # feature/fix branches only — Vercel owns the main deploy pipeline
   pull_request:
     branches:
       - main        # every PR targeting main runs all checks
@@ -26,10 +26,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint (0 errors, max 27 warnings)
-        run: npm run lint -- --max-warnings=27
+      - name: Lint (0 errors, max 24 warnings)
+        run: npm run lint -- --max-warnings=24
         # Ratchet: lower this number as warnings are cleaned up.
-        # Current baseline after PR #21: 27 warnings (all non-blocking categories).
+        # Current baseline 2026-05-22: 24 warnings (all non-blocking categories).
         # Any new error → CI fails immediately.
 
   typecheck:
@@ -93,9 +93,7 @@ jobs:
           NEXTAUTH_URL: https://aetherisvision.com
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
-      - name: Mirror to GitLab
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          git remote add gitlab https://oauth2:${{ secrets.GITLAB_TOKEN }}@${GITLAB_REPO#https://}
-          git push gitlab main --force
+

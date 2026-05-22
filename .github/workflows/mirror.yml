@@ -1,0 +1,25 @@
+name: Mirror → GitLab
+
+# Runs whenever main is updated (direct push or PR merge).
+# Vercel handles deploys; this just keeps GitLab in sync for backup/compliance.
+on:
+  push:
+    branches:
+      - main
+
+env:
+  GITLAB_REPO: https://gitlab.com/aetheris-vision-group/aetheris-vision-project.git
+
+jobs:
+  mirror:
+    name: Push to GitLab
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history so force-push preserves commits
+
+      - name: Push to GitLab
+        run: |
+          git remote add gitlab https://oauth2:${{ secrets.GITLAB_TOKEN }}@${GITLAB_REPO#https://}
+          git push gitlab main --force-with-lease
