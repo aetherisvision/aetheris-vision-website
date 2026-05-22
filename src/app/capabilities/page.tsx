@@ -127,6 +127,7 @@ export default function CapabilitiesPage() {
                 { label: "CAGE", value: "Pending (review in progress)" },
                 { label: "SAM.gov", value: "Registered" },
                 { label: "Primary NAICS", value: `${SAM.naicsPrimary} — Scientific & Technical Consulting` },
+                { label: "8(a) Status", value: "Pursuing — application planned" },
                 { label: "Security Clearance", value: "Active DoD Secret (Personal)" },
                 { label: "Primary Contact", value: SAM.federalEmail },
               ].map((item) => (
