@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { marked } from 'marked'
+import DOMPurify from 'isomorphic-dompurify'
 
 const ADMIN_COOKIE = 'av-admin-session'
 
@@ -24,12 +25,17 @@ export async function GET(
   }
 
   const { id } = await params
+  const numId = parseInt(id, 10)
+  if (!Number.isInteger(numId) || numId <= 0) {
+    return new NextResponse('Bad Request', { status: 400 })
+  }
+
   const rows = await sql`
     SELECT d.id, d.title, d.content, d.created_at,
            c.name AS client_name
     FROM documents d
     JOIN clients c ON c.id = d.client_id
-    WHERE d.id = ${Number(id)}
+    WHERE d.id = ${numId}
   `
 
   if (rows.length === 0) {
@@ -37,7 +43,9 @@ export async function GET(
   }
 
   const doc = rows[0]
-  const bodyHtml = await marked(doc.content ?? '', { gfm: true })
+  const rawHtml = await marked(doc.content ?? '', { gfm: true })
+  // Sanitize marked output to prevent stored XSS from content in the DB
+  const bodyHtml = DOMPurify.sanitize(rawHtml)
   const dateStr = new Date(doc.created_at as string).toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
   })
@@ -193,7 +201,11 @@ export async function GET(
 </html>`
 
   return new NextResponse(html, {
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'X-Frame-Options': 'DENY',
+      'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; img-src https:; script-src 'unsafe-inline';",
+    },
   })
 }
 

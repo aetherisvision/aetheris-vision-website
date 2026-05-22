@@ -81,6 +81,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   // Send email to client
   const amount = (inv.amount_cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+
+  // Validate Stripe URL before embedding in email
+  if (!invoiceUrl?.startsWith('https://invoice.stripe.com/')) {
+    throw new Error(`Unexpected Stripe invoice URL: ${invoiceUrl}`)
+  }
+
   await resend.emails.send({
     from: 'Aetheris Vision <noreply@aetherisvision.com>',
     to: inv.client_email,
@@ -105,16 +111,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
               <!-- Invoice number strip -->
               <tr>
                 <td style="background:#1e3a5f;padding:8px 32px;">
-                  <span style="color:#7EABCA;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Invoice ${inv.number}</span>
+                  <span style="color:#7EABCA;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Invoice ${escHtml(String(inv.number))}</span>
                 </td>
               </tr>
 
               <!-- Body -->
               <tr>
                 <td style="padding:32px;">
-                  <p style="color:#334155;font-size:16px;margin:0 0 8px;">Hi ${inv.client_name},</p>
+                  <p style="color:#334155;font-size:16px;margin:0 0 8px;">Hi ${escHtml(String(inv.client_name))},</p>
                   <p style="color:#334155;font-size:15px;margin:0 0 28px;line-height:1.6;">
-                    A new invoice is ready for your review${inv.project_name ? ` for <strong>${inv.project_name}</strong>` : ''}.
+                    A new invoice is ready for your review${inv.project_name ? ` for <strong>${escHtml(String(inv.project_name))}</strong>` : ''}.
                   </p>
 
                   <!-- Amount card -->
@@ -132,7 +138,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
                   <table cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
                     <tr>
                       <td style="background:#29426C;border-radius:6px;">
-                        <a href="${invoiceUrl}"
+                        <a href="${escHtml(invoiceUrl)}"
                            style="display:inline-block;color:#ffffff;text-decoration:none;padding:14px 36px;font-size:16px;font-weight:600;letter-spacing:0.3px;">
                           View &amp; Pay Invoice →
                         </a>
@@ -166,4 +172,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   })
 
   return NextResponse.json({ ok: true, invoice_url: invoiceUrl })
+}
+
+/** Escape HTML special characters to prevent injection in template strings */
+function escHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
 }

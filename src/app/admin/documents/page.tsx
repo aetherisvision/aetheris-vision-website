@@ -250,7 +250,7 @@ export default function AdminDocumentsPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 {saved && <span style={{ color: dark.successText, fontSize: '13px' }}>Saved ✓</span>}
                 <button
-                  onClick={() => window.open(`/api/admin/documents/${editing.id}/pdf`, '_blank')}
+                  onClick={() => window.open(`/api/admin/documents/${editing.id}/pdf`, '_blank', 'noopener,noreferrer')}
                   title="Open print-ready PDF view in new tab"
                   style={{
                     padding: '9px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: '600',
