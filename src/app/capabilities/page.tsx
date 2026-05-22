@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
-import { SITE } from "@/lib/constants";
+import { SITE, SAM } from "@/lib/constants";
 
 export const metadata = {
   title: `Capabilities Statement | ${SITE.name}`,
@@ -11,16 +11,25 @@ export const metadata = {
 };
 
 const naicsCodes = [
-  { code: "541360", description: "Geophysical Surveying and Mapping Services" },
-  { code: "541690", description: "Other Scientific and Technical Consulting Services" },
-  { code: "541511", description: "Custom Computer Programming Services" },
-  { code: "541715", description: "R&D in Physical, Engineering, and Life Sciences" },
+  { code: "541690", description: "Other Scientific and Technical Consulting Services", primary: true },
+  { code: "541511", description: "Custom Computer Programming Services", primary: false },
+  { code: "541360", description: "Geophysical Surveying and Mapping Services", primary: false },
+  { code: "541715", description: "R&D in Physical, Engineering, and Life Sciences", primary: false },
 ];
 
 const pscCodes = [
-  { code: "T009", description: "Technical Representation Services — Meteorology" },
-  { code: "B504", description: "Special Studies/Analysis — Meteorology and Climatology" },
-  { code: "D307", description: "IT and Telecom — IT Strategy and Architecture" },
+  { code: "R427", description: "Support — Professional: Weather Reporting/Observation" },
+  { code: "R425", description: "Support — Professional: Engineering/Technical" },
+  { code: "R408", description: "Support — Professional: Program Management/Support" },
+  { code: "R405", description: "Support — Professional: Operations Research/Quantitative Analysis" },
+  { code: "DA01", description: "IT and Telecom — Business Application/Application Development Support Services (Labor)" },
+  { code: "DA10", description: "IT and Telecom — Business Application/Application Development Software as a Service" },
+  { code: "DB02", description: "IT and Telecom — Compute Support Services, Non-HPC (Labor)" },
+  { code: "B510", description: "Special Studies/Analysis — Environmental Assessments" },
+  { code: "B524", description: "Special Studies/Analysis — Mathematical/Statistical" },
+  { code: "B526", description: "Special Studies/Analysis — Oceanological" },
+  { code: "B529", description: "Special Studies/Analysis — Scientific Data" },
+  { code: "B544", description: "Special Studies/Analysis — Technology" },
 ];
 
 const competencies = [
@@ -54,10 +63,9 @@ const competencies = [
   {
     title: "Federal Penetration",
     items: [
-      "SAM.gov federal registration — CAGE code and UEI pending final issuance",
-      "SDVOSB / VOSB — Direct access to Veterans First Contracting Program set-asides",
-      "8(a) Business Development Program — Accelerated pathway active",
-      "Oklahoma Supplier Portal — State-level contracting access queued",
+      `SAM.gov registered — UEI ${SAM.uei}, CAGE review in progress`,
+      `${SAM.setAside} eligible — direct access to Veterans First Contracting Program set-asides`,
+      "Oklahoma Supplier Portal — state-level contracting access (registration in progress)",
       "Active DoD Secret clearance (personal; facility clearance scalable for classified program support)",
     ],
   },
@@ -114,11 +122,13 @@ export default function CapabilitiesPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-14">
               {[
                 { label: "Legal Name", value: SITE.legalName },
-                { label: "Business Type", value: "Veteran-Owned Small Business (VOSB)" },
-                { label: "SAM.gov", value: "Registration In Progress" },
-                { label: "8(a) Status", value: "Eligibility Under Review" },
+                { label: "Business Type", value: "Veteran-Owned Small Business (VOSB / SDVOSB eligible)" },
+                { label: "UEI", value: SAM.uei },
+                { label: "CAGE", value: "Pending (review in progress)" },
+                { label: "SAM.gov", value: "Registered" },
+                { label: "Primary NAICS", value: `${SAM.naicsPrimary} — Scientific & Technical Consulting` },
                 { label: "Security Clearance", value: "Active DoD Secret (Personal)" },
-                { label: "Primary Contact", value: SITE.email },
+                { label: "Primary Contact", value: SAM.federalEmail },
               ].map((item) => (
                 <div key={item.label} className="rounded-lg border border-white/5 bg-white/[0.02] p-4">
                   <p className="text-xs text-gray-500 mb-1 uppercase tracking-widest">{item.label}</p>
@@ -138,7 +148,10 @@ export default function CapabilitiesPage() {
                 <FadeIn key={n.code} delay={i * 0.04}>
                   <div className="flex items-start gap-4 rounded-lg border border-white/5 bg-white/[0.02] p-4">
                     <span className="text-blue-400 font-mono text-sm font-semibold shrink-0">{n.code}</span>
-                    <span className="text-sm text-gray-400">{n.description}</span>
+                    <span className="text-sm text-gray-400 flex-1">{n.description}</span>
+                    {n.primary && (
+                      <span className="text-[10px] font-semibold tracking-wider text-blue-400 border border-blue-500/30 bg-blue-500/10 rounded px-1.5 py-0.5 shrink-0">PRIMARY</span>
+                    )}
                   </div>
                 </FadeIn>
               ))}
