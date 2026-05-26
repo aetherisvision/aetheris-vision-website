@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-const ADMIN_COOKIE = 'av-admin-session'
+import { ADMIN_COOKIE, getAdminSessionToken } from '@/lib/admin-auth'
 
 export async function POST(request: NextRequest) {
   const { passphrase, next, rememberMe } = await request.json()
@@ -13,7 +12,7 @@ export async function POST(request: NextRequest) {
   const response = NextResponse.json({ ok: true, redirectTo })
 
   const useSecure = new URL(request.url).protocol === 'https:'
-  response.cookies.set(ADMIN_COOKIE, 'authenticated', {
+  response.cookies.set(ADMIN_COOKIE, getAdminSessionToken(), {
     httpOnly: true,
     secure: useSecure,
     sameSite: 'lax',
@@ -24,8 +23,8 @@ export async function POST(request: NextRequest) {
   return response
 }
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE(_request: NextRequest) {
   const response = NextResponse.json({ ok: true })
-  response.cookies.delete('av-admin-session')
+  response.cookies.delete(ADMIN_COOKIE)
   return response
 }

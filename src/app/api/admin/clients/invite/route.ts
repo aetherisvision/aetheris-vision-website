@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sendMagicLink } from '@/lib/send-magic-link'
-
-function isAdmin(req: NextRequest) {
-  return req.cookies.get('av-admin-session')?.value === 'authenticated'
-}
+import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 
 export async function POST(request: NextRequest) {
-  if (!isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isAdmin(request)) return unauthorizedResponse()
 
   const { email } = await request.json()
 
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return NextResponse.json({ error: 'Valid email required' }, { status: 400 })
+  if (!email) {
+    return NextResponse.json({ error: 'Email required' }, { status: 400 })
   }
 
   await sendMagicLink(email)
