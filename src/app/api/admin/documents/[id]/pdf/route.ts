@@ -16,9 +16,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!isAdmin(request)) {
-    return new NextResponse('Unauthorized', { status: 401 })
-  }
+  if (!isAdmin(request)) return unauthorizedResponse()
 
   const { id } = await params
   const numId = parseInt(id, 10)
