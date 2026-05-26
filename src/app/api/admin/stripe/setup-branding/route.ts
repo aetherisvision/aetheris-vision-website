@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 
-function isAdmin(req: NextRequest) {
-  return req.cookies.get('av-admin-session')?.value === 'authenticated'
-}
 
 /**
  * POST /api/admin/stripe/setup-branding
@@ -12,7 +10,7 @@ function isAdmin(req: NextRequest) {
  * Upload: brand/logo/horizontal/av-logo-horizontal-dark-rgb.png (1280×320)
  */
 export async function POST(req: NextRequest) {
-  if (!isAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isAdmin(req)) return unauthorizedResponse()
 
   const key = process.env.STRIPE_SECRET_KEY
   if (!key) return NextResponse.json({ error: 'STRIPE_SECRET_KEY not set' }, { status: 500 })

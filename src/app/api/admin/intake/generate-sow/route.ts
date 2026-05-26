@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 import Anthropic from '@anthropic-ai/sdk';
 import { sql } from '@/lib/db';
 
-function isAdmin(req: NextRequest): boolean {
-  return req.cookies.get('av-admin-session')?.value === 'authenticated';
-}
 
 // Tier detection based on budget and complexity signals
 function detectTier(budget: string | null, objectives: string[] | null, features: string[]): {
@@ -194,7 +192,7 @@ Write in clean professional prose. Use markdown formatting (## headings, **bold*
 
 export async function POST(request: NextRequest) {
   if (!isAdmin(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return unauthorizedResponse();
   }
 
   try {

@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 import { sql } from '@/lib/db'
 
-const ADMIN_COOKIE = 'av-admin-session'
-
-function isAdmin(request: NextRequest) {
-  return request.cookies.get(ADMIN_COOKIE)?.value === 'authenticated'
-}
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isAdmin(request)) return unauthorizedResponse()
 
   const { id } = await params
   const rows = await sql`
@@ -30,7 +26,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isAdmin(request)) return unauthorizedResponse()
 
   const { id } = await params
   const { title, content } = await request.json()
@@ -52,7 +48,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isAdmin(request)) return unauthorizedResponse()
 
   const { id } = await params
   await sql`DELETE FROM documents WHERE id = ${Number(id)}`

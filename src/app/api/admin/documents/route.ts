@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
-
-const ADMIN_COOKIE = 'av-admin-session'
-
-function isAdmin(request: NextRequest) {
-  return request.cookies.get(ADMIN_COOKIE)?.value === 'authenticated'
-}
+import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 
 export async function GET(request: NextRequest) {
-  if (!isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isAdmin(request)) return unauthorizedResponse()
 
   const docs = await sql`
     SELECT d.id, d.client_id, d.title, d.updated_at,
@@ -22,7 +17,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isAdmin(request)) return unauthorizedResponse()
 
   const { client_id, title, content } = await request.json()
 

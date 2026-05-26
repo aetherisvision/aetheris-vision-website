@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 import { sql } from '@/lib/db'
 
-function isAdmin(req: NextRequest) {
-  return req.cookies.get('av-admin-session')?.value === 'authenticated'
-}
 
 export async function GET(req: NextRequest) {
-  if (!isAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isAdmin(req)) return unauthorizedResponse()
 
   const rows = await sql`
     SELECT i.*, c.name AS client_name, c.email AS client_email, p.name AS project_name
@@ -19,7 +17,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isAdmin(req)) return unauthorizedResponse()
 
   const { client_id, project_id, description, amount_cents, due_date } = await req.json()
 

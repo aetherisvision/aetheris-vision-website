@@ -1,0 +1,42 @@
+import { createHmac, timingSafeEqual } from 'crypto'
+import { NextRequest, NextResponse } from 'next/server'
+
+export const ADMIN_COOKIE = 'av-admin-session'
+
+/**
+ * Returns the expected admin session token — an HMAC-SHA256 of the fixed
+ * string "admin-session" keyed by ADMIN_PASSPHRASE.  A fixed-string cookie
+ * value ("authenticated") is trivially forgeable; using HMAC ties validity
+ * to knowledge of the passphrase without storing it in the cookie itself.
+ *
+ * Returns null when ADMIN_PASSPHRASE is unset so the caller can fail closed
+ * rather than accepting a deterministic empty-key HMAC.
+ */
+export function getAdminSessionToken(): string | null {
+  if (!process.env.ADMIN_PASSPHRASE) return null
+  return createHmac('sha256', process.env.ADMIN_PASSPHRASE)
+    .update('admin-session')
+    .digest('hex')
+}
+
+/**
+ * Returns true if the request carries a valid admin session cookie.
+ * The cookie is set by POST /api/admin/auth after passphrase verification.
+ *
+ * Uses timingSafeEqual to prevent timing-based oracle attacks.
+ */
+export function isAdmin(request: NextRequest): boolean {
+  const cookieValue = request.cookies.get(ADMIN_COOKIE)?.value
+  const expected = getAdminSessionToken()
+  if (!cookieValue || !expected) return false
+  const a = Buffer.from(cookieValue)
+  const b = Buffer.from(expected)
+  // Lengths must match first to avoid timingSafeEqual throwing on mismatch
+  if (a.length !== b.length) return false
+  return timingSafeEqual(a, b)
+}
+
+/** Standard 401 response for unauthenticated admin requests. */
+export function unauthorizedResponse(): NextResponse {
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+}
