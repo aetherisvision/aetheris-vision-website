@@ -6,15 +6,11 @@
  * Uses marked to convert Markdown content to HTML server-side.
  */
 import { NextRequest, NextResponse } from 'next/server'
+import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 import { sql } from '@/lib/db'
 import { marked } from 'marked'
 import DOMPurify from 'isomorphic-dompurify'
 
-const ADMIN_COOKIE = 'av-admin-session'
-
-function isAdmin(request: NextRequest) {
-  return request.cookies.get(ADMIN_COOKIE)?.value === 'authenticated'
-}
 
 export async function GET(
   request: NextRequest,

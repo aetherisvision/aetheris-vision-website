@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 import { approveReview, rejectReview } from '@/lib/db/reviews'
 
-function isAdmin(req: NextRequest) {
-  return req.cookies.get('av-admin-session')?.value === 'authenticated'
-}
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!isAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isAdmin(req)) return unauthorizedResponse()
 
   const { id: idStr } = await params
   const id = Number(idStr)

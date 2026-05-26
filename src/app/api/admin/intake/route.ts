@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 import { sql } from '@/lib/db';
 import { getSubmission, downloadSignedPdf } from '@/lib/docuseal';
 
-function isAdmin(req: NextRequest): boolean {
-  return req.cookies.get('av-admin-session')?.value === 'authenticated';
-}
 
 // Check Docuseal for any sow_sent submissions that were signed, and auto-complete them
 async function syncSignedSubmissions() {
@@ -39,7 +37,7 @@ async function syncSignedSubmissions() {
 
 export async function GET(request: NextRequest) {
   if (!isAdmin(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return unauthorizedResponse();
   }
 
   try {
@@ -80,7 +78,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   if (!isAdmin(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return unauthorizedResponse();
   }
 
   try {

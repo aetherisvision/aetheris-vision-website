@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 import { sql } from '@/lib/db'
 import { stripe } from '@/lib/stripe'
 import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-function isAdmin(req: NextRequest) {
-  return req.cookies.get('av-admin-session')?.value === 'authenticated'
-}
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  if (!isAdmin(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!isAdmin(req)) return unauthorizedResponse()
 
   const { id: idStr } = await params
   const id = Number(idStr)

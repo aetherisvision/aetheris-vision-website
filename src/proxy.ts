@@ -3,6 +3,32 @@ import { NextRequest, NextResponse } from 'next/server'
 // Rate limiting store (in production, use Redis)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
 
+/**
+ * Verify the admin session cookie using Web Crypto (Edge Runtime compatible).
+ * Mirrors the Node.js HMAC-SHA256 logic in src/lib/admin-auth.ts.
+ */
+async function isAdminSession(request: NextRequest): Promise<boolean> {
+  const cookieValue = request.cookies.get('av-admin-session')?.value
+  const passphrase = process.env.ADMIN_PASSPHRASE
+  if (!cookieValue || !passphrase) return false
+  const enc = new TextEncoder()
+  const key = await crypto.subtle.importKey(
+    'raw', enc.encode(passphrase), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  )
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode('admin-session'))
+  const expected = Array.from(new Uint8Array(sig))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+  // Constant-time comparison via length check + XOR fold
+  if (cookieValue.length !== expected.length) return false
+  let diff = 0
+  for (let i = 0; i < expected.length; i++) {
+    diff |= cookieValue.charCodeAt(i) ^ expected.charCodeAt(i)
+  }
+  return diff === 0
+}
+
+
 function buildCsp(nonce: string): string {
   return [
     "default-src 'self'",
@@ -20,11 +46,10 @@ function buildCsp(nonce: string): string {
   ].join('; ')
 }
 
-const ADMIN_COOKIE = 'av-admin-session'
 const PREVIEW_PASSWORD = process.env.PREVIEW_PASSWORD
 if (!PREVIEW_PASSWORD) throw new Error('PREVIEW_PASSWORD env var must be set')
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Skip processing for static assets
@@ -106,7 +131,7 @@ export function proxy(request: NextRequest) {
   // Admin auth guard
   if (pathname.startsWith('/admin')) {
     const isLoginPage = pathname === '/admin/login'
-    const hasSession = request.cookies.get(ADMIN_COOKIE)?.value === 'authenticated'
+    const hasSession = await isAdminSession(request)
 
     if (!isLoginPage && !hasSession) {
       const loginUrl = new URL('/admin/login', request.url)

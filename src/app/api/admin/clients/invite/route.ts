@@ -7,11 +7,14 @@ export async function POST(request: NextRequest) {
 
   const { email } = await request.json()
 
-  if (!email) {
-    return NextResponse.json({ error: 'Email required' }, { status: 400 })
+  const trimmed = typeof email === 'string' ? email.trim() : ''
+  // RFC 5322-compatible basic check: local@domain.tld — rejects whitespace-only values
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+  if (!trimmed || !EMAIL_RE.test(trimmed)) {
+    return NextResponse.json({ error: 'Valid email required' }, { status: 400 })
   }
 
-  await sendMagicLink(email)
+  await sendMagicLink(trimmed)
 
   return NextResponse.json({ sent: true })
 }

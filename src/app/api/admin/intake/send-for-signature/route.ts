@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 import { sql } from '@/lib/db';
 import { sendForSigning, buildSignatureBlock } from '@/lib/docuseal';
 
-function isAdmin(req: NextRequest): boolean {
-  return req.cookies.get('av-admin-session')?.value === 'authenticated';
-}
 
 // Convert markdown SOW to a full HTML document with embedded DocuSeal field tags
 function markdownToHtml(markdown: string, title: string, signerName: string, isSelfSign: boolean): string {
@@ -61,7 +59,7 @@ function markdownToHtml(markdown: string, title: string, signerName: string, isS
 
 export async function POST(request: NextRequest) {
   if (!isAdmin(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return unauthorizedResponse();
   }
 
   try {

@@ -23,8 +23,7 @@
 import { sql } from '@/lib/db'
 import { put } from '@vercel/blob'
 import { NextRequest, NextResponse } from 'next/server'
-
-const ADMIN_COOKIE = 'av-admin-session'
+import { isAdmin } from '@/lib/admin-auth'
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const GMAIL_API = 'https://gmail.googleapis.com/gmail/v1'
@@ -255,8 +254,7 @@ function authorizeCron(request: NextRequest): boolean {
   // NOTE: Anyone could spoof this header, but the route is still guarded by the vendor allowlist,
   // Gmail OAuth token presence, and idempotent inserts. If you want strict auth, keep CRON_SECRET.
   if (request.headers.get('x-vercel-cron') === '1') return true
-  const admin = request.cookies.get(ADMIN_COOKIE)?.value === 'authenticated'
-  return admin
+  return isAdmin(request)
 }
 
 export async function GET(request: NextRequest) {
