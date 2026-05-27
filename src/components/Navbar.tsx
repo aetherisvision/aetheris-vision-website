@@ -6,7 +6,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
-import { BRAND_LOGO } from "@/lib/brand";
 
 const navLinks = [
   { label: "Services", href: "/services/web" },
@@ -71,18 +70,20 @@ export default function Navbar() {
         )}
       >
         {/* Logo */}
-        <Link href="/" className="flex items-center shrink-0" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+        <Link href="/" className="flex items-center gap-3" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
           <Image
-            src={BRAND_LOGO.horizontal}
-            alt="Aetheris Vision"
-            width={200}
+            src="/logo/aetheris-logo.svg"
+            alt="Aetheris Vision Logo"
+            width={48}
             height={48}
-            priority
             className={clsx(
-              "w-auto transition-all duration-300",
-              scrolled ? "h-8 md:h-9" : "h-10 md:h-11"
+              "transition-all duration-300",
+              scrolled ? "h-8 w-8 md:h-9 md:w-9" : "h-10 w-10 md:h-12 md:w-12"
             )}
           />
+          <div className="text-xl md:text-2xl font-bold tracking-tight text-white">
+            <span className="font-light text-gray-400">Aetheris</span>Vision
+          </div>
         </Link>
 
         {/* Desktop Nav */}
@@ -102,7 +103,7 @@ export default function Navbar() {
               >
                 {link.label}
                 {isActive(link.href) && (
-                  <span className="block h-px w-full bg-av-accent mt-0.5 rounded-full" />
+                  <span className="block h-px w-full bg-blue-500 mt-0.5 rounded-full" />
                 )}
               </a>
             ))}
@@ -111,7 +112,7 @@ export default function Navbar() {
             href="/book"
             className="inline-flex h-8 items-center justify-center rounded-md bg-white px-4 text-xs font-medium text-black hover:bg-gray-200 transition"
           >
-            Book a Consultation
+            Book a Call
           </a>
         </div>
 

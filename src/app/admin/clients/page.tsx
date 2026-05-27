@@ -11,8 +11,8 @@ const dark = {
   text: '#f1f5f9',
   textMuted: 'rgba(255,255,255,0.5)',
   textDim: 'rgba(255,255,255,0.25)',
-  blue: '#5BA8D9',
-  blueGlow: 'rgba(91,168,217,0.15)',
+  blue: '#3b82f6',
+  blueGlow: 'rgba(59,130,246,0.15)',
   success: 'rgba(16,185,129,0.12)',
   successBorder: 'rgba(16,185,129,0.25)',
   successText: '#6ee7b7',
@@ -147,10 +147,10 @@ export default function AdminClientsPage() {
               disabled={saving}
               style={{
                 padding: '10px 20px', borderRadius: '8px',
-                background: saving ? 'rgba(91,168,217,0.4)' : 'linear-gradient(135deg, #486890, #5BA8D9)',
+                background: saving ? 'rgba(59,130,246,0.4)' : 'linear-gradient(135deg, #2563eb, #3b82f6)',
                 color: '#fff', fontWeight: '600', fontSize: '14px',
                 border: 'none', cursor: saving ? 'not-allowed' : 'pointer',
-                boxShadow: saving ? 'none' : '0 4px 12px rgba(91,168,217,0.3)',
+                boxShadow: saving ? 'none' : '0 4px 12px rgba(59,130,246,0.3)',
               }}
             >
               {saving ? 'Saving…' : 'Add Client'}
@@ -197,7 +197,7 @@ export default function AdminClientsPage() {
                 <button
                   onClick={() => handleInvite(c.id, c.email)}
                   disabled={inviting === c.id}
-                  style={{ padding: '8px 14px', borderRadius: '7px', border: `1px solid ${dark.border}`, background: 'rgba(91,168,217,0.1)', color: dark.blue, fontSize: '13px', cursor: 'pointer', fontWeight: '500' }}
+                  style={{ padding: '8px 14px', borderRadius: '7px', border: `1px solid ${dark.border}`, background: 'rgba(59,130,246,0.1)', color: dark.blue, fontSize: '13px', cursor: 'pointer', fontWeight: '500' }}
                 >
                   {inviting === c.id ? 'Sending…' : 'Send invite'}
                 </button>

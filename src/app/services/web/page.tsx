@@ -98,7 +98,7 @@ export default function WebServicesPage() {
         {/* Hero */}
         <section className="mx-auto max-w-5xl px-6 pb-20">
           <FadeIn>
-            <p className="text-sm font-semibold tracking-widest text-av-accent uppercase mb-3">
+            <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">
               Web Development
             </p>
             <h1 className="text-4xl md:text-6xl font-semibold text-white tracking-tight mb-6 leading-[1.1]">
@@ -138,7 +138,7 @@ export default function WebServicesPage() {
                 <FadeIn key={s.title} delay={i * 0.05} direction="up">
                   <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 h-full">
                     <div className="h-10 w-10 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-4">
-                      <s.icon className="h-5 w-5 text-av-light" />
+                      <s.icon className="h-5 w-5 text-blue-400" />
                     </div>
                     <h3 className="text-white font-medium mb-2">{s.title}</h3>
                     <p className="text-sm text-gray-400 font-light leading-relaxed">{s.description}</p>
@@ -199,7 +199,7 @@ export default function WebServicesPage() {
           <div className="mx-auto max-w-5xl px-6">
             <FadeIn>
               <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-8 md:p-12">
-                <p className="text-xs font-semibold tracking-widest text-av-accent uppercase mb-4">Who builds your site</p>
+                <p className="text-xs font-semibold tracking-widest text-blue-500 uppercase mb-4">Who builds your site</p>
                 <h2 className="text-2xl md:text-3xl font-semibold text-white mb-4">
                   You work directly with Marston — not a junior dev or an overseas team.
                 </h2>
