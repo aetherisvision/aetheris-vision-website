@@ -36,7 +36,7 @@ The company was founded by a meteorologist with 35 years of field-validated oper
 ### 4. State & Federal Contracting
 - VOSB eligible — Veterans First Contracting Program
 - 8(a) eligibility under review — SBA Business Development Program
-- SAM.gov registration in progress
+- SAM.gov registration ACTIVE — UEI ZM8QWJ4ABWZ9, CAGE 20SQ1
 - Active DoD Secret clearance (personal; facility clearance obtainable)
 
 ### 5. Web & Digital Solutions
@@ -114,21 +114,33 @@ The company was founded by a meteorologist with 35 years of field-validated oper
 ## Contracting Credentials
 
 **NAICS Codes:**
-- 541360 — Geophysical Surveying and Mapping Services
-- 541690 — Other Scientific and Technical Consulting Services
+- 541690 — Other Scientific and Technical Consulting Services (Primary)
 - 541511 — Custom Computer Programming Services
-- 541715 — R&D in Physical, Engineering, and Life Sciences
+- 541512 — Computer Systems Design Services
+- 541519 — Other Computer Related Services
+- 541360 — Geophysical Surveying and Mapping Services
+- 541618 — Other Management Consulting Services
+- 541620 — Environmental Consulting Services
 
 **PSC Codes:**
-- T009 — Technical Representation Services — Meteorology
-- B504 — Special Studies/Analysis — Meteorology and Climatology
-- D307 — IT and Telecom — IT Strategy and Architecture
+- R427 — Support — Professional: Weather Reporting/Observation
+- R425 — Support — Professional: Engineering/Technical
+- R408 — Support — Professional: Program Management/Support
+- R405 — Support — Professional: Operations Research/Quantitative Analysis
+- DA01 — IT and Telecom — Business Application/Application Development Support Services (Labor)
+- DA10 — IT and Telecom — Business Application/Application Development Software as a Service
+- DB02 — IT and Telecom — Compute Support Services, Non-HPC (Labor)
+- B510 — Special Studies/Analysis — Environmental Assessments
+- B524 — Special Studies/Analysis — Mathematical/Statistical
+- B526 — Special Studies/Analysis — Oceanological
+- B529 — Special Studies/Analysis — Scientific Data
+- B544 — Special Studies/Analysis — Technology
 
 **Certifications & Status:**
 - VOSB eligible — Veterans First Contracting Program
-- 8(a) eligibility under review
-- SAM.gov registration in progress
-- Active DoD Secret clearance
+- SAM.gov registration ACTIVE — UEI ZM8QWJ4ABWZ9, CAGE 20SQ1
+- SBA VetCert (SDVOSB) — application in progress
+- Active DoD Secret clearance (personal)
 
 ---
 

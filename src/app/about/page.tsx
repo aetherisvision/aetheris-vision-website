@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
 import { ShieldCheckIcon, AcademicCapIcon, GlobeAltIcon, CpuChipIcon } from "@heroicons/react/24/outline";
-import { SITE } from "@/lib/constants";
+import { SITE, SAM } from "@/lib/constants";
 
 export const metadata = {
   title: `About | ${SITE.name}`,
@@ -19,7 +19,7 @@ const credentials = [
   {
     icon: ShieldCheckIcon,
     label: "Active DoD Secret Clearance",
-    description: "VOSB eligible · SAM.gov registration in progress",
+    description: `VOSB eligible · SAM.gov active — UEI ${SAM.uei}, CAGE ${SAM.cage}`,
   },
   {
     icon: AcademicCapIcon,
@@ -98,8 +98,8 @@ export default function AboutPage() {
                   <div className="flex items-start gap-3">
                     <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-2 shrink-0" />
                     <div>
-                      <p className="text-sm text-white font-medium">SAM.gov Registration In Progress</p>
-                      <p className="text-xs text-gray-500 mt-0.5">Federal procurement registration pending</p>
+                      <p className="text-sm text-white font-medium">SAM.gov Registration Active</p>
+                      <p className="text-xs text-gray-500 mt-0.5">UEI {SAM.uei} · CAGE {SAM.cage}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">

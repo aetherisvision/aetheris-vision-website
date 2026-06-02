@@ -13,8 +13,11 @@ export const metadata = {
 const naicsCodes = [
   { code: "541690", description: "Other Scientific and Technical Consulting Services", primary: true },
   { code: "541511", description: "Custom Computer Programming Services", primary: false },
+  { code: "541512", description: "Computer Systems Design Services", primary: false },
+  { code: "541519", description: "Other Computer Related Services", primary: false },
   { code: "541360", description: "Geophysical Surveying and Mapping Services", primary: false },
-  { code: "541715", description: "R&D in Physical, Engineering, and Life Sciences", primary: false },
+  { code: "541618", description: "Other Management Consulting Services", primary: false },
+  { code: "541620", description: "Environmental Consulting Services", primary: false },
 ];
 
 const pscCodes = [
@@ -63,7 +66,7 @@ const competencies = [
   {
     title: "Federal Penetration",
     items: [
-      `SAM.gov registered — UEI ${SAM.uei}, CAGE review in progress`,
+      `SAM.gov registered — UEI ${SAM.uei}, CAGE ${SAM.cage}`,
       `${SAM.setAside} eligible — direct access to Veterans First Contracting Program set-asides`,
       "Oklahoma Supplier Portal — state-level contracting access (registration in progress)",
       "Active DoD Secret clearance (personal; facility clearance scalable for classified program support)",
@@ -124,8 +127,8 @@ export default function CapabilitiesPage() {
                 { label: "Legal Name", value: SITE.legalName },
                 { label: "Business Type", value: "Veteran-Owned Small Business (VOSB / SDVOSB eligible)" },
                 { label: "UEI", value: SAM.uei },
-                { label: "CAGE", value: "Pending (review in progress)" },
-                { label: "SAM.gov", value: "Registered" },
+                { label: "CAGE", value: SAM.cage },
+                { label: "SAM.gov", value: "Active" },
                 { label: "Primary NAICS", value: `${SAM.naicsPrimary} — Scientific & Technical Consulting` },
                 { label: "8(a) Status", value: "Pursuing — application planned" },
                 { label: "Security Clearance", value: "Active DoD Secret (Personal)" },

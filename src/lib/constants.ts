@@ -11,10 +11,10 @@ export const SITE = {
     "Custom websites, web apps, and client portals for Oklahoma businesses — and AI-powered atmospheric intelligence for government agencies. No templates. No outsourcing. Veteran-owned, based in Mustang, OK.",
 } as const;
 
-/** Federal contracting registration data — update when CAGE is assigned */
+/** Federal contracting registration data */
 export const SAM = {
   uei: "ZM8QWJ4ABWZ9",
-  cage: null as string | null, // assigned after CAGE review completes
+  cage: "20SQ1",
   naicsPrimary: "541690",
   setAside: "SDVOSB / VOSB",
   samUrl: "https://sam.gov",
