@@ -125,12 +125,12 @@ export default function CapabilitiesPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-14">
               {[
                 { label: "Legal Name", value: SITE.legalName },
-                { label: "Business Type", value: "Veteran-Owned Small Business (VOSB / SDVOSB eligible)" },
+                { label: "Business Type", value: "Veteran-Owned Small Business (SDVOSB / VOSB — certification in process)" },
                 { label: "UEI", value: SAM.uei },
                 { label: "CAGE", value: SAM.cage },
                 { label: "SAM.gov", value: "Active" },
                 { label: "Primary NAICS", value: `${SAM.naicsPrimary} — Scientific & Technical Consulting` },
-                { label: "8(a) Status", value: "Pursuing — application planned" },
+                { label: "8(a) Status", value: "Eligible — application planned for 2027" },
                 { label: "Security Clearance", value: "Active DoD Secret (Personal)" },
                 { label: "Primary Contact", value: SAM.federalEmail },
               ].map((item) => (

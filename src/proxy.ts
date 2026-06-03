@@ -47,7 +47,6 @@ function buildCsp(nonce: string): string {
 }
 
 const PREVIEW_PASSWORD = process.env.PREVIEW_PASSWORD
-if (!PREVIEW_PASSWORD) throw new Error('PREVIEW_PASSWORD env var must be set')
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -79,24 +78,6 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/api/auth/')
   ) {
     // Skip basic-auth — fall through to normal security headers below
-  } else {
-    // Site-wide basic-auth lock (preview mode)
-    const auth = request.headers.get('authorization')
-    if (auth?.startsWith('Basic ')) {
-      const decoded = Buffer.from(auth.slice(6), 'base64').toString()
-      const password = decoded.includes(':') ? decoded.split(':')[1] : decoded
-      if (password !== PREVIEW_PASSWORD) {
-        return new NextResponse('Authentication required', {
-          status: 401,
-          headers: { 'WWW-Authenticate': 'Basic realm="Aetheris Vision Preview"' },
-        })
-      }
-    } else {
-      return new NextResponse('Authentication required', {
-        status: 401,
-        headers: { 'WWW-Authenticate': 'Basic realm="Aetheris Vision Preview"' },
-      })
-    }
   }
 
   // Generate nonce for CSP and security

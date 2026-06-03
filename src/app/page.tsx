@@ -69,7 +69,7 @@ export default async function Home() {
             <FadeIn delay={0.1}>
               <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm text-gray-300 mb-8 backdrop-blur-sm">
                 <span className="flex h-2 w-2 rounded-full bg-blue-500 mr-2 animate-pulse"></span>
-                VOSB Eligible · Active Secret Clearance · Revolutionary By Design
+                SDVOSB/VOSB Cert In Process · Active Secret Clearance · SAM Registered
               </div>
             </FadeIn>
             
@@ -185,7 +185,7 @@ export default async function Home() {
                   <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base mb-4">
                     Custom websites, web applications, and client portals built for Oklahoma businesses. Performance-first, mobile-first, engineered to last — not templated and forgotten.
                   </p>
-                  <a href="/services/web" className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition">
+                  <a href="/capabilities" className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition">
                     See what we build <ArrowRightIcon className="h-3.5 w-3.5" />
                   </a>
                 </div>
@@ -301,7 +301,7 @@ export default async function Home() {
                   </div>
                   <h3 className="text-xl md:text-2xl font-medium text-white mb-3">State & Federal Contracting</h3>
                   <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base">
-                    SAM.gov registration in progress, VOSB eligible, and 8(a) eligibility under review. Active DoD Secret clearance. Purpose-built to work directly with state and federal agencies on specialized weather, AI, and defense system requirements.
+                    SAM.gov registered — UEI ZM8QWJ4ABWZ9, CAGE 20SQ1. SDVOSB/VOSB certification in process. Active DoD Secret clearance. Purpose-built to work directly with state and federal agencies on specialized weather, AI, and defense system requirements.
                   </p>
                 </div>
               </div>

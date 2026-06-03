@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   title: `${SITE.name} | Custom Web Development & Technical Consulting`,
   description: SITE.description,
   metadataBase: new URL(SITE.url),
+  robots: { index: false, follow: false },
   manifest: "/manifest.json",
   icons: {
     icon: [
