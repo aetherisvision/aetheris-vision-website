@@ -1,10 +1,12 @@
 import { sql } from '@/lib/db'
+import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!isAdmin(request)) return unauthorizedResponse()
   const { id } = await params
   const { date, vendor, description, category, amount, receipt_url } = await request.json()
 
@@ -28,6 +30,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!isAdmin(request)) return unauthorizedResponse()
   const { id } = await params
   await sql`DELETE FROM expenses WHERE id = ${Number(id)}`
   return NextResponse.json({ ok: true })

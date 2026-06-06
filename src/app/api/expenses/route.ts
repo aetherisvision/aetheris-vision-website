@@ -1,7 +1,9 @@
 import { sql } from '@/lib/db'
+import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
+  if (!isAdmin(request)) return unauthorizedResponse()
   const { searchParams } = new URL(request.url)
   const taxYear = searchParams.get('tax_year') || new Date().getFullYear()
 
@@ -23,6 +25,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  if (!isAdmin(request)) return unauthorizedResponse()
   const body = await request.json()
   const { date, vendor, description, category, amount, tax_year, receipt_url } = body
 
