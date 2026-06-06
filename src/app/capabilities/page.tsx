@@ -1,9 +1,9 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
-import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { SITE, SAM } from "@/lib/constants";
 import EmailLink from "@/components/EmailLink";
+import CapabilityRequestForm from "@/components/CapabilityRequestForm";
 
 export const metadata = {
   title: `Capabilities Statement | ${SITE.name}`,
@@ -70,7 +70,7 @@ const competencies = [
       `SAM.gov registered: UEI ${SAM.uei}, CAGE ${SAM.cage}`,
       `${SAM.setAside} eligible, with access to Veterans First Contracting Program set-asides`,
       "Oklahoma Supplier Portal: state-level contracting access (registration in progress)",
-      "DoD Secret clearance (held; facility clearance scalable for classified program support)",
+      "U.S. Government Secret clearance (held across military and civilian assignments; facility clearance scalable for classified program support)",
     ],
   },
   {
@@ -110,13 +110,7 @@ export default function CapabilitiesPage() {
               <h1 className="text-3xl md:text-5xl font-semibold text-white tracking-tight">
                 Capabilities Statement
               </h1>
-              <EmailLink
-                subject="Capabilities Statement PDF Request"
-                className="inline-flex h-10 items-center gap-2 rounded-md border border-white/10 bg-white/[0.03] px-5 text-sm text-gray-300 hover:bg-white/[0.07] transition shrink-0"
-              >
-                <ArrowDownTrayIcon className="h-4 w-4" />
-                Request PDF
-              </EmailLink>
+              <CapabilityRequestForm compact />
             </div>
             <div className="h-px w-12 bg-blue-500/50 mt-6 mb-10" />
           </FadeIn>
@@ -132,7 +126,7 @@ export default function CapabilitiesPage() {
                 { label: "SAM.gov", value: "Active" },
                 { label: "Primary NAICS", value: `${SAM.naicsPrimary}: Scientific & Technical Consulting` },
                 { label: "8(a) Status", value: "Eligible, application planned for 2027" },
-                { label: "Security Clearance", value: "DoD Secret (held)" },
+                { label: "Security Clearance", value: "U.S. Government Secret (held)" },
                 {
                   label: "Primary Contact",
                   value: (
@@ -233,7 +227,7 @@ export default function CapabilitiesPage() {
                     },
                     {
                       title: "Ready for Federal Work",
-                      body: "An active Secret clearance, VOSB eligibility, and an active SAM.gov registration mean we can engage on government work without long onboarding delays.",
+                      body: "A U.S. Government Secret clearance held across multiple assignments, VOSB eligibility, and an active SAM.gov registration mean we can engage on government work without long onboarding delays.",
                     },
                   ].map((d) => (
                     <div key={d.title}>
@@ -255,12 +249,7 @@ export default function CapabilitiesPage() {
               >
                 Book a Consultation
               </a>
-              <EmailLink
-                subject="Capabilities Statement PDF Request"
-                className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 px-8 text-sm font-medium text-white hover:bg-white/5 transition"
-              >
-                Request Capabilities PDF
-              </EmailLink>
+              <CapabilityRequestForm />
             </div>
           </FadeIn>
 

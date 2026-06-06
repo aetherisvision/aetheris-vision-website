@@ -14,7 +14,7 @@ const badgeStyle = {
   padding: "6px 16px",
 } as const;
 
-const badges = ["VOSB Eligible", "DoD Secret Clearance (held)", "8(a) Eligible (2027)"];
+const badges = ["VOSB Eligible", "U.S. Government Secret Clearance", "8(a) Eligible (2027)"];
 
 export default function OGImage() {
   return new ImageResponse(
