@@ -18,7 +18,7 @@ const credentials = [
   },
   {
     icon: ShieldCheckIcon,
-    label: "Active DoD Secret Clearance",
+    label: "DoD Secret Clearance (held)",
     description: `VOSB eligible · SAM.gov active: UEI ${SAM.uei}, CAGE ${SAM.cage}`,
   },
   {
@@ -55,13 +55,13 @@ export default function AboutPage() {
           {/* Founder Section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-20">
             <FadeIn delay={0.1} className="md:col-span-2">
-              <h2 className="text-xl font-medium text-white mb-4">Marston Ward</h2>
+              <h2 className="text-xl font-medium text-white mb-4">Founder &amp; Chief Meteorologist</h2>
               <p className="text-sm text-blue-400 font-semibold tracking-widest uppercase mb-6">
-                Founder &amp; Chief Meteorologist
+                Aetheris Vision LLC
               </p>
               <div className="space-y-4 text-gray-400 font-light leading-relaxed">
                 <p>
-                  Marston Ward holds a Ph.D. in atmospheric and environmental science and brings more than 35 years of operational meteorology to Aetheris Vision. His career began as a <strong className="text-gray-200">United States Air Force</strong> weather forecaster, where he supported real-world operations under conditions that left no room for guesswork.
+                  Our founder holds a Ph.D. in atmospheric and environmental science and brings more than 35 years of operational meteorology to Aetheris Vision. His career began as a <strong className="text-gray-200">United States Air Force</strong> weather forecaster, where he supported real-world operations under conditions that left no room for guesswork.
                 </p>
                 <p>
                   After his military service, he pursued research at <strong className="text-gray-200">Stockholm University</strong> and <strong className="text-gray-200">Chalmers University of Technology</strong>, deepening his work in atmospheric modeling and environmental science alongside academic collaborators in Sweden.
@@ -85,7 +85,7 @@ export default function AboutPage() {
                   <div className="flex items-start gap-3">
                     <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-2 shrink-0" />
                     <div>
-                      <p className="text-sm text-white font-medium">Active DoD Secret Clearance</p>
+                      <p className="text-sm text-white font-medium">DoD Secret Clearance (held)</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">

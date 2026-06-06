@@ -34,7 +34,7 @@ const STATIC_SOURCES: SatelliteSource[] = [
 export const metadata = {
   title: `${SITE.name} | ${SITE.tagline}`,
   description:
-    "Custom websites, web applications, and client portals for Oklahoma businesses. Veteran-owned. Based in Mustang, OK.",
+    "Applied meteorology and AI-powered atmospheric intelligence for government and defense agencies. Veteran-owned. SAM registered. Based in Oklahoma.",
 };
 
 export default async function Home() {
@@ -69,22 +69,22 @@ export default async function Home() {
             <FadeIn delay={0.1}>
               <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm text-gray-300 mb-8 backdrop-blur-sm">
                 <span className="flex h-2 w-2 rounded-full bg-blue-500 mr-2 animate-pulse"></span>
-                SDVOSB/VOSB Cert In Process · Active Secret Clearance · SAM Registered
+                SDVOSB/VOSB Cert In Process · Secret Clearance (held) · SAM Registered
               </div>
             </FadeIn>
             
             <FadeIn delay={0.2}>
               <h1 className="text-5xl md:text-7xl font-semibold tracking-tighter text-white mb-6 leading-[1.1]">
-                Custom Software and <br />
+                Applied Meteorology <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">
-                  Atmospheric Intelligence.
+                  and AI Intelligence.
                 </span>
               </h1>
             </FadeIn>
-            
+
             <FadeIn delay={0.3}>
               <p className="max-w-2xl text-lg md:text-xl text-gray-400 mb-10 leading-relaxed font-light">
-                We build custom websites, web applications, and client portals for businesses, and AI-powered atmospheric intelligence for government and defense agencies. This website was built the same way we build for our clients: performance-first, mobile-first, and engineered to last.
+                AI-powered atmospheric intelligence and scientific consulting for government, defense, and civil agencies. We also design and build custom websites and software for businesses that need more than a template.
               </p>
             </FadeIn>
             
@@ -164,37 +164,9 @@ export default async function Home() {
             </FadeIn>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-              {/* Card 1 — Web & Digital Solutions */}
+              {/* Card 1 — Applied Meteorology (primary) */}
               <FadeIn delay={0.05} direction="up" className="h-full">
               <div className="group relative rounded-xl border border-blue-500/20 bg-blue-500/[0.04] p-6 md:p-8 transition hover:bg-blue-500/[0.07] hover:border-blue-500/30 flex flex-col h-full overflow-hidden">
-                <div className="absolute inset-0 rounded-xl overflow-hidden">
-                  <Image
-                    src="https://images.unsplash.com/photo-1547658719-da2b51169166?q=80&w=1200"
-                    alt=""
-                    aria-hidden="true"
-                    fill
-                    className="object-cover opacity-[0.12] mix-blend-screen group-hover:opacity-[0.18] transition-opacity duration-500"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                </div>
-                <div className="relative z-10">
-                  <div className="h-12 w-12 rounded-lg bg-gray-900 border border-blue-500/30 flex items-center justify-center mb-6">
-                    <CodeBracketIcon className="h-6 w-6 text-blue-400" />
-                  </div>
-                  <h3 className="text-xl md:text-2xl font-medium text-white mb-3">Web & Digital Solutions</h3>
-                  <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base mb-4">
-                    Custom websites, web applications, and client portals built for Oklahoma businesses. Performance-first, mobile-first, engineered to last, not templated and forgotten.
-                  </p>
-                  <a href="/capabilities" className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition">
-                    See what we build <ArrowRightIcon className="h-3.5 w-3.5" />
-                  </a>
-                </div>
-              </div>
-              </FadeIn>
-
-              {/* Card 2 — Operational Meteorology */}
-              <FadeIn delay={0.1} direction="up" className="h-full">
-              <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 md:p-8 transition hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full overflow-hidden">
                 <div className="absolute inset-0 rounded-xl overflow-hidden">
                   <Image
                     src="https://images.unsplash.com/photo-1527482937786-6608f6f73e1c?q=80&w=1200"
@@ -206,19 +178,22 @@ export default async function Home() {
                   />
                 </div>
                 <div className="relative z-10">
-                  <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">
+                  <div className="h-12 w-12 rounded-lg bg-gray-900 border border-blue-500/30 flex items-center justify-center mb-6">
                     <GlobeAltIcon className="h-6 w-6 text-blue-400" />
                   </div>
-                  <h3 className="text-xl md:text-2xl font-medium text-white mb-3">Operational Meteorology</h3>
-                  <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base">
+                  <h3 className="text-xl md:text-2xl font-medium text-white mb-3">Applied Meteorology</h3>
+                  <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base mb-4">
                     Over 35 years of global atmospheric modeling and operational forecasting. Expertise honed through deployments with the <strong className="text-gray-200">United States Air Force</strong> and research with <strong className="text-gray-200">Stockholm University</strong> and <strong className="text-gray-200">Chalmers University of Technology</strong>.
                   </p>
+                  <a href="/capabilities" className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition">
+                    View capabilities <ArrowRightIcon className="h-3.5 w-3.5" />
+                  </a>
                 </div>
               </div>
               </FadeIn>
 
-              {/* Card 3 — AI / ML Integration */}
-              <FadeIn delay={0.15} direction="up" className="h-full">
+              {/* Card 2 — AI / ML Integration */}
+              <FadeIn delay={0.1} direction="up" className="h-full">
               <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 md:p-8 transition hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full overflow-hidden">
                 <div className="absolute inset-0 rounded-xl overflow-hidden">
                   <Image
@@ -237,6 +212,31 @@ export default async function Home() {
                   <h3 className="text-xl md:text-2xl font-medium text-white mb-3">AI / ML Integration</h3>
                   <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base">
                     Pioneering machine learning techniques tailored for complex, large-scale meteorological datasets to increase predictive accuracy and mission readiness.
+                  </p>
+                </div>
+              </div>
+              </FadeIn>
+
+              {/* Card 3 — Web & Digital Solutions */}
+              <FadeIn delay={0.15} direction="up" className="h-full">
+              <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 md:p-8 transition hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full overflow-hidden">
+                <div className="absolute inset-0 rounded-xl overflow-hidden">
+                  <Image
+                    src="https://images.unsplash.com/photo-1547658719-da2b51169166?q=80&w=1200"
+                    alt=""
+                    aria-hidden="true"
+                    fill
+                    className="object-cover opacity-[0.12] mix-blend-screen group-hover:opacity-[0.18] transition-opacity duration-500"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                </div>
+                <div className="relative z-10">
+                  <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">
+                    <CodeBracketIcon className="h-6 w-6 text-blue-400" />
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-medium text-white mb-3">Web & Digital Solutions</h3>
+                  <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base">
+                    Custom websites, web applications, and client portals built for businesses. Performance-first, mobile-first, engineered to last, not templated and forgotten.
                   </p>
                 </div>
               </div>
@@ -301,7 +301,7 @@ export default async function Home() {
                   </div>
                   <h3 className="text-xl md:text-2xl font-medium text-white mb-3">State & Federal Contracting</h3>
                   <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base">
-                    SAM.gov registered: UEI ZM8QWJ4ABWZ9, CAGE 20SQ1. SDVOSB/VOSB certification in process. Active DoD Secret clearance. Purpose-built to work directly with state and federal agencies on specialized weather, AI, and defense system requirements.
+                    SAM.gov registered: UEI ZM8QWJ4ABWZ9, CAGE 20SQ1. SDVOSB/VOSB certification in process. DoD Secret clearance (held). Purpose-built to work directly with state and federal agencies on specialized weather, AI, and defense system requirements.
                   </p>
                 </div>
               </div>
@@ -332,18 +332,18 @@ export default async function Home() {
 
                 <div className="relative z-10 flex flex-col gap-4 shrink-0">
                   <a
-                    href="/intake"
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-white px-8 text-sm font-medium text-black hover:bg-gray-200 transition"
-                  >
-                    <ArrowRightIcon className="h-4 w-4" />
-                    Start a Web Project
-                  </a>
-                  <a
                     href="/book"
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-white/10 bg-transparent px-8 text-sm font-medium text-white hover:bg-white/5 transition"
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-white px-8 text-sm font-medium text-black hover:bg-gray-200 transition"
                   >
                     <EnvelopeIcon className="h-4 w-4" />
                     Book a Consultation
+                  </a>
+                  <a
+                    href="/intake"
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-white/10 bg-transparent px-8 text-sm font-medium text-white hover:bg-white/5 transition"
+                  >
+                    <ArrowRightIcon className="h-4 w-4" />
+                    Start a Web Project
                   </a>
                   <Link
                     href="/blog"

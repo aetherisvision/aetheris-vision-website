@@ -37,7 +37,7 @@ The company was founded by a meteorologist with 35 years of field-validated oper
 - VOSB eligible — Veterans First Contracting Program
 - 8(a) eligible (application opens 2027) — SBA Business Development Program
 - SAM.gov registration ACTIVE — UEI ZM8QWJ4ABWZ9, CAGE 20SQ1
-- Active DoD Secret clearance (personal; facility clearance obtainable)
+- DoD Secret clearance (held; facility clearance obtainable)
 
 ### 5. Web & Digital Solutions
 - Custom website design and development (Next.js, React, TypeScript)
@@ -140,7 +140,7 @@ The company was founded by a meteorologist with 35 years of field-validated oper
 - VOSB eligible — Veterans First Contracting Program
 - SAM.gov registration ACTIVE — UEI ZM8QWJ4ABWZ9, CAGE 20SQ1
 - SBA VetCert (SDVOSB) — application in progress
-- Active DoD Secret clearance (personal)
+- DoD Secret clearance (held)
 
 ---
 
