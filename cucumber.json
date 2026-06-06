@@ -1,0 +1,12 @@
+{
+  "default": {
+    "paths": [
+      "tests/features/navigation.feature",
+      "tests/features/portfolio.feature"
+    ],
+    "import": [
+      "tests/features/step-definitions/*.steps.ts"
+    ],
+    "publishQuiet": true
+  }
+}
