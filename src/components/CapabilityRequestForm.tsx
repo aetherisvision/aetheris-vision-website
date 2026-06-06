@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ArrowDownTrayIcon, CheckIcon } from "@heroicons/react/24/outline";
 
-type Status = "idle" | "open" | "sending" | "sent" | "error";
+type Status = "idle" | "open" | "sending" | "sent" | "error" | "unconfigured";
 
 export default function CapabilityRequestForm({
   compact = false,
@@ -31,7 +31,13 @@ export default function CapabilityRequestForm({
           _gotcha: honeypot,
         }),
       });
-      setStatus(res.ok ? "sent" : "error");
+      if (res.ok) {
+        setStatus("sent");
+      } else if (res.status === 503) {
+        setStatus("unconfigured");
+      } else {
+        setStatus("error");
+      }
     } catch {
       setStatus("error");
     }
@@ -105,7 +111,15 @@ export default function CapabilityRequestForm({
         <p className="text-red-400 text-xs w-full sm:w-auto self-center">
           Something went wrong.{" "}
           <a href="/contact" className="underline hover:text-red-300">
-            Try the contact page.
+            Use the contact page.
+          </a>
+        </p>
+      )}
+      {status === "unconfigured" && (
+        <p className="text-yellow-400 text-xs w-full sm:w-auto self-center">
+          Form not configured yet.{" "}
+          <a href="/contact" className="underline hover:text-yellow-300">
+            Use the contact page.
           </a>
         </p>
       )}
