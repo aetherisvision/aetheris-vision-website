@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 type EmailLinkProps = {
   children?: React.ReactNode;
   subject?: string;
@@ -13,8 +11,8 @@ type EmailLinkProps = {
 /**
  * Renders an email contact link without exposing the raw address as plaintext
  * in the server-rendered HTML. The address is stored in obfuscated parts and
- * only reassembled into a `mailto:` href after the component mounts on the
- * client, so SSR output contains no scrapeable address.
+ * only reassembled into a `mailto:` at click time, so neither the SSR output
+ * nor the static DOM ever contains a scrapeable address.
  */
 export default function EmailLink({
   children = "Email us",
@@ -23,33 +21,27 @@ export default function EmailLink({
   account = "contact",
   "aria-label": ariaLabel,
 }: EmailLinkProps) {
-  const [href, setHref] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
+  function handleActivate() {
     const local = account === "marston" ? ["mar", "ston"].join("") : ["con", "tact"].join("");
     const domain = ["aetherisvision", "com"].join(".");
-    const address = `${local}@${domain}`;
-
-    let mailto = `mailto:${address}`;
+    let mailto = `mailto:${local}@${domain}`;
     if (subject) {
       mailto += `?subject=${encodeURIComponent(subject)}`;
     }
-
-    setHref(mailto);
-  }, [subject, account]);
-
-  // Before mount (and in SSR output), render the label with no href and no
-  // address, so there is no plaintext email and no layout shift on hydration.
-  if (!href) {
-    return (
-      <span role="link" aria-disabled="true" className={className}>
-        {children}
-      </span>
-    );
+    window.location.href = mailto;
   }
 
   return (
-    <a href={href} className={className} aria-label={ariaLabel ?? "Send us an email"}>
+    <a
+      href="#"
+      role="link"
+      className={className}
+      aria-label={ariaLabel ?? "Send us an email"}
+      onClick={(e) => {
+        e.preventDefault();
+        handleActivate();
+      }}
+    >
       {children}
     </a>
   );
