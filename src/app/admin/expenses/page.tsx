@@ -196,8 +196,11 @@ export default function ExpensesPage() {
     const a = document.createElement('a')
     a.href = url
     a.download = `AV-Expenses-${taxYear}.xlsx`
+    document.body.appendChild(a)
     a.click()
-    URL.revokeObjectURL(url)
+    a.remove()
+    // Delay revoke so Safari/WebKit doesn't cancel the in-flight download.
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
   const grandTotal = totals.reduce((sum, t) => sum + parseFloat(t.total), 0)
