@@ -36,6 +36,7 @@ const CATEGORIES = [
   'Banking & Financial Fees',
   'Equipment & Hardware',
   'Office Supplies',
+  'Home Office',
   'Travel & Transportation',
   'Other',
 ]

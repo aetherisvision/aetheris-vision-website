@@ -58,9 +58,17 @@ const VENDORS: [string, string, string][] = [
   ['PayPal',     'mail.paypal.com',     'Banking & Financial Fees'],
   ['Best Buy',   'bestbuy.com',         'Office & Equipment'],
   ['Best Buy',   'emails.bestbuy.com',  'Office & Equipment'],
-  ['Sanity',     'sanity.io',           'Cloud Services'],
-  ['Sanity',     'sanity-mail.com',     'Cloud Services'],
-  ['GitLab',     'gitlab.com',          'Cloud Services'],
+  ['Sanity',       'sanity.io',               'Cloud Services'],
+  ['Sanity',       'sanity-mail.com',         'Cloud Services'],
+  ['GitLab',       'gitlab.com',              'Cloud Services'],
+  // AI providers
+  ['xAI',          'x.ai',                    'Cloud Services'],
+  // Office / mailbox
+  ['Ship It Sooner', 'notify.postalmate.net', 'Office Supplies'],
+  // Security monitoring
+  ['AVS Concepts', 'billpay.systems',         'Software Subscriptions'],
+  // Professional certifications (AMS CCM exam, etc.)
+  ['AMS',          'ametsoc.org',             'Professional Certifications'],
 ]
 
 async function getAccessToken(refreshToken: string): Promise<string> {
