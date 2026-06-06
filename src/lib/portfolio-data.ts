@@ -410,6 +410,7 @@ export interface MaintenancePlan {
   name: string;
   price: string;
   features: string[];
+  highlight?: boolean;
 }
 
 export const maintenancePlans: MaintenancePlan[] = [
@@ -437,5 +438,6 @@ export const maintenancePlans: MaintenancePlan[] = [
       "Phone support during business hours",
       "Emergency response (2-hour SLA)",
     ],
+    highlight: true,
   },
 ];
