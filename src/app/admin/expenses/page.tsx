@@ -152,35 +152,55 @@ export default function ExpensesPage() {
   }
 
   async function exportExcel() {
-    const { utils, writeFile } = await import('xlsx')
-    const rows = expenses.map(e => ({
-      Date: new Date(e.date).toLocaleDateString('en-US'),
-      Vendor: e.vendor,
-      Description: e.description,
-      Category: e.category,
-      Amount: parseFloat(e.amount),
-      'Receipt URL': e.receipt_url ?? '',
-    }))
+    const ExcelJS = await import('exceljs')
+    const wb = new ExcelJS.Workbook()
 
-    // Summary sheet
-    const summaryRows = totals.map(t => ({
-      Category: t.category,
-      Total: parseFloat(t.total),
-    }))
-    summaryRows.push({ Category: 'GRAND TOTAL', Total: totals.reduce((s, t) => s + parseFloat(t.total), 0) })
+    const ws = wb.addWorksheet(`${taxYear} Expenses`)
+    ws.columns = [
+      { header: 'Date', key: 'date', width: 12 },
+      { header: 'Vendor', key: 'vendor', width: 22 },
+      { header: 'Description', key: 'description', width: 32 },
+      { header: 'Category', key: 'category', width: 28 },
+      { header: 'Amount', key: 'amount', width: 12 },
+      { header: 'Receipt URL', key: 'receipt', width: 36 },
+    ]
+    expenses.forEach(e =>
+      ws.addRow({
+        date: new Date(e.date).toLocaleDateString('en-US'),
+        vendor: e.vendor,
+        description: e.description,
+        category: e.category,
+        amount: parseFloat(e.amount),
+        receipt: e.receipt_url ?? '',
+      }),
+    )
 
-    const wb = utils.book_new()
-    const ws = utils.json_to_sheet(rows)
-    const wsSummary = utils.json_to_sheet(summaryRows)
+    const wsSummary = wb.addWorksheet(`${taxYear} Summary`)
+    wsSummary.columns = [
+      { header: 'Category', key: 'category', width: 30 },
+      { header: 'Total', key: 'total', width: 14 },
+    ]
+    totals.forEach(t =>
+      wsSummary.addRow({ category: t.category, total: parseFloat(t.total) }),
+    )
+    wsSummary.addRow({
+      category: 'GRAND TOTAL',
+      total: totals.reduce((s, t) => s + parseFloat(t.total), 0),
+    })
 
-    // Column widths
-    ws['!cols'] = [{ wch: 12 }, { wch: 22 }, { wch: 32 }, { wch: 28 }, { wch: 12 }, { wch: 36 }]
-    wsSummary['!cols'] = [{ wch: 30 }, { wch: 14 }]
-
-    utils.book_append_sheet(wb, ws, `${taxYear} Expenses`)
-    utils.book_append_sheet(wb, wsSummary, `${taxYear} Summary`)
-
-    writeFile(wb, `AV-Expenses-${taxYear}.xlsx`)
+    const buf = await wb.xlsx.writeBuffer()
+    const blob = new Blob([buf as ArrayBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `AV-Expenses-${taxYear}.xlsx`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    // Delay revoke so Safari/WebKit doesn't cancel the in-flight download.
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
   const grandTotal = totals.reduce((sum, t) => sum + parseFloat(t.total), 0)
