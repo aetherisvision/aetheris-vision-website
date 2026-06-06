@@ -43,8 +43,11 @@ Given("there are published blog posts", function () {
 Then("each blog post slug should have a sitemap entry", function () {
   if (generatedSitemap.length === 0) generatedSitemap = sitemap();
   const urls = generatedSitemap.map((entry) => entry.url);
+  // Derive the origin from the generated sitemap rather than hardcoding it, so
+  // the assertion follows SITE.url wherever it points.
+  const origin = new URL(generatedSitemap[0].url).origin;
   for (const post of posts) {
-    const expected = `https://aetherisvision.com/blog/${post.slug}`;
+    const expected = `${origin}/blog/${post.slug}`;
     assert.ok(urls.includes(expected), `Sitemap is missing blog entry: ${expected}`);
   }
 });
