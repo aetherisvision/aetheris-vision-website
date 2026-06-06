@@ -2,7 +2,7 @@ import Link from "next/link";
 import { SITE } from "@/lib/constants";
 
 export const metadata = {
-  title: `Iron District Fitness — Gym Demo | ${SITE.name} Portfolio`,
+  title: `Iron District Fitness Gym Demo | ${SITE.name} Portfolio`,
 };
 
 const plans = [
@@ -42,7 +42,7 @@ export default function FitnessPage() {
 
       {/* Demo Banner */}
       <div className="border-b border-white/5 py-2 text-center text-xs font-semibold text-gray-500">
-        ✦ DEMO SITE — built by{" "}
+        ✦ DEMO SITE, built by{" "}
         <Link href="/portfolio" className="text-white underline hover:text-gray-300">{SITE.name}</Link>
         {" "}·{" "}
         <Link href="/portfolio" className="text-gray-600 hover:text-white transition-colors">← Back to Portfolio</Link>

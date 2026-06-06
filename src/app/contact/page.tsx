@@ -2,13 +2,14 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ContactForm from "@/components/ContactForm";
 import FadeIn from "@/components/FadeIn";
+import EmailLink from "@/components/EmailLink";
 import { EnvelopeIcon, CalendarDaysIcon, ClipboardDocumentIcon, PhoneIcon } from "@heroicons/react/24/outline";
 import { SITE } from "@/lib/constants";
 
 export const metadata = {
   title: `Contact | ${SITE.name}`,
   description:
-    "Start a web project or ask a question — we respond within one business day. Veteran-owned, based in Mustang, OK.",
+    "Start a web project or ask a question. We respond within one business day. Veteran-owned, based in Mustang, OK.",
 };
 
 export default function ContactPage() {
@@ -28,7 +29,7 @@ export default function ContactPage() {
               Contact Us
             </h1>
             <p className="text-gray-400 font-light text-lg max-w-2xl leading-relaxed mb-10">
-              Have a web project in mind, or just want to ask a question? Send a message and we&apos;ll respond within one business day. No sales pitch — just a straight answer.
+              Have a web project in mind, or just want to ask a question? Send a message and we&apos;ll respond within one business day. No sales pitch, just a straight answer.
             </p>
           </FadeIn>
 
@@ -59,12 +60,9 @@ export default function ContactPage() {
                     <EnvelopeIcon className="h-5 w-5 text-blue-400" />
                     <p className="text-white font-medium text-sm">Email directly</p>
                   </div>
-                  <a
-                    href="mailto:contact@aetherisvision.com"
-                    className="text-sm text-gray-400 hover:text-white transition break-all"
-                  >
-                    contact@aetherisvision.com
-                  </a>
+                  <EmailLink className="text-sm text-gray-400 hover:text-white transition break-all">
+                    Email us
+                  </EmailLink>
                 </div>
 
                 <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6">
@@ -105,8 +103,8 @@ export default function ContactPage() {
                   </p>
                   <div className="space-y-1 text-sm text-gray-400 font-light">
                     <p>VOSB Eligible</p>
-                    <p>8(a) Eligibility Under Review</p>
-                    <p>SAM.gov Registration In Progress</p>
+                    <p>8(a) Eligible (application opens 2027)</p>
+                    <p>SAM.gov Registration Active</p>
                     <p>Active DoD Secret Clearance</p>
                   </div>
                   <a

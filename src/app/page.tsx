@@ -75,16 +75,16 @@ export default async function Home() {
             
             <FadeIn delay={0.2}>
               <h1 className="text-5xl md:text-7xl font-semibold tracking-tighter text-white mb-6 leading-[1.1]">
-                Disruptive Intelligence <br />
+                Custom Software and <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">
-                  That Eliminates Uncertainty.
+                  Atmospheric Intelligence.
                 </span>
               </h1>
             </FadeIn>
             
             <FadeIn delay={0.3}>
               <p className="max-w-2xl text-lg md:text-xl text-gray-400 mb-10 leading-relaxed font-light">
-                We engineer solutions that eliminate operational uncertainty — custom digital systems that revolutionize business efficiency, and AI-powered atmospheric intelligence that makes traditional forecasting obsolete. This website exemplifies our approach: precision-built technology designed for transformational impact.
+                We build custom websites, web applications, and client portals for businesses, and AI-powered atmospheric intelligence for government and defense agencies. This website was built the same way we build for our clients: performance-first, mobile-first, and engineered to last.
               </p>
             </FadeIn>
             
@@ -132,7 +132,7 @@ export default async function Home() {
               
               <FadeIn delay={0.15}>
                 <p className="text-lg md:text-xl text-gray-300 font-light leading-relaxed mb-6">
-                  Derived from the ancient Latin and Greek word <span className="text-white italic">aetheris</span>—meaning &quot;the clear sky&quot; or &quot;the pure, fresh air breathed by the gods&quot;—our name reflects a profound commitment to mapping the unknown.
+                  Derived from the ancient Latin and Greek word <span className="text-white italic">aetheris</span> (meaning &quot;the clear sky&quot; or &quot;the pure, fresh air breathed by the gods&quot;), our name reflects a profound commitment to mapping the unknown.
                 </p>
               </FadeIn>
               
@@ -183,7 +183,7 @@ export default async function Home() {
                   </div>
                   <h3 className="text-xl md:text-2xl font-medium text-white mb-3">Web & Digital Solutions</h3>
                   <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base mb-4">
-                    Custom websites, web applications, and client portals built for Oklahoma businesses. Performance-first, mobile-first, engineered to last — not templated and forgotten.
+                    Custom websites, web applications, and client portals built for Oklahoma businesses. Performance-first, mobile-first, engineered to last, not templated and forgotten.
                   </p>
                   <a href="/capabilities" className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition">
                     See what we build <ArrowRightIcon className="h-3.5 w-3.5" />
@@ -301,7 +301,7 @@ export default async function Home() {
                   </div>
                   <h3 className="text-xl md:text-2xl font-medium text-white mb-3">State & Federal Contracting</h3>
                   <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base">
-                    SAM.gov registered — UEI ZM8QWJ4ABWZ9, CAGE 20SQ1. SDVOSB/VOSB certification in process. Active DoD Secret clearance. Purpose-built to work directly with state and federal agencies on specialized weather, AI, and defense system requirements.
+                    SAM.gov registered: UEI ZM8QWJ4ABWZ9, CAGE 20SQ1. SDVOSB/VOSB certification in process. Active DoD Secret clearance. Purpose-built to work directly with state and federal agencies on specialized weather, AI, and defense system requirements.
                   </p>
                 </div>
               </div>
@@ -326,7 +326,7 @@ export default async function Home() {
                     Ready to build something?
                   </h2>
                   <p className="text-gray-400 font-light leading-relaxed">
-                    Tell us about your project and we&apos;ll respond within one business day. No pressure, no sales pitch — just an honest conversation about what you need and whether we&apos;re the right fit.
+                    Tell us about your project and we&apos;ll respond within one business day. No pressure, no sales pitch, just an honest conversation about what you need and whether we&apos;re the right fit.
                   </p>
                 </div>
 

@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
 import { SITE } from "@/lib/constants";
+import EmailLink from "@/components/EmailLink";
 import { publisherRef } from "@/lib/jsonld";
 import {
   tiers,
@@ -20,10 +21,10 @@ import Link from "next/link";
 export const metadata = {
   title: `Enterprise Web Development | ${SITE.name}`,
   description:
-    "Professional web development for serious businesses. Custom platforms, business applications, and enterprise-grade websites. From $2,400.",
+    "Professional web development for serious businesses. Custom platforms, business applications, and enterprise-grade websites. From $2,800.",
   openGraph: {
     title: `Enterprise-Grade Web Development | ${SITE.name}`,
-    description: "Custom business platforms and sophisticated web applications. Lighthouse 95+ performance, enterprise security, comprehensive warranties. Starting at $2,400.",
+    description: "Custom business platforms and sophisticated web applications. Lighthouse 95+ performance, enterprise security, comprehensive warranties. Starting at $2,800.",
     type: "website",
   },
 };
@@ -55,7 +56,7 @@ export default function PortfolioPage() {
 
           <FadeIn delay={0.2}>
             <p className="max-w-2xl text-lg text-gray-400 mb-10 leading-relaxed font-light">
-              Professional businesses need enterprise-grade web platforms, not template solutions. I build sophisticated, scalable websites and applications using cutting-edge technology — delivering the technical excellence your brand deserves.
+              Professional businesses need enterprise-grade web platforms, not template solutions. I build sophisticated, scalable websites and applications using cutting-edge technology, delivering the technical excellence your brand deserves.
             </p>
           </FadeIn>
 
@@ -186,7 +187,7 @@ export default function PortfolioPage() {
           {/* ── Security & Backup ── */}
           <FadeIn>
             <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Security &amp; Backup</p>
-            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">Your Site Stays Up — Guaranteed</h2>
+            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">Your Site Stays Up, Guaranteed</h2>
             <p className="text-gray-400 mb-12 max-w-xl">
               Every build includes production-grade security, automated backups, and a recovery plan. If your site goes down, turnaround is measured in hours, not weeks.
             </p>
@@ -221,7 +222,7 @@ export default function PortfolioPage() {
             <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Included With Every Site</p>
             <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">More Than Just a Pretty Page</h2>
             <p className="text-gray-400 mb-12 max-w-xl">
-              Every build comes loaded with features that agencies charge extra for. Performance, legal compliance, SEO markup, and social media polish — all included.
+              Every build comes loaded with features that agencies charge extra for. Performance, legal compliance, SEO markup, and social media polish, all included.
             </p>
           </FadeIn>
 
@@ -240,10 +241,10 @@ export default function PortfolioPage() {
           {/* ── Demo Gallery ── */}
           <div id="demos">
             <FadeIn>
-              <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Demo Sites</p>
-              <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">Explore Example Builds</h2>
+              <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Example Builds</p>
+              <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">Demo Sites We Built to Show Range</h2>
               <p className="text-gray-400 mb-12 max-w-xl">
-                Each demo is a fully functional site built to show range across industries and styles. These are real pages — click through and explore.
+                These are demo sites we built ourselves to show range across industries and styles, not client work or case studies. The businesses shown are illustrative examples, not real clients. Each demo is a fully functional page; click through and explore the craft.
               </p>
             </FadeIn>
           </div>
@@ -277,7 +278,7 @@ export default function PortfolioPage() {
             <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">WordPress Services</p>
             <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">We Handle WordPress Clients Too</h2>
             <p className="text-gray-400 mb-12 max-w-xl">
-              Already on WordPress — or need to be? Two service paths: a fast, modern headless stack or a fully managed hands-off setup.
+              Already on WordPress, or need to be? Two service paths: a fast, modern headless stack or a fully managed hands-off setup.
             </p>
           </FadeIn>
 
@@ -393,7 +394,7 @@ export default function PortfolioPage() {
                   Book Discovery Call
                 </a>
               </div>
-              <p className="text-xs text-gray-600">Or email directly: <a href={`mailto:${SITE.email}`} className="text-gray-400 hover:text-white transition-colors">{SITE.email}</a></p>
+              <p className="text-xs text-gray-600">Or email directly: <EmailLink className="text-gray-400 hover:text-white transition-colors">Email us</EmailLink></p>
             </div>
           </FadeIn>
 
@@ -417,7 +418,7 @@ export default function PortfolioPage() {
               {
                 "@type": "Offer",
                 name: "Professional Package",
-                price: "2400",
+                price: "2800",
                 priceCurrency: "USD",
                 description: "Enterprise-grade foundation with custom design, security headers, 30-day warranty, delivered in 15 business days.",
               },

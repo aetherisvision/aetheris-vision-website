@@ -2,13 +2,13 @@ import Link from "next/link";
 import { SITE } from "@/lib/constants";
 
 export const metadata = {
-  title: `Prairie Standard — WordPress Headless Demo | ${SITE.name} Portfolio`,
+  title: `Prairie Standard WordPress Headless Demo | ${SITE.name} Portfolio`,
 };
 
 const featured = {
   category: "Agriculture",
   title: "Oklahoma's Wheat Farmers Are Betting on AI-Powered Forecasting",
-  excerpt: "A new generation of precision agriculture tools is helping producers across the panhandle make better planting and harvest decisions — and it starts with better weather data.",
+  excerpt: "A new generation of precision agriculture tools is helping producers across the panhandle make better planting and harvest decisions, and it starts with better weather data.",
   author: "M. Hendricks",
   date: "March 18, 2026",
   readTime: "8 min read",
@@ -57,7 +57,7 @@ export default function WpEditorialPage() {
 
       {/* Demo Banner */}
       <div className="bg-gray-900 py-2 text-center text-xs font-sans font-semibold text-gray-400" style={{ fontFamily: "system-ui, sans-serif" }}>
-        ✦ DEMO SITE (Headless WordPress) — built by{" "}
+        ✦ DEMO SITE (Headless WordPress), built by{" "}
         <Link href="/portfolio" className="text-blue-400 underline hover:text-blue-300">{SITE.name}</Link>
         {" "}·{" "}
         <Link href="/portfolio" className="text-gray-500 hover:text-white transition-colors">← Back to Portfolio</Link>
@@ -171,7 +171,7 @@ export default function WpEditorialPage() {
             <div>
               <p className="font-semibold text-gray-900">Powered by Headless WordPress</p>
               <p className="mt-1 text-sm text-gray-600">
-                This publication&apos;s editors manage all content — articles, authors, categories, and media — inside a familiar WordPress dashboard.
+                This publication&apos;s editors manage all content (articles, authors, categories, and media) inside a familiar WordPress dashboard.
                 The frontend is built in Next.js and fetches content via WPGraphQL, delivering fast load times with full editorial control.
                 No developer needed for day-to-day publishing.
               </p>

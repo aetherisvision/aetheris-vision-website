@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import FadeIn from "@/components/FadeIn";
+import EmailLink from "@/components/EmailLink";
 import { SITE } from "@/lib/constants";
 
 const requirementTypes = [
-  "New Website — Custom Build",
+  "New Website (Custom Build)",
   "Website Redesign",
   "E-commerce / Online Store",
   "Client or Member Portal",
@@ -149,7 +150,7 @@ export default function ContactForm() {
         setFieldErrors({});
         setTouched({});
       } else if (res.status === 429) {
-        setErrorDetail("Too many submissions — please wait a few minutes and try again.");
+        setErrorDetail("Too many submissions. Please wait a few minutes and try again.");
         setStatus("error");
       } else {
         const body = await res.json().catch(() => ({}));
@@ -314,8 +315,8 @@ export default function ContactForm() {
 
         {status === "error" && (
           <p className="text-sm text-red-400">
-            Something went wrong{errorDetail ? `: ${errorDetail}` : ""}. Please try again or email us at{" "}
-            <a href={`mailto:${SITE.email}`} className="underline">{SITE.email}</a>.
+            Something went wrong{errorDetail ? `: ${errorDetail}` : ""}. Please try again or{" "}
+            <EmailLink className="underline">email us</EmailLink>.
           </p>
         )}
 

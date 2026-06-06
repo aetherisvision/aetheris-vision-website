@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { SITE } from "@/lib/constants";
+import EmailLink from "@/components/EmailLink";
 import LocationAutocomplete from "@/components/LocationAutocomplete";
 
 interface FormData {
@@ -67,18 +67,18 @@ interface FormData {
 }
 
 const portfolioOptions = [
-  { id: "analytics-dashboard", label: "Analytics Dashboard — Enterprise SaaS platform with real-time metrics" },
-  { id: "international-market", label: "International Market — E-commerce with cultural sections and product management" },
-  { id: "portal-pro", label: "Portal Pro — Comprehensive business platform with role-based authentication" },
-  { id: "law-firm", label: "Law Firm — Professional services with case studies and client testimonials" },
-  { id: "restaurant", label: "Restaurant — Local business with menu, reservations, and online ordering" },
-  { id: "trades-contractor", label: "Trades Contractor — Service business with project galleries and quote requests" },
-  { id: "veteran-nonprofit", label: "Veteran Nonprofit — Mission-driven organization with donation and volunteer systems" },
-  { id: "healthcare", label: "Healthcare — Medical practice with physician profiles, insurance info, and appointment booking" },
-  { id: "wp-editorial", label: "Editorial / Publishing — Content-heavy publication managed via WordPress CMS" },
-  { id: "real-estate", label: "Real Estate — Property listings, agent profiles, and home valuation form" },
-  { id: "fitness", label: "Fitness / Gym — Membership tiers, class schedule, and free trial CTA" },
-  { id: "none", label: "None match — I need something completely different" },
+  { id: "analytics-dashboard", label: "Analytics Dashboard: Enterprise SaaS platform with real-time metrics" },
+  { id: "international-market", label: "International Market: E-commerce with cultural sections and product management" },
+  { id: "portal-pro", label: "Portal Pro: Comprehensive business platform with role-based authentication" },
+  { id: "law-firm", label: "Law Firm: Professional services with case studies and client testimonials" },
+  { id: "restaurant", label: "Restaurant: Local business with menu, reservations, and online ordering" },
+  { id: "trades-contractor", label: "Trades Contractor: Service business with project galleries and quote requests" },
+  { id: "veteran-nonprofit", label: "Veteran Nonprofit: Mission-driven organization with donation and volunteer systems" },
+  { id: "healthcare", label: "Healthcare: Medical practice with physician profiles, insurance info, and appointment booking" },
+  { id: "wp-editorial", label: "Editorial / Publishing: Content-heavy publication managed via WordPress CMS" },
+  { id: "real-estate", label: "Real Estate: Property listings, agent profiles, and home valuation form" },
+  { id: "fitness", label: "Fitness / Gym: Membership tiers, class schedule, and free trial CTA" },
+  { id: "none", label: "None match. I need something completely different" },
 ];
 
 export default function ProjectIntakeForm() {
@@ -492,10 +492,10 @@ export default function ProjectIntakeForm() {
           <p className="text-sm text-gray-400">Not sure? Leave this on &quot;Help me decide&quot; and we&apos;ll recommend the right stack based on your goals.</p>
           <div className="grid grid-cols-1 gap-3">
             {[
-              { id: "nextjs", label: "Custom Next.js — Fast, modern, fully custom frontend. Best for performance and brand differentiation." },
-              { id: "headless-wp", label: "Headless WordPress — WordPress CMS for editors + Next.js frontend. Best for content-heavy, editorial, or publication sites." },
-              { id: "managed-wp", label: "Managed WordPress — Standard WordPress with custom theme and full monthly maintenance. Best if you're already on WP or want the familiar dashboard." },
-              { id: "decide", label: "Help me decide — I'm not sure yet. Recommend based on my goals." },
+              { id: "nextjs", label: "Custom Next.js: Fast, modern, fully custom frontend. Best for performance and brand differentiation." },
+              { id: "headless-wp", label: "Headless WordPress: WordPress CMS for editors plus a Next.js frontend. Best for content-heavy, editorial, or publication sites." },
+              { id: "managed-wp", label: "Managed WordPress: Standard WordPress with custom theme and full monthly maintenance. Best if you're already on WP or want the familiar dashboard." },
+              { id: "decide", label: "Help me decide. I'm not sure yet. Recommend based on my goals." },
             ].map((option) => (
               <label key={option.id} className="flex items-start cursor-pointer">
                 <input
@@ -606,7 +606,7 @@ export default function ProjectIntakeForm() {
 
           <div className="bg-gray-900 border border-white/5 rounded-lg p-4">
             <p className="text-xs text-gray-400 leading-relaxed">
-              <strong className="text-gray-300">Security Expertise:</strong> Our team has active DoD Secret clearance, 35+ years of operational security experience, and implements security frameworks from NIST to CMMC. We don&apos;t just check compliance boxes—we engineer defense-grade protection into every system.
+              <strong className="text-gray-300">Security Expertise:</strong> Our team has active DoD Secret clearance, 35+ years of operational security experience, and implements security frameworks from NIST to CMMC. We don&apos;t just check compliance boxes; we engineer defense-grade protection into every system.
             </p>
           </div>
         </div>
@@ -655,7 +655,7 @@ export default function ProjectIntakeForm() {
               className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="">Select budget range</option>
-              <option value="professional">Professional Tier - $2,400 range</option>
+              <option value="professional">Professional Tier - $2,800 range</option>
               <option value="business">Business Tier - $4,800 range</option>
               <option value="enterprise">Enterprise Tier - $8,500+ range</option>
               <option value="flexible">Flexible - Show me options</option>
@@ -716,7 +716,8 @@ export default function ProjectIntakeForm() {
         {submitStatus === "error" && (
           <div className="mb-4 rounded-md bg-red-900/20 border border-red-500/20 p-4">
             <p className="text-red-400 text-sm">
-              There was an error submitting your form. Please try again or email us directly at {SITE.email}.
+              There was an error submitting your form. Please try again or{" "}
+              <EmailLink className="underline">email us</EmailLink> directly.
             </p>
           </div>
         )}

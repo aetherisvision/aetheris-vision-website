@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import EmailLink from "@/components/EmailLink"
 
 const dark = {
   bg: '#070f1e',
@@ -273,7 +274,7 @@ export default function ClientDashboard() {
             {/* Footer */}
             <div style={{ padding: '20px', borderTop: `1px solid ${dark.border}` }}>
               <p style={{ color: dark.textDim, fontSize: '11px', margin: 0, textAlign: 'center' }}>
-                <a href="mailto:contact@aetherisvision.com" style={{ color: dark.blue, textDecoration: 'none', fontWeight: '500' }}>contact@aetherisvision.com</a>
+                <EmailLink className="text-blue-400 hover:underline font-medium">Email us</EmailLink>
               </p>
             </div>
           </aside>
@@ -416,7 +417,7 @@ export default function ClientDashboard() {
                 <div style={{ textAlign: 'center', marginTop: '48px' }}>
                   <p style={{ color: dark.textDim, fontSize: '13px', margin: 0 }}>
                     Questions?{' '}
-                    <a href="mailto:contact@aetherisvision.com" style={{ color: dark.blue, fontWeight: '500', textDecoration: 'none' }}>contact@aetherisvision.com</a>
+                    <EmailLink className="text-blue-400 hover:underline font-medium">Email us</EmailLink>
                   </p>
                 </div>
               )}

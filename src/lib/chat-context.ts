@@ -35,7 +35,7 @@ The company was founded by a meteorologist with 35 years of field-validated oper
 
 ### 4. State & Federal Contracting
 - VOSB eligible — Veterans First Contracting Program
-- 8(a) eligibility under review — SBA Business Development Program
+- 8(a) eligible (application opens 2027) — SBA Business Development Program
 - SAM.gov registration ACTIVE — UEI ZM8QWJ4ABWZ9, CAGE 20SQ1
 - Active DoD Secret clearance (personal; facility clearance obtainable)
 

@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CalBooking from "@/components/CalBooking";
 import { SITE } from "@/lib/constants";
+import EmailLink from "@/components/EmailLink";
 
 export const metadata = {
   title: `Book a Consultation | ${SITE.name}`,
@@ -39,12 +40,7 @@ export default function BookPage() {
           {/* Fallback */}
           <p className="mt-6 text-sm text-gray-600 text-center">
             Prefer email?{" "}
-            <a
-              href={`mailto:${SITE.email}`}
-              className="text-gray-400 hover:text-white transition underline underline-offset-2"
-            >
-              {SITE.email}
-            </a>
+            <EmailLink className="text-gray-400 hover:text-white transition underline underline-offset-2">Email us</EmailLink>
           </p>
         </div>
       </main>

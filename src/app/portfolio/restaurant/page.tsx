@@ -3,7 +3,7 @@ import { SITE } from "@/lib/constants";
 import LocationMap from "@/components/LocationMap";
 
 export const metadata = {
-  title: `Casa Verde Kitchen — Restaurant Demo | ${SITE.name} Portfolio`,
+  title: `Casa Verde Kitchen Restaurant Demo | ${SITE.name} Portfolio`,
 };
 
 const menuSections = [
@@ -37,7 +37,7 @@ export default function RestaurantPage() {
     <div className="min-h-screen bg-[#fdf6ee] font-sans text-zinc-800">
       {/* Demo Banner */}
       <div className="bg-black py-2 text-center text-xs font-semibold text-gray-300">
-        ✦ DEMO SITE — built by{" "}
+        ✦ DEMO SITE, built by{" "}
         <Link href="/portfolio" className="text-blue-400 underline hover:text-blue-300">{SITE.name}</Link>
         {" "}·{" "}
         <Link href="/portfolio" className="text-gray-400 hover:text-white transition-colors">← Back to Portfolio</Link>
@@ -66,7 +66,7 @@ export default function RestaurantPage() {
           <h1 className="mb-5 text-5xl font-bold leading-tight sm:text-6xl">
             Food Made With<br /><span className="text-amber-400">Heart & Tradition</span>
           </h1>
-          <p className="mb-10 text-lg text-amber-100">Family recipes, locally sourced ingredients, and the flavors of Mexico — in the heart of Oklahoma City.</p>
+          <p className="mb-10 text-lg text-amber-100">Family recipes, locally sourced ingredients, and the flavors of Mexico, in the heart of Oklahoma City.</p>
           <div className="flex flex-wrap justify-center gap-4">
             <a href="#reserve" className="rounded-full bg-amber-400 px-8 py-3 font-bold text-zinc-900 hover:bg-amber-300 transition-colors">Reserve a Table</a>
             <a href="#menu" className="rounded-full border border-amber-400/50 px-8 py-3 font-semibold text-white hover:border-amber-300 hover:text-amber-300 transition-colors">View Menu</a>
@@ -80,7 +80,7 @@ export default function RestaurantPage() {
           {[
             { label: "Family Recipes", sub: "4 generations deep" },
             { label: "Local Ingredients", sub: "Oklahoma farms" },
-            { label: "Happy Hour", sub: "Mon–Fri 3–6 PM" },
+            { label: "Happy Hour", sub: "Mon-Fri 3-6 PM" },
             { label: "Private Events", sub: "Up to 60 guests" },
           ].map((item) => (
             <div key={item.label}>
@@ -141,9 +141,9 @@ export default function RestaurantPage() {
                   🕒 Hours
                 </h3>
                 {[
-                  { day: "Monday – Thursday", hours: "11:00 AM – 9:00 PM" },
-                  { day: "Friday – Saturday", hours: "11:00 AM – 10:30 PM" },
-                  { day: "Sunday", hours: "12:00 PM – 8:00 PM" },
+                  { day: "Monday - Thursday", hours: "11:00 AM - 9:00 PM" },
+                  { day: "Friday - Saturday", hours: "11:00 AM - 10:30 PM" },
+                  { day: "Sunday", hours: "12:00 PM - 8:00 PM" },
                 ].map((row) => (
                   <div key={row.day} className="mb-4 flex justify-between items-center border-b border-amber-100 pb-3 last:border-b-0 last:pb-0 last:mb-0">
                     <span className="text-zinc-700 font-medium">{row.day}</span>

@@ -7,7 +7,7 @@ import { SITE, SAM } from "@/lib/constants";
 export const metadata = {
   title: `About | ${SITE.name}`,
   description:
-    "Meet the team behind Aetheris Vision — 35 years of operational meteorology, USAF expertise, and AI/ML integration for defense and government missions.",
+    "Meet the team behind Aetheris Vision: 35 years of operational meteorology, USAF expertise, and AI/ML integration for defense and government missions.",
 };
 
 const credentials = [
@@ -19,7 +19,7 @@ const credentials = [
   {
     icon: ShieldCheckIcon,
     label: "Active DoD Secret Clearance",
-    description: `VOSB eligible · SAM.gov active — UEI ${SAM.uei}, CAGE ${SAM.cage}`,
+    description: `VOSB eligible · SAM.gov active: UEI ${SAM.uei}, CAGE ${SAM.cage}`,
   },
   {
     icon: AcademicCapIcon,
@@ -61,16 +61,16 @@ export default function AboutPage() {
               </p>
               <div className="space-y-4 text-gray-400 font-light leading-relaxed">
                 <p>
-                  Aetheris Vision introduces a disruptive convergence: revolutionary capabilities that shouldn&apos;t exist in a single entity. We don&apos;t solve atmospheric uncertainty — <strong className="text-gray-200">we eliminate it through systematic obsolescence of traditional methods</strong>.
+                  Marston Ward holds a Ph.D. in atmospheric and environmental science and brings more than 35 years of operational meteorology to Aetheris Vision. His career began as a <strong className="text-gray-200">United States Air Force</strong> weather forecaster, where he supported real-world operations under conditions that left no room for guesswork.
                 </p>
                 <p>
-                  Marston Ward represents an impossibility: 35 years dismantling predictive barriers through <strong className="text-gray-200">United States Air Force</strong> combat operations, groundbreaking research at <strong className="text-gray-200">Stockholm University</strong> and <strong className="text-gray-200">Chalmers University of Technology</strong>, and now pioneering AI systems that render billion-dollar legacy forecasting infrastructure irrelevant.
+                  After his military service, he pursued research at <strong className="text-gray-200">Stockholm University</strong> and <strong className="text-gray-200">Chalmers University of Technology</strong>, deepening his work in atmospheric modeling and environmental science alongside academic collaborators in Sweden.
                 </p>
                 <p>
-                  This career follows a disruptive pattern: <strong className="text-gray-200">identify broken paradigm, engineer superior replacement, make old methods obsolete</strong>. From revolutionizing military weather operations in the 90s to architecting AI-NWP fusion systems that outperform traditional models while consuming 1% of the computational resources.
+                  Today his focus is engineering: building AI and numerical weather prediction (NWP) systems, along with custom software, that turn large, messy datasets into clear, usable answers. The throughline across every stage of his career is the same: understand the problem deeply, then build something that holds up in the field.
                 </p>
                 <p>
-                  Aetheris Vision weaponizes that pattern: a precision instrument designed to introduce revolutionary capabilities that transform entire operational frameworks. We don&apos;t adapt to existing markets — <strong className="text-gray-200">we create new paradigms that make conventional approaches irrelevant</strong>.
+                  He founded Aetheris Vision to bring that engineering discipline to two kinds of work: mission-critical systems for government and defense agencies, and practical, well-built websites and software for small businesses. Both deserve the same care and the same honest, plainspoken approach.
                 </p>
               </div>
             </FadeIn>
@@ -105,7 +105,7 @@ export default function AboutPage() {
                   <div className="flex items-start gap-3">
                     <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-2 shrink-0" />
                     <div>
-                      <p className="text-sm text-white font-medium">8(a) Eligibility Under Review</p>
+                      <p className="text-sm text-white font-medium">8(a) Eligible (application opens 2027)</p>
                       <p className="text-xs text-gray-500 mt-0.5">SBA Business Development Program</p>
                     </div>
                   </div>
@@ -153,7 +153,7 @@ export default function AboutPage() {
                   The Meaning Behind <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">Aetheris</span>
                 </h2>
                 <p className="text-gray-400 font-light leading-relaxed mb-4">
-                  Derived from the ancient Latin and Greek word <em className="text-white">aetheris</em> — meaning &ldquo;the clear sky&rdquo; or &ldquo;the pure, fresh air breathed by the gods&rdquo; — our name reflects a commitment to mapping the unknown with clarity and precision.
+                  Derived from the ancient Latin and Greek word <em className="text-white">aetheris</em> (meaning &ldquo;the clear sky&rdquo; or &ldquo;the pure, fresh air breathed by the gods&rdquo;), our name reflects a commitment to mapping the unknown with clarity and precision.
                 </p>
                 <p className="text-gray-400 font-light leading-relaxed">
                   In ancient philosophy, aether was the fifth element filling the universe above the terrestrial sphere. For us, it represents the convergence of 35 years of deep operational expertise with a vision for the future: bringing structure, clarity, and advanced AI/ML capabilities to the systems that chart the skies, space, and earth.

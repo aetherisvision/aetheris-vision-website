@@ -231,7 +231,7 @@ export default function AnalyticsDashboardPage() {
               <div className="flex items-center space-x-2 text-sm">
                 <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="font-semibold text-slate-300">
-                  LIVE DEMO — built by{" "}
+                  LIVE DEMO, built by{" "}
                   <Link href="/portfolio" className="text-blue-400 hover:text-blue-300 underline transition-colors">
                     {SITE.name}
                   </Link>
@@ -424,7 +424,7 @@ export default function AnalyticsDashboardPage() {
           <h3 className="text-lg font-semibold text-white mb-2">Enterprise Dashboard Capabilities</h3>
           <p className="text-slate-400 mb-4">
             This demo showcases real-time data visualization, interactive animations, advanced UI patterns, 
-            and performance monitoring — all built with modern web technologies.
+            and performance monitoring, all built with modern web technologies.
           </p>
           <div className="flex flex-wrap justify-center gap-2 text-xs">
             {[

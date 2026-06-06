@@ -3,6 +3,7 @@ import { SITE } from "@/lib/constants";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
+import EmailLink from "@/components/EmailLink";
 
 export const metadata = {
   title: `Web Development Services | ${SITE.name}`,
@@ -13,39 +14,39 @@ export const metadata = {
 const services = [
   {
     icon: CodeBracketIcon,
-    title: "Digital Business Weapons",
+    title: "Custom Websites & Apps",
     description:
-      "Custom-engineered systems, not templated websites. Every solution is architected from scratch to dominate your market, eliminate operational friction, and make competitors' efforts look obsolete. Built on Next.js and React for uncompromising performance.",
+      "Custom-built, not templated. Every site is designed and coded from scratch for your business, and you own the code when it's done. Built on Next.js and React for fast, reliable performance.",
   },
   {
     icon: ServerStackIcon,
-    title: "Operational Intelligence Platforms",
+    title: "Business Applications",
     description:
-      "When your business demands more than static pages — dashboards that eliminate guesswork, booking systems that maximize revenue, document workflows that cut bureaucracy. Full-stack applications engineered to operate as extensions of your strategic thinking.",
+      "When you need more than static pages: dashboards, booking systems, client portals, and document workflows that cut manual work. Full-stack applications built around how your business actually operates.",
   },
   {
     icon: DevicePhoneMobileIcon,
-    title: "Performance-Engineered Domination",
+    title: "Performance Engineering",
     description:
-      "Every deployment optimized for Core Web Vitals supremacy. Mobile-first architecture that renders instantly on any device. Global edge network deployment that makes loading delays irrelevant. Your competitors' slow sites become obvious weaknesses.",
+      "Every site is tuned for Core Web Vitals and built mobile-first, so it loads fast on any device. Deployed on a global edge network so visitors get quick load times wherever they are.",
   },
   {
     icon: LockClosedIcon,
     title: "Security-First Architecture",
     description:
-      "Magic-link authentication, role-based access control, and bulletproof session management built into the foundation. No supplemental plugins or security band-aids — protection is engineered at the architectural level from day one.",
+      "Magic-link authentication, role-based access control, and solid session management built into the foundation, not bolted on later with plugins. Security is part of the design from day one.",
   },
   {
     icon: ChartBarIcon,
-    title: "Integration & Automation Warfare",
+    title: "Integrations & Automation",
     description:
-      "Direct API conquest of your existing business systems — CRMs, scheduling platforms, payment processors, e-signature services. We eliminate manual processes and data silos, creating a unified command center for your operations.",
+      "We connect your site to the tools you already use (CRMs, scheduling platforms, payment processors, and e-signature services) through their APIs. That removes manual data entry and keeps everything in sync.",
   },
   {
     icon: WrenchScrewdriverIcon,
-    title: "Evolutionary Maintenance",
+    title: "Ongoing Maintenance",
     description:
-      "Continuous optimization that transforms your digital presence over time. Monthly enhancement cycles keep your systems ahead of market changes and competitor attempts. One strategic partner, no help desk queues or ticket systems.",
+      "Optional monthly support to keep your site current, secure, and improving over time. You work with one partner who knows your project, with no help desk queues or ticket systems.",
   },
 ];
 
@@ -69,7 +70,7 @@ const process = [
   {
     step: "02",
     title: "Scoping Call",
-    body: "A 30–45 minute conversation to align on goals, timeline, and budget. No obligation — just clarity.",
+    body: "A 30-45 minute conversation to align on goals, timeline, and budget. No obligation, just clarity.",
   },
   {
     step: "03",
@@ -102,13 +103,13 @@ export default function WebServicesPage() {
               Web Development
             </p>
             <h1 className="text-4xl md:text-6xl font-semibold text-white tracking-tight mb-6 leading-[1.1]">
-              Digital Solutions<br />
+              Custom Websites<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">
-                That Eliminate Competition.
+                Built for Your Business.
               </span>
             </h1>
             <p className="max-w-2xl text-lg text-gray-400 font-light leading-relaxed mb-10">
-              We engineer revolutionary digital systems that transform organizations into market dominators. No templates, no compromise, no operational inefficiencies. This website showcases our methodology: strategic technology deployment designed to make conventional approaches obsolete.
+              We build custom websites and web applications for Oklahoma businesses, with no templates and no shortcuts. Fixed price, known before work begins, and you own the code when it ships. This website was built the same way we build for our clients.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
@@ -131,7 +132,7 @@ export default function WebServicesPage() {
         <section className="border-t border-white/5 bg-[#0d0c0f] py-20">
           <div className="mx-auto max-w-5xl px-6">
             <FadeIn>
-              <h2 className="text-2xl md:text-3xl font-semibold text-white mb-12">Strategic Digital Weapons</h2>
+              <h2 className="text-2xl md:text-3xl font-semibold text-white mb-12">What We Build</h2>
             </FadeIn>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {services.map((s, i) => (
@@ -153,9 +154,9 @@ export default function WebServicesPage() {
         <section className="border-t border-white/5 py-20">
           <div className="mx-auto max-w-5xl px-6">
             <FadeIn>
-              <h2 className="text-2xl md:text-3xl font-semibold text-white mb-3">Battle-Tested Arsenal</h2>
+              <h2 className="text-2xl md:text-3xl font-semibold text-white mb-3">Our Stack</h2>
               <p className="text-gray-400 font-light mb-10">
-                Enterprise-grade technologies chosen for reliability and competitive advantage — not novelty.
+                Proven, modern technologies chosen for reliability and long-term maintainability, not novelty.
               </p>
             </FadeIn>
             <div className="flex flex-wrap gap-3">
@@ -175,9 +176,9 @@ export default function WebServicesPage() {
         <section className="border-t border-white/5 bg-[#0d0c0f] py-20">
           <div className="mx-auto max-w-5xl px-6">
             <FadeIn>
-              <h2 className="text-2xl md:text-3xl font-semibold text-white mb-3">Deployment Protocol</h2>
+              <h2 className="text-2xl md:text-3xl font-semibold text-white mb-3">How It Works</h2>
               <p className="text-gray-400 font-light mb-12">
-                Precision execution. Zero surprises. Predictable transformation.
+                A clear, step-by-step process. Fixed price, no surprises.
               </p>
             </FadeIn>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
@@ -201,13 +202,13 @@ export default function WebServicesPage() {
               <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-8 md:p-12">
                 <p className="text-xs font-semibold tracking-widest text-blue-500 uppercase mb-4">Who builds your site</p>
                 <h2 className="text-2xl md:text-3xl font-semibold text-white mb-4">
-                  You work directly with Marston — not a junior dev or an overseas team.
+                  You work directly with Marston, not a junior dev or an overseas team.
                 </h2>
                 <p className="text-gray-400 font-light leading-relaxed max-w-2xl mb-6">
-                  Marston Ward is a PhD atmospheric scientist, USAF veteran, and software developer with 35 years of building systems that have to work under pressure. He founded Aetheris Vision to bring that same standard of care to small business web projects. When you hire us, you get one experienced engineer from start to finish.
+                  Marston Ward is the founder and lead engineer of Aetheris Vision. He writes and ships the code himself, drawing on a PhD in atmospheric and environmental science, service as a USAF veteran, and an active DoD Secret clearance, a background built on systems that have to work under pressure. When you hire us, you get one experienced engineer from start to finish.
                 </p>
                 <div className="flex flex-wrap gap-3">
-                  {["PhD Environmental Science", "USAF Veteran", "Active Secret Clearance", "Mustang, OK"].map((tag) => (
+                  {["Founder & Lead Engineer", "PhD Environmental Science", "USAF Veteran", "Active Secret Clearance", "Mustang, OK"].map((tag) => (
                     <span key={tag} className="rounded-full border border-white/10 px-3 py-1 text-xs text-gray-400">
                       {tag}
                     </span>
@@ -233,12 +234,12 @@ export default function WebServicesPage() {
                 >
                   Start Your Project <ArrowRightIcon className="h-4 w-4" />
                 </a>
-                <a
-                  href={`mailto:${SITE.email}?subject=Web Project Inquiry`}
+                <EmailLink
+                  subject="Web Project Inquiry"
                   className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 px-8 text-sm font-medium text-white hover:bg-white/5 transition"
                 >
                   Email Us Directly
-                </a>
+                </EmailLink>
               </div>
             </FadeIn>
           </div>

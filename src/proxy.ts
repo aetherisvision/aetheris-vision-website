@@ -30,9 +30,10 @@ async function isAdminSession(request: NextRequest): Promise<boolean> {
 
 
 function buildCsp(nonce: string): string {
+  const allowEval = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
   return [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'unsafe-eval' https://analytics.google.com https://www.googletagmanager.com https://js.stripe.com https://giscus.app https://cal.com https://app.cal.com`,
+    `script-src 'self' 'nonce-${nonce}'${allowEval} https://analytics.google.com https://www.googletagmanager.com https://js.stripe.com https://giscus.app https://cal.com https://app.cal.com`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://giscus.app",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob: https://avatars.githubusercontent.com https://github.githubassets.com",

@@ -3,7 +3,7 @@ import { SITE } from "@/lib/constants";
 import LocationMap from "@/components/LocationMap";
 
 export const metadata = {
-  title: `Summit Home Services — Contractor Demo | ${SITE.name} Portfolio`,
+  title: `Summit Home Services Contractor Demo | ${SITE.name} Portfolio`,
 };
 
 const services = [
@@ -11,7 +11,7 @@ const services = [
   { name: "Plumbing", icon: "🔧", desc: "Leak repair, water heater install, pipe replacement, drain clearing." },
   { name: "Electrical", icon: "⚡", desc: "Panel upgrades, outlet installs, ceiling fans, code compliance." },
   { name: "Roofing", icon: "🏠", desc: "Shingle replacement, storm damage repair, gutter installation." },
-  { name: "Remodeling", icon: "🪚", desc: "Kitchens, bathrooms, and basements — full design-to-finish builds." },
+  { name: "Remodeling", icon: "🪚", desc: "Kitchens, bathrooms, and basements: full design-to-finish builds." },
   { name: "Landscaping", icon: "🌿", desc: "Lawn care, irrigation design, seasonal cleanup, tree trimming." },
 ];
 
@@ -26,7 +26,7 @@ export default function TradesContractorPage() {
     <div className="min-h-screen bg-white font-sans text-zinc-800">
       {/* Demo Banner */}
       <div className="bg-black py-2 text-center text-xs font-semibold text-gray-300">
-        ✦ DEMO SITE — built by{" "}
+        ✦ DEMO SITE, built by{" "}
         <Link href="/portfolio" className="text-blue-400 underline hover:text-blue-300">{SITE.name}</Link>
         {" "}·{" "}
         <Link href="/portfolio" className="text-gray-400 hover:text-white transition-colors">← Back to Portfolio</Link>
@@ -110,7 +110,7 @@ export default function TradesContractorPage() {
               <div key={r.name} className="rounded-2xl bg-white p-6 shadow-sm">
                 <p className="mb-3 text-xl text-orange-500">{"★".repeat(r.stars)}</p>
                 <p className="text-sm leading-relaxed text-zinc-600">&quot;{r.text}&quot;</p>
-                <p className="mt-4 text-xs font-bold text-zinc-800">— {r.name}</p>
+                <p className="mt-4 text-xs font-bold text-zinc-800">{r.name}</p>
               </div>
             ))}
           </div>
@@ -190,7 +190,7 @@ export default function TradesContractorPage() {
       <section id="quote" className="px-6 py-20">
         <div className="mx-auto max-w-xl">
           <h2 className="mb-2 text-center text-3xl font-extrabold text-zinc-900">Get a Free Quote</h2>
-          <p className="mb-8 text-center text-zinc-500">No pressure. We&apos;ll visit, assess, and give you a firm price — usually same day.</p>
+          <p className="mb-8 text-center text-zinc-500">No pressure. We&apos;ll visit, assess, and give you a firm price, usually same day.</p>
           <div className="rounded-2xl border border-zinc-200 p-8 shadow-sm">
             <div className="grid gap-4 sm:grid-cols-2">
               {["Name", "Phone", "Email", "Service Needed"].map((label) => (

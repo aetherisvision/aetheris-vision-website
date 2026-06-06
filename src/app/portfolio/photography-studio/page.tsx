@@ -2,16 +2,16 @@ import Link from "next/link";
 import { SITE } from "@/lib/constants";
 
 export const metadata = {
-  title: `Lumen & Co. Photography — Creative Studio Demo | ${SITE.name} Portfolio`,
+  title: `Lumen & Co. Photography Creative Studio Demo | ${SITE.name} Portfolio`,
 };
 
 const gallery = [
-  { label: "Wedding — The Skirvin Hilton", tag: "Wedding", gradient: "from-stone-700 to-stone-900" },
-  { label: "Senior Portraits — Lake Hefner", tag: "Portrait", gradient: "from-amber-900 to-stone-900" },
-  { label: "Corporate Headshots — Smith & Reed", tag: "Commercial", gradient: "from-zinc-700 to-zinc-900" },
-  { label: "Family Session — Myriad Gardens", tag: "Family", gradient: "from-stone-600 to-stone-800" },
-  { label: "Editorial Fashion — Bricktown Lofts", tag: "Editorial", gradient: "from-amber-800 to-stone-900" },
-  { label: "Newborn Lifestyle — In-Home", tag: "Newborn", gradient: "from-stone-500 to-stone-800" },
+  { label: "Wedding: The Skirvin Hilton", tag: "Wedding", gradient: "from-stone-700 to-stone-900" },
+  { label: "Senior Portraits: Lake Hefner", tag: "Portrait", gradient: "from-amber-900 to-stone-900" },
+  { label: "Corporate Headshots: Smith & Reed", tag: "Commercial", gradient: "from-zinc-700 to-zinc-900" },
+  { label: "Family Session: Myriad Gardens", tag: "Family", gradient: "from-stone-600 to-stone-800" },
+  { label: "Editorial Fashion: Bricktown Lofts", tag: "Editorial", gradient: "from-amber-800 to-stone-900" },
+  { label: "Newborn Lifestyle: In-Home", tag: "Newborn", gradient: "from-stone-500 to-stone-800" },
 ];
 
 const packages = [
@@ -31,7 +31,7 @@ const packages = [
   {
     name: "Full Experience",
     price: "$595",
-    desc: "Our most popular package — weddings, families, brands.",
+    desc: "Our most popular package: weddings, families, brands.",
     features: [
       "Up to 3-hour session",
       "Unlimited wardrobe looks",
@@ -62,7 +62,7 @@ const testimonials = [
   {
     quote: "Mariah captured our wedding exactly the way we dreamed it. Every photo tells the story of our day perfectly.",
     name: "Sarah & Tom Whitfield",
-    detail: "Wedding — June 2024",
+    detail: "Wedding, June 2024",
     initials: "SW",
   },
   {
@@ -72,9 +72,9 @@ const testimonials = [
     initials: "DR",
   },
   {
-    quote: "She made our newborn session so relaxed and easy. The photos are breathtaking — we will treasure them forever.",
+    quote: "She made our newborn session so relaxed and easy. The photos are breathtaking. We will treasure them forever.",
     name: "Lucia & Carlos Ramirez",
-    detail: "Newborn Session — March 2025",
+    detail: "Newborn Session, March 2025",
     initials: "LR",
   },
 ];
@@ -85,7 +85,7 @@ export default function PhotographyStudioPage() {
 
       {/* Demo Banner */}
       <div className="border-b border-white/5 py-2 text-center text-xs font-semibold text-stone-500">
-        ✦ DEMO SITE — built by{" "}
+        ✦ DEMO SITE, built by{" "}
         <Link href="/portfolio" className="text-white underline hover:text-stone-300">{SITE.name}</Link>
         {" "}·{" "}
         <Link href="/portfolio" className="text-stone-600 hover:text-white transition-colors">← Back to Portfolio</Link>
@@ -126,7 +126,7 @@ export default function PhotographyStudioPage() {
             <span className="font-semibold italic" style={{ color: "#c8a882" }}>Tells a Story.</span>
           </h1>
           <p className="mb-10 max-w-xl text-lg font-light leading-relaxed text-stone-400">
-            Weddings, portraits, editorial, and commercial work — crafted with intention and delivered with care.
+            Weddings, portraits, editorial, and commercial work, crafted with intention and delivered with care.
           </p>
           <div className="flex flex-wrap gap-4">
             <a href="#book" className="rounded px-10 py-3 text-sm font-semibold uppercase tracking-widest text-[#111111] transition-opacity hover:opacity-90"
@@ -144,11 +144,11 @@ export default function PhotographyStudioPage() {
       <section className="border-y border-white/5 px-6 py-6" style={{ background: "#0d0d0d" }}>
         <div className="mx-auto max-w-5xl">
           <div className="flex flex-wrap gap-x-10 gap-y-3 text-xs font-semibold uppercase tracking-[0.2em]">
-            <span style={{ color: "#c8a882" }}>Theme — Dark Gallery Aesthetic</span>
+            <span style={{ color: "#c8a882" }}>Theme: Dark Gallery Aesthetic</span>
             <span className="text-stone-600">|</span>
-            <span className="text-stone-400">Style — Minimal Sans · Full-Bleed Imagery · Warm Gold Accents</span>
+            <span className="text-stone-400">Style: Minimal Sans · Full-Bleed Imagery · Warm Gold Accents</span>
             <span className="text-stone-600">|</span>
-            <span className="text-stone-400">Best For — Photographers · Creative Studios · Artists · Videographers</span>
+            <span className="text-stone-400">Best For: Photographers · Creative Studios · Artists · Videographers</span>
           </div>
         </div>
       </section>
@@ -231,7 +231,7 @@ export default function PhotographyStudioPage() {
               <p className="mb-4 text-xs font-semibold uppercase tracking-[0.25em]" style={{ color: "#c8a882" }}>About</p>
               <h2 className="mb-5 text-3xl font-light tracking-tight text-white">Hi, I&apos;m Mariah Lumen.</h2>
               <p className="mb-4 font-light leading-relaxed text-stone-400">
-                I&apos;ve spent over a decade photographing the moments that matter most — weddings, new families, professional milestones, and creative campaigns across Oklahoma City and beyond.
+                I&apos;ve spent over a decade photographing the moments that matter most: weddings, new families, professional milestones, and creative campaigns across Oklahoma City and beyond.
               </p>
               <p className="font-light leading-relaxed text-stone-500">
                 My approach is unhurried and intentional. I believe the best photographs come from genuine connection, not manufactured poses. Every session is designed to feel as natural as the light I shoot in.

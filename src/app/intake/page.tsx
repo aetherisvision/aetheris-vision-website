@@ -27,7 +27,7 @@ export default function IntakePage() {
                 Tell us what you need
               </h1>
               <p className="text-gray-400 font-light text-base leading-relaxed">
-                5 quick fields — no jargon required. We&apos;ll review your project and follow up within one business day.
+                5 quick fields, no jargon required. We&apos;ll review your project and follow up within one business day.
               </p>
               <p className="text-sm text-gray-600 mt-3">
                 Prefer to talk first?{" "}
