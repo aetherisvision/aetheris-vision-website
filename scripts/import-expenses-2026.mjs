@@ -4,18 +4,23 @@
  * (matched by date + vendor + amount).
  *
  * Usage:
- *   DATABASE_URL=<neon-url> node scripts/import-expenses-2026.mjs
+ *   DATABASE_URL=<neon-url> node scripts/import-expenses-2026.mjs [path/to/receipts.csv]
  *   -- or --
- *   source ~/.secrets && node scripts/import-expenses-2026.mjs
+ *   source ~/.secrets && EXPENSES_CSV=path/to/receipts.csv node scripts/import-expenses-2026.mjs
+ *
+ * CSV path resolution order: 1) first CLI arg, 2) EXPENSES_CSV env var,
+ * 3) ./receipts_2026.csv relative to the current working directory.
  *
  * The script is idempotent — safe to run multiple times.
  */
 
 import { readFileSync } from 'fs'
+import { resolve } from 'path'
 import { neon } from '@neondatabase/serverless'
 
-const CSV_PATH =
-  '/Users/marston.ward/Documents/GitHub/aetherisvision/receipts/receipts_2026.csv'
+const CSV_PATH = resolve(
+  process.argv[2] || process.env.EXPENSES_CSV || 'receipts_2026.csv'
+)
 
 const DATABASE_URL = process.env.DATABASE_URL
 if (!DATABASE_URL) {
@@ -49,7 +54,11 @@ function parseCSV(text) {
     let inQuote = false
     for (let i = 0; i < line.length; i++) {
       const ch = line[i]
-      if (ch === '"') { inQuote = !inQuote }
+      if (ch === '"') {
+        // RFC4180: a doubled quote inside a quoted field is a literal quote
+        if (inQuote && line[i + 1] === '"') { cur += '"'; i++ }
+        else { inQuote = !inQuote }
+      }
       else if (ch === ',' && !inQuote) { fields.push(cur.trim()); cur = '' }
       else { cur += ch }
     }
@@ -68,7 +77,9 @@ async function main() {
   for (const row of rows) {
     const date = row['Date']?.trim()
     const vendor = row['Vendor']?.trim()
-    const rawAmount = row['Amount']?.replace('$', '').trim()
+    // Strip currency symbols, thousands separators, and whitespace
+    // so values like "$1,234.56" parse correctly.
+    const rawAmount = row['Amount']?.replace(/[$,\s]/g, '')
     const amount = parseFloat(rawAmount)
     const description = row['Description']?.trim() || vendor
     const category = normaliseCategory(row['Category'])

@@ -176,7 +176,9 @@ describe('POST /api/admin/auth', () => {
 
 vi.mock('@/lib/db', () => ({
   sql: new Proxy(
-    async () => [],
+    // Return one serializable row so authorized handlers that use
+    // `INSERT ... RETURNING *` (result[0]) can build a JSON response.
+    async () => [{ id: 1, vendor: 'Test', amount: 10, tax_year: 2026 }],
     {
       get: (_target, prop) => {
         if (prop === 'then') return undefined // prevent auto-await
@@ -269,5 +271,115 @@ describe('GET /api/admin/documents — 401 guard', () => {
     )
     const res = await GET(req)
     expect(res.status).toBe(401)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Tests: /api/expenses and /api/expenses/[id] — admin guard
+// ---------------------------------------------------------------------------
+
+describe('/api/expenses — admin guard', () => {
+  beforeEach(() => {
+    vi.resetModules()
+    vi.stubEnv('ADMIN_PASSPHRASE', TEST_PASSPHRASE)
+  })
+
+  it('GET returns 401 with no cookie', async () => {
+    const { GET } = await import('@/app/api/expenses/route')
+    const res = await GET(makeAdminRequest('http://localhost/api/expenses'))
+    expect(res.status).toBe(401)
+  })
+
+  it('GET returns 401 with the legacy "authenticated" cookie value', async () => {
+    const { GET } = await import('@/app/api/expenses/route')
+    const res = await GET(
+      makeAdminRequest('http://localhost/api/expenses', 'GET', 'authenticated'),
+    )
+    expect(res.status).toBe(401)
+  })
+
+  it('GET succeeds (not 401) with a valid admin cookie', async () => {
+    const { GET } = await import('@/app/api/expenses/route')
+    const res = await GET(
+      makeAdminRequest('http://localhost/api/expenses', 'GET', hmacToken(TEST_PASSPHRASE)),
+    )
+    expect(res.status).toBe(200)
+  })
+
+  it('POST returns 401 with no cookie', async () => {
+    const { POST } = await import('@/app/api/expenses/route')
+    const req = new NextRequest('http://localhost/api/expenses', {
+      method: 'POST',
+      body: JSON.stringify({ vendor: 'Test' }),
+      headers: { 'Content-Type': 'application/json' },
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(401)
+  })
+
+  it('POST is allowed (not 401) with a valid admin cookie', async () => {
+    const { POST } = await import('@/app/api/expenses/route')
+    const req = new NextRequest('http://localhost/api/expenses', {
+      method: 'POST',
+      body: JSON.stringify({ vendor: 'Test', amount: 10, tax_year: 2026 }),
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: `av-admin-session=${hmacToken(TEST_PASSPHRASE)}`,
+      },
+    })
+    const res = await POST(req)
+    expect(res.status).not.toBe(401)
+  })
+})
+
+describe('/api/expenses/[id] — admin guard', () => {
+  const params = Promise.resolve({ id: '1' })
+
+  beforeEach(() => {
+    vi.resetModules()
+    vi.stubEnv('ADMIN_PASSPHRASE', TEST_PASSPHRASE)
+  })
+
+  it('PATCH returns 401 with no cookie', async () => {
+    const { PATCH } = await import('@/app/api/expenses/[id]/route')
+    const req = new NextRequest('http://localhost/api/expenses/1', {
+      method: 'PATCH',
+      body: JSON.stringify({ vendor: 'Edit' }),
+      headers: { 'Content-Type': 'application/json' },
+    })
+    const res = await PATCH(req, { params })
+    expect(res.status).toBe(401)
+  })
+
+  it('PATCH is allowed (not 401) with a valid admin cookie', async () => {
+    const { PATCH } = await import('@/app/api/expenses/[id]/route')
+    const req = new NextRequest('http://localhost/api/expenses/1', {
+      method: 'PATCH',
+      body: JSON.stringify({ vendor: 'Edit' }),
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: `av-admin-session=${hmacToken(TEST_PASSPHRASE)}`,
+      },
+    })
+    const res = await PATCH(req, { params })
+    expect(res.status).not.toBe(401)
+  })
+
+  it('DELETE returns 401 with no cookie', async () => {
+    const { DELETE } = await import('@/app/api/expenses/[id]/route')
+    const req = makeAdminRequest('http://localhost/api/expenses/1', 'DELETE')
+    const res = await DELETE(req, { params })
+    expect(res.status).toBe(401)
+  })
+
+  it('DELETE succeeds (not 401) with a valid admin cookie', async () => {
+    const { DELETE } = await import('@/app/api/expenses/[id]/route')
+    const req = makeAdminRequest(
+      'http://localhost/api/expenses/1',
+      'DELETE',
+      hmacToken(TEST_PASSPHRASE),
+    )
+    const res = await DELETE(req, { params })
+    expect(res.status).not.toBe(401)
   })
 })
