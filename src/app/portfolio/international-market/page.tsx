@@ -143,7 +143,7 @@ export default function InternationalMarketDemo() {
     <div className="flex flex-col min-h-[100dvh] bg-gradient-to-br from-emerald-50 via-white to-amber-50">
       {/* Demo Banner */}
       <div className="bg-black py-2 text-center text-xs font-semibold text-gray-300">
-        ✦ DEMO SITE — built by{" "}
+        ✦ DEMO SITE, built by{" "}
         <Link href="/portfolio" className="text-blue-400 underline hover:text-blue-300">{SITE.name}</Link>
         {" "}·{" "}
         <Link href="/portfolio" className="text-gray-400 hover:text-white transition-colors">← Back to Portfolio</Link>
@@ -317,8 +317,8 @@ export default function InternationalMarketDemo() {
                       🕐 Store Hours
                     </h3>
                     {[
-                      { day: "Monday – Saturday", hours: "8:00 AM – 9:00 PM" },
-                      { day: "Sunday", hours: "10:00 AM – 7:00 PM" },
+                      { day: "Monday - Saturday", hours: "8:00 AM - 9:00 PM" },
+                      { day: "Sunday", hours: "10:00 AM - 7:00 PM" },
                       { day: "Holidays", hours: "Call for special hours" },
                     ].map((row) => (
                       <div key={row.day} className="mb-4 flex justify-between items-center border-b border-emerald-100 pb-3 last:border-b-0 last:pb-0 last:mb-0">

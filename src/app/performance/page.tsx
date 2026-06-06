@@ -48,14 +48,14 @@ function MetricCard({
           <h3 className="font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
         </div>
         <div className={`text-2xl font-bold ${grade.color}`}>
-          {grade.score < 0 ? '—' : grade.grade}
+          {grade.score < 0 ? 'N/A' : grade.grade}
         </div>
       </div>
 
       <div className="space-y-2">
         <div className="flex items-baseline gap-2">
           <span className="text-3xl font-bold text-slate-900 dark:text-slate-100">
-            {value !== null ? value.toLocaleString() : '—'}
+            {value !== null ? value.toLocaleString() : 'N/A'}
           </span>
           <span className="text-sm text-slate-500 dark:text-slate-400">{unit}</span>
         </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import EmailLink from "@/components/EmailLink";
 import { SITE } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -33,10 +34,10 @@ export default function PrivacyPage() {
             </p>
             <p className="mt-3">
               This website is operated at <strong className="text-gray-300">aetherisvision.com</strong>.
-              For privacy-related questions, contact us at{" "}
-              <a href="mailto:contact@aetherisvision.com" className="text-blue-400 hover:underline">
-                contact@aetherisvision.com
-              </a>.
+              For privacy-related questions, you can{" "}
+              <EmailLink className="text-blue-400 hover:underline">
+                contact us by email
+              </EmailLink>.
             </p>
           </section>
 
@@ -91,10 +92,10 @@ export default function PrivacyPage() {
                 <p>
                   If you subscribe to blog updates, your email address is collected for the
                   purpose of sending new post notifications. You may unsubscribe at any time
-                  by emailing{" "}
-                  <a href="mailto:contact@aetherisvision.com" className="text-blue-400 hover:underline">
-                    contact@aetherisvision.com
-                  </a>{" "}
+                  by{" "}
+                  <EmailLink subject="Unsubscribe" className="text-blue-400 hover:underline">
+                    emailing us
+                  </EmailLink>{" "}
                   with &quot;Unsubscribe&quot; in the subject.
                 </p>
               </div>
@@ -124,7 +125,7 @@ export default function PrivacyPage() {
               No cookie consent banner is required because we do not set non-essential cookies.
             </p>
             <p className="mt-3">
-              Fonts are served locally — no requests are sent to Google Fonts or any other
+              Fonts are served locally, so no requests are sent to Google Fonts or any other
               external font CDN when you visit this site.
             </p>
             <p className="mt-3">
@@ -178,22 +179,22 @@ export default function PrivacyPage() {
               <div>
                 <h3 className="text-base font-semibold text-gray-200 mb-1">Retention Periods</h3>
                 <ul className="mt-2 ml-4 space-y-1 list-disc list-outside">
-                  <li><strong className="text-gray-300">Contact form submissions</strong> — retained in our business inbox for the duration of the business relationship, or up to 3 years from the date of submission if no engagement results.</li>
-                  <li><strong className="text-gray-300">Project intake submissions</strong> — retained for the duration of the project engagement plus 2 years, or up to 3 years from submission if no engagement results.</li>
-                  <li><strong className="text-gray-300">Client portal accounts</strong> — retained for the duration of the client relationship plus 1 year after the final project is closed.</li>
-                  <li><strong className="text-gray-300">Blog subscription emails</strong> — retained until you unsubscribe.</li>
-                  <li><strong className="text-gray-300">Booking records</strong> — retained per Cal.com&apos;s data retention policy.</li>
-                  <li><strong className="text-gray-300">Magic link authentication tokens</strong> — automatically deleted upon use or expiry (24-hour window), whichever comes first.</li>
-                  <li><strong className="text-gray-300">Server logs</strong> — retained per Vercel&apos;s data retention policy (typically 30 days).</li>
+                  <li><strong className="text-gray-300">Contact form submissions:</strong> retained in our business inbox for the duration of the business relationship, or up to 3 years from the date of submission if no engagement results.</li>
+                  <li><strong className="text-gray-300">Project intake submissions:</strong> retained for the duration of the project engagement plus 2 years, or up to 3 years from submission if no engagement results.</li>
+                  <li><strong className="text-gray-300">Client portal accounts:</strong> retained for the duration of the client relationship plus 1 year after the final project is closed.</li>
+                  <li><strong className="text-gray-300">Blog subscription emails:</strong> retained until you unsubscribe.</li>
+                  <li><strong className="text-gray-300">Booking records:</strong> retained per Cal.com&apos;s data retention policy.</li>
+                  <li><strong className="text-gray-300">Magic link authentication tokens:</strong> automatically deleted upon use or expiry (24-hour window), whichever comes first.</li>
+                  <li><strong className="text-gray-300">Server logs:</strong> retained per Vercel&apos;s data retention policy (typically 30 days).</li>
                 </ul>
               </div>
               <div>
                 <h3 className="text-base font-semibold text-gray-200 mb-1">Requesting Deletion</h3>
                 <p>
-                  To request deletion of your personal data, email{" "}
-                  <a href="mailto:contact@aetherisvision.com" className="text-blue-400 hover:underline">
-                    contact@aetherisvision.com
-                  </a>{" "}
+                  To request deletion of your personal data,{" "}
+                  <EmailLink subject="Data Deletion Request" className="text-blue-400 hover:underline">
+                    email us
+                  </EmailLink>{" "}
                   with the subject line <strong className="text-gray-300">&quot;Data Deletion Request&quot;</strong> and
                   include the email address associated with your account or submission. We will confirm receipt
                   within 5 business days and complete the deletion within 30 days, except where retention is
@@ -221,7 +222,7 @@ export default function PrivacyPage() {
                   <li>Request restriction of processing</li>
                   <li>Data portability</li>
                   <li>Lodge a complaint with your national supervisory authority
-                    (in Sweden: Integritetsskyddsmyndigheten / IMY — imy.se)</li>
+                    (in Sweden: Integritetsskyddsmyndigheten / IMY, imy.se)</li>
                 </ul>
               </div>
 
@@ -241,10 +242,10 @@ export default function PrivacyPage() {
               </div>
 
               <p>
-                To exercise any of these rights, email{" "}
-                <a href="mailto:contact@aetherisvision.com" className="text-blue-400 hover:underline">
-                  contact@aetherisvision.com
-                </a>. We will respond within 30 days.
+                To exercise any of these rights,{" "}
+                <EmailLink className="text-blue-400 hover:underline">
+                  email us
+                </EmailLink>. We will respond within 30 days.
               </p>
             </div>
           </section>
@@ -256,7 +257,7 @@ export default function PrivacyPage() {
               This website enforces HTTPS on all connections. HTTP Security Headers
               (including Content-Security-Policy, Strict-Transport-Security, and
               X-Frame-Options) are applied to every response. Contact form submissions
-              are encrypted in transit. We do not store payment data — no payment
+              are encrypted in transit. We do not store payment data. No payment
               processing occurs on this website.
             </p>
           </section>
@@ -267,11 +268,10 @@ export default function PrivacyPage() {
             <p>
               This website is directed to business and government professionals. We do not
               knowingly collect personal information from persons under the age of 13. If
-              you believe a child has submitted data through this site, contact us
-              immediately at{" "}
-              <a href="mailto:contact@aetherisvision.com" className="text-blue-400 hover:underline">
-                contact@aetherisvision.com
-              </a>.
+              you believe a child has submitted data through this site,{" "}
+              <EmailLink className="text-blue-400 hover:underline">
+                contact us by email
+              </EmailLink>{" "}immediately.
             </p>
           </section>
 
@@ -291,10 +291,9 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold text-white mb-3">10. Contact</h2>
             <p>
               Aetheris Vision LLC<br />
-              Email:{" "}
-              <a href="mailto:contact@aetherisvision.com" className="text-blue-400 hover:underline">
-                contact@aetherisvision.com
-              </a>
+              <EmailLink className="text-blue-400 hover:underline">
+                Email us
+              </EmailLink>
             </p>
           </section>
 

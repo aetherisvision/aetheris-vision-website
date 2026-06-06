@@ -2,6 +2,7 @@
 
 import { useSearchParams } from 'next/navigation'
 import { useState, Suspense } from 'react'
+import EmailLink from "@/components/EmailLink"
 
 const dark = {
   bg: '#070f1e',
@@ -179,7 +180,7 @@ export default function ClientLoginPage() {
             Your project,<br />fully visible.
           </h2>
           <p style={{ color: dark.textMuted, fontSize: '15px', lineHeight: '1.8', margin: '0 0 40px' }}>
-            Track progress, view milestones, and sign documents — all in one place.
+            Track progress, view milestones, and sign documents, all in one place.
           </p>
 
           {/* Feature list */}
@@ -240,9 +241,7 @@ export default function ClientLoginPage() {
 
           <p style={{ textAlign: 'center', color: dark.textDim, fontSize: '12px', marginTop: '20px' }}>
             Need help?{' '}
-            <a href="mailto:contact@aetherisvision.com" style={{ color: dark.blue, textDecoration: 'none', fontWeight: '500' }}>
-              contact@aetherisvision.com
-            </a>
+            <EmailLink className="text-blue-400 hover:underline font-medium">Email us</EmailLink>
           </p>
         </div>
       </div>

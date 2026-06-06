@@ -19,7 +19,7 @@ const attorneys = [
 ];
 
 export const metadata = {
-  title: `Mitchell & Associates — Law Firm Demo | ${SITE.name} Portfolio`,
+  title: `Mitchell & Associates Law Firm Demo | ${SITE.name} Portfolio`,
 };
 
 export default function LawFirmPage() {
@@ -27,7 +27,7 @@ export default function LawFirmPage() {
     <div className="min-h-screen bg-white font-sans text-zinc-900">
       {/* Demo Banner */}
       <div className="bg-black py-2 text-center text-xs font-semibold text-gray-300">
-        ✦ DEMO SITE — built by{" "}
+        ✦ DEMO SITE, built by{" "}
         <Link href="/portfolio" className="text-blue-400 underline hover:text-blue-300">
           {SITE.name}
         </Link>{" "}
@@ -216,8 +216,8 @@ export default function LawFirmPage() {
                   🏢 Office Hours
                 </h3>
                 {[
-                  { day: "Monday – Friday", hours: "8:00 AM – 6:00 PM" },
-                  { day: "Saturday", hours: "9:00 AM – 2:00 PM" },
+                  { day: "Monday - Friday", hours: "8:00 AM - 6:00 PM" },
+                  { day: "Saturday", hours: "9:00 AM - 2:00 PM" },
                   { day: "Sunday", hours: "Emergency Only" },
                 ].map((row) => (
                   <div key={row.day} className="mb-4 flex justify-between items-center border-b border-gray-100 pb-3 last:border-b-0 last:pb-0 last:mb-0">
@@ -273,7 +273,7 @@ export default function LawFirmPage() {
               <div><label className="mb-1 block text-xs font-semibold uppercase text-zinc-500">Practice Area</label><div className="h-10 rounded border border-zinc-200 bg-zinc-50" /></div>
             </div>
             <div className="mt-4"><label className="mb-1 block text-xs font-semibold uppercase text-zinc-500">Briefly describe your situation</label><div className="h-24 rounded border border-zinc-200 bg-zinc-50" /></div>
-            <button className="mt-6 w-full rounded bg-yellow-500 py-3 font-bold text-black hover:bg-yellow-400 transition-colors">Submit — Free Consultation</button>
+            <button className="mt-6 w-full rounded bg-yellow-500 py-3 font-bold text-black hover:bg-yellow-400 transition-colors">Submit: Free Consultation</button>
           </div>
         </div>
       </section>

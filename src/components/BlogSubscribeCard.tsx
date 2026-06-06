@@ -1,3 +1,5 @@
+import EmailLink from "@/components/EmailLink";
+
 const subscribeUrl = process.env.NEXT_PUBLIC_BLOG_SUBSCRIBE_URL?.trim();
 
 export default function BlogSubscribeCard() {
@@ -39,12 +41,12 @@ export default function BlogSubscribeCard() {
             </button>
           </form>
         ) : (
-          <a
-            href="mailto:contact@aetherisvision.com?subject=Blog%20Subscription"
+          <EmailLink
+            subject="Blog Subscription"
             className="inline-flex h-11 items-center justify-center rounded-md bg-white px-5 text-sm font-medium text-black transition-colors hover:bg-gray-200"
           >
             Subscribe by Email
-          </a>
+          </EmailLink>
         )}
       </div>
     </section>

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { posts, getPostBySlug, getPrevNextPosts } from "@/lib/posts";
 import { SITE } from "@/lib/constants";
+import EmailLink from "@/components/EmailLink";
 import { publisherRef } from "@/lib/jsonld";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -145,12 +146,9 @@ export default async function BlogPost({ params }: Props) {
               >
                 Start a Project
               </a>
-              <a
-                href={`mailto:${SITE.email}`}
-                className="inline-flex h-10 items-center justify-center rounded-md border border-white/10 px-6 text-sm font-medium text-white hover:bg-white/5 transition"
-              >
+              <EmailLink className="inline-flex h-10 items-center justify-center rounded-md border border-white/10 px-6 text-sm font-medium text-white hover:bg-white/5 transition">
                 Email Us
-              </a>
+              </EmailLink>
             </div>
           </div>
         </div>

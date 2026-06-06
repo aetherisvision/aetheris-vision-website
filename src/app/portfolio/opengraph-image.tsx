@@ -14,7 +14,7 @@ const badgeStyle = {
   padding: "6px 16px",
 } as const;
 
-const badges = ["Professional — $2,800", "Business — $4,800", "Enterprise — $8,500+"];
+const badges = ["Professional: $2,800", "Business: $4,800", "Enterprise: $8,500+"];
 
 export default function OGImage() {
   return new ImageResponse(

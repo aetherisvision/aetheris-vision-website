@@ -118,19 +118,19 @@ export const processSteps: ProcessStep[] = [
   {
     step: "02",
     title: "Design Mockup",
-    time: "Day 2–3",
-    desc: "A high-fidelity page layout delivered for your review — color palette, typography, and layout before a single line of code is written.",
+    time: "Day 2-3",
+    desc: "A high-fidelity page layout delivered for your review: color palette, typography, and layout before a single line of code is written.",
   },
   {
     step: "03",
     title: "Build & Review",
-    time: "Day 3–8",
+    time: "Day 3-8",
     desc: "Full site built in Next.js. You get a live preview link to review on any device. Feedback captured, revisions applied.",
   },
   {
     step: "04",
     title: "Launch",
-    time: "Day 5–10",
+    time: "Day 5-10",
     desc: "Domain connected, SSL configured, deployed to production. You receive login access to manage content and a handoff walkthrough.",
   },
 ];
@@ -160,8 +160,8 @@ export interface IconFeature {
 export const securityFeatures: IconFeature[] = [
   {
     icon: LockClosedIcon,
-    title: "SSL & HTTPS by Default — A+ Rated",
-    desc: "Every site ships with automatic SSL certificates and enforced HTTPS — verified with an A+ rating from Qualys SSL Labs (ssllabs.com/ssltest). No extra cost, no configuration needed.",
+    title: "SSL & HTTPS by Default, A+ Rated",
+    desc: "Every site ships with automatic SSL certificates and enforced HTTPS, verified with an A+ rating from Qualys SSL Labs (ssllabs.com/ssltest). No extra cost, no configuration needed.",
     link: "https://www.ssllabs.com/ssltest/",
   },
   {
@@ -172,12 +172,12 @@ export const securityFeatures: IconFeature[] = [
   {
     icon: ServerStackIcon,
     title: "99.9% Uptime on Vercel Edge",
-    desc: "Sites are deployed to Vercel's global edge network — automatic failover, DDoS protection, and CDN-cached assets worldwide.",
+    desc: "Sites are deployed to Vercel's global edge network with automatic failover, DDoS protection, and CDN-cached assets worldwide.",
   },
   {
     icon: WrenchScrewdriverIcon,
     title: "Same-Day Recovery",
-    desc: "If something goes wrong, I can restore your site from backup and redeploy within hours — not days. Your business doesn't wait.",
+    desc: "If something goes wrong, I can restore your site from backup and redeploy within hours, not days. Your business doesn't wait.",
   },
 ];
 
@@ -187,7 +187,7 @@ export const includedFeatures: IconFeature[] = [
   {
     icon: SparklesIcon,
     title: "Lighthouse 90+ Score",
-    desc: "Every page optimized for Performance, Accessibility, Best Practices, and SEO — tested before launch with a full report.",
+    desc: "Every page optimized for Performance, Accessibility, Best Practices, and SEO, tested before launch with a full report.",
   },
   {
     icon: DocumentTextIcon,
@@ -197,7 +197,7 @@ export const includedFeatures: IconFeature[] = [
   {
     icon: GlobeAltIcon,
     title: "SEO Metadata & Sitemaps",
-    desc: "Title tags, meta descriptions, canonical URLs, and an auto-generated XML sitemap — ready for Google from day one.",
+    desc: "Title tags, meta descriptions, canonical URLs, and an auto-generated XML sitemap, ready for Google from day one.",
   },
   {
     icon: ShareIcon,
@@ -207,7 +207,7 @@ export const includedFeatures: IconFeature[] = [
   {
     icon: MagnifyingGlassIcon,
     title: "Schema Markup (Business+)",
-    desc: "Structured data for Google rich results — LocalBusiness, FAQ, Service, and more — so search engines understand your content.",
+    desc: "Structured data for Google rich results (LocalBusiness, FAQ, Service, and more) so search engines understand your content.",
   },
   {
     icon: ChartBarIcon,
@@ -221,7 +221,7 @@ export const includedFeatures: IconFeature[] = [
 export const faqs = [
   {
     q: "Do I need to provide content and copy?",
-    a: "You provide the essentials — your services, a short bio, contact info, and any photos or logo. I handle layout, copyediting, and structure. If you need full copywriting, that can be added.",
+    a: "You provide the essentials: your services, a short bio, contact info, and any photos or logo. I handle layout, copyediting, and structure. If you need full copywriting, that can be added.",
   },
   {
     q: "What technology do you use?",
@@ -233,15 +233,15 @@ export const faqs = [
   },
   {
     q: "Do you host the site?",
-    a: "Sites are deployed to Vercel. The free tier covers most small business traffic. You own the deployment — I just set it up and hand it over.",
+    a: "Sites are deployed to Vercel. The free tier covers most small business traffic. You own the deployment. I just set it up and hand it over.",
   },
   {
     q: "Can you match our existing brand?",
-    a: "Yes. Send your brand guide, logo files, or just describe the feel you're going for — I'll match it or propose something that fits.",
+    a: "Yes. Send your brand guide, logo files, or just describe the feel you're going for, and I'll match it or propose something that fits.",
   },
   {
     q: "Is this AI-generated slop?",
-    a: "No. AI accelerates the workflow — layout ideation, copy drafts, component generation. Every site is reviewed, refined, and tested by a human engineer before it ships.",
+    a: "No. AI accelerates the workflow: layout ideation, copy drafts, component generation. Every site is reviewed, refined, and tested by a human engineer before it ships.",
   },
   {
     q: "What's included in the Lighthouse 90+ guarantee?",
@@ -249,7 +249,7 @@ export const faqs = [
   },
   {
     q: "Do I really get a Privacy Policy and Terms of Service?",
-    a: "Yes. Every site includes a Privacy Policy page tailored to your business. Business and Enterprise tiers also include Terms of Service and a cookie consent banner — no extra charge.",
+    a: "Yes. Every site includes a Privacy Policy page tailored to your business. Business and Enterprise tiers also include Terms of Service and a cookie consent banner, no extra charge.",
   },
   {
     q: "What happens if my site goes down?",
@@ -257,7 +257,7 @@ export const faqs = [
   },
   {
     q: "Can you help with my Google Business Profile?",
-    a: "Yes — included in the Business tier and above. I'll connect your site to Google Business Profile so your business shows up in Google Maps with hours, reviews, and a link to your site.",
+    a: "Yes, included in the Business tier and above. I'll connect your site to Google Business Profile so your business shows up in Google Maps with hours, reviews, and a link to your site.",
   },
 ];
 
@@ -268,84 +268,84 @@ export const demos = [
     slug: "law-firm",
     title: "Mitchell & Associates",
     industry: "Law Firm",
-    desc: "Practice areas, attorney bios, free consultation form. Dark navy & gold palette with serif accents — formal, trust-forward, classic corporate-professional aesthetic.",
+    desc: "Practice areas, attorney bios, free consultation form. Dark navy & gold palette with serif accents: formal, trust-forward, classic corporate-professional aesthetic.",
     color: "from-[#1e3a5f] to-[#0f2240]",
   },
   {
     slug: "restaurant",
     title: "Casa Verde Kitchen",
     industry: "Restaurant",
-    desc: "Menu sections, hours, reservation form. Warm amber & terracotta palette; photography-forward layout with handwritten accent fonts — rustic-modern, inviting atmosphere.",
+    desc: "Menu sections, hours, reservation form. Warm amber & terracotta palette; photography-forward layout with handwritten accent fonts for a rustic-modern, inviting atmosphere.",
     color: "from-[#92400e] to-[#5c2a08]",
   },
   {
     slug: "trades-contractor",
     title: "Summit Home Services",
     industry: "Home Services",
-    desc: "Services, trust badges, free quote form. Bold blue & orange palette; utility-first layout built around credibility and conversions — clean, no-nonsense tradesman style.",
+    desc: "Services, trust badges, free quote form. Bold blue & orange palette; utility-first layout built around credibility and conversions, in a clean, no-nonsense tradesman style.",
     color: "from-[#1d4ed8] to-[#1e3a8a]",
   },
   {
     slug: "veteran-nonprofit",
     title: "Veterans Forward Oklahoma",
     industry: "Nonprofit",
-    desc: "Impact stats, programs, donate & volunteer CTAs. Patriotic red, white & blue; emotion-first storytelling with bold stat callouts — rallying, community-centered aesthetic.",
+    desc: "Impact stats, programs, donate & volunteer CTAs. Patriotic red, white & blue; emotion-first storytelling with bold stat callouts for a rallying, community-centered aesthetic.",
     color: "from-[#b91c1c] to-[#7f1d1d]",
   },
   {
     slug: "analytics-dashboard",
     title: "DataViz Pro Analytics",
     industry: "SaaS Platform",
-    desc: "Real-time metrics, interactive charts, performance monitoring. Deep slate & indigo dark-mode UI with glassmorphism accents — data-dense, modern enterprise SaaS aesthetic.",
+    desc: "Real-time metrics, interactive charts, performance monitoring. Deep slate & indigo dark-mode UI with glassmorphism accents: data-dense, modern enterprise SaaS aesthetic.",
     color: "from-[#0f172a] via-[#1e293b] to-[#334155]",
   },
   {
     slug: "international-market",
     title: "Global Harvest Market",
     industry: "International Foods",
-    desc: "Product search & filtering, cultural sections, online ordering. Vibrant emerald & gold palette — multicultural market energy blended with clean e-commerce structure.",
+    desc: "Product search & filtering, cultural sections, online ordering. Vibrant emerald & gold palette: multicultural market energy blended with clean e-commerce structure.",
     color: "from-[#059669] via-[#10b981] to-[#d97706]",
   },
   {
     slug: "portal-pro",
     title: "Portal Pro Business Suite",
     industry: "Business Platform",
-    desc: "User management, role-based dashboards, CRM features. Purple & indigo glassmorphism on dark background — polished enterprise SaaS aesthetic, modern Drupal alternative.",
+    desc: "User management, role-based dashboards, CRM features. Purple & indigo glassmorphism on dark background: polished enterprise SaaS aesthetic, modern Drupal alternative.",
     color: "from-[#6366f1] via-[#8b5cf6] to-[#a855f7]",
   },
   {
     slug: "healthcare",
     title: "Clarity Health Group",
     industry: "Healthcare",
-    desc: "Physician profiles, services grid, insurance lookup, appointment booking. Clean white & sky-blue light theme — calm, clinical, ADA-compliant design that projects trust.",
+    desc: "Physician profiles, services grid, insurance lookup, appointment booking. Clean white & sky-blue light theme: calm, clinical, ADA-compliant design that projects trust.",
     color: "from-[#0369a1] via-[#0ea5e9] to-[#e0f2fe]",
   },
   {
     slug: "wp-editorial",
     title: "The Prairie Standard",
     industry: "Editorial / Publishing",
-    desc: "Article grid, categories, headless WordPress via WPGraphQL. Charcoal & warm stone with Georgia serif typography — dark broadsheet aesthetic, editorial newspaper layout.",
+    desc: "Article grid, categories, headless WordPress via WPGraphQL. Charcoal & warm stone with Georgia serif typography: dark broadsheet aesthetic, editorial newspaper layout.",
     color: "from-[#1c1917] via-[#44403c] to-[#a8a29e]",
   },
   {
     slug: "real-estate",
     title: "Pinnacle Realty Group",
     industry: "Real Estate",
-    desc: "Property listings with search filters, agent profiles, home valuation form. Warm stone & amber palette — luxury-aspirational feel with property-forward imagery and upscale minimal layout.",
+    desc: "Property listings with search filters, agent profiles, home valuation form. Warm stone & amber palette: luxury-aspirational feel with property-forward imagery and upscale minimal layout.",
     color: "from-[#92400e] via-[#b45309] to-[#fef3c7]",
   },
   {
     slug: "fitness",
     title: "Iron District Fitness",
     industry: "Fitness & Gym",
-    desc: "Class schedule, membership tiers, free trial CTA. All-black with neon green accents; aggressive high-contrast typography and bold full-bleed imagery — dark, high-intensity motivational aesthetic.",
+    desc: "Class schedule, membership tiers, free trial CTA. All-black with neon green accents; aggressive high-contrast typography and bold full-bleed imagery for a dark, high-intensity motivational aesthetic.",
     color: "from-[#052e16] via-[#14532d] to-[#22c55e]",
   },
   {
     slug: "photography-studio",
     title: "Lumen & Co. Photography",
     industry: "Photography / Creative",
-    desc: "Portfolio gallery, session packages, booking form, client testimonials. Deep charcoal & warm gold palette; full-bleed image-first layout with minimal sans type — elegant, gallery-style creative aesthetic.",
+    desc: "Portfolio gallery, session packages, booking form, client testimonials. Deep charcoal & warm gold palette; full-bleed image-first layout with minimal sans type for an elegant, gallery-style creative aesthetic.",
     color: "from-[#1a1a1a] via-[#2d2d2d] to-[#c8a882]",
   },
 ];
@@ -372,11 +372,11 @@ export const wpTiers: WpTier[] = [
     tagline: "Editorial power, modern speed",
     features: [
       "WordPress CMS backend (self-hosted or WP.com)",
-      "Custom Next.js frontend — fast, SEO-optimized",
+      "Custom Next.js frontend, fast and SEO-optimized",
       "WPGraphQL API integration",
       "Your editors use the familiar WP dashboard",
       "Custom post types, taxonomies & ACF fields",
-      "Unlimited pages & articles — no developer needed",
+      "Unlimited pages & articles, no developer needed",
       "Media library, categories, authors all managed in WP",
       "Deployed to Vercel with automatic preview builds",
     ],

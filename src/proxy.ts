@@ -30,9 +30,10 @@ async function isAdminSession(request: NextRequest): Promise<boolean> {
 
 
 function buildCsp(nonce: string): string {
+  const allowEval = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
   return [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'unsafe-eval' https://analytics.google.com https://www.googletagmanager.com https://js.stripe.com https://giscus.app https://cal.com https://app.cal.com`,
+    `script-src 'self' 'nonce-${nonce}'${allowEval} https://analytics.google.com https://www.googletagmanager.com https://js.stripe.com https://giscus.app https://cal.com https://app.cal.com`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://giscus.app",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob: https://avatars.githubusercontent.com https://github.githubassets.com",
@@ -101,8 +102,6 @@ export async function proxy(request: NextRequest) {
       return new NextResponse('Rate limit exceeded', { 
         status: 429,
         headers: {
-          'X-Security-Action': 'Rate-Limited',
-          'X-Security-Framework': 'Aetheris-Protection',
           'Retry-After': Math.ceil((clientData.resetTime - now) / 1000).toString()
         }
       })
@@ -129,24 +128,14 @@ export async function proxy(request: NextRequest) {
   requestHeaders.set('x-nonce', nonce)
 
   const response = NextResponse.next({ request: { headers: requestHeaders } })
-  
-  // Comprehensive security headers
+
+  // Security headers
   response.headers.set('Content-Security-Policy', csp)
   response.headers.set('X-CSP-Nonce', nonce)
-  response.headers.set('X-Security-Status', 'Protected')
-  response.headers.set('X-Security-Scan', 'Continuous')
-  response.headers.set('X-Threat-Detection', 'Active')
   response.headers.set('X-Request-ID', crypto.randomUUID())
-  
-  // Admin route protection headers
-  if (pathname.startsWith('/admin')) {
-    response.headers.set('X-Admin-Security', 'Multi-Layer-Auth')
-    response.headers.set('X-Access-Control', 'Role-Based')
-  }
-  
-  // API route protection headers
+
+  // API routes report remaining rate-limit budget
   if (pathname.startsWith('/api')) {
-    response.headers.set('X-API-Security', 'Authenticated')
     response.headers.set('X-Rate-Limit-Remaining', (maxRequests - (clientData?.count || 1)).toString())
   }
 

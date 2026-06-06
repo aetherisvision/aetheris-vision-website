@@ -2,7 +2,7 @@ import Link from "next/link";
 import { SITE } from "@/lib/constants";
 
 export const metadata = {
-  title: `Clarity Health Group — Healthcare Demo | ${SITE.name} Portfolio`,
+  title: `Clarity Health Group Healthcare Demo | ${SITE.name} Portfolio`,
 };
 
 const services = [
@@ -10,13 +10,13 @@ const services = [
   { title: "Urgent Care", desc: "Walk-in care for non-emergency illness and injury. Open 7 days, no appointment needed. Shorter waits than the ER.", icon: "⚡" },
   { title: "Women's Health", desc: "Annual exams, prenatal care, family planning, and preventive screenings with board-certified OB/GYN specialists.", icon: "💙" },
   { title: "Pediatrics", desc: "Well-child visits, immunizations, developmental screenings, and sick care for infants through adolescents.", icon: "🌱" },
-  { title: "Behavioral Health", desc: "Integrated mental health services including therapy, psychiatry, and medication management — all under one roof.", icon: "🧠" },
+  { title: "Behavioral Health", desc: "Integrated mental health services including therapy, psychiatry, and medication management, all under one roof.", icon: "🧠" },
   { title: "Lab & Imaging", desc: "On-site laboratory, digital X-ray, and ultrasound with same-day results for most tests.", icon: "🔬" },
 ];
 
 const physicians = [
   { name: "Dr. Sarah Okonkwo, MD", title: "Chief Medical Officer", specialty: "Internal Medicine & Primary Care", years: 18, initials: "SO" },
-  { name: "Dr. James Whitfield, DO", title: "Medical Director — Urgent Care", specialty: "Emergency Medicine", years: 14, initials: "JW" },
+  { name: "Dr. James Whitfield, DO", title: "Medical Director, Urgent Care", specialty: "Emergency Medicine", years: 14, initials: "JW" },
   { name: "Dr. Priya Nair, MD", title: "OB/GYN Specialist", specialty: "Women's Health & Obstetrics", years: 11, initials: "PN" },
 ];
 
@@ -31,7 +31,7 @@ export default function HealthcarePage() {
 
       {/* Demo Banner */}
       <div className="bg-[#0c4a6e] py-2 text-center text-xs font-semibold text-sky-200">
-        ✦ DEMO SITE — built by{" "}
+        ✦ DEMO SITE, built by{" "}
         <Link href="/portfolio" className="text-white underline hover:text-sky-100">{SITE.name}</Link>
         {" "}·{" "}
         <Link href="/portfolio" className="text-sky-300 hover:text-white transition-colors">← Back to Portfolio</Link>
@@ -106,7 +106,7 @@ export default function HealthcarePage() {
           <div className="mb-12 text-center">
             <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-[#0369a1]">What We Offer</p>
             <h2 className="text-3xl font-bold text-[#0c4a6e] sm:text-4xl">Comprehensive Care Under One Roof</h2>
-            <p className="mt-3 text-gray-500">Coordinated services designed to keep your whole family healthy — without the runaround.</p>
+            <p className="mt-3 text-gray-500">Coordinated services designed to keep your whole family healthy, without the runaround.</p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {services.map((s) => (
@@ -157,7 +157,7 @@ export default function HealthcarePage() {
               <span key={ins} className="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700">{ins}</span>
             ))}
           </div>
-          <p className="mt-8 text-sm text-gray-400">Don&apos;t see your plan? Call us — we may still be in-network.</p>
+          <p className="mt-8 text-sm text-gray-400">Don&apos;t see your plan? Call us. We may still be in-network.</p>
         </div>
       </section>
 

@@ -236,7 +236,7 @@ function LandingPage({ onEnterDemo }: { onEnterDemo: () => void }) {
     <div className="flex flex-col min-h-[100dvh] bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       {/* Demo Banner */}
       <div className="bg-black py-2 text-center text-xs font-semibold text-gray-300">
-        ✦ DEMO SITE — built by{" "}
+        ✦ DEMO SITE, built by{" "}
         <Link href="/portfolio" className="text-blue-400 underline hover:text-blue-300">{SITE.name}</Link>
         {" "}·{" "}
         <Link href="/portfolio" className="text-gray-400 hover:text-white transition-colors">← Back to Portfolio</Link>

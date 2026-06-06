@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
+import EmailLink from "@/components/EmailLink";
 import { ShieldCheckIcon, LockClosedIcon, ChatBubbleLeftRightIcon, ServerIcon } from "@heroicons/react/24/outline";
 
 const footerLinks = [
@@ -93,12 +94,7 @@ export default function Footer() {
           <div className="flex items-center gap-4">
             <span>Veteran-Owned Small Business (VOSB)</span>
             <span className="text-white/10">·</span>
-            <a
-              href={`mailto:${SITE.email}`}
-              className="hover:text-gray-400 transition"
-            >
-              {SITE.email}
-            </a>
+            <EmailLink className="hover:text-gray-400 transition">Email us</EmailLink>
             <span className="text-white/10">·</span>
             <a href="/privacy" className="hover:text-gray-400 transition">
               Privacy Policy

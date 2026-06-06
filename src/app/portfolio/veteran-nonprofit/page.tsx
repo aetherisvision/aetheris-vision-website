@@ -3,7 +3,7 @@ import { SITE } from "@/lib/constants";
 import LocationMap from "@/components/LocationMap";
 
 export const metadata = {
-  title: `Veterans Forward Oklahoma — Nonprofit Demo | ${SITE.name} Portfolio`,
+  title: `Veterans Forward Oklahoma Nonprofit Demo | ${SITE.name} Portfolio`,
 };
 
 const programs = [
@@ -41,7 +41,7 @@ export default function VeteranNonprofitPage() {
     <div className="min-h-screen bg-white font-sans text-zinc-800">
       {/* Demo Banner */}
       <div className="bg-black py-2 text-center text-xs font-semibold text-gray-300">
-        ✦ DEMO SITE — built by{" "}
+        ✦ DEMO SITE, built by{" "}
         <Link href="/portfolio" className="text-blue-400 underline hover:text-blue-300">{SITE.name}</Link>
         {" "}·{" "}
         <Link href="/portfolio" className="text-gray-400 hover:text-white transition-colors">← Back to Portfolio</Link>
@@ -140,8 +140,8 @@ export default function VeteranNonprofitPage() {
                   🏢 Office Hours
                 </h3>
                 {[
-                  { day: "Monday – Friday", hours: "9:00 AM – 5:00 PM" },
-                  { day: "Saturday", hours: "10:00 AM – 2:00 PM" },
+                  { day: "Monday - Friday", hours: "9:00 AM - 5:00 PM" },
+                  { day: "Saturday", hours: "10:00 AM - 2:00 PM" },
                   { day: "Sunday", hours: "Emergency Line Only" },
                 ].map((row) => (
                   <div key={row.day} className="mb-4 flex justify-between items-center border-b border-red-100 pb-3 last:border-b-0 last:pb-0 last:mb-0">

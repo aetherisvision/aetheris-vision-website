@@ -3,11 +3,12 @@ import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { SITE, SAM } from "@/lib/constants";
+import EmailLink from "@/components/EmailLink";
 
 export const metadata = {
   title: `Capabilities Statement | ${SITE.name}`,
   description:
-    "Aetheris Vision capabilities statement — NAICS codes, contract vehicles, core competencies, and past performance for state and federal procurement.",
+    "Aetheris Vision capabilities statement: NAICS codes, contract vehicles, core competencies, and past performance for state and federal procurement.",
 };
 
 const naicsCodes = [
@@ -21,73 +22,73 @@ const naicsCodes = [
 ];
 
 const pscCodes = [
-  { code: "R427", description: "Support — Professional: Weather Reporting/Observation" },
-  { code: "R425", description: "Support — Professional: Engineering/Technical" },
-  { code: "R408", description: "Support — Professional: Program Management/Support" },
-  { code: "R405", description: "Support — Professional: Operations Research/Quantitative Analysis" },
-  { code: "DA01", description: "IT and Telecom — Business Application/Application Development Support Services (Labor)" },
-  { code: "DA10", description: "IT and Telecom — Business Application/Application Development Software as a Service" },
-  { code: "DB02", description: "IT and Telecom — Compute Support Services, Non-HPC (Labor)" },
-  { code: "B510", description: "Special Studies/Analysis — Environmental Assessments" },
-  { code: "B524", description: "Special Studies/Analysis — Mathematical/Statistical" },
-  { code: "B526", description: "Special Studies/Analysis — Oceanological" },
-  { code: "B529", description: "Special Studies/Analysis — Scientific Data" },
-  { code: "B544", description: "Special Studies/Analysis — Technology" },
+  { code: "R427", description: "Support, Professional: Weather Reporting/Observation" },
+  { code: "R425", description: "Support, Professional: Engineering/Technical" },
+  { code: "R408", description: "Support, Professional: Program Management/Support" },
+  { code: "R405", description: "Support, Professional: Operations Research/Quantitative Analysis" },
+  { code: "DA01", description: "IT and Telecom, Business Application/Application Development Support Services (Labor)" },
+  { code: "DA10", description: "IT and Telecom, Business Application/Application Development Software as a Service" },
+  { code: "DB02", description: "IT and Telecom, Compute Support Services, Non-HPC (Labor)" },
+  { code: "B510", description: "Special Studies/Analysis, Environmental Assessments" },
+  { code: "B524", description: "Special Studies/Analysis, Mathematical/Statistical" },
+  { code: "B526", description: "Special Studies/Analysis, Oceanological" },
+  { code: "B529", description: "Special Studies/Analysis, Scientific Data" },
+  { code: "B544", description: "Special Studies/Analysis, Technology" },
 ];
 
 const competencies = [
   {
-    title: "Atmospheric Dominance",
+    title: "Atmospheric Science & Forecasting",
     items: [
-      "AI-hybrid systems that outperform billion-dollar legacy NWP models (GraphCast, Pangu-Weather integration)",
-      "Mesoscale prediction systems engineered for high-stakes military operations",
-      "Arctic and complex terrain dynamics — mastered through combat deployments",
-      "Real-time decision support for missions where atmospheric uncertainty kills",
+      "AI-hybrid systems built on modern NWP models (GraphCast, Pangu-Weather integration)",
+      "Mesoscale prediction systems for demanding operational environments",
+      "Arctic and complex terrain dynamics, informed by years of field forecasting",
+      "Real-time decision support for time-sensitive, high-consequence operations",
     ],
   },
   {
-    title: "AI Revolution Engine",
+    title: "Applied AI & Machine Learning",
     items: [
-      "Deep learning architectures that replace traditional ensemble forecasting systems",
-      "Uncertainty quantification pipelines that transform chaos into actionable intelligence",
-      "Massive-scale reanalysis processing (ERA5, MERRA-2) — optimized for mission-critical deployment",
+      "Deep learning architectures that complement and modernize ensemble forecasting",
+      "Uncertainty quantification pipelines that turn complex data into clear, actionable output",
+      "Large-scale reanalysis processing (ERA5, MERRA-2) tuned for production deployment",
       "Cloud-native solutions deployed on AWS GovCloud and Azure Government infrastructure",
     ],
   },
   {
-    title: "Strategic Transformation",
+    title: "Modernization & Transition",
     items: [
-      "Legacy system assassination — identifying and obsoleting inefficient operational frameworks",
-      "AI/ML validation protocols that eliminate deployment risk in high-consequence environments",
-      "Workforce evolution strategies — transforming traditional meteorologists into AI-augmented operators",
-      "Technology transition leadership — from concept to operational superiority",
+      "Assessment of existing operational frameworks and practical paths to improve them",
+      "AI/ML validation protocols that reduce deployment risk in high-consequence environments",
+      "Workforce enablement: helping meteorologists work effectively alongside AI tools",
+      "Technology transition support, from concept through operational use",
     ],
   },
   {
-    title: "Federal Penetration",
+    title: "Federal Registrations",
     items: [
-      `SAM.gov registered — UEI ${SAM.uei}, CAGE ${SAM.cage}`,
-      `${SAM.setAside} eligible — direct access to Veterans First Contracting Program set-asides`,
-      "Oklahoma Supplier Portal — state-level contracting access (registration in progress)",
+      `SAM.gov registered: UEI ${SAM.uei}, CAGE ${SAM.cage}`,
+      `${SAM.setAside} eligible, with access to Veterans First Contracting Program set-asides`,
+      "Oklahoma Supplier Portal: state-level contracting access (registration in progress)",
       "Active DoD Secret clearance (personal; facility clearance scalable for classified program support)",
     ],
   },
   {
-    title: "Command Authority",
+    title: "Program Leadership",
     items: [
-      "Technical direction for defense and civil agency transformation programs",
+      "Technical direction for defense and civil agency modernization programs",
       "Integrated product team (IPT) leadership across multi-agency coordination efforts",
-      "Disruptive technology assessment and rapid deployment for competitive advantage scenarios",
-      "Next-generation workforce development — elevating junior staff through revolutionary methodologies",
+      "Technology assessment and rapid, responsible deployment",
+      "Workforce development: mentoring junior staff and building team capability",
     ],
   },
   {
-    title: "Digital Precision Weapons",
+    title: "Custom Software & Web",
     items: [
-      "Custom applications engineered to eliminate operational inefficiencies (Next.js, React, TypeScript)",
-      "High-performance, mobile-first deployments that dominate user experience expectations",
-      "API integration warfare — connecting and optimizing disparate business systems",
-      "Continuous evolution model — sites that improve and adapt without constant reinvestment",
+      "Custom applications built to streamline real operational workflows (Next.js, React, TypeScript)",
+      "High-performance, mobile-first sites with a strong focus on user experience",
+      "API integration: connecting and optimizing disparate business systems",
+      "Ongoing maintenance model: sites that improve and adapt over time without constant rebuilds",
     ],
   },
 ];
@@ -109,13 +110,13 @@ export default function CapabilitiesPage() {
               <h1 className="text-3xl md:text-5xl font-semibold text-white tracking-tight">
                 Capabilities Statement
               </h1>
-              <a
-                href={`mailto:${SITE.email}?subject=Capabilities Statement PDF Request`}
+              <EmailLink
+                subject="Capabilities Statement PDF Request"
                 className="inline-flex h-10 items-center gap-2 rounded-md border border-white/10 bg-white/[0.03] px-5 text-sm text-gray-300 hover:bg-white/[0.07] transition shrink-0"
               >
                 <ArrowDownTrayIcon className="h-4 w-4" />
                 Request PDF
-              </a>
+              </EmailLink>
             </div>
             <div className="h-px w-12 bg-blue-500/50 mt-6 mb-10" />
           </FadeIn>
@@ -123,17 +124,27 @@ export default function CapabilitiesPage() {
           {/* Company snapshot */}
           <FadeIn delay={0.05}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-14">
-              {[
+              {([
                 { label: "Legal Name", value: SITE.legalName },
-                { label: "Business Type", value: "Veteran-Owned Small Business (SDVOSB / VOSB — certification in process)" },
+                { label: "Business Type", value: "Veteran-Owned Small Business (SDVOSB / VOSB, certification in process)" },
                 { label: "UEI", value: SAM.uei },
                 { label: "CAGE", value: SAM.cage },
                 { label: "SAM.gov", value: "Active" },
-                { label: "Primary NAICS", value: `${SAM.naicsPrimary} — Scientific & Technical Consulting` },
-                { label: "8(a) Status", value: "Eligible — application planned for 2027" },
+                { label: "Primary NAICS", value: `${SAM.naicsPrimary}: Scientific & Technical Consulting` },
+                { label: "8(a) Status", value: "Eligible, application planned for 2027" },
                 { label: "Security Clearance", value: "Active DoD Secret (Personal)" },
-                { label: "Primary Contact", value: SAM.federalEmail },
-              ].map((item) => (
+                {
+                  label: "Primary Contact",
+                  value: (
+                    <EmailLink
+                      account="marston"
+                      className="text-blue-400 hover:text-blue-300 transition underline underline-offset-2"
+                    >
+                      Email
+                    </EmailLink>
+                  ),
+                },
+              ] as { label: string; value: React.ReactNode }[]).map((item) => (
                 <div key={item.label} className="rounded-lg border border-white/5 bg-white/[0.02] p-4">
                   <p className="text-xs text-gray-500 mb-1 uppercase tracking-widest">{item.label}</p>
                   <p className="text-sm text-white font-medium">{item.value}</p>
@@ -203,26 +214,26 @@ export default function CapabilitiesPage() {
             </div>
           </div>
 
-          {/* Revolutionary Differentiators */}
+          {/* Differentiators */}
           <FadeIn>
             <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-8 md:p-10 mb-10 relative overflow-hidden">
               <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-blue-600/5 blur-3xl pointer-events-none" />
               <div className="relative z-10">
                 <p className="text-xs font-semibold tracking-widest text-blue-500 uppercase mb-4">The Aetheris Advantage</p>
-                <h2 className="text-2xl font-semibold text-white mb-6">Why Legacy Systems Fear Us</h2>
+                <h2 className="text-2xl font-semibold text-white mb-6">Why Agencies Work With Us</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {[
                     {
-                      title: "Surgical Precision Over Generalist Noise",
-                      body: "While others offer everything, we dominate three domains: atmospheric physics, AI transformation, and defense systems. This isn't consulting — it's specialized warfare against inefficiency.",
+                      title: "Focused, Not Generalist",
+                      body: "Rather than claiming to do everything, we concentrate on three areas we know deeply: atmospheric physics, applied AI, and defense and government systems. You get specialists, not a catch-all consultancy.",
                     },
                     {
-                      title: "Battle-Tested Disruption",
-                      body: "35 years revolutionizing how humans understand the atmosphere. From obsoleting manual forecasting in the 90s to pioneering AI-NWP hybrid models today. We don't just adapt to change — we cause it.",
+                      title: "Decades of Operational Experience",
+                      body: "More than 35 years working with the atmosphere, from forecasting in the Air Force in the 1990s to building AI and NWP hybrid models today. That experience informs every system we deliver.",
                     },
                     {
-                      title: "Zero-Friction Deployment",
-                      body: "Active Secret clearance, VOSB eligibility, and streamlined federal pathways eliminate bureaucratic obstacles. While competitors navigate red tape, we're already delivering transformational outcomes.",
+                      title: "Ready for Federal Work",
+                      body: "An active Secret clearance, VOSB eligibility, and an active SAM.gov registration mean we can engage on government work without long onboarding delays.",
                     },
                   ].map((d) => (
                     <div key={d.title}>
@@ -244,12 +255,12 @@ export default function CapabilitiesPage() {
               >
                 Book a Consultation
               </a>
-              <a
-                href={`mailto:${SITE.email}?subject=Capabilities Statement PDF Request`}
+              <EmailLink
+                subject="Capabilities Statement PDF Request"
                 className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 px-8 text-sm font-medium text-white hover:bg-white/5 transition"
               >
                 Request Capabilities PDF
-              </a>
+              </EmailLink>
             </div>
           </FadeIn>
 

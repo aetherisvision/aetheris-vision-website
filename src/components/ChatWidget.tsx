@@ -100,7 +100,7 @@ export default function ChatWidget() {
         updated[updated.length - 1] = {
           role: "assistant",
           content:
-            "Sorry, something went wrong. Please email contact@aetherisvision.com directly.",
+            "Sorry, something went wrong. Please reach us through the contact page at aetherisvision.com/contact.",
         };
         return updated;
       });
