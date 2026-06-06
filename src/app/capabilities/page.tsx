@@ -2,7 +2,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
 import { SITE, SAM } from "@/lib/constants";
-import EmailLink from "@/components/EmailLink";
 import CapabilityRequestForm from "@/components/CapabilityRequestForm";
 
 export const metadata = {
@@ -130,12 +129,12 @@ export default function CapabilitiesPage() {
                 {
                   label: "Primary Contact",
                   value: (
-                    <EmailLink
-                      account="marston"
+                    <a
+                      href="/contact"
                       className="text-blue-400 hover:text-blue-300 transition underline underline-offset-2"
                     >
-                      Email
-                    </EmailLink>
+                      Contact form
+                    </a>
                   ),
                 },
               ] as { label: string; value: React.ReactNode }[]).map((item) => (
