@@ -606,7 +606,7 @@ export default function ProjectIntakeForm() {
 
           <div className="bg-gray-900 border border-white/5 rounded-lg p-4">
             <p className="text-xs text-gray-400 leading-relaxed">
-              <strong className="text-gray-300">Security Expertise:</strong> Our team holds a DoD Secret clearance, brings 35+ years of operational security experience, and implements security frameworks from NIST to CMMC. We don&apos;t just check compliance boxes; we engineer defense-grade protection into every system.
+              <strong className="text-gray-300">Security Expertise:</strong> Our team holds a U.S. Government Secret clearance, brings 35+ years of operational security experience, and implements security frameworks from NIST to CMMC. We don&apos;t just check compliance boxes; we engineer defense-grade protection into every system.
             </p>
           </div>
         </div>

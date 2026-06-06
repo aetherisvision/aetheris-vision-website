@@ -205,10 +205,10 @@ export default function WebServicesPage() {
                   You work directly with the founder, not a junior dev or an overseas team.
                 </h2>
                 <p className="text-gray-400 font-light leading-relaxed max-w-2xl mb-6">
-                  The founder and lead engineer of Aetheris Vision writes and ships the code himself, drawing on a PhD in atmospheric and environmental science, service as a USAF veteran, and a DoD Secret clearance (held) — a background built on systems that have to work under pressure. When you hire us, you get one experienced engineer from start to finish.
+                  The founder and lead engineer of Aetheris Vision writes and ships the code himself, drawing on a PhD in atmospheric and environmental science, service as a USAF veteran, and a U.S. Government Secret clearance held across military and civilian assignments — a background built on systems that have to work under pressure. When you hire us, you get one experienced engineer from start to finish.
                 </p>
                 <div className="flex flex-wrap gap-3">
-                  {["Founder & Lead Engineer", "PhD Environmental Science", "USAF Veteran", "Secret Clearance (held)", "Mustang, OK"].map((tag) => (
+                  {["Founder & Lead Engineer", "PhD Environmental Science", "USAF Veteran", "U.S. Secret Clearance (held)", "Mustang, OK"].map((tag) => (
                     <span key={tag} className="rounded-full border border-white/10 px-3 py-1 text-xs text-gray-400">
                       {tag}
                     </span>

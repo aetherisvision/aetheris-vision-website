@@ -18,7 +18,7 @@ const credentials = [
   },
   {
     icon: ShieldCheckIcon,
-    label: "DoD Secret Clearance (held)",
+    label: "U.S. Government Secret Clearance",
     description: `VOSB eligible · SAM.gov active: UEI ${SAM.uei}, CAGE ${SAM.cage}`,
   },
   {
@@ -85,7 +85,7 @@ export default function AboutPage() {
                   <div className="flex items-start gap-3">
                     <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-2 shrink-0" />
                     <div>
-                      <p className="text-sm text-white font-medium">DoD Secret Clearance (held)</p>
+                      <p className="text-sm text-white font-medium">U.S. Government Secret Clearance (held)</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">

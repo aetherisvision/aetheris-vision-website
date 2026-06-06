@@ -105,7 +105,7 @@ export default function ContactPage() {
                     <p>VOSB Eligible</p>
                     <p>8(a) Eligible (application opens 2027)</p>
                     <p>SAM.gov Registration Active</p>
-                    <p>DoD Secret Clearance (held)</p>
+                    <p>U.S. Government Secret Clearance (held)</p>
                   </div>
                   <a
                     href="/capabilities"
