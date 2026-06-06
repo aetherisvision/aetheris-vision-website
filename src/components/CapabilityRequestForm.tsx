@@ -20,10 +20,16 @@ export default function CapabilityRequestForm({
     if (honeypot) return;
     setStatus("sending");
     try {
-      const res = await fetch("/api/contact/capabilities", {
+      const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, _gotcha: honeypot }),
+        body: JSON.stringify({
+          name,
+          email,
+          message: "Requesting the Aetheris Vision capabilities statement PDF.",
+          _subject: "Capabilities Statement PDF Request",
+          _gotcha: honeypot,
+        }),
       });
       setStatus(res.ok ? "sent" : "error");
     } catch {
