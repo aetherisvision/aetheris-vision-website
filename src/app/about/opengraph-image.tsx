@@ -41,7 +41,7 @@ export default function OGImage() {
           Founder & Chief Meteorologist
         </p>
         <h1 style={{ fontSize: "64px", fontWeight: 700, color: "#ffffff", lineHeight: 1.1, margin: 0, letterSpacing: "-2px" }}>
-          Marston Ward
+          Applied Meteorology
         </h1>
         <h1
           style={{
@@ -55,7 +55,7 @@ export default function OGImage() {
             letterSpacing: "-2px",
           }}
         >
-          Meteorologist & Technologist.
+          and AI Intelligence.
         </h1>
         <p style={{ fontSize: "22px", color: "#9ca3af", marginTop: "28px", maxWidth: "700px", lineHeight: 1.5 }}>
           Operational meteorology · AI/ML integration · Defense and civil agency support

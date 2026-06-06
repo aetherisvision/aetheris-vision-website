@@ -70,7 +70,7 @@ const competencies = [
       `SAM.gov registered: UEI ${SAM.uei}, CAGE ${SAM.cage}`,
       `${SAM.setAside} eligible, with access to Veterans First Contracting Program set-asides`,
       "Oklahoma Supplier Portal: state-level contracting access (registration in progress)",
-      "Active DoD Secret clearance (personal; facility clearance scalable for classified program support)",
+      "DoD Secret clearance (held; facility clearance scalable for classified program support)",
     ],
   },
   {
@@ -132,7 +132,7 @@ export default function CapabilitiesPage() {
                 { label: "SAM.gov", value: "Active" },
                 { label: "Primary NAICS", value: `${SAM.naicsPrimary}: Scientific & Technical Consulting` },
                 { label: "8(a) Status", value: "Eligible, application planned for 2027" },
-                { label: "Security Clearance", value: "Active DoD Secret (Personal)" },
+                { label: "Security Clearance", value: "DoD Secret (held)" },
                 {
                   label: "Primary Contact",
                   value: (
