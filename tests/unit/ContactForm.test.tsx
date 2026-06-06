@@ -1,7 +1,20 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+
+// Mock next/navigation's useSearchParams so the client component can read
+// query params in the jsdom test environment. `holder.params` is mutable so
+// individual tests can simulate different URLs.
+const holder = vi.hoisted(() => ({ params: new URLSearchParams() }));
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => holder.params,
+}));
+
 import ContactForm from "@/components/ContactForm";
+
+beforeEach(() => {
+  holder.params = new URLSearchParams();
+});
 
 function setField(id: string, value: string) {
   const el = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement;
@@ -118,6 +131,28 @@ describe("ContactForm — blur validation", () => {
     // Now fix it — error should clear immediately
     setField("email", "jane@example.com");
     expect(screen.queryByText("Enter a valid email address.")).not.toBeInTheDocument();
+  });
+});
+
+describe("ContactForm — query param prefill", () => {
+  it("prefills the message field from the ?topic= param", () => {
+    holder.params = new URLSearchParams("topic=Capabilities Statement PDF Request");
+    render(<ContactForm />);
+    const message = document.getElementById("message") as HTMLTextAreaElement;
+    expect(message.value).toBe("Capabilities Statement PDF Request");
+  });
+
+  it("prefills the message field from the ?subject= param", () => {
+    holder.params = new URLSearchParams("subject=Federal partnership inquiry");
+    render(<ContactForm />);
+    const message = document.getElementById("message") as HTMLTextAreaElement;
+    expect(message.value).toBe("Federal partnership inquiry");
+  });
+
+  it("leaves the message field empty when no param is present", () => {
+    render(<ContactForm />);
+    const message = document.getElementById("message") as HTMLTextAreaElement;
+    expect(message.value).toBe("");
   });
 });
 

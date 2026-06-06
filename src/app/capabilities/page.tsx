@@ -2,7 +2,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
 import { SITE, SAM } from "@/lib/constants";
-import CapabilityRequestForm from "@/components/CapabilityRequestForm";
+
+const PDF_REQUEST_HREF = "/contact?topic=Capabilities%20Statement%20PDF%20Request";
 
 export const metadata = {
   title: `Capabilities Statement | ${SITE.name}`,
@@ -109,7 +110,12 @@ export default function CapabilitiesPage() {
               <h1 className="text-3xl md:text-5xl font-semibold text-white tracking-tight">
                 Capabilities Statement
               </h1>
-              <CapabilityRequestForm compact />
+              <a
+                href={PDF_REQUEST_HREF}
+                className="inline-flex h-10 items-center gap-2 rounded-md border border-white/10 bg-white/[0.03] px-5 text-sm text-gray-300 hover:bg-white/[0.07] transition shrink-0"
+              >
+                Request Statement (PDF)
+              </a>
             </div>
             <div className="h-px w-12 bg-blue-500/50 mt-6 mb-10" />
           </FadeIn>
@@ -248,7 +254,12 @@ export default function CapabilitiesPage() {
               >
                 Book a Consultation
               </a>
-              <CapabilityRequestForm />
+              <a
+                href={PDF_REQUEST_HREF}
+                className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 px-8 text-sm font-medium text-white hover:bg-white/5 transition"
+              >
+                Request Capabilities Statement (PDF)
+              </a>
             </div>
           </FadeIn>
 
