@@ -77,6 +77,7 @@ export default function CapabilityRequestForm({
       <input
         type="text"
         placeholder="Your name"
+        aria-label="Your name"
         value={name}
         onChange={(e) => setName(e.target.value)}
         required
@@ -87,6 +88,7 @@ export default function CapabilityRequestForm({
       <input
         type="email"
         placeholder="Your email"
+        aria-label="Your email address"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required

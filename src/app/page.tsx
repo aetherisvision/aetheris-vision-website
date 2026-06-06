@@ -69,7 +69,7 @@ export default async function Home() {
             <FadeIn delay={0.1}>
               <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm text-gray-300 mb-8 backdrop-blur-sm">
                 <span className="flex h-2 w-2 rounded-full bg-blue-500 mr-2 animate-pulse"></span>
-                SDVOSB/VOSB Cert In Process · U.S. Secret Clearance (held) · SAM Registered
+                SDVOSB/VOSB Cert In Process · U.S. Government Secret Clearance · SAM Registered
               </div>
             </FadeIn>
             
