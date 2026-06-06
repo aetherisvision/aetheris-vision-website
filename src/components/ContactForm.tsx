@@ -87,12 +87,12 @@ function validateAll(fields: Fields): FieldErrors {
 
 export default function ContactForm() {
   // Optional prefill of the message field from a ?topic= (or ?subject=)
-  // query param, e.g. /contact?topic=Capability%20Statement%20PDF%20Request.
+  // query param, e.g. /contact?topic=Capabilities%20Statement%20PDF%20Request.
   const searchParams = useSearchParams();
   const prefillTopic =
     searchParams.get("topic")?.trim() || searchParams.get("subject")?.trim() || "";
 
-  const [fields, setFields] = useState<Fields>(
+  const [fields, setFields] = useState<Fields>(() =>
     prefillTopic ? { ...EMPTY, message: prefillTopic } : EMPTY,
   );
   const [touched, setTouched] = useState<Partial<Record<keyof FieldErrors, boolean>>>({});

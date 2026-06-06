@@ -136,10 +136,10 @@ describe("ContactForm — blur validation", () => {
 
 describe("ContactForm — query param prefill", () => {
   it("prefills the message field from the ?topic= param", () => {
-    holder.params = new URLSearchParams("topic=Capability Statement PDF Request");
+    holder.params = new URLSearchParams("topic=Capabilities Statement PDF Request");
     render(<ContactForm />);
     const message = document.getElementById("message") as HTMLTextAreaElement;
-    expect(message.value).toBe("Capability Statement PDF Request");
+    expect(message.value).toBe("Capabilities Statement PDF Request");
   });
 
   it("prefills the message field from the ?subject= param", () => {

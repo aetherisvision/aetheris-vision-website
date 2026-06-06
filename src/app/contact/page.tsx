@@ -37,7 +37,15 @@ export default function ContactPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {/* Form */}
             <div className="md:col-span-2">
-              <Suspense fallback={null}>
+              <Suspense
+                fallback={
+                  <div
+                    aria-busy="true"
+                    aria-label="Loading contact form"
+                    className="min-h-[24rem] rounded-xl border border-white/5 bg-white/[0.02]"
+                  />
+                }
+              >
                 <ContactForm />
               </Suspense>
             </div>

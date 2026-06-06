@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
 import { SITE, SAM } from "@/lib/constants";
 
-const PDF_REQUEST_HREF = "/contact?topic=Capability%20Statement%20PDF%20Request";
+const PDF_REQUEST_HREF = "/contact?topic=Capabilities%20Statement%20PDF%20Request";
 
 export const metadata = {
   title: `Capabilities Statement | ${SITE.name}`,
@@ -258,7 +258,7 @@ export default function CapabilitiesPage() {
                 href={PDF_REQUEST_HREF}
                 className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 px-8 text-sm font-medium text-white hover:bg-white/5 transition"
               >
-                Request Capability Statement (PDF)
+                Request Capabilities Statement (PDF)
               </a>
             </div>
           </FadeIn>
