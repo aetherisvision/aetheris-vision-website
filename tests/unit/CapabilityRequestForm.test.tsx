@@ -60,6 +60,26 @@ describe("CapabilityRequestForm", () => {
     vi.unstubAllGlobals();
   });
 
+  it("shows the unconfigured warning when the API returns 503", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: false, status: 503, json: () => Promise.resolve({ error: "unconfigured" }) })
+    );
+
+    render(<CapabilityRequestForm />);
+    fireEvent.click(screen.getByRole("button", { name: /request pdf/i }));
+    fireEvent.change(screen.getByLabelText(/your name/i), { target: { value: "Jane" } });
+    fireEvent.change(screen.getByLabelText(/your email/i), { target: { value: "jane@test.com" } });
+    fireEvent.submit(screen.getByLabelText(/your name/i).closest("form")!);
+
+    await waitFor(() =>
+      expect(screen.getByText(/form not configured yet/i)).toBeInTheDocument()
+    );
+    expect(screen.queryByText(/something went wrong/i)).not.toBeInTheDocument();
+
+    vi.unstubAllGlobals();
+  });
+
   it("POSTs to /api/contact with the correct pre-filled subject and message", async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
