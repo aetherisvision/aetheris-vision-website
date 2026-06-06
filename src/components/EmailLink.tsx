@@ -34,7 +34,6 @@ export default function EmailLink({
   return (
     <a
       href="#"
-      role="link"
       className={className}
       aria-label={ariaLabel ?? "Send us an email"}
       onClick={(e) => {
