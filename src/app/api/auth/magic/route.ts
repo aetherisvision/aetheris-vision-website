@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { encode } from 'next-auth/jwt'
 import { sql } from '@/lib/db'
 import { isSecureRequest, requireAuthSecret, sessionCookieName } from '@/lib/auth-cookie'
+import { hashMagicLinkToken } from '@/lib/magic-link-token'
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData()
@@ -22,11 +23,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.redirect(errorUrl, { status: 303 })
   }
 
-  // Verify and consume the token atomically
+  // Tokens are stored as a SHA-256 hash; hash the presented token and match on
+  // the hash. Verify and consume the token atomically.
+  const tokenHash = hashMagicLinkToken(token)
   const rows = await sql`
     DELETE FROM verification_tokens
     WHERE identifier = ${email}
-      AND token = ${token}
+      AND token = ${tokenHash}
       AND expires > NOW()
     RETURNING identifier
   `
