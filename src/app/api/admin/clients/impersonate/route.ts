@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { encode } from 'next-auth/jwt'
 import { sql } from '@/lib/db'
 import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
+import { isSecureRequest, requireAuthSecret, sessionCookieName } from '@/lib/auth-cookie'
 
 export async function POST(request: NextRequest) {
   if (!isAdmin(request)) return unauthorizedResponse()
@@ -29,13 +30,19 @@ export async function POST(request: NextRequest) {
 
   const client = clients[0]
 
-  const useSecure = new URL(request.url).protocol === 'https:'
-  const cookieName = useSecure
-    ? '__Secure-next-auth.session-token'
-    : 'next-auth.session-token'
+  const useSecure = isSecureRequest(request.url)
+  const cookieName = sessionCookieName(useSecure)
+
+  let secret: string
+  try {
+    secret = requireAuthSecret()
+  } catch {
+    return NextResponse.json({ error: 'Auth secret not configured' }, { status: 500 })
+  }
 
   const sessionToken = await encode({
-    secret: process.env.NEXTAUTH_SECRET!,
+    secret,
+    salt: cookieName,
     token: {
       email: client.email as string,
       name: client.name as string,
