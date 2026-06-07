@@ -2,23 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { generateComplianceScoping, REGULATED_FRAMEWORKS } from '@/lib/compliance-agent';
 import { sql } from '@/lib/db';
+import { rateLimit } from '@/lib/rate-limit';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Simple in-memory rate limit: max 5 submissions per IP per 10 minutes
-const rateLimitMap = new Map<string, { count: number; reset: number }>();
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-  if (!entry || entry.reset < now) {
-    rateLimitMap.set(ip, { count: 1, reset: now + 10 * 60 * 1000 });
-    return false;
-  }
-  if (entry.count >= 5) return true;
-  entry.count++;
-  return false;
-}
+// Rate limit: 5 submissions per IP per 10 minutes. Distributed across Vercel
+// instances when Upstash/Vercel KV is configured, else in-memory (issue #12).
+const RATE_LIMIT = 5;
+const WINDOW_MS = 10 * 60 * 1000;
 
 interface IntakeFormData {
   companyName: string;
@@ -132,7 +123,12 @@ export async function POST(request: NextRequest) {
               ?? request.headers.get('x-real-ip')
               ?? 'unknown';
 
-    if (isRateLimited(ip)) {
+    const { success } = await rateLimit(ip, {
+      limit: RATE_LIMIT,
+      windowMs: WINDOW_MS,
+      prefix: 'intake',
+    });
+    if (!success) {
       return NextResponse.json(
         { error: 'Too many submissions. Please wait before trying again.' },
         { status: 429 }
