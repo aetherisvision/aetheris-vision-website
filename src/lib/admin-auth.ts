@@ -24,8 +24,10 @@ export function getAdminSessionToken(): string | null {
  * not itself secret) without leaking byte-by-byte timing for equal-length
  * inputs. Use for any secret comparison (session cookie, passphrase).
  */
-export function safeEqual(a: string | undefined | null, b: string | undefined | null): boolean {
-  if (!a || !b) return false
+export function safeEqual(a: unknown, b: unknown): boolean {
+  // Fail closed on missing or non-string input (e.g. a JSON body field that is
+  // an object/number) rather than letting Buffer.from throw a 500.
+  if (typeof a !== 'string' || typeof b !== 'string' || !a || !b) return false
   const aBuf = Buffer.from(a)
   const bBuf = Buffer.from(b)
   // Lengths must match first to avoid timingSafeEqual throwing on mismatch

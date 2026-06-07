@@ -353,15 +353,18 @@ function MarkdownPreview({ content }: { content: string }) {
 
   useEffect(() => {
     let cancelled = false
-    Promise.all([import('marked'), import('isomorphic-dompurify')]).then(
-      ([{ marked }, { default: DOMPurify }]) => {
+    Promise.all([import('marked'), import('isomorphic-dompurify')])
+      .then(([{ marked }, { default: DOMPurify }]) => {
         if (cancelled) return
         // marked v17 emits raw HTML (it does not sanitize); sanitize before it
         // reaches dangerouslySetInnerHTML to prevent stored XSS from document
         // content (e.g. <script>, <img onerror>).
         setHtml(DOMPurify.sanitize(marked(content) as string))
-      },
-    )
+      })
+      .catch(() => {
+        // Fail closed: render nothing rather than leaving stale/raw HTML.
+        if (!cancelled) setHtml('')
+      })
     return () => {
       cancelled = true
     }

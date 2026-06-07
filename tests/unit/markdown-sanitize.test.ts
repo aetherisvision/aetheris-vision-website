@@ -3,10 +3,11 @@ import { marked } from "marked";
 import DOMPurify from "isomorphic-dompurify";
 
 /**
- * Guards the #8 fix: the admin document preview renders `marked()` output via
- * dangerouslySetInnerHTML. marked v17 does NOT sanitize, so the component runs
- * the output through DOMPurify first. These tests assert that pipeline strips
- * active content while preserving benign formatting.
+ * Covers the sanitization pipeline used by the #8 fix in the admin document
+ * preview: `marked()` produces unsanitized HTML, which the component runs
+ * through `DOMPurify.sanitize()` before `dangerouslySetInnerHTML`. These tests
+ * exercise that marked → DOMPurify pipeline directly (not the React component)
+ * to assert it strips active content while preserving benign formatting.
  */
 function renderSafe(md: string): string {
   return DOMPurify.sanitize(marked(md) as string);
