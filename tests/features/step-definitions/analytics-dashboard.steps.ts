@@ -13,6 +13,10 @@ import AnalyticsDashboardPage from "@/app/portfolio/analytics-dashboard/page";
  * portfolio links, and the technology footer.
  */
 let rendered: RenderResult | null = null;
+// Captured from earlier steps so later assertions stay generic instead of
+// hardcoding the alert copy / company name.
+let resolvedAlertMessage: string | null = null;
+let bannerCompany: string | null = null;
 
 function root(): HTMLElement {
   assert.ok(rendered, "Dashboard page has not been rendered");
@@ -75,6 +79,7 @@ Given("the dashboard shows {int} active alerts", function (count: number) {
 });
 
 When("I resolve the alert {string}", function (message: string) {
+  resolvedAlertMessage = message;
   const item = screen.getByText(message).closest('[class*="justify-between"]');
   assert.ok(item, "Could not find the alert item");
   const button = item.querySelector("button");
@@ -83,7 +88,8 @@ When("I resolve the alert {string}", function (message: string) {
 });
 
 Then("that alert should be shown with a strikethrough style", function () {
-  const p = screen.getByText("High memory usage on server-3");
+  assert.ok(resolvedAlertMessage, "No alert has been resolved yet");
+  const p = screen.getByText(resolvedAlertMessage);
   assert.ok(
     p.className.includes("line-through"),
     "Resolved alert should have a strikethrough style",
@@ -91,7 +97,8 @@ Then("that alert should be shown with a strikethrough style", function () {
 });
 
 Then("the alert should no longer show a resolve button", function () {
-  const item = screen.getByText("High memory usage on server-3").closest('[class*="justify-between"]');
+  assert.ok(resolvedAlertMessage, "No alert has been resolved yet");
+  const item = screen.getByText(resolvedAlertMessage).closest('[class*="justify-between"]');
   assert.ok(item, "Could not find the alert item");
   assert.equal(item.querySelector("button"), null, "Resolve button should be gone");
 });
@@ -157,6 +164,7 @@ Then("the refresh button should be enabled again", function () {
 
 // ── Demo banner & navigation ─────────────────────────────────────────────────
 Then("I should see a {string} banner crediting {string}", function (banner: string, company: string) {
+  bannerCompany = company;
   assert.ok(screen.getByText(new RegExp(banner)), `Expected a "${banner}" banner`);
   assert.ok(screen.getAllByText(company).length >= 1, `Expected the banner to credit "${company}"`);
 });
@@ -168,7 +176,8 @@ Then("there should be a {string} control linking to the portfolio", function (la
 });
 
 Then("the company name should link to the portfolio", function () {
-  const link = screen.getAllByText("Aetheris Vision")[0].closest("a");
+  assert.ok(bannerCompany, "Banner company name was not captured");
+  const link = screen.getAllByText(bannerCompany)[0].closest("a");
   assert.ok(link, "Expected the company name to be a link");
   assert.equal(link.getAttribute("href"), "/portfolio");
 });
@@ -202,4 +211,6 @@ Then("the metric grid should use responsive column classes", function () {
 
 After(function () {
   rendered = null;
+  resolvedAlertMessage = null;
+  bannerCompany = null;
 });
