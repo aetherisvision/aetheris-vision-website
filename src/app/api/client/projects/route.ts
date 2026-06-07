@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { sql } from '@/lib/db'
+import { AUTH_SECRET, isSecureRequest } from '@/lib/auth-cookie'
 
 export async function GET(request: NextRequest) {
-  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+  const token = await getToken({
+    req: request,
+    secret: AUTH_SECRET,
+    secureCookie: isSecureRequest(request.url),
+  })
   const clientId = token?.clientId as string | undefined
 
   if (!clientId) {

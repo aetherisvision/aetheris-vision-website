@@ -1,9 +1,19 @@
-import type { NextAuthOptions } from 'next-auth'
+import NextAuth, { type NextAuthConfig } from 'next-auth'
 import { NeonAdapter } from './auth-adapter'
 
-export const authOptions: NextAuthOptions = {
+/**
+ * Auth.js (next-auth v5) configuration.
+ *
+ * The portal uses a custom magic-link flow (no built-in providers): tokens are
+ * minted directly in /api/auth/magic via `encode()`. NextAuth here mainly powers
+ * the session endpoint (`useSession`) and sign-out. `secret` is pinned to the
+ * existing NEXTAUTH_SECRET and `trustHost` is enabled for Vercel.
+ */
+export const authConfig: NextAuthConfig = {
   adapter: NeonAdapter(),
   session: { strategy: 'jwt' },
+  secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
+  trustHost: true,
   pages: {
     signIn: '/client/login',
     error: '/client/login?error=1',
@@ -28,3 +38,5 @@ export const authOptions: NextAuthOptions = {
     },
   },
 }
+
+export const { handlers, auth, signIn, signOut } = NextAuth(authConfig)

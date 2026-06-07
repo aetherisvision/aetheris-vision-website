@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { encode } from 'next-auth/jwt'
 import { sql } from '@/lib/db'
+import { AUTH_SECRET, isSecureRequest, sessionCookieName } from '@/lib/auth-cookie'
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData()
@@ -47,17 +48,16 @@ export async function POST(request: NextRequest) {
 
   const client = clients[0]
 
-  // Determine cookie name — NextAuth uses __Secure- prefix on HTTPS
-  const useSecure = new URL(request.url).protocol === 'https:'
-  const cookieName = useSecure
-    ? '__Secure-next-auth.session-token'
-    : 'next-auth.session-token'
+  // Auth.js v5 cookie name (__Secure- prefix on HTTPS).
+  const useSecure = isSecureRequest(request.url)
+  const cookieName = sessionCookieName(useSecure)
 
-  // Create NextAuth-compatible JWT.
-  // NextAuth internally calls decode({ ...jwtOptions, token }) where jwtOptions
-  // has no `salt` field, so the effective salt is "" — we must match that.
+  // Create an Auth.js v5 session JWT. v5 derives the encryption key from a
+  // `salt`, which defaults to the cookie name — getToken()/auth() use the same
+  // derivation when reading, so the salt MUST equal the cookie name.
   const sessionToken = await encode({
-    secret: process.env.NEXTAUTH_SECRET!,
+    secret: AUTH_SECRET!,
+    salt: cookieName,
     token: {
       email: client.email as string,
       name: client.name as string,

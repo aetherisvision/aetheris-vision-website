@@ -2,9 +2,14 @@ import { NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import { getToken } from 'next-auth/jwt'
 import { NextRequest } from 'next/server'
+import { AUTH_SECRET, isSecureRequest } from '@/lib/auth-cookie'
 
 export async function GET(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+  const token = await getToken({
+    req,
+    secret: AUTH_SECRET,
+    secureCookie: isSecureRequest(req.url),
+  })
   if (!token?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const rows = await sql`
