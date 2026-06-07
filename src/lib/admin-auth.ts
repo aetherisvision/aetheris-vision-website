@@ -20,6 +20,20 @@ export function getAdminSessionToken(): string | null {
 }
 
 /**
+ * Constant-time string comparison. Returns false on length mismatch (which is
+ * not itself secret) without leaking byte-by-byte timing for equal-length
+ * inputs. Use for any secret comparison (session cookie, passphrase).
+ */
+export function safeEqual(a: string | undefined | null, b: string | undefined | null): boolean {
+  if (!a || !b) return false
+  const aBuf = Buffer.from(a)
+  const bBuf = Buffer.from(b)
+  // Lengths must match first to avoid timingSafeEqual throwing on mismatch
+  if (aBuf.length !== bBuf.length) return false
+  return timingSafeEqual(aBuf, bBuf)
+}
+
+/**
  * Returns true if the request carries a valid admin session cookie.
  * The cookie is set by POST /api/admin/auth after passphrase verification.
  *
@@ -28,12 +42,7 @@ export function getAdminSessionToken(): string | null {
 export function isAdmin(request: NextRequest): boolean {
   const cookieValue = request.cookies.get(ADMIN_COOKIE)?.value
   const expected = getAdminSessionToken()
-  if (!cookieValue || !expected) return false
-  const a = Buffer.from(cookieValue)
-  const b = Buffer.from(expected)
-  // Lengths must match first to avoid timingSafeEqual throwing on mismatch
-  if (a.length !== b.length) return false
-  return timingSafeEqual(a, b)
+  return safeEqual(cookieValue, expected)
 }
 
 /** Standard 401 response for unauthenticated admin requests. */
