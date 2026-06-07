@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "next/image": ["./tests/features/support/stubs/next-image.tsx"],
+      "next/link": ["./tests/features/support/stubs/next-link.tsx"],
+      "next/navigation": ["./tests/features/support/stubs/next-navigation.ts"],
+      "framer-motion": ["./tests/features/support/stubs/framer-motion.tsx"]
+    }
+  }
+}
