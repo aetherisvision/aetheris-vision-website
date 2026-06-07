@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { ADMIN_COOKIE, getAdminSessionToken } from '@/lib/admin-auth'
+import { ADMIN_COOKIE, getAdminSessionToken, safeEqual } from '@/lib/admin-auth'
 
 export async function POST(request: NextRequest) {
   const { passphrase, next, rememberMe } = await request.json()
 
-  if (!passphrase || passphrase !== process.env.ADMIN_PASSPHRASE) {
+  // Constant-time comparison avoids a timing oracle on the passphrase.
+  if (!safeEqual(passphrase, process.env.ADMIN_PASSPHRASE)) {
     return NextResponse.json({ error: 'Incorrect passphrase' }, { status: 401 })
   }
 

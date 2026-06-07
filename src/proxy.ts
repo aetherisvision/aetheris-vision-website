@@ -47,8 +47,6 @@ function buildCsp(nonce: string): string {
   ].join('; ')
 }
 
-const PREVIEW_PASSWORD = process.env.PREVIEW_PASSWORD
-
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -70,15 +68,6 @@ export async function proxy(request: NextRequest) {
   // Cron routes enforce their own auth (e.g. CRON_SECRET) at the handler level.
   if (pathname.startsWith('/api/cron/')) {
     return NextResponse.next()
-  }
-
-  // Client portal and auth API routes must be reachable without the site lock
-  // so magic-link invites work for clients who don't have the preview password
-  if (
-    pathname.startsWith('/client/') ||
-    pathname.startsWith('/api/auth/')
-  ) {
-    // Skip basic-auth — fall through to normal security headers below
   }
 
   // Generate nonce for CSP and security
