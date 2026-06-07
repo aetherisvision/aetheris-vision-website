@@ -72,11 +72,26 @@ function getLimiter(opts: RateLimitOptions): Ratelimit {
 
 const memStore = new Map<string, { count: number; resetAt: number }>()
 
+// Hard cap on the in-memory store so high-cardinality traffic (many unique
+// IPs) or a sustained attack during a Redis outage cannot grow it without
+// bound in a long-lived Node process.
+const MAX_MEM_ENTRIES = 10000
+
 function sweepExpired(now: number): void {
   // Opportunistic cleanup to bound memory (replaces the per-route setInterval).
-  if (memStore.size < 5000) return
+  if (memStore.size < MAX_MEM_ENTRIES) return
   for (const [k, v] of memStore.entries()) {
     if (now > v.resetAt) memStore.delete(k)
+  }
+  // If still over the cap after removing expired entries, evict oldest
+  // (insertion-order) entries until back under the limit.
+  if (memStore.size >= MAX_MEM_ENTRIES) {
+    const evict = memStore.size - MAX_MEM_ENTRIES + 1
+    let i = 0
+    for (const k of memStore.keys()) {
+      memStore.delete(k)
+      if (++i >= evict) break
+    }
   }
 }
 
@@ -118,10 +133,13 @@ export async function rateLimit(
   if (isRateLimitDistributed()) {
     try {
       const { success, remaining, reset } = await getLimiter(opts).limit(identifier)
+      const retry = Math.max(0, Math.ceil((reset - Date.now()) / 1000))
       return {
         success,
         remaining: Math.max(0, remaining),
-        retryAfterSeconds: Math.max(0, Math.ceil((reset - Date.now()) / 1000)),
+        // Guarantee a non-zero Retry-After on denial even if clock skew makes
+        // the computed value 0, so clients don't hot-loop retries.
+        retryAfterSeconds: success ? retry : Math.max(1, retry),
       }
     } catch (err) {
       // A Redis/network failure must not take the site down — fall back to the

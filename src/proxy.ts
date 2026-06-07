@@ -80,9 +80,10 @@ export async function proxy(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
              request.headers.get('x-real-ip') ||
              'unknown'
+  const isApiRoute = pathname === '/api' || pathname.startsWith('/api/')
   const maxRequests = 100
   let rateRemaining = maxRequests - 1
-  if (pathname.startsWith('/api')) {
+  if (isApiRoute) {
     const result = await rateLimit(ip, {
       limit: maxRequests,
       windowMs: 15 * 60 * 1000, // 15 minutes
@@ -124,7 +125,7 @@ export async function proxy(request: NextRequest) {
   response.headers.set('X-Request-ID', crypto.randomUUID())
 
   // API routes report remaining rate-limit budget
-  if (pathname.startsWith('/api')) {
+  if (isApiRoute) {
     response.headers.set('X-Rate-Limit-Remaining', Math.max(0, rateRemaining).toString())
   }
 

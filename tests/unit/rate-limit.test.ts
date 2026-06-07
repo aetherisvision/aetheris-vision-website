@@ -129,6 +129,19 @@ describe("rate-limit — distributed (Upstash env present)", () => {
     expect(r.success).toBe(false);
   });
 
+  it("forces Retry-After >= 1 on denial even with clock skew (reset in past)", async () => {
+    setUpstashEnv();
+    limitMock.mockResolvedValue({
+      success: false,
+      remaining: 0,
+      reset: Date.now() - 5_000, // skew: reset already elapsed locally
+    });
+
+    const r = await rateLimit("9.9.9.9", { limit: 1, windowMs: 60_000, prefix: "skew" });
+    expect(r.success).toBe(false);
+    expect(r.retryAfterSeconds).toBeGreaterThanOrEqual(1);
+  });
+
   it("falls back to in-memory when the distributed backend throws", async () => {
     setUpstashEnv();
     limitMock.mockRejectedValue(new Error("redis down"));
