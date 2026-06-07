@@ -1,3 +1,4 @@
+@email
 Feature: Email Anti-Scraping Security
   As a site operator
   I want email addresses never exposed in server-rendered HTML

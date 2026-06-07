@@ -20,6 +20,7 @@ Feature: AI Chat Widget
     Then my message should appear in the chat history
     And I should see a streaming response from the assistant
 
+  @streaming
   Scenario: Chat input is disabled while a response is streaming
     When I click the chat toggle button
     And I type "Tell me about your pricing" into the chat input

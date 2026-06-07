@@ -21,7 +21,7 @@
     "test:integration": "vitest run tests/integration",
     "test:regression": "vitest run tests/regression",
     "test:bdd": "vitest run tests/features",
-    "test:cucumber": "NODE_OPTIONS=\"--import tsx\" cucumber-js",
+    "test:cucumber": "TSX_TSCONFIG_PATH=tsconfig.cucumber.json NODE_OPTIONS=\"--import tsx --import ./tests/features/support/jsdom-setup.mjs\" cucumber-js",
     "test:coverage": "vitest run --coverage",
     "test:all": "vitest run && npm run lint",
     "ci": "npm run lint && npm run test && npm run build"

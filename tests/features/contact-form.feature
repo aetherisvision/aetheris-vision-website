@@ -33,8 +33,8 @@ Feature: Contact Form
     Given a visitor is on the contact page
     When they click submit without filling in any fields
     Then they should see "Name is required."
-    And they should see "Valid email address required."
-    And they should see "Message must be at least 10 characters."
+    And they should see "Email address is required."
+    And they should see "Message is required."
 
   Scenario: Error clears when field is corrected
     Given a visitor has triggered the name validation error
@@ -45,7 +45,7 @@ Feature: Contact Form
     Given a visitor fills in name and message correctly
     When they enter an invalid email address
     And they click submit
-    Then they should see "Valid email address required."
+    Then they should see "Enter a valid email address."
 
   Scenario: Short message shows error
     Given a visitor fills in name and email correctly
