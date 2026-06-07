@@ -1,5 +1,4 @@
 import { describe, it, expect } from "vitest";
-import crypto from "crypto";
 import { hashMagicLinkToken } from "@/lib/magic-link-token";
 
 /**
@@ -10,7 +9,7 @@ import { hashMagicLinkToken } from "@/lib/magic-link-token";
  */
 describe("hashMagicLinkToken", () => {
   it("is deterministic for the same token (mint hash === verify hash)", () => {
-    const token = crypto.randomBytes(32).toString("hex");
+    const token = "fixed-token-deadbeefdeadbeefdeadbeefdeadbeef";
     expect(hashMagicLinkToken(token)).toBe(hashMagicLinkToken(token));
   });
 
@@ -27,8 +26,8 @@ describe("hashMagicLinkToken", () => {
   });
 
   it("does not return the plaintext token, and differs for different tokens", () => {
-    const a = crypto.randomBytes(32).toString("hex");
-    const b = crypto.randomBytes(32).toString("hex");
+    const a = "token-aaaa1111aaaa1111aaaa1111aaaa1111";
+    const b = "token-bbbb2222bbbb2222bbbb2222bbbb2222";
     expect(hashMagicLinkToken(a)).not.toBe(a);
     expect(hashMagicLinkToken(a)).not.toBe(hashMagicLinkToken(b));
   });
