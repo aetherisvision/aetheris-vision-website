@@ -1,52 +1,17 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { CHAT_SYSTEM_PROMPT } from "@/lib/chat-context";
+import { rateLimit } from "@/lib/rate-limit";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export const runtime = "nodejs";
 
-// ---------------------------------------------------------------------------
-// In-memory rate limiter
-// Limits: 20 requests per IP per 15-minute window
-// ---------------------------------------------------------------------------
+// Rate limit: 10 requests per IP per 15-minute window. Distributed across
+// Vercel instances when Upstash/Vercel KV is configured, else in-memory
+// fallback (issue #12).
 const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 const MAX_REQUESTS = 10;
 const MAX_TURNS = 10; // max conversation turns per session
-
-interface RateLimitEntry {
-  count: number;
-  windowStart: number;
-}
-
-const rateLimitMap = new Map<string, RateLimitEntry>();
-
-// Purge stale entries every 15 minutes to prevent memory growth
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, entry] of rateLimitMap.entries()) {
-    if (now - entry.windowStart > WINDOW_MS) {
-      rateLimitMap.delete(ip);
-    }
-  }
-}, WINDOW_MS);
-
-function checkRateLimit(ip: string): { allowed: boolean; retryAfter: number } {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-
-  if (!entry || now - entry.windowStart > WINDOW_MS) {
-    rateLimitMap.set(ip, { count: 1, windowStart: now });
-    return { allowed: true, retryAfter: 0 };
-  }
-
-  if (entry.count >= MAX_REQUESTS) {
-    const retryAfter = Math.ceil((WINDOW_MS - (now - entry.windowStart)) / 1000);
-    return { allowed: false, retryAfter };
-  }
-
-  entry.count += 1;
-  return { allowed: true, retryAfter: 0 };
-}
 
 function getClientIp(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for");
@@ -60,13 +25,17 @@ function getClientIp(request: Request): string {
 export async function POST(request: Request) {
   // Rate limit check
   const ip = getClientIp(request);
-  const { allowed, retryAfter } = checkRateLimit(ip);
+  const { success, retryAfterSeconds } = await rateLimit(ip, {
+    limit: MAX_REQUESTS,
+    windowMs: WINDOW_MS,
+    prefix: "chat",
+  });
 
-  if (!allowed) {
+  if (!success) {
     return new Response("Too many requests. Please try again later.", {
       status: 429,
       headers: {
-        "Retry-After": String(retryAfter),
+        "Retry-After": String(retryAfterSeconds),
         "Content-Type": "text/plain",
       },
     });

@@ -1,23 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createReview, getApprovedReviews, ensureReviewsTable } from '@/lib/db/reviews'
+import { rateLimit } from '@/lib/rate-limit'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-// In-memory rate limit: 3 submissions per IP per 10 minutes
-const rateLimitMap = new Map<string, { count: number; reset: number }>()
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now()
-  const entry = rateLimitMap.get(ip)
-  if (!entry || entry.reset < now) {
-    rateLimitMap.set(ip, { count: 1, reset: now + 10 * 60 * 1000 })
-    return false
-  }
-  if (entry.count >= 3) return true
-  entry.count++
-  return false
-}
+// Rate limit: 3 submissions per IP per 10 minutes. Distributed across Vercel
+// instances when Upstash/Vercel KV is configured, else in-memory (issue #12).
+const RATE_LIMIT = 3
+const WINDOW_MS = 10 * 60 * 1000
 
 export async function GET() {
   try {
@@ -36,7 +27,12 @@ export async function POST(req: NextRequest) {
     req.headers.get('x-real-ip') ??
     'unknown'
 
-  if (isRateLimited(ip)) {
+  const { success } = await rateLimit(ip, {
+    limit: RATE_LIMIT,
+    windowMs: WINDOW_MS,
+    prefix: 'reviews',
+  })
+  if (!success) {
     return NextResponse.json(
       { error: 'Too many submissions. Please wait before trying again.' },
       { status: 429 }

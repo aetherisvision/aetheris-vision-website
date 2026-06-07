@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-// Rate limiting store (in production, use Redis)
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
+import { rateLimit } from '@/lib/rate-limit'
 
 /**
  * Verify the admin session cookie using Web Crypto (Edge Runtime compatible).
@@ -74,25 +72,28 @@ export async function proxy(request: NextRequest) {
   const nonce = crypto.randomUUID()
   const csp = buildCsp(nonce)
 
-  // Advanced Rate limiting demonstration
-  const ip = request.headers.get('x-forwarded-for') || 
-             request.headers.get('x-real-ip') || 
+  // Coarse per-IP rate limit. Distributed (shared across all Vercel instances)
+  // when Upstash/Vercel KV is configured, else in-memory fallback (issue #12).
+  // Scoped to /api/* so we don't pay a Redis round-trip on every page view;
+  // the abuse surface is the API, and sensitive POST routes add their own
+  // tighter per-route limits.
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+             request.headers.get('x-real-ip') ||
              'unknown'
-  const now = Date.now()
-  const windowMs = 15 * 60 * 1000 // 15 minutes
+  const isApiRoute = pathname === '/api' || pathname.startsWith('/api/')
   const maxRequests = 100
-  
-  const clientData = rateLimitStore.get(ip)
-  if (!clientData || now > clientData.resetTime) {
-    rateLimitStore.set(ip, { count: 1, resetTime: now + windowMs })
-  } else {
-    clientData.count++
-    if (clientData.count > maxRequests) {
-      return new NextResponse('Rate limit exceeded', { 
+  let rateRemaining = maxRequests - 1
+  if (isApiRoute) {
+    const result = await rateLimit(ip, {
+      limit: maxRequests,
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      prefix: 'proxy-api',
+    })
+    rateRemaining = result.remaining
+    if (!result.success) {
+      return new NextResponse('Rate limit exceeded', {
         status: 429,
-        headers: {
-          'Retry-After': Math.ceil((clientData.resetTime - now) / 1000).toString()
-        }
+        headers: { 'Retry-After': result.retryAfterSeconds.toString() },
       })
     }
   }
@@ -124,8 +125,8 @@ export async function proxy(request: NextRequest) {
   response.headers.set('X-Request-ID', crypto.randomUUID())
 
   // API routes report remaining rate-limit budget
-  if (pathname.startsWith('/api')) {
-    response.headers.set('X-Rate-Limit-Remaining', (maxRequests - (clientData?.count || 1)).toString())
+  if (isApiRoute) {
+    response.headers.set('X-Rate-Limit-Remaining', Math.max(0, rateRemaining).toString())
   }
 
   return response
