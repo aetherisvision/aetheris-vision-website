@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { encode } from 'next-auth/jwt'
 import { sql } from '@/lib/db'
-import { AUTH_SECRET, isSecureRequest, sessionCookieName } from '@/lib/auth-cookie'
+import { isSecureRequest, requireAuthSecret, sessionCookieName } from '@/lib/auth-cookie'
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData()
@@ -52,11 +52,20 @@ export async function POST(request: NextRequest) {
   const useSecure = isSecureRequest(request.url)
   const cookieName = sessionCookieName(useSecure)
 
+  // Fail fast (controlled 500) if the signing secret is missing, rather than
+  // throwing an opaque error mid-login.
+  let secret: string
+  try {
+    secret = requireAuthSecret()
+  } catch {
+    return NextResponse.redirect(errorUrl, { status: 303 })
+  }
+
   // Create an Auth.js v5 session JWT. v5 derives the encryption key from a
   // `salt`, which defaults to the cookie name — getToken()/auth() use the same
   // derivation when reading, so the salt MUST equal the cookie name.
   const sessionToken = await encode({
-    secret: AUTH_SECRET!,
+    secret,
     salt: cookieName,
     token: {
       email: client.email as string,

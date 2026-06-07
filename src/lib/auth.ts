@@ -1,5 +1,6 @@
 import NextAuth, { type NextAuthConfig } from 'next-auth'
 import { NeonAdapter } from './auth-adapter'
+import { AUTH_SECRET } from './auth-cookie'
 
 /**
  * Auth.js (next-auth v5) configuration.
@@ -12,7 +13,9 @@ import { NeonAdapter } from './auth-adapter'
 export const authConfig: NextAuthConfig = {
   adapter: NeonAdapter(),
   session: { strategy: 'jwt' },
-  secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
+  // If unset, Auth.js throws a clear MissingSecretError on the first request;
+  // we don't throw at import so build-time page-data collection still runs.
+  secret: AUTH_SECRET,
   trustHost: true,
   pages: {
     signIn: '/client/login',
