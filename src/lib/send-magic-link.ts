@@ -5,12 +5,16 @@
 import { Resend } from 'resend'
 import crypto from 'crypto'
 import { sql } from './db'
+import { hashMagicLinkToken } from './magic-link-token'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function sendMagicLink(email: string): Promise<void> {
   const baseUrl = process.env.NEXTAUTH_URL ?? 'https://aetherisvision.com'
+  // The plaintext token travels only in the email link; only its hash is
+  // persisted, so a DB read cannot recover a usable login token.
   const token = crypto.randomBytes(32).toString('hex')
+  const tokenHash = hashMagicLinkToken(token)
   const expires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
   // One active token per email at a time
@@ -18,7 +22,7 @@ export async function sendMagicLink(email: string): Promise<void> {
 
   await sql`
     INSERT INTO verification_tokens (identifier, token, expires)
-    VALUES (${email}, ${token}, ${expires})
+    VALUES (${email}, ${tokenHash}, ${expires})
   `
 
   const confirmUrl = `${baseUrl}/client/confirm?token=${token}&email=${encodeURIComponent(email)}`
