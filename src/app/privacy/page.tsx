@@ -8,7 +8,13 @@ export const metadata: Metadata = {
   description: "How Aetheris Vision LLC collects, uses, and protects your personal information.",
 };
 
-const EFFECTIVE_DATE = "March 1, 2026";
+const EFFECTIVE_DATE = "June 8, 2026";
+
+// NOTE (internal): This policy was right-sized to match what the site actually
+// does (analytics, processors, client portal). It is practical drafting, not
+// legal advice — whether CCPA/CPRA or GDPR formally apply to Aetheris Vision
+// (based on customer base, revenue thresholds, and data volume) should be
+// confirmed with counsel before relying on the rights language in §6.
 
 export default function PrivacyPage() {
   return (
@@ -100,6 +106,18 @@ export default function PrivacyPage() {
               </div>
 
               <div>
+                <h3 className="text-base font-semibold text-gray-200 mb-1">Client Portal</h3>
+                <p>
+                  If you are an Aetheris Vision client, the portal at{" "}
+                  <code className="text-gray-300">/client</code> lets you sign in with a
+                  one-time magic link sent to your email. We store your email address and the
+                  project, document, and invoice records associated with your engagement so we
+                  can deliver those services. Sign-in tokens are short-lived and deleted on use
+                  or expiry.
+                </p>
+              </div>
+
+              <div>
                 <h3 className="text-base font-semibold text-gray-200 mb-1">Server Logs</h3>
                 <p>
                   Our hosting provider, <strong className="text-gray-300">Vercel, Inc.</strong>, automatically
@@ -117,12 +135,26 @@ export default function PrivacyPage() {
 
           {/* 3 */}
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">3. Cookies and Tracking</h2>
+            <h2 className="text-xl font-semibold text-white mb-3">3. Cookies and Analytics</h2>
             <p>
-              This website does <strong className="text-gray-300">not</strong> use advertising
-              cookies, tracking pixels, or third-party analytics (e.g., Google Analytics).
-              No cookie consent banner is required because we do not set non-essential cookies.
+              We use a small amount of analytics to understand site traffic and improve the
+              website. We do <strong className="text-gray-300">not</strong> use advertising
+              cookies or sell any data.
             </p>
+            <ul className="mt-3 ml-4 space-y-1 list-disc list-outside">
+              <li>
+                <strong className="text-gray-300">Vercel Analytics</strong> &mdash; a
+                privacy-focused, cookieless analytics service that records aggregate page
+                views and performance metrics without using cookies or storing personally
+                identifying information.
+              </li>
+              <li>
+                <strong className="text-gray-300">Google Analytics (gtag)</strong> &mdash;
+                when enabled, Google Analytics measures site usage and sets first-party
+                analytics cookies in your browser. It is loaded only when an analytics
+                measurement ID is configured for the site.
+              </li>
+            </ul>
             <p className="mt-3">
               Fonts are served locally, so no requests are sent to Google Fonts or any other
               external font CDN when you visit this site.
@@ -149,9 +181,14 @@ export default function PrivacyPage() {
                 <tbody className="divide-y divide-white/5">
                   {[
                     ["Vercel", "Website hosting & CDN", "IP address, request logs"],
+                    ["Vercel Analytics", "Cookieless traffic analytics", "Aggregate page views, performance metrics"],
+                    ["Google Analytics", "Site usage analytics (when enabled)", "Usage events, analytics cookies"],
                     ["Formspree", "Contact form delivery", "Name, email, message content"],
                     ["Cal.com", "Appointment scheduling", "Name, email, booking details"],
                     ["GitHub / Giscus", "Blog comments", "GitHub account data"],
+                    ["Neon", "Database (client portal, submissions)", "Account email, project & document records"],
+                    ["Stripe", "Invoicing & payments", "Billing contact, invoice & payment details"],
+                    ["Docuseal", "Document e-signature", "Signer name, email, signed documents"],
                     ["Cloudflare", "DNS resolution", "IP address (DNS queries only)"],
                   ].map(([service, purpose, data]) => (
                     <tr key={service}>
@@ -164,10 +201,9 @@ export default function PrivacyPage() {
               </table>
             </div>
             <p className="mt-4 text-sm text-gray-500">
-              All processors are contractually bound to handle data only as directed and in
-              compliance with applicable law. Vercel, Formspree, and Cal.com are certified
-              under the EU-U.S. Data Privacy Framework or maintain Standard Contractual
-              Clauses (SCCs) for cross-border data transfers.
+              Each processor handles data under its own terms of service and privacy policy.
+              We share only the data necessary for the service shown above and do not sell
+              personal data.
             </p>
           </section>
 
@@ -206,47 +242,20 @@ export default function PrivacyPage() {
           {/* 6 */}
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">6. Your Rights</h2>
-
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-base font-semibold text-gray-200 mb-1">
-                  European Union and EEA Residents (GDPR)
-                </h3>
-                <p>Under the General Data Protection Regulation, you have the right to:</p>
-                <ul className="mt-2 ml-4 space-y-1 list-disc list-outside">
-                  <li>Access the personal data we hold about you</li>
-                  <li>Request correction of inaccurate data</li>
-                  <li>Request deletion (&quot;right to be forgotten&quot;)</li>
-                  <li>Object to processing based on legitimate interest</li>
-                  <li>Request restriction of processing</li>
-                  <li>Data portability</li>
-                  <li>Lodge a complaint with your national supervisory authority
-                    (in Sweden: Integritetsskyddsmyndigheten / IMY, imy.se)</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-base font-semibold text-gray-200 mb-1">
-                  California Residents (CCPA / CPRA)
-                </h3>
-                <p>Under the California Consumer Privacy Act, you have the right to:</p>
-                <ul className="mt-2 ml-4 space-y-1 list-disc list-outside">
-                  <li>Know what personal information is collected about you</li>
-                  <li>Know whether your personal information is sold or disclosed</li>
-                  <li>Opt out of the sale of your personal information
-                    (we do not sell personal information)</li>
-                  <li>Request deletion of your personal information</li>
-                  <li>Not be discriminated against for exercising your rights</li>
-                </ul>
-              </div>
-
-              <p>
-                To exercise any of these rights,{" "}
-                <a href="/contact?topic=Privacy%20Rights%20Request" className="text-blue-400 hover:underline">
-                  contact us
-                </a>. We will respond within 30 days.
-              </p>
-            </div>
+            <p>
+              You can ask us to access, correct, or delete the personal data we hold about
+              you, and you can object to or ask us to restrict how we use it. We do not sell
+              personal data. Depending on where you live, you may have additional rights under
+              laws such as the EU/UK GDPR or the California Consumer Privacy Act (CCPA/CPRA),
+              including the right to lodge a complaint with your local data protection
+              authority.
+            </p>
+            <p className="mt-3">
+              To exercise any of these rights,{" "}
+              <a href="/contact?topic=Privacy%20Rights%20Request" className="text-blue-400 hover:underline">
+                contact us
+              </a>. We will respond within 30 days.
+            </p>
           </section>
 
           {/* 7 */}
@@ -265,12 +274,12 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">8. Children</h2>
             <p>
-              This website is directed to business and government professionals. We do not
-              knowingly collect personal information from persons under the age of 13. If
-              you believe a child has submitted data through this site,{" "}
+              This website is not directed to children, and we do not knowingly collect
+              personal information from anyone under the age of 13. If you believe a child
+              has provided us data,{" "}
               <a href="/contact" className="text-blue-400 hover:underline">
                 contact us
-              </a>{" "}immediately.
+              </a>{" "}and we will delete it.
             </p>
           </section>
 
