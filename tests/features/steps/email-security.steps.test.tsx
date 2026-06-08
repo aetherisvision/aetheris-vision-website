@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
-import EmailLink from "@/components/EmailLink";
+import { describe, it, expect, vi } from "vitest";
+import { render } from "@testing-library/react";
 import Footer from "@/components/Footer";
+import PrivacyPage from "@/app/privacy/page";
 
 // next/image and next/link can't resolve relative paths in jsdom.
 vi.mock("next/image", () => ({
@@ -15,112 +15,49 @@ vi.mock("next/link", () => ({
     <a href={href} {...props}>{children}</a>
   ),
 }));
+// PrivacyPage renders Navbar, which reads the current pathname.
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/privacy",
+  useRouter: () => ({ push: vi.fn() }),
+}));
 
 /**
- * BDD step definitions for email-security.feature
- * These follow Given/When/Then structure matching the Gherkin scenarios.
+ * Vitest mirror of email-security.feature.
  *
- * Anti-scraping contract: no email address must appear in server-rendered HTML.
- * The address is assembled only at click time, never stored in the DOM.
+ * Anti-scraping contract (now structural): no page renders an email address or
+ * a mailto: link. All contact is routed through the /contact form page.
  */
 
-const realLocation = window.location;
-
-beforeEach(() => {
-  Object.defineProperty(window, "location", {
-    configurable: true,
-    writable: true,
-    value: { href: "" },
-  });
-});
-
-afterEach(() => {
-  Object.defineProperty(window, "location", {
-    configurable: true,
-    writable: true,
-    value: realLocation,
-  });
-});
-
-// ── Scenario: EmailLink renders without any address in the DOM ────────────────
+function hasLinkTo(container: HTMLElement, href: string): boolean {
+  return Array.from(container.querySelectorAll("a")).some((a) =>
+    (a.getAttribute("href") ?? "").startsWith(href),
+  );
+}
 
 describe("Feature: Email Anti-Scraping Security", () => {
-  describe("Scenario: EmailLink renders without any address in the DOM", () => {
-    let container: HTMLElement;
-
-    beforeEach(() => {
-      // Given the EmailLink component is rendered with default props
-      ({ container } = render(<EmailLink>Email us</EmailLink>));
-    });
-
-    it("Then the rendered HTML should not contain '@aetherisvision'", () => {
+  describe("Scenario: Footer does not expose any email address or mailto link", () => {
+    it("renders no plaintext address and no mailto: link", () => {
+      const { container } = render(<Footer />);
       expect(container.innerHTML).not.toContain("@aetherisvision");
-    });
-
-    it("And the rendered HTML should not contain 'mailto:'", () => {
       expect(container.innerHTML).not.toContain("mailto:");
     });
 
-    it("And the anchor href attribute should be '#'", () => {
-      expect(screen.getByText("Email us").closest("a")).toHaveAttribute("href", "#");
-    });
-  });
-
-  // ── Scenario: Contact address assembled only on click ─────────────────────
-
-  describe("Scenario: EmailLink assembles the contact address only on click", () => {
-    beforeEach(() => {
-      // Given the EmailLink component is rendered with default props
-      render(<EmailLink>Email us</EmailLink>);
-    });
-
-    it("Then window.location.href should equal 'mailto:contact@aetherisvision.com'", () => {
-      // When the user clicks the link
-      fireEvent.click(screen.getByText("Email us"));
-      expect(window.location.href).toBe("mailto:contact@aetherisvision.com");
-    });
-  });
-
-  // ── Scenario: Federal POC address assembled on click ─────────────────────
-
-  describe("Scenario: EmailLink assembles the federal POC address on click when account is marston", () => {
-    beforeEach(() => {
-      // Given the EmailLink component is rendered with account "marston"
-      render(<EmailLink account="marston">Email</EmailLink>);
-    });
-
-    it("Then window.location.href should equal 'mailto:marston@aetherisvision.com'", () => {
-      // When the user clicks the link
-      fireEvent.click(screen.getByText("Email"));
-      expect(window.location.href).toBe("mailto:marston@aetherisvision.com");
-    });
-  });
-
-  // ── Scenario: Subject encoding ────────────────────────────────────────────
-
-  describe("Scenario: EmailLink encodes a subject into the mailto on click", () => {
-    beforeEach(() => {
-      // Given the EmailLink component is rendered with subject "Blog Subscription"
-      render(<EmailLink subject="Blog Subscription">Subscribe</EmailLink>);
-    });
-
-    it("Then window.location.href should equal the encoded mailto", () => {
-      // When the user clicks the link
-      fireEvent.click(screen.getByText("Subscribe"));
-      expect(window.location.href).toBe(
-        "mailto:contact@aetherisvision.com?subject=Blog%20Subscription"
-      );
-    });
-  });
-
-  // ── Scenario: Footer does not expose the business email as plaintext ──────
-
-  describe("Scenario: Footer does not expose the business email as plaintext", () => {
-    it("Then the rendered HTML should not contain '@aetherisvision'", () => {
-      // Given the Footer component is rendered
+    it("routes contact through the /contact page", () => {
       const { container } = render(<Footer />);
-      // Then no raw address in SSR output
+      expect(hasLinkTo(container, "/contact")).toBe(true);
+    });
+  });
+
+  describe("Scenario: Privacy page does not expose any email address or mailto link", () => {
+    it("renders no plaintext address and no mailto: link", () => {
+      const { container } = render(<PrivacyPage />);
       expect(container.innerHTML).not.toContain("@aetherisvision");
+      expect(container.innerHTML).not.toContain("mailto:");
+    });
+
+    it("routes contact through the /contact page", () => {
+      const { container } = render(<PrivacyPage />);
+      expect(hasLinkTo(container, "/contact")).toBe(true);
     });
   });
 });

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import EmailLink from "@/components/EmailLink";
 import LocationAutocomplete from "@/components/LocationAutocomplete";
 
 interface FormData {
@@ -717,7 +716,7 @@ export default function ProjectIntakeForm() {
           <div className="mb-4 rounded-md bg-red-900/20 border border-red-500/20 p-4">
             <p className="text-red-400 text-sm">
               There was an error submitting your form. Please try again or{" "}
-              <EmailLink className="underline">email us</EmailLink> directly.
+              <a href="/contact" className="underline">contact us</a> directly.
             </p>
           </div>
         )}

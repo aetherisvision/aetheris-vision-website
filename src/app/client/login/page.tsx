@@ -2,7 +2,6 @@
 
 import { useSearchParams } from 'next/navigation'
 import { useState, Suspense } from 'react'
-import EmailLink from "@/components/EmailLink"
 
 const dark = {
   bg: '#070f1e',
@@ -241,7 +240,7 @@ export default function ClientLoginPage() {
 
           <p style={{ textAlign: 'center', color: dark.textDim, fontSize: '12px', marginTop: '20px' }}>
             Need help?{' '}
-            <EmailLink className="text-blue-400 hover:underline font-medium">Email us</EmailLink>
+            <a href="/contact" className="text-blue-400 hover:underline font-medium">Contact us</a>
           </p>
         </div>
       </div>

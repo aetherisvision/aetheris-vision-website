@@ -212,8 +212,10 @@ Then("they should see an error message with contact instructions", async functio
       "Expected a 'Something went wrong' error message",
     );
   });
-  const emailLink = screen.getByText(/email us/i);
-  assert.ok(emailLink, "Expected contact instructions with an email link");
+  assert.ok(
+    form?.container.textContent?.includes("call/text"),
+    "Expected the error message to include a phone contact instruction",
+  );
 });
 
 After(function () {

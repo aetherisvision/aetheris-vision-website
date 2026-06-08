@@ -351,7 +351,7 @@ Every page imports `SITE` and uses it:
 import { SITE } from "@/lib/constants";
 // then:
 <title>{`About | ${SITE.name}`}</title>
-<a href={`mailto:${SITE.email}`}>Email us</a>
+<a href="/contact">Contact us</a>
 ```
 
 ### The Data Separation Pattern — Keep Data and Display Apart

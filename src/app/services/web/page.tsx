@@ -3,7 +3,6 @@ import { SITE } from "@/lib/constants";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
-import EmailLink from "@/components/EmailLink";
 
 export const metadata = {
   title: `Web Development Services | ${SITE.name}`,
@@ -234,12 +233,12 @@ export default function WebServicesPage() {
                 >
                   Start Your Project <ArrowRightIcon className="h-4 w-4" />
                 </a>
-                <EmailLink
-                  subject="Web Project Inquiry"
+                <a
+                  href="/contact?topic=Web%20Project%20Inquiry"
                   className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 px-8 text-sm font-medium text-white hover:bg-white/5 transition"
                 >
-                  Email Us Directly
-                </EmailLink>
+                  Contact Us
+                </a>
               </div>
             </FadeIn>
           </div>

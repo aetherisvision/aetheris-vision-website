@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
@@ -21,16 +21,6 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
-
-  function handleExpertiseClick(e: React.MouseEvent) {
-    e.preventDefault();
-    if (pathname === "/") {
-      document.getElementById("expertise")?.scrollIntoView({ behavior: "smooth" });
-    } else {
-      router.push("/#expertise");
-    }
-  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -94,7 +84,6 @@ export default function Navbar() {
               <a
                 key={link.label}
                 href={link.href}
-                onClick={link.label === "Expertise" ? handleExpertiseClick : undefined}
                 className={clsx(
                   "transition-colors flex flex-col items-center",
                   isActive(link.href)
@@ -139,10 +128,7 @@ export default function Navbar() {
               <a
                 key={link.label}
                 href={link.href}
-                onClick={(e) => {
-                  setMobileOpen(false);
-                  if (link.label === "Expertise") handleExpertiseClick(e);
-                }}
+                onClick={() => setMobileOpen(false)}
                 className={clsx(
                   "py-3 px-2 text-sm transition border-b border-white/5 last:border-0",
                   isActive(link.href)

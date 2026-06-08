@@ -2,7 +2,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
 import { SITE } from "@/lib/constants";
-import EmailLink from "@/components/EmailLink";
 import { publisherRef } from "@/lib/jsonld";
 import {
   tiers,
@@ -394,7 +393,7 @@ export default function PortfolioPage() {
                   Book Discovery Call
                 </a>
               </div>
-              <p className="text-xs text-gray-600">Or email directly: <EmailLink className="text-gray-400 hover:text-white transition-colors">Email us</EmailLink></p>
+              <p className="text-xs text-gray-600">Have a question first? <a href="/contact" className="text-gray-400 hover:text-white transition-colors">Contact us</a></p>
             </div>
           </FadeIn>
 

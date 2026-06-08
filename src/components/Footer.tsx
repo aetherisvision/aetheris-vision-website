@@ -2,17 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
 import { BRAND_LOGO } from "@/lib/brand";
-import EmailLink from "@/components/EmailLink";
-import { ShieldCheckIcon, LockClosedIcon, ChatBubbleLeftRightIcon, ServerIcon } from "@heroicons/react/24/outline";
+import { LockClosedIcon } from "@heroicons/react/24/outline";
 
 const footerLinks = [
-  { label: "Expertise", href: "/#expertise" },
+  { label: "Services", href: "/services/web" },
   { label: "About", href: "/about" },
-  { label: "Capabilities", href: "/capabilities" },
   { label: "Portfolio", href: "/portfolio" },
   { label: "Blog", href: "/blog" },
-  { label: "Book a Call", href: "/book" },
+  { label: "Capabilities", href: "/capabilities" },
   { label: "Contact", href: "/contact" },
+  { label: "Book a Call", href: "/book" },
 ];
 
 export default function Footer() {
@@ -49,37 +48,19 @@ export default function Footer() {
           </nav>
         </div>
 
-        {/* Security & Compliance Bar */}
+        {/* Security Bar */}
         <div className="mb-8">
           <div className="rounded-lg border border-white/10 bg-white/[0.02] p-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-                <span className="text-sm font-medium text-white">Security & Compliance</span>
+                <span className="text-sm font-medium text-white">Security</span>
               </div>
               <div className="flex flex-wrap gap-4 text-xs text-gray-400">
                 <div className="flex items-center gap-2">
-                  <ShieldCheckIcon className="h-4 w-4 text-green-400" />
-                  <span className="text-green-400 font-semibold">SOC 2</span>
-                  <span>Type II Compliant</span>
-                </div>
-                <span className="text-white/20">·</span>
-                <div className="flex items-center gap-2">
                   <LockClosedIcon className="h-4 w-4 text-blue-400" />
                   <span className="text-blue-400 font-semibold">SSL/TLS</span>
-                  <span>256-bit Encryption</span>
-                </div>
-                <span className="text-white/20">·</span>
-                <div className="flex items-center gap-2">
-                  <ChatBubbleLeftRightIcon className="h-4 w-4 text-yellow-400" />
-                  <span className="text-yellow-400 font-semibold">E2E</span>
-                  <span>Encrypted Communications</span>
-                </div>
-                <span className="text-white/20">·</span>
-                <div className="flex items-center gap-2">
-                  <ServerIcon className="h-4 w-4 text-orange-400" />
-                  <span className="text-orange-400 font-semibold">GDPR</span>
-                  <span>Privacy Compliant</span>
+                  <span>256-bit encryption on every connection</span>
                 </div>
               </div>
             </div>
@@ -95,7 +76,7 @@ export default function Footer() {
           <div className="flex items-center gap-4">
             <span>Veteran-Owned Small Business (VOSB)</span>
             <span className="text-white/10">·</span>
-            <EmailLink className="hover:text-gray-400 transition">Email us</EmailLink>
+            <a href="/contact" className="hover:text-gray-400 transition">Contact us</a>
             <span className="text-white/10">·</span>
             <a href="/privacy" className="hover:text-gray-400 transition">
               Privacy Policy
