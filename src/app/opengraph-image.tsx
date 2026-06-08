@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { SITE } from "@/lib/constants";
+import { AV_MARK_DATA_URI } from "./og-mark";
 
 export const runtime = "edge";
 export const alt = `${SITE.name}: ${SITE.tagline}`;
@@ -35,18 +36,11 @@ export default function OGImage() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "12px",
+            gap: "16px",
             marginBottom: "24px",
           }}
         >
-          <div
-            style={{
-              width: "10px",
-              height: "10px",
-              borderRadius: "50%",
-              background: "#5BA8D9",
-            }}
-          />
+          <img src={AV_MARK_DATA_URI} width={64} height={64} alt="" />
           <span
             style={{
               fontSize: "18px",

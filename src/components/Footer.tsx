@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
+import { BRAND_LOGO } from "@/lib/brand";
 import EmailLink from "@/components/EmailLink";
 import { ShieldCheckIcon, LockClosedIcon, ChatBubbleLeftRightIcon, ServerIcon } from "@heroicons/react/24/outline";
 
@@ -23,11 +24,11 @@ export default function Footer() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 shrink-0">
             <Image
-              src="/logo/aetheris-logo.svg"
+              src={BRAND_LOGO.markSvg}
               alt={`${SITE.name} Logo`}
-              width={32}
-              height={32}
-              className="h-8 w-8"
+              width={36}
+              height={36}
+              className="h-9 w-9"
             />
             <div className="text-lg font-bold tracking-tight text-white">
               <span className="font-light text-gray-500">Aetheris</span>Vision

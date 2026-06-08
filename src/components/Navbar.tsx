@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
+import { BRAND_LOGO } from "@/lib/brand";
 
 const navLinks = [
   { label: "Services", href: "/services/web" },
@@ -72,13 +73,13 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
           <Image
-            src="/logo/aetheris-logo.svg"
+            src={BRAND_LOGO.markSvg}
             alt="Aetheris Vision Logo"
-            width={48}
-            height={48}
+            width={44}
+            height={44}
             className={clsx(
               "transition-all duration-300",
-              scrolled ? "h-8 w-8 md:h-9 md:w-9" : "h-10 w-10 md:h-12 md:w-12"
+              scrolled ? "h-10 w-10" : "h-11 w-11"
             )}
           />
           <div className="text-xl md:text-2xl font-bold tracking-tight text-white">
