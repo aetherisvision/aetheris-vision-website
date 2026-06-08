@@ -33,11 +33,11 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">1. Who We Are</h2>
             <p>
-              Aetheris Vision LLC (&quot;Aetheris Vision&quot;, &quot;we&quot;, &quot;us&quot;) is a
+              {SITE.legalName} (&quot;{SITE.name}&quot;, &quot;we&quot;, &quot;us&quot;) is a
               Veteran-Owned Small Business in the United States. This policy covers personal
               data handled through our website at{" "}
-              <strong className="text-gray-300">aetherisvision.com</strong>. We do not sell,
-              rent, or broker personal data.
+              <strong className="text-gray-300">{SITE.url.replace(/^https?:\/\//, "")}</strong>.
+              We do not sell, rent, or broker personal data.
             </p>
           </section>
 
@@ -48,12 +48,14 @@ export default function PrivacyPage() {
               <li>
                 <strong className="text-gray-300">Contact form</strong> &mdash; when you submit
                 the form at <code className="text-gray-300">/contact</code>, we collect your
-                name, email, and message so we can respond to your inquiry.
+                name, email, and message so we can respond to your inquiry. Submissions are
+                delivered through Formspree.
               </li>
               <li>
-                <strong className="text-gray-300">Analytics</strong> &mdash; we collect
-                aggregate usage data (page views, performance) to understand traffic and improve
-                the site. We do not use advertising cookies.
+                <strong className="text-gray-300">Analytics</strong> &mdash; Vercel Analytics
+                records cookieless, aggregate usage (page views, performance). When Google
+                Analytics is enabled, it sets first-party analytics cookies in your browser. We
+                do not use advertising cookies.
               </li>
               <li>
                 <strong className="text-gray-300">Client portal</strong> &mdash; if you are a
@@ -70,7 +72,9 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold text-white mb-3">3. Service Providers</h2>
             <p>We rely on a small set of trusted providers, each handling data only for the purpose shown:</p>
             <ul className="mt-3 ml-4 space-y-2 list-disc list-outside">
+              <li><strong className="text-gray-300">Vercel</strong> &mdash; website hosting and CDN (processes request logs and IP addresses).</li>
               <li><strong className="text-gray-300">Vercel Analytics</strong> &mdash; cookieless, aggregate website analytics.</li>
+              <li><strong className="text-gray-300">Formspree</strong> &mdash; contact form delivery.</li>
               <li><strong className="text-gray-300">Google Analytics</strong> &mdash; site usage analytics, loaded only when a measurement ID is configured.</li>
               <li><strong className="text-gray-300">Neon</strong> &mdash; database for client-portal accounts and records.</li>
               <li><strong className="text-gray-300">Stripe</strong> &mdash; invoicing and payment processing.</li>
