@@ -112,8 +112,8 @@ export default function PrivacyPage() {
                   <code className="text-gray-300">/client</code> lets you sign in with a
                   one-time magic link sent to your email. We store your email address and the
                   project, document, and invoice records associated with your engagement so we
-                  can deliver those services. Sign-in tokens are short-lived and deleted on use
-                  or expiry.
+                  can deliver those services. Sign-in tokens are single-use and expire after 24
+                  hours; a token is deleted once used and is replaced if you request a new link.
                 </p>
               </div>
 
@@ -184,6 +184,7 @@ export default function PrivacyPage() {
                     ["Vercel Analytics", "Cookieless traffic analytics", "Aggregate page views, performance metrics"],
                     ["Google Analytics", "Site usage analytics (when enabled)", "Usage events, analytics cookies"],
                     ["Formspree", "Contact form delivery", "Name, email, message content"],
+                    ["Resend", "Transactional email (sign-in links, invoices)", "Recipient email address, message content"],
                     ["Cal.com", "Appointment scheduling", "Name, email, booking details"],
                     ["GitHub / Giscus", "Blog comments", "GitHub account data"],
                     ["Neon", "Database (client portal, submissions)", "Account email, project & document records"],
@@ -219,7 +220,7 @@ export default function PrivacyPage() {
                   <li><strong className="text-gray-300">Client portal accounts:</strong> retained for the duration of the client relationship plus 1 year after the final project is closed.</li>
                   <li><strong className="text-gray-300">Blog subscription emails:</strong> retained until you unsubscribe.</li>
                   <li><strong className="text-gray-300">Booking records:</strong> retained per Cal.com&apos;s data retention policy.</li>
-                  <li><strong className="text-gray-300">Magic link authentication tokens:</strong> automatically deleted upon use or expiry (24-hour window), whichever comes first.</li>
+                  <li><strong className="text-gray-300">Magic link authentication tokens:</strong> single-use and valid for 24 hours; deleted once used and replaced when you request a new link.</li>
                   <li><strong className="text-gray-300">Server logs:</strong> retained per Vercel&apos;s data retention policy (typically 30 days).</li>
                 </ul>
               </div>
@@ -276,7 +277,7 @@ export default function PrivacyPage() {
             <p>
               This website is not directed to children, and we do not knowingly collect
               personal information from anyone under the age of 13. If you believe a child
-              has provided us data,{" "}
+              has provided us with data,{" "}
               <a href="/contact" className="text-blue-400 hover:underline">
                 contact us
               </a>{" "}and we will delete it.
