@@ -79,7 +79,7 @@ export default function Navbar() {
             height={44}
             className={clsx(
               "transition-all duration-300",
-              scrolled ? "h-9 w-9 md:h-10 md:w-10" : "h-11 w-11 md:h-11 md:w-11"
+              scrolled ? "h-10 w-10" : "h-11 w-11"
             )}
           />
           <div className="text-xl md:text-2xl font-bold tracking-tight text-white">
