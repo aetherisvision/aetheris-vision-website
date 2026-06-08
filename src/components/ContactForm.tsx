@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 import FadeIn from "@/components/FadeIn";
 
 const CONTACT_PHONE = "(346) 381-9629";
+// Derive the tel: URI from the display number so the two never drift.
+const CONTACT_PHONE_HREF = `tel:+1${CONTACT_PHONE.replace(/\D/g, "")}`;
 
 const requirementTypes = [
   "New Website (Custom Build)",
@@ -137,7 +139,8 @@ export default function ContactForm() {
     }
     setFieldErrors({});
 
-    // Read at submit time so the gate reflects current configuration.
+    // NEXT_PUBLIC_FORMSPREE_ID is statically inlined at build time; reading it
+    // here keeps the gate alongside the submit logic (and lets tests stub it).
     if (!process.env.NEXT_PUBLIC_FORMSPREE_ID) {
       setStatus("unavailable");
       return;
@@ -331,7 +334,7 @@ export default function ContactForm() {
         {!formEnabled && (
           <div role="status" className="rounded-md border border-yellow-500/30 bg-yellow-500/[0.06] p-4 text-sm text-yellow-200">
             Our message form isn&apos;t accepting submissions right now. Please call or text{" "}
-            <a href={`tel:+13463819629`} className="underline font-medium">{CONTACT_PHONE}</a>, or{" "}
+            <a href={CONTACT_PHONE_HREF} className="underline font-medium">{CONTACT_PHONE}</a>, or{" "}
             <a href="/book" className="underline font-medium">book a call</a> and we&apos;ll follow up.
           </div>
         )}

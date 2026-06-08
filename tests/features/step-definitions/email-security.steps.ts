@@ -1,4 +1,4 @@
-import { Before, After, Given, Then } from "@cucumber/cucumber";
+import { After, Given, Then } from "@cucumber/cucumber";
 import assert from "node:assert/strict";
 import React from "react";
 import { render, type RenderResult } from "@testing-library/react";
@@ -13,23 +13,8 @@ import PrivacyPage from "@/app/privacy/page";
  * link — all contact is routed through the /contact form page.
  */
 let rendered: RenderResult | null = null;
-let savedLocation: Location;
-
-Before({ tags: "@email" }, function () {
-  savedLocation = window.location;
-  Object.defineProperty(window, "location", {
-    configurable: true,
-    writable: true,
-    value: { href: "" },
-  });
-});
 
 After({ tags: "@email" }, function () {
-  Object.defineProperty(window, "location", {
-    configurable: true,
-    writable: true,
-    value: savedLocation,
-  });
   rendered = null;
 });
 
