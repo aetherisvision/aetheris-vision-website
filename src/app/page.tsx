@@ -345,6 +345,12 @@ export default async function Home() {
                     <ArrowRightIcon className="h-4 w-4" />
                     Start a Web Project
                   </a>
+                  <a
+                    href="/contact"
+                    className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 bg-transparent px-8 text-sm font-medium text-white hover:bg-white/5 transition"
+                  >
+                    Contact Us
+                  </a>
                   <Link
                     href="/blog"
                     className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 bg-transparent px-8 text-sm font-medium text-white hover:bg-white/5 transition"

@@ -1,34 +1,27 @@
 @email
 Feature: Email Anti-Scraping Security
   As a site operator
-  I want email addresses never exposed in server-rendered HTML
-  So that scrapers and spam bots cannot harvest them
+  I want no email address exposed anywhere in the rendered HTML
+  So that scrapers and spam bots cannot harvest a business address
 
-  Scenario: EmailLink renders without any address in the DOM
-    Given the EmailLink component is rendered with default props
-    Then the rendered HTML should not contain "@aetherisvision"
-    And the rendered HTML should not contain "mailto:"
-    And the anchor href attribute should be "#"
+  # Contact is now routed entirely through the /contact form, so no page
+  # renders a mailto: link or a plaintext address at all. This is a stronger
+  # anti-scraping guarantee than the previous click-to-assemble approach.
 
-  Scenario: EmailLink assembles the contact address only on click
-    Given the EmailLink component is rendered with default props
-    When the user clicks the link
-    Then window.location.href should equal "mailto:contact@aetherisvision.com"
-
-  Scenario: EmailLink assembles the federal POC address on click when account is marston
-    Given the EmailLink component is rendered with account "marston"
-    When the user clicks the link
-    Then window.location.href should equal "mailto:marston@aetherisvision.com"
-
-  Scenario: EmailLink encodes a subject into the mailto on click
-    Given the EmailLink component is rendered with subject "Blog Subscription"
-    When the user clicks the link
-    Then window.location.href should equal "mailto:contact@aetherisvision.com?subject=Blog%20Subscription"
-
-  Scenario: Footer does not expose the business email as plaintext
+  Scenario: Footer does not expose any email address or mailto link
     Given the Footer component is rendered
     Then the rendered HTML should not contain "@aetherisvision"
+    And the rendered HTML should not contain "mailto:"
 
-  Scenario: Privacy page does not expose the business email as plaintext
+  Scenario: Footer routes contact through the /contact page
+    Given the Footer component is rendered
+    Then a link to "/contact" should be present
+
+  Scenario: Privacy page does not expose any email address or mailto link
     Given the privacy page content is rendered
     Then the rendered HTML should not contain "@aetherisvision"
+    And the rendered HTML should not contain "mailto:"
+
+  Scenario: Privacy page routes contact through the /contact page
+    Given the privacy page content is rendered
+    Then a link to "/contact" should be present

@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import FadeIn from "@/components/FadeIn";
-import EmailLink from "@/components/EmailLink";
-import { SITE } from "@/lib/constants";
+
+const CONTACT_PHONE = "(346) 381-9629";
 
 const requirementTypes = [
   "New Website (Custom Build)",
@@ -86,6 +86,12 @@ function validateAll(fields: Fields): FieldErrors {
 }
 
 export default function ContactForm() {
+  // The form posts to /api/contact, which forwards to Formspree. When
+  // NEXT_PUBLIC_FORMSPREE_ID is not configured, the form cannot deliver
+  // messages, so we surface a clear notice and point visitors to the phone /
+  // scheduling alternatives instead of silently failing.
+  const formEnabled = Boolean(process.env.NEXT_PUBLIC_FORMSPREE_ID);
+
   // Optional prefill of the message field from a ?topic= (or ?subject=)
   // query param, e.g. /contact?topic=Capabilities%20Statement%20PDF%20Request.
   const searchParams = useSearchParams();
@@ -96,7 +102,7 @@ export default function ContactForm() {
     prefillTopic ? { ...EMPTY, message: prefillTopic } : EMPTY,
   );
   const [touched, setTouched] = useState<Partial<Record<keyof FieldErrors, boolean>>>({});
-  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error" | "unavailable">("idle");
   const [errorDetail, setErrorDetail] = useState<string>("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
@@ -131,9 +137,9 @@ export default function ContactForm() {
     }
     setFieldErrors({});
 
-    const FORMSPREE_ID = process.env.NEXT_PUBLIC_FORMSPREE_ID;
-    if (!FORMSPREE_ID) {
-      window.location.href = `mailto:${SITE.email}`;
+    // Read at submit time so the gate reflects current configuration.
+    if (!process.env.NEXT_PUBLIC_FORMSPREE_ID) {
+      setStatus("unavailable");
       return;
     }
 
@@ -322,10 +328,23 @@ export default function ContactForm() {
           {fieldErrors.message && <p role="alert" className="mt-1.5 text-xs text-red-400">{fieldErrors.message}</p>}
         </div>
 
+        {!formEnabled && (
+          <div role="status" className="rounded-md border border-yellow-500/30 bg-yellow-500/[0.06] p-4 text-sm text-yellow-200">
+            Our message form isn&apos;t accepting submissions right now. Please call or text{" "}
+            <a href={`tel:+13463819629`} className="underline font-medium">{CONTACT_PHONE}</a>, or{" "}
+            <a href="/book" className="underline font-medium">book a call</a> and we&apos;ll follow up.
+          </div>
+        )}
+
+        {status === "unavailable" && (
+          <p className="text-sm text-yellow-300">
+            The form is temporarily unavailable. Please call or text {CONTACT_PHONE}, or book a call above.
+          </p>
+        )}
+
         {status === "error" && (
           <p className="text-sm text-red-400">
-            Something went wrong{errorDetail ? `: ${errorDetail}` : ""}. Please try again or{" "}
-            <EmailLink className="underline">email us</EmailLink>.
+            Something went wrong{errorDetail ? `: ${errorDetail}` : ""}. Please try again, or call/text {CONTACT_PHONE}.
           </p>
         )}
 

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import EmailLink from "@/components/EmailLink";
 import { SITE } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -35,9 +34,9 @@ export default function PrivacyPage() {
             <p className="mt-3">
               This website is operated at <strong className="text-gray-300">aetherisvision.com</strong>.
               For privacy-related questions, you can{" "}
-              <EmailLink className="text-blue-400 hover:underline">
-                contact us by email
-              </EmailLink>.
+              <a href="/contact?topic=Privacy%20Question" className="text-blue-400 hover:underline">
+                contact us
+              </a>.
             </p>
           </section>
 
@@ -93,10 +92,10 @@ export default function PrivacyPage() {
                   If you subscribe to blog updates, your email address is collected for the
                   purpose of sending new post notifications. You may unsubscribe at any time
                   by{" "}
-                  <EmailLink subject="Unsubscribe" className="text-blue-400 hover:underline">
-                    emailing us
-                  </EmailLink>{" "}
-                  with &quot;Unsubscribe&quot; in the subject.
+                  <a href="/contact?topic=Blog%20Unsubscribe" className="text-blue-400 hover:underline">
+                    contacting us
+                  </a>{" "}
+                  with an unsubscribe request.
                 </p>
               </div>
 
@@ -192,10 +191,10 @@ export default function PrivacyPage() {
                 <h3 className="text-base font-semibold text-gray-200 mb-1">Requesting Deletion</h3>
                 <p>
                   To request deletion of your personal data,{" "}
-                  <EmailLink subject="Data Deletion Request" className="text-blue-400 hover:underline">
-                    email us
-                  </EmailLink>{" "}
-                  with the subject line <strong className="text-gray-300">&quot;Data Deletion Request&quot;</strong> and
+                  <a href="/contact?topic=Data%20Deletion%20Request" className="text-blue-400 hover:underline">
+                    contact us
+                  </a>{" "}
+                  with a <strong className="text-gray-300">Data Deletion Request</strong> and
                   include the email address associated with your account or submission. We will confirm receipt
                   within 5 business days and complete the deletion within 30 days, except where retention is
                   required by law (e.g., tax or contractual records).
@@ -243,9 +242,9 @@ export default function PrivacyPage() {
 
               <p>
                 To exercise any of these rights,{" "}
-                <EmailLink className="text-blue-400 hover:underline">
-                  email us
-                </EmailLink>. We will respond within 30 days.
+                <a href="/contact?topic=Privacy%20Rights%20Request" className="text-blue-400 hover:underline">
+                  contact us
+                </a>. We will respond within 30 days.
               </p>
             </div>
           </section>
@@ -269,9 +268,9 @@ export default function PrivacyPage() {
               This website is directed to business and government professionals. We do not
               knowingly collect personal information from persons under the age of 13. If
               you believe a child has submitted data through this site,{" "}
-              <EmailLink className="text-blue-400 hover:underline">
-                contact us by email
-              </EmailLink>{" "}immediately.
+              <a href="/contact" className="text-blue-400 hover:underline">
+                contact us
+              </a>{" "}immediately.
             </p>
           </section>
 
@@ -291,9 +290,9 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold text-white mb-3">10. Contact</h2>
             <p>
               Aetheris Vision LLC<br />
-              <EmailLink className="text-blue-400 hover:underline">
-                Email us
-              </EmailLink>
+              <a href="/contact" className="text-blue-400 hover:underline">
+                Contact us
+              </a>
             </p>
           </section>
 

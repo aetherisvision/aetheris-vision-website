@@ -1,5 +1,3 @@
-import EmailLink from "@/components/EmailLink";
-
 const subscribeUrl = process.env.NEXT_PUBLIC_BLOG_SUBSCRIBE_URL?.trim();
 
 export default function BlogSubscribeCard() {
@@ -41,12 +39,12 @@ export default function BlogSubscribeCard() {
             </button>
           </form>
         ) : (
-          <EmailLink
-            subject="Blog Subscription"
+          <a
+            href="/contact?topic=Blog%20Subscription"
             className="inline-flex h-11 items-center justify-center rounded-md bg-white px-5 text-sm font-medium text-black transition-colors hover:bg-gray-200"
           >
             Subscribe by Email
-          </EmailLink>
+          </a>
         )}
       </div>
     </section>
