@@ -216,27 +216,28 @@ npm run test:watch    # Watch mode — re-runs tests automatically when you save
 
 ## Services Setup — How Each Feature Works
 
-### Contact Form (Formspree)
+### Contact Form (Resend)
 
-**What:** The contact page has a form where visitors can send us a message (their name, email, and what they need).
+**What:** The contact page has a form where visitors can send us a message (their name, email, organization, requirement type, and what they need).
 
-**Why Formspree?** We don't want to build our own email server — that's complicated and error-prone. Formspree handles receiving the form data and forwarding it to our email inbox. It's free for small volumes and takes 5 minutes to set up.
+**Why Resend?** The contact form delivers submissions by email through [Resend](https://resend.com) — the same provider already used for magic-link sign-in and invoice delivery. Reusing Resend avoids a separate third-party (Formspree) and its login friction, and sends from our already-verified `aetherisvision.com` domain.
 
-1. Sign up at [formspree.io](https://formspree.io) and create a new form.
-2. Copy the form ID from the form's endpoint URL (e.g. `https://formspree.io/f/xpwzabcd` → `xpwzabcd`).
-3. Add it to `.env.local`:
+The `POST /api/contact` route emails the submission to `contact@aetherisvision.com` (from `SITE.email`) with `replyTo` set to the submitter, so replies go straight back to them.
+
+1. Get an API key from [resend.com/api-keys](https://resend.com/api-keys).
+2. Add it to `.env.local`:
 
 ```bash
-NEXT_PUBLIC_FORMSPREE_ID="xpwzabcd"
+RESEND_API_KEY="re_..."
 ```
 
 For Vercel production:
 
 ```bash
-vercel env add NEXT_PUBLIC_FORMSPREE_ID production
+vercel env add RESEND_API_KEY production
 ```
 
-If `NEXT_PUBLIC_FORMSPREE_ID` is not set, the form falls back to opening the user's mail client with `mailto:contact@aetherisvision.com`.
+If `RESEND_API_KEY` is not set, the route returns 503 and the form shows an "unavailable" notice directing visitors to call/text or book a call.
 
 ### Blog Subscription
 

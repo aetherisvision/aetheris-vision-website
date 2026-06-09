@@ -5,6 +5,14 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
  * These follow Given/When/Then structure matching the Gherkin scenarios.
  */
 
+const { sendMock } = vi.hoisted(() => ({ sendMock: vi.fn() }));
+
+vi.mock("resend", () => ({
+  Resend: class {
+    emails = { send: sendMock };
+  },
+}));
+
 let POST: (req: Request) => Promise<Response>;
 
 function makeFormRequest(
@@ -23,14 +31,11 @@ describe("Feature: Contact Form", () => {
     let response: Response;
 
     beforeEach(async () => {
-      // Given the contact API is configured with Formspree
+      // Given the contact API is configured with Resend
       vi.resetModules();
-      vi.stubEnv("NEXT_PUBLIC_FORMSPREE_ID", "test123");
-      const mockFetch = vi.fn().mockResolvedValue({
-        status: 200,
-        json: () => Promise.resolve({ ok: true }),
-      });
-      vi.stubGlobal("fetch", mockFetch);
+      vi.stubEnv("RESEND_API_KEY", "re_test_key");
+      sendMock.mockReset();
+      sendMock.mockResolvedValue({ data: { id: "email_123" }, error: null });
 
       const mod = await import("@/app/api/contact/route");
       POST = mod.POST as unknown as (req: Request) => Promise<Response>;
@@ -47,20 +52,20 @@ describe("Feature: Contact Form", () => {
     it("Then the response status should be 200", () => {
       expect(response.status).toBe(200);
     });
+
+    it("And the submission should be emailed via Resend", () => {
+      expect(sendMock).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe("Scenario: Bot triggers the honeypot", () => {
     let response: Response;
-    let mockFetch: ReturnType<typeof vi.fn>;
 
     beforeEach(async () => {
       vi.resetModules();
-      vi.stubEnv("NEXT_PUBLIC_FORMSPREE_ID", "test123");
-      mockFetch = vi.fn().mockResolvedValue({
-        status: 200,
-        json: () => Promise.resolve({ ok: true }),
-      });
-      vi.stubGlobal("fetch", mockFetch);
+      vi.stubEnv("RESEND_API_KEY", "re_test_key");
+      sendMock.mockReset();
+      sendMock.mockResolvedValue({ data: { id: "email_123" }, error: null });
 
       const mod = await import("@/app/api/contact/route");
       POST = mod.POST as unknown as (req: Request) => Promise<Response>;
@@ -79,22 +84,17 @@ describe("Feature: Contact Form", () => {
       expect(response.status).toBe(200);
     });
 
-    it("And the submission should not be forwarded to Formspree", () => {
-      expect(mockFetch).not.toHaveBeenCalled();
+    it("And the submission should not be emailed via Resend", () => {
+      expect(sendMock).not.toHaveBeenCalled();
     });
   });
 
   describe("Scenario: Rate limiting kicks in after too many requests", () => {
     it("Then the 6th response from the same IP should be 429", async () => {
       vi.resetModules();
-      vi.stubEnv("NEXT_PUBLIC_FORMSPREE_ID", "test123");
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockResolvedValue({
-          status: 200,
-          json: () => Promise.resolve({ ok: true }),
-        })
-      );
+      vi.stubEnv("RESEND_API_KEY", "re_test_key");
+      sendMock.mockReset();
+      sendMock.mockResolvedValue({ data: { id: "email_123" }, error: null });
 
       const mod = await import("@/app/api/contact/route");
       const localPOST = mod.POST as unknown as (req: Request) => Promise<Response>;
@@ -108,15 +108,13 @@ describe("Feature: Contact Form", () => {
         makeFormRequest({ name: "T", email: "t@t.com", message: "too many" }, ip)
       );
       expect(res.status).toBe(429);
-
-      vi.unstubAllGlobals();
     });
   });
 
   describe("Scenario: Form configuration missing", () => {
     it("Then the response status should be 503", async () => {
       vi.resetModules();
-      vi.stubEnv("NEXT_PUBLIC_FORMSPREE_ID", "");
+      vi.stubEnv("RESEND_API_KEY", "");
 
       const mod = await import("@/app/api/contact/route");
       const localPOST = mod.POST as unknown as (req: Request) => Promise<Response>;
@@ -124,7 +122,7 @@ describe("Feature: Contact Form", () => {
       const req = makeFormRequest({
         name: "Test",
         email: "test@test.com",
-        message: "Hello",
+        message: "Hello there",
       });
       const res = await localPOST(req);
       expect(res.status).toBe(503);

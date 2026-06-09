@@ -66,7 +66,7 @@ tests/
 - Security headers set in `next.config.ts` (HSTS, X-Content-Type-Options, etc.).
 - Rate limiting on contact API route (5 requests/10 min per IP).
 - Honeypot field on contact form for bot detection.
-- Never commit secrets — use `.env.local` for `PREVIEW_PASSWORD`, `NEXT_PUBLIC_FORMSPREE_ID`.
+- Never commit secrets — use `.env.local` for `PREVIEW_PASSWORD`, `RESEND_API_KEY`.
 
 ## Build & Deploy
 - Local dev: `npm run dev`

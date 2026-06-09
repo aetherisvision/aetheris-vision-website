@@ -88,11 +88,11 @@ function validateAll(fields: Fields): FieldErrors {
 }
 
 export default function ContactForm() {
-  // The form posts to /api/contact, which forwards to Formspree. When
-  // NEXT_PUBLIC_FORMSPREE_ID is not configured, the form cannot deliver
-  // messages, so we surface a clear notice and point visitors to the phone /
+  // The form posts to /api/contact, which delivers the message by email via
+  // Resend. Whether delivery is configured depends on the server-only
+  // RESEND_API_KEY, so the client cannot know up front; if the API returns 503
+  // we surface a clear "unavailable" notice pointing visitors to the phone /
   // scheduling alternatives instead of silently failing.
-  const formEnabled = Boolean(process.env.NEXT_PUBLIC_FORMSPREE_ID);
 
   // Optional prefill of the message field from a ?topic= (or ?subject=)
   // query param, e.g. /contact?topic=Capabilities%20Statement%20PDF%20Request.
@@ -139,13 +139,6 @@ export default function ContactForm() {
     }
     setFieldErrors({});
 
-    // NEXT_PUBLIC_FORMSPREE_ID is statically inlined at build time; reading it
-    // here keeps the gate alongside the submit logic (and lets tests stub it).
-    if (!process.env.NEXT_PUBLIC_FORMSPREE_ID) {
-      setStatus("unavailable");
-      return;
-    }
-
     setStatus("submitting");
     setErrorDetail("");
 
@@ -167,6 +160,8 @@ export default function ContactForm() {
         setFields(EMPTY);
         setFieldErrors({});
         setTouched({});
+      } else if (res.status === 503) {
+        setStatus("unavailable");
       } else if (res.status === 429) {
         setErrorDetail("Too many submissions. Please wait a few minutes and try again.");
         setStatus("error");
@@ -331,18 +326,12 @@ export default function ContactForm() {
           {fieldErrors.message && <p role="alert" className="mt-1.5 text-xs text-red-400">{fieldErrors.message}</p>}
         </div>
 
-        {!formEnabled && (
+        {status === "unavailable" && (
           <div role="status" className="rounded-md border border-yellow-500/30 bg-yellow-500/[0.06] p-4 text-sm text-yellow-200">
             Our message form isn&apos;t accepting submissions right now. Please call or text{" "}
             <a href={CONTACT_PHONE_HREF} className="underline font-medium">{CONTACT_PHONE}</a>, or{" "}
             <a href="/book" className="underline font-medium">book a call</a>{" "}and we&apos;ll follow up.
           </div>
-        )}
-
-        {status === "unavailable" && (
-          <p className="text-sm text-yellow-300">
-            The form is temporarily unavailable. Please call or text {CONTACT_PHONE}, or book a call above.
-          </p>
         )}
 
         {status === "error" && (

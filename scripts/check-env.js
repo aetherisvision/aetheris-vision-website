@@ -6,10 +6,6 @@ const requiredGroups = [
     keys: ["NEXT_PUBLIC_BLOG_SUBSCRIBE_URL"],
   },
   {
-    label: "Contact form (Formspree)",
-    keys: ["NEXT_PUBLIC_FORMSPREE_ID"],
-  },
-  {
     label: "Blog comments (Giscus)",
     keys: [
       "NEXT_PUBLIC_GISCUS_REPO",

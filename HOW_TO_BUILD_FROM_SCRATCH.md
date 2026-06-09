@@ -111,7 +111,7 @@ The website code lives in a folder called `website` on your computer. We use **V
    cp .env.example .env.local
    ```
    You need two values:
-   - `NEXT_PUBLIC_FORMSPREE_ID` — your Formspree form ID (for the contact form)
+   - `RESEND_API_KEY` — your Resend API key (powers the contact form and transactional email)
    - `PREVIEW_PASSWORD` — a password for Vercel preview deployments
 7. Install the required tools:
    ```bash
