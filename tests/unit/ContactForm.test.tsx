@@ -32,6 +32,26 @@ function fillValidFields() {
   setField("message", "This is a valid message long enough.");
 }
 
+describe("ContactForm — unavailable notice", () => {
+  // Force the form into the unconfigured state so the notice always renders,
+  // regardless of whether NEXT_PUBLIC_FORMSPREE_ID is set in the dev shell.
+  beforeEach(() => {
+    vi.stubEnv("NEXT_PUBLIC_FORMSPREE_ID", "");
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("renders the notice with correct spacing around the links", () => {
+    render(<ContactForm />);
+    const notice = screen.getByRole("status");
+    // Collapse runtime whitespace and assert no words are glued together.
+    const text = notice.textContent?.replace(/\s+/g, " ").trim();
+    expect(text).toContain("or book a call and we'll follow up.");
+    expect(text).not.toMatch(/book a calland/);
+  });
+});
+
 describe("ContactForm — submit validation", () => {
   it("shows all required field errors when submitted empty", async () => {
     render(<ContactForm />);
