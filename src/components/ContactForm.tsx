@@ -335,7 +335,7 @@ export default function ContactForm() {
           <div role="status" className="rounded-md border border-yellow-500/30 bg-yellow-500/[0.06] p-4 text-sm text-yellow-200">
             Our message form isn&apos;t accepting submissions right now. Please call or text{" "}
             <a href={CONTACT_PHONE_HREF} className="underline font-medium">{CONTACT_PHONE}</a>, or{" "}
-            <a href="/book" className="underline font-medium">book a call</a> and we&apos;ll follow up.
+            <a href="/book" className="underline font-medium">book a call</a>{" "}and we&apos;ll follow up.
           </div>
         )}
 
