@@ -33,6 +33,15 @@ function fillValidFields() {
 }
 
 describe("ContactForm — unavailable notice", () => {
+  // Force the form into the unconfigured state so the notice always renders,
+  // regardless of whether NEXT_PUBLIC_FORMSPREE_ID is set in the dev shell.
+  beforeEach(() => {
+    vi.stubEnv("NEXT_PUBLIC_FORMSPREE_ID", "");
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("renders the notice with correct spacing around the links", () => {
     render(<ContactForm />);
     const notice = screen.getByRole("status");
