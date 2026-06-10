@@ -36,6 +36,17 @@ const nextConfig: NextConfig = {
     dangerouslyAllowSVG: false,
   },
   
+  async redirects() {
+    return [
+      // /services has no index page — send visitors to the web services page
+      {
+        source: "/services",
+        destination: "/services/web",
+        permanent: true,
+      },
+    ];
+  },
+
   async headers() {
     return [
       {
