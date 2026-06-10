@@ -125,7 +125,7 @@ export default async function Home() {
               
               <FadeIn delay={0.15}>
                 <p className="text-lg md:text-xl text-gray-300 font-light leading-relaxed mb-6">
-                  Derived from the ancient Latin and Greek word <span className="text-white italic">aetheris</span> (meaning &quot;the clear sky&quot; or &quot;the pure, fresh air breathed by the gods&quot;), our name reflects a profound commitment to mapping the unknown.
+                  Derived from <span className="text-white italic">aetheris</span>, a form of the Latin <span className="text-white italic">aether</span>{' '}(from the Greek <span className="text-white italic">aith&#275;r</span>, the bright upper air of the heavens, the pure air breathed by the gods), our name reflects a profound commitment to mapping the unknown.
                 </p>
               </FadeIn>
               
