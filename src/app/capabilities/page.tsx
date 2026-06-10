@@ -1,15 +1,39 @@
+import type { ReactNode } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import FadeIn from "@/components/FadeIn";
 import { SITE, SAM } from "@/lib/constants";
 
 const PDF_REQUEST_HREF = "/contact?topic=Capabilities%20Statement%20PDF%20Request";
+const DOC_REFERENCE = "AV-CS-2026";
+const DOC_REVISION = "Rev. June 2026";
 
 export const metadata = {
   title: `Capabilities Statement | ${SITE.name}`,
   description:
     "Aetheris Vision capabilities statement: NAICS codes, contract vehicles, core competencies, and past performance for state and federal procurement.",
 };
+
+const companyData: { label: string; value: ReactNode }[] = [
+  { label: "Legal Name", value: SITE.legalName },
+  { label: "Business Type", value: "Veteran-Owned Small Business (SDVOSB / VOSB, certification in process)" },
+  { label: "UEI", value: <span className="font-mono">{SAM.uei}</span> },
+  { label: "CAGE", value: <span className="font-mono">{SAM.cage}</span> },
+  { label: "SAM.gov", value: "Active" },
+  { label: "Primary NAICS", value: `${SAM.naicsPrimary}: Scientific & Technical Consulting` },
+  { label: "8(a) Status", value: "Eligible, application planned for 2027" },
+  { label: "Security Clearance", value: "U.S. Government Secret (held)" },
+  {
+    label: "Primary Contact",
+    value: (
+      <a
+        href="/contact"
+        className="text-blue-400 hover:text-blue-300 transition underline underline-offset-2"
+      >
+        Contact form
+      </a>
+    ),
+  },
+];
 
 const naicsCodes = [
   { code: "541690", description: "Other Scientific and Technical Consulting Services", primary: true },
@@ -93,175 +117,195 @@ const competencies = [
   },
 ];
 
+const differentiators = [
+  {
+    title: "Focused, Not Generalist",
+    body: "Rather than claiming to do everything, we concentrate on three areas we know deeply: atmospheric physics, applied AI, and defense and government systems. You get specialists, not a catch-all consultancy.",
+  },
+  {
+    title: "Decades of Operational Experience",
+    body: "More than 35 years working with the atmosphere, from forecasting in the Air Force in the 1990s to building AI and NWP hybrid models today. That experience informs every system we deliver.",
+  },
+  {
+    title: "Ready for Federal Work",
+    body: "A U.S. Government Secret clearance held across multiple assignments, VOSB eligibility, and an active SAM.gov registration mean we can engage on government work without long onboarding delays.",
+  },
+];
+
+/** Numbered section heading in the document register. */
+function SectionHeading({ id, num, title }: { id: string; num: string; title: string }) {
+  return (
+    <div className="flex items-baseline gap-4 border-b border-white/15 pb-3 mb-6">
+      <span className="font-mono text-sm text-blue-400">{num}</span>
+      <h2 id={id} className="text-lg font-semibold text-white tracking-tight uppercase">
+        {title}
+      </h2>
+    </div>
+  );
+}
+
+/** Two-column code/description reference table. */
+function CodeTable({
+  caption,
+  rows,
+}: {
+  caption: string;
+  rows: { code: string; description: string; primary?: boolean }[];
+}) {
+  return (
+    <table className="w-full text-sm">
+      <caption className="sr-only">{caption}</caption>
+      <thead className="sr-only">
+        <tr>
+          <th scope="col">Code</th>
+          <th scope="col">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr key={row.code} className="border-b border-white/[0.07]">
+            <td className="py-2.5 pr-6 align-top font-mono text-blue-400 whitespace-nowrap w-px">
+              {row.code}
+            </td>
+            <td className="py-2.5 text-gray-300 font-light">
+              {row.description}
+              {row.primary && (
+                <span className="ml-3 font-mono text-[10px] tracking-wider text-blue-400 border border-blue-500/40 rounded-sm px-1.5 py-0.5 align-middle">
+                  PRIMARY
+                </span>
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 export default function CapabilitiesPage() {
   return (
     <div className="flex flex-col min-h-[100dvh] bg-[#050505]">
       <Navbar />
 
-      <main id="main" className="flex-1 pt-28 pb-20">
-        <div className="mx-auto max-w-5xl px-6">
+      <main id="main" className="flex-1 pt-28 pb-24">
+        <div className="mx-auto max-w-6xl px-6">
 
-          {/* Header */}
-          <FadeIn>
-            <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">
-              Contracting Reference
-            </p>
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-2">
-              <h1 className="text-3xl md:text-5xl font-semibold text-white tracking-tight">
-                Capabilities Statement
-              </h1>
+          {/* ── Document header ── */}
+          <header className="mb-14">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/15 pb-3 mb-8 font-mono text-[11px] uppercase tracking-wider text-gray-500">
+              <span>{SITE.legalName} · Contracting Reference</span>
+              <span>
+                {DOC_REFERENCE} · {DOC_REVISION}
+              </span>
+            </div>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="max-w-2xl">
+                <h1 className="text-4xl md:text-5xl font-semibold text-white tracking-tight mb-4">
+                  Capabilities Statement
+                </h1>
+                <p className="text-gray-400 font-light leading-relaxed">
+                  Applied meteorology, AI/ML integration, and custom software engineering for
+                  state and federal agencies. This page mirrors our official capabilities
+                  statement; a signed PDF is available on request.
+                </p>
+              </div>
               <a
                 href={PDF_REQUEST_HREF}
-                className="inline-flex h-10 items-center gap-2 rounded-md border border-white/10 bg-white/[0.03] px-5 text-sm text-gray-300 hover:bg-white/[0.07] transition shrink-0"
+                className="inline-flex h-11 items-center gap-2 rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition shrink-0"
               >
                 Request Statement (PDF)
               </a>
             </div>
-            <div className="h-px w-12 bg-blue-500/50 mt-6 mb-10" />
-          </FadeIn>
+          </header>
 
-          {/* Company snapshot */}
-          <FadeIn delay={0.05}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-14">
-              {([
-                { label: "Legal Name", value: SITE.legalName },
-                { label: "Business Type", value: "Veteran-Owned Small Business (SDVOSB / VOSB, certification in process)" },
-                { label: "UEI", value: SAM.uei },
-                { label: "CAGE", value: SAM.cage },
-                { label: "SAM.gov", value: "Active" },
-                { label: "Primary NAICS", value: `${SAM.naicsPrimary}: Scientific & Technical Consulting` },
-                { label: "8(a) Status", value: "Eligible, application planned for 2027" },
-                { label: "Security Clearance", value: "U.S. Government Secret (held)" },
-                {
-                  label: "Primary Contact",
-                  value: (
-                    <a
-                      href="/contact"
-                      className="text-blue-400 hover:text-blue-300 transition underline underline-offset-2"
-                    >
-                      Contact form
-                    </a>
-                  ),
-                },
-              ] as { label: string; value: React.ReactNode }[]).map((item) => (
-                <div key={item.label} className="rounded-lg border border-white/5 bg-white/[0.02] p-4">
-                  <p className="text-xs text-gray-500 mb-1 uppercase tracking-widest">{item.label}</p>
-                  <p className="text-sm text-white font-medium">{item.value}</p>
+          {/* ── 1.0 Company data ── */}
+          <section className="mb-14" aria-labelledby="sec-company">
+            <SectionHeading id="sec-company" num="1.0" title="Company Data" />
+            <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-12">
+              {companyData.map((item) => (
+                <div
+                  key={item.label}
+                  className="grid grid-cols-[11rem_1fr] gap-4 border-b border-white/[0.07] py-2.5"
+                >
+                  <dt className="font-mono text-[11px] uppercase tracking-wider text-gray-500 pt-0.5">
+                    {item.label}
+                  </dt>
+                  <dd className="text-sm text-white">{item.value}</dd>
                 </div>
               ))}
-            </div>
-          </FadeIn>
+            </dl>
+          </section>
 
-          {/* NAICS Codes */}
-          <div className="mb-14">
-            <FadeIn>
-              <h2 className="text-xl font-semibold text-white mb-6">NAICS Codes</h2>
-            </FadeIn>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {naicsCodes.map((n, i) => (
-                <FadeIn key={n.code} delay={i * 0.04}>
-                  <div className="flex items-start gap-4 rounded-lg border border-white/5 bg-white/[0.02] p-4">
-                    <span className="text-blue-400 font-mono text-sm font-semibold shrink-0">{n.code}</span>
-                    <span className="text-sm text-gray-400 flex-1">{n.description}</span>
-                    {n.primary && (
-                      <span className="text-[10px] font-semibold tracking-wider text-blue-400 border border-blue-500/30 bg-blue-500/10 rounded px-1.5 py-0.5 shrink-0">PRIMARY</span>
-                    )}
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
+          {/* ── 2.0 / 3.0 Codes ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 mb-14">
+            <section aria-labelledby="sec-naics" className="mb-14 lg:mb-0">
+              <SectionHeading id="sec-naics" num="2.0" title="NAICS Codes" />
+              <CodeTable caption="NAICS Codes" rows={naicsCodes} />
+            </section>
+            <section aria-labelledby="sec-psc">
+              <SectionHeading id="sec-psc" num="3.0" title="PSC / Product Service Codes" />
+              <CodeTable caption="PSC / Product Service Codes" rows={pscCodes} />
+            </section>
           </div>
 
-          {/* PSC Codes */}
-          <div className="mb-14">
-            <FadeIn>
-              <h2 className="text-xl font-semibold text-white mb-6">PSC / Product Service Codes</h2>
-            </FadeIn>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {pscCodes.map((p, i) => (
-                <FadeIn key={p.code} delay={i * 0.04}>
-                  <div className="flex items-start gap-4 rounded-lg border border-white/5 bg-white/[0.02] p-4">
-                    <span className="text-blue-400 font-mono text-sm font-semibold shrink-0">{p.code}</span>
-                    <span className="text-sm text-gray-400">{p.description}</span>
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-          </div>
-
-          {/* Core Competencies */}
-          <div className="mb-14">
-            <FadeIn>
-              <h2 className="text-xl font-semibold text-white mb-6">Core Competencies</h2>
-            </FadeIn>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* ── 4.0 Core competencies ── */}
+          <section className="mb-14" aria-labelledby="sec-competencies">
+            <SectionHeading id="sec-competencies" num="4.0" title="Core Competencies" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-10">
               {competencies.map((section, i) => (
-                <FadeIn key={section.title} delay={i * 0.05} direction="up" className={i === competencies.length - 1 && competencies.length % 2 !== 0 ? "md:col-span-2 md:max-w-[calc(50%-0.75rem)] md:mx-auto md:w-full" : undefined}>
-                  <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 h-full">
-                    <h3 className="text-white font-medium mb-4">{section.title}</h3>
-                    <ul className="space-y-2">
-                      {section.items.map((item) => (
-                        <li key={item} className="flex items-start gap-2 text-sm text-gray-400 font-light leading-relaxed">
-                          <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </FadeIn>
+                <div key={section.title}>
+                  <h3 className="flex items-baseline gap-3 text-white font-medium mb-3">
+                    <span className="font-mono text-xs text-gray-500">4.{i + 1}</span>
+                    {section.title}
+                  </h3>
+                  <ul className="space-y-2 border-l border-white/10 pl-5 ml-1">
+                    {section.items.map((item) => (
+                      <li key={item} className="text-sm text-gray-400 font-light leading-relaxed">
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
             </div>
-          </div>
+          </section>
 
-          {/* Differentiators */}
-          <FadeIn>
-            <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-8 md:p-10 mb-10 relative overflow-hidden">
-              <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-blue-600/5 blur-3xl pointer-events-none" />
-              <div className="relative z-10">
-                <p className="text-xs font-semibold tracking-widest text-blue-500 uppercase mb-4">The Aetheris Advantage</p>
-                <h2 className="text-2xl font-semibold text-white mb-6">Why Agencies Work With Us</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {[
-                    {
-                      title: "Focused, Not Generalist",
-                      body: "Rather than claiming to do everything, we concentrate on three areas we know deeply: atmospheric physics, applied AI, and defense and government systems. You get specialists, not a catch-all consultancy.",
-                    },
-                    {
-                      title: "Decades of Operational Experience",
-                      body: "More than 35 years working with the atmosphere, from forecasting in the Air Force in the 1990s to building AI and NWP hybrid models today. That experience informs every system we deliver.",
-                    },
-                    {
-                      title: "Ready for Federal Work",
-                      body: "A U.S. Government Secret clearance held across multiple assignments, VOSB eligibility, and an active SAM.gov registration mean we can engage on government work without long onboarding delays.",
-                    },
-                  ].map((d) => (
-                    <div key={d.title}>
-                      <p className="text-white font-medium text-sm mb-2">{d.title}</p>
-                      <p className="text-gray-400 text-sm font-light leading-relaxed">{d.body}</p>
-                    </div>
-                  ))}
+          {/* ── 5.0 Differentiators ── */}
+          <section className="mb-16" aria-labelledby="sec-differentiators">
+            <SectionHeading id="sec-differentiators" num="5.0" title="Why Agencies Work With Us" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-8">
+              {differentiators.map((d, i) => (
+                <div key={d.title}>
+                  <h3 className="flex items-baseline gap-3 text-white font-medium text-sm mb-2">
+                    <span className="font-mono text-xs text-gray-500">5.{i + 1}</span>
+                    {d.title}
+                  </h3>
+                  <p className="text-gray-400 text-sm font-light leading-relaxed">{d.body}</p>
                 </div>
-              </div>
+              ))}
             </div>
-          </FadeIn>
+          </section>
 
-          {/* CTA */}
-          <FadeIn delay={0.1}>
+          {/* ── Document footer / CTA ── */}
+          <footer className="border-t border-white/15 pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <p className="font-mono text-[11px] uppercase tracking-wider text-gray-500">
+              {DOC_REFERENCE} · {DOC_REVISION} · UEI {SAM.uei} · CAGE {SAM.cage}
+            </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
                 href="/book"
-                className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-black hover:bg-gray-200 transition"
+                className="inline-flex h-11 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
               >
                 Book a Consultation
               </a>
               <a
                 href={PDF_REQUEST_HREF}
-                className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 px-8 text-sm font-medium text-white hover:bg-white/5 transition"
+                className="inline-flex h-11 items-center justify-center text-sm text-gray-300 hover:text-white transition underline underline-offset-4 decoration-white/30"
               >
                 Request Capabilities Statement (PDF)
               </a>
             </div>
-          </FadeIn>
+          </footer>
 
         </div>
       </main>
