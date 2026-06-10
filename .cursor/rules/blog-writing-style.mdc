@@ -1,0 +1,104 @@
+---
+description: "Writing style guide for authoring blog posts in Marston Ward's voice"
+globs: ["src/lib/posts.ts"]
+alwaysApply: false
+---
+
+# Blog Writing Style — Marston Ward's Voice
+
+Any blog post added to `src/lib/posts.ts` must read like Marston wrote it himself.
+He is a USAF veteran weather forecaster, Ph.D. atmospheric scientist, and working
+engineer. His voice is plainspoken, concrete, and earned — never salesy.
+
+## Voice & Person
+
+- DO write in first person singular ("I spent ten years forecasting weather for the Air Force").
+- DO sound like a practitioner reporting from experience, not a firm marketing itself.
+- DON'T write in corporate "we" except when describing Aetheris Vision as a company doing client work — and even then, sparingly.
+- DON'T adopt a thought-leader persona. He explains; he doesn't pontificate.
+
+## Tone
+
+- Plainspoken, direct, understated. Dry confidence, minimal humor, zero hype.
+- Specifics carry the argument: real system names (GFS, WRF, GraphCast, GRIB2, CloudSat),
+  real numbers, measurable outcomes ("reduced dataset reprocessing from 2 weeks → 13 hours").
+- One adjective of praise is one too many if a concrete fact can do the job.
+
+## Sentence Rhythm
+
+- Medium-length declarative sentences, with occasional short fragments for emphasis.
+- Em dashes and arrows (→) used to compress: "fetch → parse → validate".
+- Lists with verb-first bullets. Tables when comparing options. Headings every few paragraphs.
+
+## Credentials — Understated, Never Pitched
+
+- Credentials appear as matter-of-fact context inside a sentence about the work:
+  "After ten years forecasting for the Air Force..." — not as a trophy list.
+- DON'T pitch "government" as an audience or lead with set-aside status, clearance,
+  VOSB, UEI/CAGE, or SAM.gov in post body copy. (Recent site direction explicitly
+  dropped government audience call-outs — lead with the systems and the problem;
+  let credentials speak for themselves.)
+- DON'T end posts with "Contact us for a consultation" sales CTAs. If a closing
+  invitation is warranted, keep it low-pressure and personal:
+  "If you're working on anything at this intersection, I'd genuinely love to talk."
+
+## Technical Depth
+
+- Name the tool or model first, then one plain-English sentence on why it matters.
+  Assume a technically literate reader; don't define basics (API, ML), do unpack
+  domain specifics (what radio occultation gives you, why 0.25° resolution matters).
+- Ground claims in operational reality: "theoretically sound" vs. "performs in
+  production" is his recurring axis of judgment.
+
+## Openings & Closings
+
+- DO open with the problem or a concrete operational scene — what broke, what was slow,
+  what forecasters actually face on shift.
+- DON'T open with industry-trend throat-clearing ("The consulting market is flooded
+  with...") or grand thesis statements.
+- DO close with a practical takeaway or a forward-looking next step. Never a hard sell.
+
+## Words & Constructions He Doesn't Use
+
+Avoid all of these (they mark a post as AI-drafted):
+
+- "revolutionary", "paradigm shift", "game-changing", "cutting-edge", "world-class",
+  "elite", "unparalleled", "leverage" (as a verb for using things)
+- The "X isn't just Y. It's Z." reversal construction.
+- One-word rhetorical hooks on their own line ("Enter deep learning.").
+- Exclamation marks, emoji in prose, buzzword stacks, superlative chains.
+- Vague intensifiers: "truly", "profoundly", "fundamentally" (as filler).
+
+## Exemplar Passages (authentic voice)
+
+From his elevator pitch (pitch_suite.md):
+
+> "I spent ten years forecasting weather for the Air Force, got my PhD in atmospheric
+> science in Sweden, and spent the last several years leading AI and weather modeling
+> projects for NASA."
+
+From the rewritten About page (post copy-direction change):
+
+> "The throughline across every stage of his career is the same: understand the problem
+> deeply, then build something that holds up in the field."
+
+From his private-sector pitch:
+
+> "I've built satellite data pipelines that actually ran. I've led Agile teams that
+> actually delivered. I understand the difference between a model that's theoretically
+> sound and one that performs in production."
+
+## Provenance
+
+This profile was inferred from documents in `~/Documents/GitHub/`:
+
+- **Strong evidence (reads human-authored):** `aetherisvision/marketing/pitch_suite.md`
+  (elevator pitches), `jobs_resumes/career_history.md`, `aetherisvision/status_notes.txt`,
+  and the current `src/app/about/page.tsx` copy (written after the directive to drop
+  government call-outs — commit 7f7a368).
+- **Weak evidence (likely AI-drafted; treated as anti-patterns):** the five existing
+  posts in `src/lib/posts.ts` — their sales CTAs, "paradigm shift" language, and
+  "Contact us" closings are examples of what NOT to do.
+
+Style inference from documents is imperfect. If Marston corrects any trait here,
+update this file — his correction outranks the inferred profile.
