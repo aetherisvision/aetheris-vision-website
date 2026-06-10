@@ -143,4 +143,16 @@ describe("POST /api/contact", () => {
     const body = await res.json();
     expect(body.error).toMatch(/message/i);
   });
+
+  it("returns 400 (not 500) for non-string field values", async () => {
+    // Crafted payload with a numeric name — must not throw.
+    const req = new Request("http://localhost:3000/api/contact", {
+      method: "POST",
+      body: JSON.stringify({ name: 123, email: "a@b.com", message: "Valid message here" }),
+      headers: { "x-forwarded-for": "127.0.0.1", "Content-Type": "application/json" },
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    expect(sendMock).not.toHaveBeenCalled();
+  });
 });

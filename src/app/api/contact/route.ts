@@ -11,12 +11,22 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Notifications are sent from the verified Resend domain; replies are routed
 // back to the submitter via replyTo.
-const FROM_ADDRESS = "Aetheris Vision <system@aetherisvision.com>";
+const FROM_ADDRESS = `${SITE.name} <system@aetherisvision.com>`;
 
 // Rate limit: 5 submissions per IP per 10 minutes. Distributed across Vercel
 // instances when Upstash/Vercel KV is configured, else in-memory (issue #12).
 const RATE_LIMIT = 5;
 const WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+
+/** Safely read a string field from untrusted JSON (non-strings → ""). */
+function asString(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+/** Collapse CR/LF so untrusted values cannot inject email header lines. */
+function singleLine(value: string, max: number): string {
+  return value.replace(/[\r\n]+/g, " ").trim().slice(0, max);
+}
 
 /** Escape user-supplied text before interpolating it into the HTML email. */
 function escapeHtml(value: string): string {
@@ -52,22 +62,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Form not configured" }, { status: 503 });
   }
 
-  const data: Record<string, string> = await req.json();
+  const data: Record<string, unknown> = await req.json();
 
   // ── Honeypot check ─────────────────────────────────────────────────────────
   // Bots fill in hidden fields. Humans never see this field so it stays blank.
-  if (data._gotcha) {
+  if (asString(data._gotcha)) {
     // Return 200 to fool the bot into thinking it succeeded
     return NextResponse.json({ ok: true });
   }
-  delete data._gotcha;
 
   // ── Input validation ───────────────────────────────────────────────────────
-  const name = data.name?.trim();
-  const email = data.email?.trim();
-  const message = data.message?.trim();
-  const organization = data.organization?.trim() ?? "";
-  const requirement = data.requirement?.trim() ?? "";
+  // Fields come from untrusted JSON; coerce non-strings to "" so a crafted
+  // payload (e.g. name: 123) yields a 400 rather than throwing a 500.
+  const name = asString(data.name).trim();
+  const email = asString(data.email).trim();
+  const message = asString(data.message).trim();
+  const organization = asString(data.organization).trim();
+  const requirement = asString(data.requirement).trim();
 
   if (!name || name.length < 2 || name.length > 200) {
     return NextResponse.json(
@@ -91,8 +102,11 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Deliver via Resend ──────────────────────────────────────────────────────
-  const subjectLine = requirement
-    ? `New contact form submission — ${requirement}`
+  // Strip CR/LF and cap length before placing requirement in the subject so a
+  // crafted value cannot inject additional email headers.
+  const subjectRequirement = singleLine(requirement, 100);
+  const subjectLine = subjectRequirement
+    ? `New contact form submission — ${subjectRequirement}`
     : "New contact form submission";
 
   const textBody = [
