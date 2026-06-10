@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { posts, getPostBySlug, getPrevNextPosts, getPostISODate } from "@/lib/posts";
+import { posts, getPostBySlug, getPrevNextPosts, getPostISODate, parsePostDate } from "@/lib/posts";
 import { SITE, SAM } from "@/lib/constants";
 import { publisherRef } from "@/lib/jsonld";
 import Navbar from "@/components/Navbar";
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url,
       siteName: SITE.name,
       locale: "en_US",
-      publishedTime: getPostISODate(post),
+      publishedTime: parsePostDate(post.date).toISOString(),
       authors: [post.author.name],
       section: post.category,
     },

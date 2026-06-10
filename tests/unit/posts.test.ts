@@ -75,6 +75,11 @@ describe("computeReadTime", () => {
     expect(computeReadTime(words1000)).toBe("5 min read");
   });
 
+  it("rounds up so read times are never understated", () => {
+    const words201 = Array.from({ length: 201 }, (_, i) => `word${i}`).join(" ");
+    expect(computeReadTime(words201)).toBe("2 min read");
+  });
+
   it("ignores extra whitespace when counting words", () => {
     expect(computeReadTime("  one \n\n two\t three  ")).toBe("1 min read");
   });
@@ -112,6 +117,12 @@ describe("getPostISODate", () => {
   it("formats display dates as YYYY-MM-DD", () => {
     expect(getPostISODate({ date: "Mar 26, 2026" })).toBe("2026-03-26");
     expect(getPostISODate({ date: "Jan 15, 2026" })).toBe("2026-01-15");
+  });
+});
+
+describe("parsePostDate", () => {
+  it("throws a clear error for malformed dates", () => {
+    expect(() => parsePostDate("not a date")).toThrowError(/Invalid post date/);
   });
 });
 

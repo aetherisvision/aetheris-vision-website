@@ -20,13 +20,17 @@ const WORDS_PER_MINUTE = 200;
 /** Compute an honest read time from actual word count (~200 wpm, min 1 min). */
 export function computeReadTime(content: string): string {
   const words = content.trim().split(/\s+/).filter(Boolean).length;
-  const minutes = Math.max(1, Math.round(words / WORDS_PER_MINUTE));
+  // Ceil so read times are never understated for posts just past a minute boundary.
+  const minutes = Math.max(1, Math.ceil(words / WORDS_PER_MINUTE));
   return `${minutes} min read`;
 }
 
 /** Parse a post's display date (e.g. "Mar 26, 2026") to a UTC-midnight Date. */
 export function parsePostDate(date: string): Date {
   const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error(`Invalid post date: "${date}"`);
+  }
   return new Date(Date.UTC(parsed.getFullYear(), parsed.getMonth(), parsed.getDate()));
 }
 
