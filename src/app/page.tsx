@@ -49,9 +49,10 @@ export default async function Home() {
           <HeroVideo />
 
           {/* Fallback static image (shows when video file is absent or unsupported) */}
+          {/* Backgrounds are self-hosted — sources documented in public/images/README.md */}
           <div className="absolute inset-0 -z-[21]">
             <Image
-              src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2500"
+              src="/images/home/hero-earth.webp"
               alt=""
               aria-hidden="true"
               fill
@@ -104,15 +105,16 @@ export default async function Home() {
         <section id="about" className="py-24 bg-[#111014] border-t border-white/5 relative overflow-hidden">
           {/* Subtle atmospheric background */}
           <div className="absolute inset-0 -z-20">
-            <Image 
-              src="https://images.unsplash.com/photo-1534152011036-7cbdb43088ac?q=80&w=2500" 
-              alt="Atmospheric Weather Patterns" 
+            <Image
+              src="/images/home/philosophy-atmosphere.webp"
+              alt=""
+              aria-hidden="true"
               fill
-              className="object-cover opacity-[0.15] mix-blend-screen"
+              className="object-cover opacity-[0.45]"
               sizes="100vw"
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0d0c0f] via-[#0d0c0f]/80 to-transparent -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0d0c0f] via-[#0d0c0f]/85 to-[#0d0c0f]/25 -z-10" />
 
           <div className="mx-auto max-w-5xl px-6">
             <div className="max-w-2xl">
@@ -162,13 +164,14 @@ export default async function Home() {
               <div className="group relative rounded-xl border border-blue-500/20 bg-blue-500/[0.04] p-6 md:p-8 transition hover:bg-blue-500/[0.07] hover:border-blue-500/30 flex flex-col h-full overflow-hidden">
                 <div className="absolute inset-0 rounded-xl overflow-hidden">
                   <Image
-                    src="https://images.unsplash.com/photo-1527482937786-6608f6f73e1c?q=80&w=1200"
+                    src="/images/competencies/applied-meteorology.webp"
                     alt=""
                     aria-hidden="true"
                     fill
-                    className="object-cover opacity-[0.12] mix-blend-screen group-hover:opacity-[0.18] transition-opacity duration-500"
+                    className="object-cover object-[50%_22%] opacity-[0.65] group-hover:opacity-[0.8] transition-opacity duration-500"
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/20 via-[#0d0c0f]/70 to-[#0d0c0f]/92" />
                 </div>
                 <div className="relative z-10">
                   <div className="h-12 w-12 rounded-lg bg-gray-900 border border-blue-500/30 flex items-center justify-center mb-6">
@@ -190,13 +193,14 @@ export default async function Home() {
               <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 md:p-8 transition hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full overflow-hidden">
                 <div className="absolute inset-0 rounded-xl overflow-hidden">
                   <Image
-                    src="https://images.unsplash.com/photo-1677442135703-1787eea5ce01?q=80&w=1200"
+                    src="/images/competencies/ai-ml-integration.webp"
                     alt=""
                     aria-hidden="true"
                     fill
-                    className="object-cover opacity-[0.15] mix-blend-screen group-hover:opacity-[0.22] transition-opacity duration-500"
+                    className="object-cover object-[35%_45%] opacity-[0.8] group-hover:opacity-[0.95] transition-opacity duration-500"
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/10 via-[#0d0c0f]/50 to-[#0d0c0f]/85" />
                 </div>
                 <div className="relative z-10">
                   <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">
@@ -215,13 +219,14 @@ export default async function Home() {
               <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 md:p-8 transition hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full overflow-hidden">
                 <div className="absolute inset-0 rounded-xl overflow-hidden">
                   <Image
-                    src="https://images.unsplash.com/photo-1547658719-da2b51169166?q=80&w=1200"
+                    src="/images/competencies/web-digital-solutions.webp"
                     alt=""
                     aria-hidden="true"
                     fill
-                    className="object-cover opacity-[0.12] mix-blend-screen group-hover:opacity-[0.18] transition-opacity duration-500"
+                    className="object-cover opacity-[0.65] group-hover:opacity-[0.8] transition-opacity duration-500"
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/20 via-[#0d0c0f]/70 to-[#0d0c0f]/92" />
                 </div>
                 <div className="relative z-10">
                   <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">
@@ -240,13 +245,14 @@ export default async function Home() {
               <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 md:p-8 transition hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full overflow-hidden">
                 <div className="absolute inset-0 rounded-xl overflow-hidden">
                   <Image
-                    src="https://images.unsplash.com/photo-1592210454359-9043f067919b?q=80&w=1200"
+                    src="/images/competencies/technical-advisory.webp"
                     alt=""
                     aria-hidden="true"
                     fill
-                    className="object-cover opacity-[0.12] mix-blend-screen group-hover:opacity-[0.18] transition-opacity duration-500"
+                    className="object-cover opacity-[0.65] group-hover:opacity-[0.8] transition-opacity duration-500"
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/20 via-[#0d0c0f]/70 to-[#0d0c0f]/92" />
                 </div>
                 <div className="relative z-10">
                   <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">
@@ -263,6 +269,17 @@ export default async function Home() {
               {/* Card 5 — Technical Leadership */}
               <FadeIn delay={0.25} direction="up" className="h-full">
               <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 md:p-8 transition hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full overflow-hidden">
+                <div className="absolute inset-0 rounded-xl overflow-hidden">
+                  <Image
+                    src="/images/competencies/technical-leadership.webp"
+                    alt=""
+                    aria-hidden="true"
+                    fill
+                    className="object-cover opacity-[0.75] group-hover:opacity-[0.9] transition-opacity duration-500"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/10 via-[#0d0c0f]/50 to-[#0d0c0f]/85" />
+                </div>
                 <div className="relative z-10">
                   <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">
                     <AcademicCapIcon className="h-6 w-6 text-blue-400" />
@@ -280,13 +297,14 @@ export default async function Home() {
               <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 md:p-8 transition hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full overflow-hidden">
                 <div className="absolute inset-0 rounded-xl overflow-hidden">
                   <Image
-                    src="https://images.unsplash.com/photo-1562408590-e32931084e23?q=80&w=1200"
+                    src="/images/competencies/state-federal-contracting.webp"
                     alt=""
                     aria-hidden="true"
                     fill
-                    className="object-cover opacity-[0.12] mix-blend-screen group-hover:opacity-[0.18] transition-opacity duration-500"
+                    className="object-cover object-[50%_72%] opacity-[0.8] group-hover:opacity-[0.95] transition-opacity duration-500"
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/10 via-[#0d0c0f]/50 to-[#0d0c0f]/85" />
                 </div>
                 <div className="relative z-10">
                   <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">

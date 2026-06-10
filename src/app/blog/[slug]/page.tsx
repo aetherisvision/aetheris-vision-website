@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import Image from "next/image";
 import { posts, getPostBySlug, getPrevNextPosts, getPostISODate, parsePostDate } from "@/lib/posts";
 import { SITE, SAM } from "@/lib/constants";
 import { publisherRef } from "@/lib/jsonld";
@@ -60,11 +61,13 @@ export default async function BlogPost({ params }: Props) {
       <main id="main" className="flex-1 pt-32 pb-24 bg-[#050505] relative overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 -z-20">
-          <img
-            src="https://images.unsplash.com/photo-1504608524841-42f1e38e80e0?q=80&w=2500"
+          <Image
+            src="/images/blog/blog-post-bg.webp"
             alt=""
             aria-hidden="true"
-            className="w-full h-full object-cover opacity-[0.12] mix-blend-screen"
+            fill
+            className="object-cover opacity-[0.25]"
+            sizes="100vw"
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-br from-[#0e1726]/60 via-black/90 to-black -z-10" />
