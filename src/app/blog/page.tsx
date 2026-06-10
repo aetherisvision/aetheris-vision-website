@@ -25,7 +25,7 @@ export default function BlogIndex() {
             alt=""
             aria-hidden="true"
             fill
-            className="object-cover opacity-[0.18] mix-blend-screen"
+            className="object-cover opacity-[0.35]"
             sizes="100vw"
           />
         </div>

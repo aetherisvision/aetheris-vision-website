@@ -79,12 +79,12 @@ imgix params (`fm=webp&q=55–75`), then served through `next/image`.
 
 | File | Shows | Source | Photographer |
 |---|---|---|---|
-| `applied-meteorology.webp` | Lightning strike under a supercell over plains | https://unsplash.com/photos/soo_WbscxgU (`photo-1659637687595-05e65def37b0`) | Jason Hudson |
-| `ai-ml-integration.webp` | Abstract glowing blue/cyan light field on black | https://unsplash.com/photos/ZDRX1TVix1Y (`photo-1778319300667-a4a50dfc9dd5`) | Akif Waseem |
+| `applied-meteorology.webp` | Supercell storm structure with rain shafts over plains | https://unsplash.com/photos/drQtGkdBz8E (`photo-1618604943672-faaf34b4c3b2`) | Raychel Sanner |
+| `ai-ml-integration.webp` | Teal neural-mesh / point-cloud network visualization | https://unsplash.com/photos/11KDtiUWRq4 (`photo-1590859808308-3d2d9c515b1a`) | Uriel SC |
 | `web-digital-solutions.webp` | Dark laptop screen with source code | https://unsplash.com/photos/f77Bh3inUpE (`photo-1555066931-4365d14bab8c`) | Arnold Francisca |
 | `technical-advisory.webp` | Blue-lit geometric stair structure on dark | https://unsplash.com/photos/mufeb7CMUxo (`photo-1550602883-4c2d2c705db2`) | Dawid Sokołowski |
 | `technical-leadership.webp` | Chess pieces mid-game, dark monochrome | https://unsplash.com/photos/nAjil1z3eLk (`photo-1528819622765-d6bcf132f793`) | Felix Mittermeier |
-| `state-federal-contracting.webp` | U.S. Capitol dome at night, monochrome | https://unsplash.com/photos/vZkZH6K5mCo (`photo-1635255752782-febbe92c2da6`) | MIKE STOLL |
+| `state-federal-contracting.webp` | U.S. Capitol dome at night, monochrome (brightness lifted via imgix `bri=22&gam=15` for card visibility) | https://unsplash.com/photos/vZkZH6K5mCo (`photo-1635255752782-febbe92c2da6`) | MIKE STOLL |
 
 ## home/ — homepage section backgrounds
 

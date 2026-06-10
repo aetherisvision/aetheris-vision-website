@@ -66,7 +66,7 @@ export default async function BlogPost({ params }: Props) {
             alt=""
             aria-hidden="true"
             fill
-            className="object-cover opacity-[0.12] mix-blend-screen"
+            className="object-cover opacity-[0.25]"
             sizes="100vw"
           />
         </div>
