@@ -326,6 +326,18 @@ export default async function Home() {
           <div className="mx-auto max-w-5xl px-6">
             <FadeIn>
               <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-10 md:p-14 flex flex-col md:flex-row md:items-center justify-between gap-10 relative overflow-hidden">
+                {/* Background — a storm watcher facing an approaching plains storm (see public/images/README.md) */}
+                <div className="absolute inset-0 rounded-2xl overflow-hidden">
+                  <Image
+                    src="/images/home/cta-storm-watch.webp"
+                    alt=""
+                    aria-hidden="true"
+                    fill
+                    className="object-cover object-[50%_45%] opacity-[0.5]"
+                    sizes="(max-width: 1024px) 100vw, 1024px"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#0d0c0f]/95 via-[#0d0c0f]/75 to-[#0d0c0f]/35" />
+                </div>
                 {/* Glow */}
                 <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-blue-600/10 blur-3xl pointer-events-none" />
 

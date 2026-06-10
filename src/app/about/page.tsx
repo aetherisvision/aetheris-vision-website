@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
@@ -77,6 +78,20 @@ export default function AboutPage() {
 
             {/* Credentials card */}
             <FadeIn delay={0.2}>
+              {/* Work-context image (see public/images/README.md) */}
+              <div className="relative rounded-xl border border-white/5 overflow-hidden aspect-[4/3] mb-5">
+                <Image
+                  src="/images/about/field-research-balloon.webp"
+                  alt="NOAA researchers launching an ozonesonde weather balloon at a polar research station at dusk"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/80 via-transparent to-transparent" />
+                <p className="absolute bottom-3 left-4 right-4 text-xs text-gray-400 font-light">
+                  Atmospheric science is fieldwork: an ozonesonde launch at a polar station. (NOAA)
+                </p>
+              </div>
               <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 space-y-5 h-fit">
                 <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase">
                   Credentials &amp; Certifications
