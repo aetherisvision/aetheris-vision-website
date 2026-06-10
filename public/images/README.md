@@ -92,6 +92,25 @@ imgix params (`fm=webp&q=55–75`), then served through `next/image`.
 |---|---|---|---|
 | `hero-earth.webp` | Earth at night from orbit (hero video fallback) | https://unsplash.com/photos/Q1p7bh3SHj8 (`photo-1451187580459-43490279c0fa`) | NASA |
 | `philosophy-atmosphere.webp` | Earth's clouds and atmosphere from the ISS | https://unsplash.com/photos/yZygONrUBe8 (`photo-1446776811953-b23d57bd21aa`) | NASA |
+| `cta-storm-watch.webp` | Storm observer standing on a plains dirt road as lightning strikes ("Ready to build something?" CTA card) | https://unsplash.com/photos/Kug730pBflE (`photo-1658590094012-4e6f34fcf3a2`) | Nikolas Noonan |
+
+## about/ — About page imagery
+
+| File | Shows | Source | Photographer |
+|---|---|---|---|
+| `field-research-balloon.webp` | NOAA researchers launching an ozonesonde weather balloon at a polar station at dusk (founder-section work-context shot) | https://unsplash.com/photos/5hZJVGPG6vo (`photo-1561484930-ac8e09d9cbc4`) | NOAA |
+
+## book/ — Book a Consultation page
+
+| File | Shows | Source | Photographer |
+|---|---|---|---|
+| `plans-review.webp` | Civilian assessment team in helmets reviewing structural plans together, monochrome (header background) | https://unsplash.com/photos/yaDGlZOsYoM (`photo-1581094374631-2154f20c2726`) | ThisisEngineering |
+
+## contact/ — Contact page
+
+| File | Shows | Source | Photographer |
+|---|---|---|---|
+| `damage-assessment.webp` | Two wildland fire crew members surveying a burned landscape (header background) | https://unsplash.com/photos/gnMxtPPImQ4 (`photo-1752553030578-ca6126fd80d4`) | Troy Olson |
 
 ## blog/ — blog page backgrounds
 
