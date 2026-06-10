@@ -80,7 +80,7 @@ aetherisvision.com (the domain, DNS managed by Cloudflare)
 **When a visitor fills out the contact form:**
 ```
 Visitor's browser → aetherisvision.com/api/contact (Vercel server)
-                       → Formspree (email delivery service)
+                       → Resend (email delivery service)
                            → contact@aetherisvision.com (your Gmail)
 ```
 
@@ -107,7 +107,7 @@ You need accounts on all of these services. All are free or already paid for.
 | Vercel | vercel.com | Hosts the website | GitHub login |
 | Cloudflare | cloudflare.com | Manages the domain's DNS | your email |
 | Google Workspace | admin.google.com | Business email | your email |
-| Formspree | formspree.io | Sends contact form emails | your email |
+| Resend | resend.com | Sends contact form emails (and sign-in links/invoices) | your email |
 | Cal.com | cal.com | Booking calendar | your email |
 | Giscus setup | giscus.app | Configures blog comments | GitHub login |
 
@@ -220,7 +220,7 @@ src/app/api/
   contact/
     route.ts            — The server-side contact form handler. When someone submits
                           the contact form, this code runs on Vercel's servers and
-                          forwards the message to Formspree. Visitors never see this
+                          emails the message via Resend. Visitors never see this
                           file — it runs invisibly in the background.
   chat/
     route.ts            — The server-side AI chat handler. Receives visitor messages,
@@ -517,15 +517,14 @@ They live in two places:
 - **How to change it:** Add `PREVIEW_PASSWORD=your-new-password` to Vercel env vars
 - **At go-live:** Remove this env var entirely AND remove the auth check from `src/middleware.ts`
 
-#### NEXT_PUBLIC_FORMSPREE_ID
-- **What it does:** The ID of your Formspree form. The contact form uses this to know where to send submissions.
+#### RESEND_API_KEY
+- **What it does:** API key for Resend. The contact form uses it to email submissions to `contact@aetherisvision.com` (it also powers sign-in links and invoices). If it is missing, the contact form returns 503 and shows an "unavailable" notice.
 - **How to get it:**
-  1. Log into formspree.io
-  2. Click your form ("Aetheris Vision Contact")
-  3. Look at the URL or the endpoint — it will say `https://formspree.io/f/xpwzabcd`
-  4. The ID is the last part: `xpwzabcd`
-- **Format:** 8-character alphanumeric string, e.g. `xpwzabcd`
-- **Where to put it:** Vercel → Settings → Environment Variables → `NEXT_PUBLIC_FORMSPREE_ID`
+  1. Log into resend.com
+  2. Go to **API Keys** → **Create API Key**
+  3. Copy the key (it starts with `re_`)
+- **Format:** string starting with `re_`
+- **Where to put it:** Vercel → Settings → Environment Variables → `RESEND_API_KEY` (server-only — do NOT prefix with `NEXT_PUBLIC_`)
 
 #### NEXT_PUBLIC_GISCUS_REPO
 - **What it does:** The GitHub repository where blog comments are stored.
@@ -549,13 +548,13 @@ They live in two places:
 
 ### What "NEXT_PUBLIC_" means
 
-Any variable starting with `NEXT_PUBLIC_` is visible in the browser to anyone who looks at the page source. This is fine for Giscus and Formspree IDs — they are not secret. Variables WITHOUT that prefix (like `PREVIEW_PASSWORD`) only exist on the server and are never visible to visitors.
+Any variable starting with `NEXT_PUBLIC_` is visible in the browser to anyone who looks at the page source. This is fine for Giscus IDs — they are not secret. Variables WITHOUT that prefix (like `PREVIEW_PASSWORD` and `RESEND_API_KEY`) only exist on the server and are never visible to visitors.
 
 ### How to add an environment variable to Vercel
 
 1. Go to vercel.com → your project → **Settings** → **Environment Variables**
 2. Click **Add New**
-3. Enter the name (e.g. `NEXT_PUBLIC_FORMSPREE_ID`) and value
+3. Enter the name (e.g. `RESEND_API_KEY`) and value
 4. Select **Production** (and optionally Preview and Development)
 5. Click **Save**
 6. **Important:** You must redeploy for the new variable to take effect. Go to the **Deployments** tab → click the three dots on the latest deployment → **Redeploy**
@@ -603,13 +602,13 @@ Any variable starting with `NEXT_PUBLIC_` is visible in the browser to anyone wh
 - **What you manage here:** DNS records (the A record and CNAME that point the domain to Vercel).
 - **You rarely need to go here** unless changing where the domain points.
 
-### Formspree (contact form email delivery)
-- **What it is:** A service that receives contact form submissions and emails them to you.
-- **Why:** Sending email directly from code requires a complex email server setup. Formspree handles all of that.
-- **How it works:** Your contact form sends data to Formspree's servers → Formspree emails it to `contact@aetherisvision.com`
-- **Free tier:** 50 submissions/month. Upgrade if you need more.
-- **Dashboard:** formspree.io
-- **Important:** The form submission is proxied through your own server (`/api/contact`) so ad-blockers cannot block it.
+### Resend (contact form email delivery)
+- **What it is:** The email API that delivers contact form submissions to you (and also sends sign-in links and invoices).
+- **Why:** Reuses the email provider already wired into the site, sending from the verified `aetherisvision.com` domain — no separate third-party login.
+- **How it works:** Your contact form posts to `/api/contact` → the server emails the submission via Resend to `contact@aetherisvision.com`, with `replyTo` set to the visitor so you can reply directly.
+- **Free tier:** generous monthly send allowance (see resend.com pricing).
+- **Dashboard:** resend.com
+- **Important:** The email is sent server-side from `/api/contact`, so the API key is never exposed to the browser. If `RESEND_API_KEY` is unset, the form returns 503 and shows an "unavailable" notice.
 
 ### Cal.com (booking)
 - **What it is:** An open-source calendar and booking service.
@@ -699,11 +698,11 @@ dig NS aetherisvision.com +short       # Should show Cloudflare nameservers
 
 1. Visitor fills out the form at `/contact`
 2. Browser sends data to `aetherisvision.com/api/contact` (your Vercel server)
-3. Vercel server forwards it to `formspree.io/f/[YOUR_FORM_ID]`
-4. Formspree emails the submission to `contact@aetherisvision.com`
-5. You receive it in Gmail
+3. The Vercel server emails the submission via Resend (from the verified `aetherisvision.com` domain)
+4. Resend delivers it to `contact@aetherisvision.com`, with `replyTo` set to the visitor
+5. You receive it in Gmail and can reply straight to the visitor
 
-The form is routed through your own server (not directly to Formspree from the visitor's browser) so that ad-blockers cannot intercept or block it.
+The email is sent server-side from `/api/contact` (not from the visitor's browser), so the Resend API key stays secret and ad-blockers cannot intercept the submission.
 
 ---
 
@@ -768,9 +767,9 @@ The CSP is the most complex security feature. Here's how it works:
 
 ### "The contact form shows an error"
 
-1. Check that `NEXT_PUBLIC_FORMSPREE_ID` is set in Vercel (Settings → Environment Variables)
-2. Make sure the value is ONLY the short ID (like `xpwzabcd`) — not the full URL
-3. Check formspree.io that your form is Active (not "awaiting confirmation")
+1. Check that `RESEND_API_KEY` is set in Vercel (Settings → Environment Variables). If it is missing, the form returns 503 and shows an "unavailable" notice.
+2. Make sure the value is the full key starting with `re_` and has not been revoked in the Resend dashboard.
+3. Confirm the `aetherisvision.com` sending domain is verified in Resend (Domains tab).
 4. After changing env vars, you must redeploy: Vercel → Deployments → Redeploy
 
 ### "The blog comments section is not showing"
@@ -874,7 +873,7 @@ export const metadata = {
 ### Routine tasks
 
 **Monthly:**
-- Check formspree.io submission count (free tier: 50/month). Upgrade if needed.
+- Check resend.com email usage against your plan's monthly send allowance. Upgrade if needed.
 - Review any GitHub Discussions (blog comments) that need moderation.
 - Check Vercel dashboard for any deployment errors.
 

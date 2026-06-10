@@ -6,24 +6,24 @@ Feature: Contact Form
   # ── API layer ──────────────────────────────────────────────────────────────
 
   Scenario: Visitor submits a valid contact request
-    Given the contact API is configured with Formspree
+    Given the contact API is configured with Resend
     When a visitor submits the form with name "Jane Doe" email "jane@example.com" and message "Need a custom website for my business"
-    Then the submission should be forwarded to Formspree
+    Then the submission should be emailed via Resend
     And the response status should be 200
 
   Scenario: Bot triggers the honeypot
-    Given the contact API is configured with Formspree
+    Given the contact API is configured with Resend
     When a bot submits the form with the honeypot field filled
     Then the response status should be 200
-    And the submission should not be forwarded to Formspree
+    And the submission should not be emailed via Resend
 
   Scenario: Rate limiting kicks in after too many requests
-    Given the contact API is configured with Formspree
+    Given the contact API is configured with Resend
     When 6 submissions come from the same IP address
     Then the 6th response status should be 429
 
   Scenario: Form configuration missing
-    Given Formspree is not configured
+    Given Resend is not configured
     When a visitor submits the form with name "Test" email "test@test.com" and message "Hello"
     Then the response status should be 503
 

@@ -49,7 +49,7 @@ export default function PrivacyPage() {
                 <strong className="text-gray-300">Contact form</strong> &mdash; when you submit
                 the form at <code className="text-gray-300">/contact</code>, we collect your
                 name, email, and message so we can respond to your inquiry. Submissions are
-                delivered through Formspree.
+                delivered to us by email through Resend.
               </li>
               <li>
                 <strong className="text-gray-300">Analytics</strong> &mdash; Vercel Analytics
@@ -74,12 +74,11 @@ export default function PrivacyPage() {
             <ul className="mt-3 ml-4 space-y-2 list-disc list-outside">
               <li><strong className="text-gray-300">Vercel</strong> &mdash; website hosting and CDN (processes request logs and IP addresses).</li>
               <li><strong className="text-gray-300">Vercel Analytics</strong> &mdash; cookieless, aggregate website analytics.</li>
-              <li><strong className="text-gray-300">Formspree</strong> &mdash; contact form delivery.</li>
               <li><strong className="text-gray-300">Google Analytics</strong> &mdash; site usage analytics, loaded only when a measurement ID is configured.</li>
               <li><strong className="text-gray-300">Neon</strong> &mdash; database for client-portal accounts and records.</li>
               <li><strong className="text-gray-300">Stripe</strong> &mdash; invoicing and payment processing.</li>
               <li><strong className="text-gray-300">Docuseal</strong> &mdash; document e-signature.</li>
-              <li><strong className="text-gray-300">Resend</strong> &mdash; transactional email (sign-in links and invoices).</li>
+              <li><strong className="text-gray-300">Resend</strong> &mdash; transactional email (sign-in links, invoices, and contact form delivery).</li>
             </ul>
             <p className="mt-3 text-sm text-gray-500">
               Each provider processes data under its own terms and privacy policy. We share only

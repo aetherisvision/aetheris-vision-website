@@ -20,8 +20,11 @@ let apiResponse: Response;
 let fetchCallCount = 0;
 
 const originalFetch = globalThis.fetch;
-const originalFormspreeId = process.env.NEXT_PUBLIC_FORMSPREE_ID;
+const originalResendKey = process.env.RESEND_API_KEY;
 
+// The route delivers via the Resend SDK, which calls the global `fetch`. We
+// stub fetch to mimic a successful Resend API response (the SDK reads
+// `response.headers.entries()` on the ok path, so headers must be present).
 function installMockFetch(): void {
   fetchCallCount = 0;
   globalThis.fetch = (async () => {
@@ -29,7 +32,8 @@ function installMockFetch(): void {
     return {
       ok: true,
       status: 200,
-      json: async () => ({ ok: true }),
+      headers: new Headers(),
+      json: async () => ({ id: "email_test" }),
     } as unknown as Response;
   }) as typeof fetch;
 }
@@ -51,14 +55,14 @@ function uniqueIp(): string {
   return `bdd-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-Given("the contact API is configured with Formspree", async function () {
-  process.env.NEXT_PUBLIC_FORMSPREE_ID = "test123";
+Given("the contact API is configured with Resend", async function () {
+  process.env.RESEND_API_KEY = "re_test_key";
   installMockFetch();
   await loadRoute();
 });
 
-Given("Formspree is not configured", async function () {
-  process.env.NEXT_PUBLIC_FORMSPREE_ID = "";
+Given("Resend is not configured", async function () {
+  process.env.RESEND_API_KEY = "";
   installMockFetch();
   await loadRoute();
 });
@@ -91,12 +95,12 @@ When("{int} submissions come from the same IP address", async function (count: n
   }
 });
 
-Then("the submission should be forwarded to Formspree", function () {
-  assert.ok(fetchCallCount > 0, "Expected the submission to be forwarded to Formspree");
+Then("the submission should be emailed via Resend", function () {
+  assert.ok(fetchCallCount > 0, "Expected the submission to be emailed via Resend");
 });
 
-Then("the submission should not be forwarded to Formspree", function () {
-  assert.equal(fetchCallCount, 0, "Submission should not have been forwarded to Formspree");
+Then("the submission should not be emailed via Resend", function () {
+  assert.equal(fetchCallCount, 0, "Submission should not have been emailed via Resend");
 });
 
 Then("the response status should be {int}", function (status: number) {
@@ -178,14 +182,12 @@ When("they click submit", function () {
 });
 
 When("the API responds with success", function () {
-  process.env.NEXT_PUBLIC_FORMSPREE_ID = "test123";
   globalThis.fetch = (async () =>
     ({ ok: true, status: 200, json: async () => ({ ok: true }) }) as unknown as Response) as typeof fetch;
   clickSubmit();
 });
 
 When("the API responds with a server error", function () {
-  process.env.NEXT_PUBLIC_FORMSPREE_ID = "test123";
   globalThis.fetch = (async () =>
     ({ ok: false, status: 500, json: async () => ({}) }) as unknown as Response) as typeof fetch;
   clickSubmit();
@@ -220,10 +222,10 @@ Then("they should see an error message with contact instructions", async functio
 
 After(function () {
   globalThis.fetch = originalFetch;
-  if (originalFormspreeId === undefined) {
-    delete process.env.NEXT_PUBLIC_FORMSPREE_ID;
+  if (originalResendKey === undefined) {
+    delete process.env.RESEND_API_KEY;
   } else {
-    process.env.NEXT_PUBLIC_FORMSPREE_ID = originalFormspreeId;
+    process.env.RESEND_API_KEY = originalResendKey;
   }
   form = null;
 });

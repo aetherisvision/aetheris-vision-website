@@ -33,18 +33,22 @@ function fillValidFields() {
 }
 
 describe("ContactForm — unavailable notice", () => {
-  // Force the form into the unconfigured state so the notice always renders,
-  // regardless of whether NEXT_PUBLIC_FORMSPREE_ID is set in the dev shell.
-  beforeEach(() => {
-    vi.stubEnv("NEXT_PUBLIC_FORMSPREE_ID", "");
-  });
+  // The form can't know server-side config up front, so the "unavailable"
+  // notice is surfaced reactively when the API returns 503 (RESEND_API_KEY
+  // unset). Simulate that response and assert the notice renders.
   afterEach(() => {
-    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
   });
 
-  it("renders the notice with correct spacing around the links", () => {
+  it("renders the notice with correct spacing around the links after a 503", async () => {
+    vi.stubGlobal("fetch", vi.fn(() =>
+      Promise.resolve({ ok: false, status: 503, json: () => Promise.resolve({ error: "Form not configured" }) })
+    ));
     render(<ContactForm />);
-    const notice = screen.getByRole("status");
+    fillValidFields();
+    fireEvent.click(screen.getByRole("button", { name: /send message/i }));
+
+    const notice = await screen.findByRole("status");
     // Collapse runtime whitespace and assert no words are glued together.
     const text = notice.textContent?.replace(/\s+/g, " ").trim();
     expect(text).toContain("or book a call and we'll follow up.");
@@ -190,12 +194,7 @@ describe("ContactForm — character count", () => {
 });
 
 describe("ContactForm — submission", () => {
-  beforeEach(() => {
-    vi.stubEnv("NEXT_PUBLIC_FORMSPREE_ID", "test123");
-  });
-
   afterEach(() => {
-    vi.unstubAllEnvs();
     vi.unstubAllGlobals();
   });
 

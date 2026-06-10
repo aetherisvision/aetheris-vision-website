@@ -211,7 +211,7 @@ Visitor types question → /api/chat (POST)
 |---|---|---|
 | Marketing pages | ✅ | 10 pages (Home, About, Capabilities, Portfolio, Blog, Book, Intake, Contact, Privacy, Security) |
 | Portfolio demos | ✅ | 7 live demo sites (law firm, restaurant, contractor, nonprofit, analytics dashboard, international market, portal pro) |
-| Contact form | ✅ | Server-validated, rate-limited, honeypot-protected, via Formspree |
+| Contact form | ✅ | Server-validated, rate-limited, honeypot-protected, delivered by email via Resend |
 | Blog | ✅ | Markdown-driven with categories, comments (Giscus), subscriptions |
 | Booking | ✅ | Cal.com embedded scheduling |
 | SEO | ✅ | JSON-LD (Organization, WebSite, LocalBusiness), OG images, dynamic sitemap, robots.txt |
@@ -651,7 +651,7 @@ export async function POST(req: NextRequest) {
 
 ### What is a database?
 
-A database is where your website stores information permanently. — all content is written directly in the code files. Blog posts are in `src/lib/posts.ts`. Contact form submissions go to Formspree's servers.
+A database is where your website stores information permanently. — all content is written directly in the code files. Blog posts are in `src/lib/posts.ts`. Contact form submissions are emailed to us via Resend.
 
 **Why would you need one?** Think of a database like a filing cabinet that your website can read from and write to automatically. Without it, you can't:
 
@@ -797,7 +797,7 @@ CRM stands for **Customer Relationship Management**. It's a system that tracks e
 **How does it connect to our website?** You can automatically create a contact in HubSpot every time someone fills out the website's contact form:
 
 ```typescript
-// src/app/api/contact/route.ts — after Formspree submission
+// src/app/api/contact/route.ts — after sending the contact email
 await fetch("https://api.hubapi.com/crm/v3/objects/contacts", {
   method: "POST",
   headers: {
@@ -877,7 +877,7 @@ export default async function LeadsPage() {
 
 How to send emails automatically from the website — like payment receipts, project updates, or welcome messages.
 
-**Why do you need programmatic email?** Right now, contact form submissions go to Formspree, which emails you. That works for a contact form. But for a real platform that has users, you need to send emails automatically — like when someone pays, or when you update their project status. You can't manually send every receipt.
+**Why do you need programmatic email?** The contact form already sends submissions to you by email via Resend. But for a real platform that has users, you need to send emails automatically — like when someone pays, or when you update their project status. You can't manually send every receipt.
 
 ### Recommended: Resend
 
@@ -980,7 +980,7 @@ Every website on the internet is constantly being probed by bots and attackers. 
 **The rule:** Anything with `NEXT_PUBLIC_` in the name is visible to EVERYONE who visits your site. The `NEXT_PUBLIC_` prefix tells Next.js "it's okay to send this to the browser." That's fine for things that are *meant* to be public (like a form endpoint). But it's catastrophic for things that should be secret (like a database password).
 
 ```
-✅ NEXT_PUBLIC_FORMSPREE_ID    → Safe (just a form endpoint)
+✅ NEXT_PUBLIC_GISCUS_REPO     → Safe (public repo identifier)
 ✅ NEXT_PUBLIC_STRIPE_PK       → Safe (publishable key, meant to be public)
 ❌ STRIPE_SECRET_KEY           → NEVER add NEXT_PUBLIC_ prefix
 ❌ DATABASE_URL                → NEVER add NEXT_PUBLIC_ prefix
@@ -1005,7 +1005,7 @@ Before you build a feature, you need to know what it costs to run. Some services
 | Cloudflare (DNS/CDN)     | $0 (Free plan)     |
 | Google Workspace (email) | $7.20              |
 | Cal.com (booking)        | $0 (Free plan)     |
-| Formspree (contact form) | $0 (Free plan)     |
+| Resend (email/contact)   | $0 (Free plan)     |
 | GitHub (code hosting)    | $0                 |
 | **Total**          | **$7.20/mo** |
 
@@ -1125,7 +1125,7 @@ Here's the exact sequence you'd follow:
 
 | Term                           | What It Means                                                                                                                                                          |
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **API**                  | Application Programming Interface — a way for two programs to talk to each other. When your website sends form data to Formspree, it's using Formspree's API.         |
+| **API**                  | Application Programming Interface — a way for two programs to talk to each other. When your website sends a contact email through Resend, it's using Resend's API.         |
 | **API Route**            | A server-side endpoint in your Next.js app (files in `src/app/api/`). It's code that runs on the server, not in the browser.                                         |
 | **Auth**                 | Short for Authentication — verifying who someone is when they log in.                                                                                                 |
 | **CRUD**                 | Create, Read, Update, Delete — the four basic things you can do with data in a database.                                                                              |
