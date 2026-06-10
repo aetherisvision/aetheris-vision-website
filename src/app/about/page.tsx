@@ -7,7 +7,7 @@ import { SITE, SAM } from "@/lib/constants";
 export const metadata = {
   title: `About | ${SITE.name}`,
   description:
-    "Meet the team behind Aetheris Vision: 35 years of operational meteorology, USAF expertise, and AI/ML integration for complex operational systems.",
+    `Meet the team behind ${SITE.name}: 35 years of operational meteorology, USAF expertise, and AI/ML integration for complex operational systems.`,
 };
 
 const credentials = [

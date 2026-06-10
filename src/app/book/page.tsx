@@ -6,7 +6,7 @@ import { SITE } from "@/lib/constants";
 export const metadata = {
   title: `Book a Consultation | ${SITE.name}`,
   description:
-    "Schedule a consultation with the Aetheris Vision team to discuss your weather, AI/ML, or systems engineering requirements.",
+    `Schedule a consultation with the ${SITE.name} team to discuss your weather, AI/ML, or systems engineering requirements.`,
 };
 
 export default function BookPage() {
