@@ -30,7 +30,7 @@ export default function BlogClientPage({
           Insights & <span className="text-blue-500">Analysis</span>
         </h1>
         <p className="text-gray-400 text-lg md:text-xl max-w-2xl font-light">
-          Executive perspectives on atmospheric modeling, machine learning architecture, and technical defense contracting.
+          Executive perspectives on atmospheric modeling, machine learning architecture, and complex systems engineering.
         </p>
       </div>
 

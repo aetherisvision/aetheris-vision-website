@@ -44,7 +44,7 @@ export default function ReviewPage() {
               Share your experience
             </h1>
             <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '16px', lineHeight: '1.6', fontWeight: '300' }}>
-              Your honest feedback means a lot. It helps us improve and helps other business owners and agencies know what to expect when they work with us.
+              Your honest feedback means a lot. It helps us improve and helps other business owners and organizations know what to expect when they work with us.
             </p>
           </div>
 

@@ -11,7 +11,7 @@ interface Message {
 const SUGGESTIONS = [
   "What services do you offer?",
   "How much does a website cost?",
-  "Do you work with federal agencies?",
+  "What contracting credentials do you hold?",
   "How do I get started?",
 ];
 
@@ -29,7 +29,7 @@ export default function ChatWidget() {
         {
           role: "assistant",
           content:
-            "Hi! I'm the Aetheris Vision assistant. I can answer questions about our meteorology, AI/ML, web development, and federal contracting services. How can I help?",
+            "Hi! I'm the Aetheris Vision assistant. I can answer questions about our meteorology, AI/ML, web development, and consulting services. How can I help?",
         },
       ]);
     }
@@ -114,7 +114,7 @@ export default function ChatWidget() {
       {
         role: "assistant",
         content:
-          "Hi! I'm the Aetheris Vision assistant. I can answer questions about our meteorology, AI/ML, web development, and federal contracting services. How can I help?",
+          "Hi! I'm the Aetheris Vision assistant. I can answer questions about our meteorology, AI/ML, web development, and consulting services. How can I help?",
       },
     ]);
     setInput("");

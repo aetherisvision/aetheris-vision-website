@@ -6,7 +6,7 @@ import { SITE } from "@/lib/constants";
 
 export const metadata = {
   title: `Blog | ${SITE.name}`,
-  description: "Insights on AI, meteorology, and defense consulting from Aetheris Vision.",
+  description: "Insights on AI, meteorology, and systems engineering from Aetheris Vision.",
 };
 
 export default function BlogIndex() {

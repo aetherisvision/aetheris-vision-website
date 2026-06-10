@@ -152,9 +152,9 @@ export default async function BlogPost({ params }: Props) {
           {/* CTA */}
           <div className="rounded-xl border border-white/5 bg-white/[0.02] p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
-              <p className="text-white font-medium mb-1">Working on a mission like this?</p>
+              <p className="text-white font-medium mb-1">Working on a system like this?</p>
               <p className="text-gray-500 text-sm font-light">
-                {SITE.name} delivers AI/ML, operational meteorology, and technical consulting for federal, defense, and commercial clients. Veteran-owned ({SAM.setAside}).
+                {SITE.name} delivers AI/ML, operational meteorology, and technical consulting for complex production systems. Veteran-owned ({SAM.setAside}).
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 shrink-0">

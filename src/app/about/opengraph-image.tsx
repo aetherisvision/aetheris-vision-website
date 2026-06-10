@@ -59,7 +59,7 @@ export default function OGImage() {
           and AI Intelligence.
         </h1>
         <p style={{ fontSize: "22px", color: "#9ca3af", marginTop: "28px", maxWidth: "700px", lineHeight: 1.5 }}>
-          Operational meteorology · AI/ML integration · Defense and civil agency support
+          Operational meteorology · AI/ML integration · Secure, resilient systems engineering
         </p>
         <div style={{ display: "flex", gap: "16px", marginTop: "auto" }}>
           {badges.map((label) => (

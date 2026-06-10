@@ -34,7 +34,7 @@ const STATIC_SOURCES: SatelliteSource[] = [
 export const metadata = {
   title: `${SITE.name} | ${SITE.tagline}`,
   description:
-    "Applied meteorology and AI-powered atmospheric intelligence for government and defense agencies. Veteran-owned. SAM registered. Based in Oklahoma.",
+    "Applied meteorology and AI-powered atmospheric intelligence for complex operational systems. Veteran-owned. SAM registered. Based in Oklahoma.",
 };
 
 export default async function Home() {
@@ -66,13 +66,6 @@ export default async function Home() {
           <SatelliteDisplay sources={sources} />
           
           <div className="mx-auto max-w-5xl px-6 relative z-10">
-            <FadeIn delay={0.1}>
-              <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm text-gray-300 mb-8 backdrop-blur-sm">
-                <span className="flex h-2 w-2 rounded-full bg-blue-500 mr-2 animate-pulse"></span>
-                SDVOSB/VOSB Cert In Process · U.S. Government Secret Clearance · SAM Registered
-              </div>
-            </FadeIn>
-            
             <FadeIn delay={0.2}>
               <h1 className="text-5xl md:text-7xl font-semibold tracking-tighter text-white mb-6 leading-[1.1]">
                 Applied Meteorology <br />
@@ -84,7 +77,7 @@ export default async function Home() {
 
             <FadeIn delay={0.3}>
               <p className="max-w-2xl text-lg md:text-xl text-gray-400 mb-10 leading-relaxed font-light">
-                AI-powered atmospheric intelligence and scientific consulting for government, defense, and civil agencies. We also design and build custom websites and software for businesses that need more than a template.
+                AI-powered atmospheric intelligence and scientific consulting for complex operational systems. We also design and build custom websites and software for businesses that need more than a template.
               </p>
             </FadeIn>
             
@@ -140,7 +133,7 @@ export default async function Home() {
                 <div className="h-px w-12 bg-blue-500/50 mb-6"></div>
                 
                 <p className="text-base text-gray-400 font-light leading-relaxed mb-8">
-                  In ancient philosophy, aether was the fifth element that filled the universe above the terrestrial sphere. For our business, it represents 35 years of deep operational meteorology expertise paired with a vision for the future: bringing clarity, structure, and advanced AI/ML capabilities to highly complex government and enterprise systems charting the skies, space, and earth.
+                  In ancient philosophy, aether was the fifth element that filled the universe above the terrestrial sphere. For our business, it represents 35 years of deep operational meteorology expertise paired with a vision for the future: bringing clarity, structure, and advanced AI/ML capabilities to highly complex operational and enterprise systems charting the skies, space, and earth.
                 </p>
               </FadeIn>
               
@@ -148,7 +141,7 @@ export default async function Home() {
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   <span className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div> Meteorology</span>
                   <span className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div> AI Integration</span>
-                  <span className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div> Defense Tech</span>
+                  <span className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div> Systems Engineering</span>
                 </div>
               </FadeIn>
             </div>
@@ -211,7 +204,7 @@ export default async function Home() {
                   </div>
                   <h3 className="text-xl md:text-2xl font-medium text-white mb-3">AI / ML Integration</h3>
                   <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base">
-                    Pioneering machine learning techniques tailored for complex, large-scale meteorological datasets to increase predictive accuracy and mission readiness.
+                    Pioneering machine learning techniques tailored for complex, large-scale meteorological datasets to increase predictive accuracy and operational readiness.
                   </p>
                 </div>
               </div>
@@ -261,7 +254,7 @@ export default async function Home() {
                   </div>
                   <h3 className="text-xl md:text-2xl font-medium text-white mb-3">Technical Advisory</h3>
                   <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base">
-                    Bridging the gap between deep environmental science (PhD level) and scalable software engineering architecture for government and enterprise.
+                    Bridging the gap between deep environmental science (PhD level) and scalable software engineering architecture for production systems.
                   </p>
                 </div>
               </div>
@@ -276,7 +269,7 @@ export default async function Home() {
                   </div>
                   <h3 className="text-xl md:text-2xl font-medium text-white mb-3">Technical Leadership</h3>
                   <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base">
-                    Program and project technical direction for defense and civil agency missions. IPT leadership, emerging technology assessment, and workforce capability development for operational environments.
+                    Program and project technical direction for large-scale operational programs. IPT leadership, emerging technology assessment, and workforce capability development for operational environments.
                   </p>
                 </div>
               </div>

@@ -88,7 +88,7 @@ export default function OGImage() {
             lineHeight: 1.5,
           }}
         >
-          AI/ML Weather Prediction · Operational Meteorology · Federal Defense Consulting
+          AI/ML Weather Prediction · Operational Meteorology · Technical Systems Consulting
         </p>
         <div
           style={{
