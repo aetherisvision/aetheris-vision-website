@@ -1,5 +1,14 @@
 import { describe, it, expect } from "vitest";
-import { posts, getPostBySlug, getPrevNextPosts, getCategories } from "@/lib/posts";
+import {
+  posts,
+  getPostBySlug,
+  getPrevNextPosts,
+  getCategories,
+  computeReadTime,
+  sortPostsByDateDesc,
+  parsePostDate,
+  getPostISODate,
+} from "@/lib/posts";
 
 describe("posts data", () => {
   it("exports a non-empty posts array", () => {
@@ -37,6 +46,84 @@ describe("posts data", () => {
     const ids = posts.map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
+
+  it("posts are sorted by date descending (newest first)", () => {
+    for (let i = 1; i < posts.length; i++) {
+      const prevTime = parsePostDate(posts[i - 1].date).getTime();
+      const currTime = parsePostDate(posts[i].date).getTime();
+      expect(prevTime).toBeGreaterThanOrEqual(currTime);
+    }
+  });
+
+  it("read times are computed from actual content word count", () => {
+    for (const post of posts) {
+      expect(post.readTime).toBe(computeReadTime(post.content));
+    }
+  });
+});
+
+describe("computeReadTime", () => {
+  it("returns a minimum of 1 min read for short content", () => {
+    expect(computeReadTime("just a few words")).toBe("1 min read");
+    expect(computeReadTime("")).toBe("1 min read");
+  });
+
+  it("computes minutes at ~200 words per minute", () => {
+    const words400 = Array.from({ length: 400 }, (_, i) => `word${i}`).join(" ");
+    expect(computeReadTime(words400)).toBe("2 min read");
+    const words1000 = Array.from({ length: 1000 }, (_, i) => `word${i}`).join(" ");
+    expect(computeReadTime(words1000)).toBe("5 min read");
+  });
+
+  it("rounds up so read times are never understated", () => {
+    const words201 = Array.from({ length: 201 }, (_, i) => `word${i}`).join(" ");
+    expect(computeReadTime(words201)).toBe("2 min read");
+  });
+
+  it("ignores extra whitespace when counting words", () => {
+    expect(computeReadTime("  one \n\n two\t three  ")).toBe("1 min read");
+  });
+});
+
+describe("sortPostsByDateDesc", () => {
+  it("sorts newest first", () => {
+    const items = [
+      { id: 1, date: "Jan 15, 2026" },
+      { id: 2, date: "Mar 26, 2026" },
+      { id: 3, date: "Feb 28, 2026" },
+    ];
+    expect(sortPostsByDateDesc(items).map((p) => p.id)).toEqual([2, 3, 1]);
+  });
+
+  it("breaks date ties by id descending", () => {
+    const items = [
+      { id: 3, date: "Mar 25, 2026" },
+      { id: 5, date: "Mar 25, 2026" },
+    ];
+    expect(sortPostsByDateDesc(items).map((p) => p.id)).toEqual([5, 3]);
+  });
+
+  it("does not mutate the input array", () => {
+    const items = [
+      { id: 1, date: "Jan 15, 2026" },
+      { id: 2, date: "Mar 26, 2026" },
+    ];
+    sortPostsByDateDesc(items);
+    expect(items.map((p) => p.id)).toEqual([1, 2]);
+  });
+});
+
+describe("getPostISODate", () => {
+  it("formats display dates as YYYY-MM-DD", () => {
+    expect(getPostISODate({ date: "Mar 26, 2026" })).toBe("2026-03-26");
+    expect(getPostISODate({ date: "Jan 15, 2026" })).toBe("2026-01-15");
+  });
+});
+
+describe("parsePostDate", () => {
+  it("throws a clear error for malformed dates", () => {
+    expect(() => parsePostDate("not a date")).toThrowError(/Invalid post date/);
+  });
 });
 
 describe("getPostBySlug", () => {
@@ -53,18 +140,18 @@ describe("getPostBySlug", () => {
 });
 
 describe("getPrevNextPosts", () => {
-  it("returns null prev for the first post", () => {
+  it("returns null next for the newest post (nothing newer)", () => {
     const { prev, next } = getPrevNextPosts(posts[0].slug);
-    expect(prev).toBeNull();
+    expect(next).toBeNull();
     if (posts.length > 1) {
-      expect(next).not.toBeNull();
+      expect(prev).not.toBeNull();
     }
   });
 
-  it("returns null next for the last post", () => {
-    const last = posts[posts.length - 1];
-    const { next } = getPrevNextPosts(last.slug);
-    expect(next).toBeNull();
+  it("returns null prev for the oldest post (nothing older)", () => {
+    const oldest = posts[posts.length - 1];
+    const { prev } = getPrevNextPosts(oldest.slug);
+    expect(prev).toBeNull();
   });
 
   it("returns both prev and next for a middle post", () => {
@@ -74,6 +161,28 @@ describe("getPrevNextPosts", () => {
       expect(prev).not.toBeNull();
       expect(next).not.toBeNull();
     }
+  });
+
+  it("navigation follows chronological order", () => {
+    for (let i = 0; i < posts.length; i++) {
+      const { prev, next } = getPrevNextPosts(posts[i].slug);
+      if (prev) {
+        expect(parsePostDate(prev.date).getTime()).toBeLessThanOrEqual(
+          parsePostDate(posts[i].date).getTime()
+        );
+      }
+      if (next) {
+        expect(parsePostDate(next.date).getTime()).toBeGreaterThanOrEqual(
+          parsePostDate(posts[i].date).getTime()
+        );
+      }
+    }
+  });
+
+  it("returns nulls for an unknown slug", () => {
+    const { prev, next } = getPrevNextPosts("nonexistent-post-slug-xyz");
+    expect(prev).toBeNull();
+    expect(next).toBeNull();
   });
 });
 
