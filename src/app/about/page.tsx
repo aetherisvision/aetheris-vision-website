@@ -153,7 +153,7 @@ export default function AboutPage() {
                   The Meaning Behind <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">Aetheris</span>
                 </h2>
                 <p className="text-gray-400 font-light leading-relaxed mb-4">
-                  Derived from the ancient Latin and Greek word <em className="text-white">aetheris</em> (meaning &ldquo;the clear sky&rdquo; or &ldquo;the pure, fresh air breathed by the gods&rdquo;), our name reflects a commitment to mapping the unknown with clarity and precision.
+                  Derived from <em className="text-white">aetheris</em>, a form of the Latin <em className="text-white">aether</em>{' '}(from the Greek <em className="text-white">aith&#275;r</em>, the bright upper air of the heavens, the pure air breathed by the gods), our name reflects a commitment to mapping the unknown with clarity and precision.
                 </p>
                 <p className="text-gray-400 font-light leading-relaxed">
                   In ancient philosophy, aether was the fifth element filling the universe above the terrestrial sphere. For us, it represents the convergence of 35 years of deep operational expertise with a vision for the future: bringing structure, clarity, and advanced AI/ML capabilities to the systems that chart the skies, space, and earth.

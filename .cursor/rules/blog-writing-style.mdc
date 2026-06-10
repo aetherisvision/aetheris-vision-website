@@ -1,0 +1,135 @@
+---
+description: "Writing style guide for authoring blog posts in Marston Ward's voice"
+globs: ["src/lib/posts.ts"]
+alwaysApply: false
+---
+
+# Blog Writing Style — Marston Ward's Voice
+
+Any blog post added to `src/lib/posts.ts` must read like Marston wrote it himself.
+He is a USAF veteran weather forecaster, Ph.D. atmospheric scientist, and working
+engineer. His voice is plainspoken-but-literate, concrete, and earned — never salesy.
+
+## Voice (author-stated — authoritative)
+
+Marston's own description, verbatim: *"rooted in biblical, poetic and witty. short
+sentences with good connectors, topical sentences that flow logically throughout.
+Shakespeare and classical literature should shine through."* In practice:
+
+- DO root the register in biblical, poetic, and witty veins — allusion and cadence
+  drawn from the King James tradition, Shakespeare, and classical literature should
+  shine through: an allusion here, a rhythmic parallel there, an occasional archaic
+  turn used deliberately. Not pastiche; seasoning, not the dish.
+- DO write short sentences joined by good connectors (yet, so, still, and so, for all
+  that). Each paragraph opens with a strong topic sentence; paragraphs flow logically
+  one to the next.
+- DO let wit be dry and literate — wordplay and turns of phrase, not jokes.
+- This register sits on top of the practitioner profile below; it changes the cadence,
+  not the substance. Plainspoken-but-literate, never plain-flat — and never ornament
+  in place of a fact.
+
+## Voice & Person
+
+- DO write in first person singular ("I spent ten years forecasting weather for the Air Force").
+- DO sound like a practitioner reporting from experience, not a firm marketing itself.
+- DON'T write in corporate "we" except when describing Aetheris Vision as a company doing client work — and even then, sparingly.
+- DON'T adopt a thought-leader persona. He explains; he doesn't pontificate.
+
+## Tone
+
+- Direct and understated, with a literate warmth. Dry confidence; wit in the turns of
+  phrase, never hype.
+- Specifics carry the argument: real system names (GFS, WRF, GraphCast, GRIB2, CloudSat),
+  real numbers, measurable outcomes ("reduced dataset reprocessing from 2 weeks → 13 hours").
+- One adjective of praise is one too many if a concrete fact can do the job. A well-placed
+  allusion, though, earns its keep.
+
+## Sentence Rhythm
+
+- Short sentences, well connected. Build rhythm through connectors and parallel
+  structure, not through long clauses. Vary with an occasional longer sentence
+  for cadence — the way a psalm breathes.
+- Strong topic sentences. Each paragraph makes one point and hands off to the next.
+- Em dashes and arrows (→) used to compress: "fetch → parse → validate".
+- Lists with verb-first bullets. Tables when comparing options. Headings every few paragraphs.
+
+## Credentials — Understated, Never Pitched
+
+- Credentials appear as matter-of-fact context inside a sentence about the work:
+  "After ten years forecasting for the Air Force..." — not as a trophy list.
+- DON'T pitch "government" as an audience or lead with set-aside status, clearance,
+  VOSB, UEI/CAGE, or SAM.gov in post body copy. Lead with the systems and the
+  problem; let credentials speak for themselves.
+- DON'T end posts with "Contact us for a consultation" sales CTAs. If a closing
+  invitation is warranted, keep it low-pressure and personal:
+  "If you're working on anything at this intersection, I'd genuinely love to talk."
+
+## Technical Depth
+
+- Name the tool or model first, then one plain-English sentence on why it matters.
+  Assume a technically literate reader; don't define basics (API, ML), do unpack
+  domain specifics (what radio occultation gives you, why 0.25° resolution matters).
+- Ground claims in operational reality: "theoretically sound" vs. "performs in
+  production" is his recurring axis of judgment.
+
+## Openings & Closings
+
+- DO open with the problem or a concrete operational scene — what broke, what was slow,
+  what forecasters actually face on shift. An apt allusion may open the door, but the
+  problem walks through it.
+- DON'T open with industry-trend throat-clearing ("The consulting market is flooded
+  with...") or grand thesis statements.
+- DO close with a practical takeaway or a forward-looking next step. Never a hard sell.
+
+## Words & Constructions He Doesn't Use
+
+Avoid all of these (they mark a post as AI-drafted):
+
+- "revolutionary", "paradigm shift", "game-changing", "cutting-edge", "world-class",
+  "elite", "unparalleled", "leverage" (as a verb for using things)
+- The "X isn't just Y. It's Z." reversal construction.
+- One-word rhetorical hooks on their own line ("Enter deep learning.").
+- Exclamation marks, emoji in prose, buzzword stacks, superlative chains.
+- Vague intensifiers: "truly", "profoundly", "fundamentally" (as filler).
+
+## Exemplar Passages
+
+Authentic, from his elevator pitch (pitch_suite.md):
+
+> "I spent ten years forecasting weather for the Air Force, got my PhD in atmospheric
+> science in Sweden, and spent the last several years leading AI and weather modeling
+> projects for NASA."
+
+Authentic, from his private-sector pitch:
+
+> "I've built satellite data pipelines that actually ran. I've led Agile teams that
+> actually delivered. I understand the difference between a model that's theoretically
+> sound and one that performs in production."
+
+Synthetic exemplars (written to demonstrate the author-stated register — not quotes):
+
+> The forecast is a kind of prophecy, and like most prophecy it is judged in the
+> morning. GraphCast runs in under a minute; the GFS takes hours. Yet speed is not
+> skill, and a fast wrong answer is still wrong — sooner.
+
+> There is nothing new under the sun, and that includes overfitting. The model knew
+> its training data the way Polonius knew proverbs: thoroughly, and to no avail. So we
+> held out two seasons, verified against station observations, and let the errors speak.
+
+## Provenance
+
+The **Voice (author-stated)** section was confirmed by Marston directly on
+2026-06-09 and is authoritative — where it conflicts with anything inferred,
+it wins. The rest of the profile was inferred from documents that live outside
+this repository (unversioned local context on Marston's machine):
+
+- **Strong evidence (reads human-authored):** `aetherisvision/marketing/pitch_suite.md`
+  (elevator pitches), `jobs_resumes/career_history.md`, `aetherisvision/status_notes.txt`,
+  and the current `src/app/about/page.tsx` copy (written after the directive to drop
+  government call-outs — commit 7f7a368).
+- **Weak evidence (likely AI-drafted; treated as anti-patterns):** the five existing
+  posts in `src/lib/posts.ts` — their sales CTAs, "paradigm shift" language, and
+  "Contact us" closings are examples of what NOT to do.
+
+If Marston corrects any further trait, update this file — his correction outranks
+the inferred profile.

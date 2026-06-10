@@ -26,7 +26,7 @@ export default function SecurityStatusPage() {
           </div>
           
           <div className="bg-gray-800 p-6 rounded-lg">
-            <h3 className="text-lg font-semibent mb-2">Rate Limiting</h3>
+            <h3 className="text-lg font-semibold mb-2">Rate Limiting</h3>
             <div className="text-3xl font-bold text-blue-400">Active</div>
             <p className="text-sm text-gray-400">100 req/15min</p>
           </div>
