@@ -7,7 +7,7 @@ import { SITE, SAM } from "@/lib/constants";
 export const metadata = {
   title: `About | ${SITE.name}`,
   description:
-    "Meet the team behind Aetheris Vision: 35 years of operational meteorology, USAF expertise, and AI/ML integration for defense and government missions.",
+    `Meet the team behind ${SITE.name}: 35 years of operational meteorology, USAF expertise, and AI/ML integration for complex operational systems.`,
 };
 
 const credentials = [
@@ -29,7 +29,7 @@ const credentials = [
   {
     icon: CpuChipIcon,
     label: "AI / ML Integration",
-    description: "Applied machine learning on large-scale meteorological datasets for mission-critical systems",
+    description: "Applied machine learning on large-scale meteorological datasets for operational systems",
   },
 ];
 
@@ -70,7 +70,7 @@ export default function AboutPage() {
                   Today his focus is engineering: building AI and numerical weather prediction (NWP) systems, along with custom software, that turn large, messy datasets into clear, usable answers. The throughline across every stage of his career is the same: understand the problem deeply, then build something that holds up in the field.
                 </p>
                 <p>
-                  He founded Aetheris Vision to bring that engineering discipline to two kinds of work: mission-critical systems for government and defense agencies, and practical, well-built websites and software for small businesses. Both deserve the same care and the same honest, plainspoken approach.
+                  He founded Aetheris Vision to bring that engineering discipline to two kinds of work: complex operational systems that have to perform under pressure, and practical, well-built websites and software for small businesses. Both deserve the same care and the same honest, plainspoken approach.
                 </p>
               </div>
             </FadeIn>

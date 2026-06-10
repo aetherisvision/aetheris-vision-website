@@ -6,7 +6,7 @@ import { SITE } from "@/lib/constants";
 export const metadata = {
   title: `Book a Consultation | ${SITE.name}`,
   description:
-    "Schedule a consultation with the Aetheris Vision team to discuss your weather, AI/ML, or defense technology requirements.",
+    `Schedule a consultation with the ${SITE.name} team to discuss your weather, AI/ML, or systems engineering requirements.`,
 };
 
 export default function BookPage() {
@@ -26,7 +26,7 @@ export default function BookPage() {
             </h1>
             <p className="text-gray-400 font-light text-lg max-w-2xl leading-relaxed">
               Select a time that works for you. We engage directly with program
-              offices, contracting officers, and technical leads to discuss your
+              managers, technical leads, and business owners to discuss your
               requirements.
             </p>
           </div>

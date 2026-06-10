@@ -2,16 +2,19 @@
 
 import { useState, useRef, useEffect } from "react";
 import { XMarkIcon, ChatBubbleOvalLeftEllipsisIcon, PaperAirplaneIcon } from "@heroicons/react/24/outline";
+import { SITE } from "@/lib/constants";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
+const GREETING = `Hi! I'm the ${SITE.name} assistant. I can answer questions about our meteorology, AI/ML, web development, and consulting services. How can I help?`;
+
 const SUGGESTIONS = [
   "What services do you offer?",
   "How much does a website cost?",
-  "Do you work with federal agencies?",
+  "What contracting credentials do you hold?",
   "How do I get started?",
 ];
 
@@ -28,8 +31,7 @@ export default function ChatWidget() {
       setMessages([
         {
           role: "assistant",
-          content:
-            "Hi! I'm the Aetheris Vision assistant. I can answer questions about our meteorology, AI/ML, web development, and federal contracting services. How can I help?",
+          content: GREETING,
         },
       ]);
     }
@@ -113,8 +115,7 @@ export default function ChatWidget() {
     setMessages([
       {
         role: "assistant",
-        content:
-          "Hi! I'm the Aetheris Vision assistant. I can answer questions about our meteorology, AI/ML, web development, and federal contracting services. How can I help?",
+        content: GREETING,
       },
     ]);
     setInput("");

@@ -15,7 +15,7 @@ const badgeStyle = {
   padding: "6px 16px",
 } as const;
 
-const badges = ["Atmospheric Modeling", "AI / ML Architecture", "Defense Contracting"];
+const badges = ["Atmospheric Modeling", "AI / ML Architecture", "Systems Engineering"];
 
 export default function OGImage() {
   return new ImageResponse(
@@ -59,7 +59,7 @@ export default function OGImage() {
           &amp; Analysis.
         </h1>
         <p style={{ fontSize: "22px", color: "#9ca3af", marginTop: "28px", maxWidth: "700px", lineHeight: 1.5 }}>
-          Executive perspectives on atmospheric modeling, machine learning architecture, and technical defense contracting.
+          Executive perspectives on atmospheric modeling, machine learning architecture, and complex systems engineering.
         </p>
         <div style={{ display: "flex", gap: "16px", marginTop: "auto" }}>
           {badges.map((label) => (

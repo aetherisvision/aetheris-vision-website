@@ -9,7 +9,7 @@ export default function BlogSubscribeCard() {
             Subscribe for New Posts
           </h2>
           <p className="text-gray-400 font-light leading-relaxed">
-            Get new insights on AI, meteorology, and technical defense consulting delivered directly to your inbox.
+            Get new insights on AI, meteorology, and systems engineering delivered directly to your inbox.
           </p>
         </div>
 

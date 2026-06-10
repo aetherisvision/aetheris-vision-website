@@ -34,7 +34,7 @@ export function GET(): Response {
   <channel>
     <title>${escapeXml(`${SITE.name} — Insights & Analysis`)}</title>
     <link>${SITE.url}/blog</link>
-    <description>${escapeXml(`Insights on AI, meteorology, and defense consulting from ${SITE.name}.`)}</description>
+    <description>${escapeXml(`Insights on AI, meteorology, and systems engineering from ${SITE.name}.`)}</description>
     <language>en-us</language>
     <lastBuildDate>${lastBuildDate}</lastBuildDate>
     <atom:link href="${SITE.url}/feed.xml" rel="self" type="application/rss+xml"/>
