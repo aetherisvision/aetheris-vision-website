@@ -90,7 +90,10 @@ From his private-sector pitch:
 
 ## Provenance
 
-This profile was inferred from documents in `~/Documents/GitHub/`:
+This profile was inferred from documents that live outside this repository
+(unversioned local context on Marston's machine, under `~/Documents/GitHub/`).
+Other contributors cannot re-derive it from this repo alone — treat Marston's
+direct feedback as the authoritative source:
 
 - **Strong evidence (reads human-authored):** `aetherisvision/marketing/pitch_suite.md`
   (elevator pitches), `jobs_resumes/career_history.md`, `aetherisvision/status_notes.txt`,
