@@ -144,7 +144,7 @@ export const sla = [
   { label: "Staging environment access", value: "10-14 business days" },
   { label: "Production deployment", value: "15-21 business days" },
   { label: "Quality assurance period", value: "30 days comprehensive warranty" },
-  { label: "Priority support response", value: "4 hours business days / 8 hours weekends" },
+  { label: "Priority support response", value: "4 hours on business days / 8 hours on weekends" },
   { label: "Performance guarantee", value: "Lighthouse 90+ or full refund" },
 ];
 

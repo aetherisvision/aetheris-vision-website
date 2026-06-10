@@ -297,7 +297,7 @@ export default function SecurityPage() {
               <h3 className="text-2xl font-semibold text-white mb-4">Enterprise Security Questions?</h3>
               <p className="text-gray-400 mb-6 max-w-2xl mx-auto">
                 Our security team can provide detailed compliance documentation, conduct security assessments, 
-                and answer specific enterprise requirements during your consultation.
+                and address specific enterprise requirements during your consultation.
               </p>
               <a
                 href="/contact"
