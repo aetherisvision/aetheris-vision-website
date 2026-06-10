@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
-import { posts, getPostBySlug, getPrevNextPosts } from "@/lib/posts";
-import { SITE } from "@/lib/constants";
+import type { Metadata } from "next";
+import { posts, getPostBySlug, getPrevNextPosts, getPostISODate } from "@/lib/posts";
+import { SITE, SAM } from "@/lib/constants";
 import { publisherRef } from "@/lib/jsonld";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -17,13 +18,31 @@ export async function generateStaticParams() {
   return posts.map((post) => ({ slug: post.slug }));
 }
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) return {};
+  const url = `${SITE.url}/blog/${post.slug}`;
   return {
     title: `${post.title} | ${SITE.name}`,
     description: post.summary,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      title: post.title,
+      description: post.summary,
+      url,
+      siteName: SITE.name,
+      locale: "en_US",
+      publishedTime: getPostISODate(post),
+      authors: [post.author.name],
+      section: post.category,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.summary,
+    },
   };
 }
 
@@ -133,17 +152,17 @@ export default async function BlogPost({ params }: Props) {
           {/* CTA */}
           <div className="rounded-xl border border-white/5 bg-white/[0.02] p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
-              <p className="text-white font-medium mb-1">Have a project in mind?</p>
+              <p className="text-white font-medium mb-1">Working on a mission like this?</p>
               <p className="text-gray-500 text-sm font-light">
-                We build custom websites and web applications for Oklahoma businesses. Veteran-owned, based in Mustang, OK.
+                {SITE.name} delivers AI/ML, operational meteorology, and technical consulting for federal, defense, and commercial clients. Veteran-owned ({SAM.setAside}).
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 shrink-0">
               <a
-                href="/intake"
+                href="/capabilities"
                 className="inline-flex h-10 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
               >
-                Start a Project
+                View Capabilities
               </a>
               <a
                 href="/contact"
@@ -167,7 +186,7 @@ export default async function BlogPost({ params }: Props) {
             "@type": "BlogPosting",
             headline: post.title,
             description: post.summary,
-            datePublished: post.date,
+            datePublished: getPostISODate(post),
             author: {
               "@type": "Person",
               name: post.author.name,

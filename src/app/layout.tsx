@@ -16,6 +16,11 @@ export const metadata: Metadata = {
   description: SITE.description,
   metadataBase: new URL(SITE.url),
   robots: { index: false, follow: false },
+  alternates: {
+    types: {
+      "application/rss+xml": `${SITE.url}/feed.xml`,
+    },
+  },
   manifest: "/manifest.json",
   icons: {
     icon: [

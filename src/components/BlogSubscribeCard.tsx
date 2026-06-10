@@ -40,10 +40,10 @@ export default function BlogSubscribeCard() {
           </form>
         ) : (
           <a
-            href="/contact?topic=Blog%20Subscription"
+            href="/feed.xml"
             className="inline-flex h-11 items-center justify-center rounded-md bg-white px-5 text-sm font-medium text-black transition-colors hover:bg-gray-200"
           >
-            Subscribe by Email
+            Subscribe via RSS
           </a>
         )}
       </div>
