@@ -61,7 +61,7 @@ export default async function BlogPost({ params }: Props) {
         {/* Background */}
         <div className="absolute inset-0 -z-20">
           <img
-            src="https://images.unsplash.com/photo-1504608524841-42f1e38e80e0?q=80&w=2500"
+            src="/images/blog/blog-post-bg.webp"
             alt=""
             aria-hidden="true"
             className="w-full h-full object-cover opacity-[0.12] mix-blend-screen"

@@ -20,7 +20,7 @@ export default function BlogIndex() {
         {/* Background */}
         <div className="absolute inset-0 -z-20">
           <img
-            src="https://images.unsplash.com/photo-1534088568595-a066f410bcda?q=80&w=2500"
+            src="/images/blog/blog-index-bg.webp"
             alt=""
             aria-hidden="true"
             className="w-full h-full object-cover opacity-[0.18] mix-blend-screen"
