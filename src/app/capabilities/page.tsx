@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { SITE, SAM } from "@/lib/constants";
@@ -12,7 +13,7 @@ export const metadata = {
     "Aetheris Vision capabilities statement: NAICS codes, contract vehicles, core competencies, and past performance for state and federal procurement.",
 };
 
-const companyData: { label: string; value: React.ReactNode }[] = [
+const companyData: { label: string; value: ReactNode }[] = [
   { label: "Legal Name", value: SITE.legalName },
   { label: "Business Type", value: "Veteran-Owned Small Business (SDVOSB / VOSB, certification in process)" },
   { label: "UEI", value: <span className="font-mono">{SAM.uei}</span> },
