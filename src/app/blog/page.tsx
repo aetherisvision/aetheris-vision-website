@@ -31,7 +31,7 @@ export default function BlogIndex() {
         </div>
         <div className="absolute inset-0 bg-gradient-to-br from-[#0e1726]/60 via-black/90 to-black -z-10" />
 
-        <div className="mx-auto max-w-5xl px-6">
+        <div className="mx-auto max-w-3xl px-6">
           <BlogClientPage posts={posts} categories={categories} />
         </div>
       </main>
