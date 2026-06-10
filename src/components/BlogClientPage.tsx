@@ -81,6 +81,7 @@ export default function BlogClientPage({
         {["All", ...categories].map((cat) => (
           <button
             key={cat}
+            type="button"
             onClick={() => setActiveCategory(cat)}
             aria-pressed={activeCategory === cat}
             className={`text-sm transition-colors ${
