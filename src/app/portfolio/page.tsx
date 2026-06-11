@@ -16,6 +16,7 @@ import {
 } from "@/lib/portfolio-data";
 import { CheckIcon, ClockIcon, ShieldCheckIcon, CpuChipIcon, ArrowRightIcon, BoltIcon, LockClosedIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import Image from "next/image";
 
 export const metadata = {
   title: `Enterprise Web Development | ${SITE.name}`,
@@ -248,28 +249,43 @@ export default function PortfolioPage() {
             </FadeIn>
           </div>
 
-          <div className="mb-24 grid gap-6 sm:grid-cols-2">
-            {demos.map((demo, i) => (
-              <FadeIn key={demo.slug} delay={i * 0.08}>
-                <Link
-                  href={`/portfolio/${demo.slug}`}
-                  className="group flex flex-col overflow-hidden rounded-xl border border-white/8 bg-white/[0.03] hover:border-blue-500/40 hover:bg-white/[0.05] transition-all"
+          <div className="mb-24 grid gap-x-6 gap-y-12 md:grid-cols-5">
+            {demos.map((demo, i) => {
+              // 2-up asymmetric rhythm: rows alternate 3/5 + 2/5 and 2/5 + 3/5.
+              const wide = i % 4 === 0 || i % 4 === 3;
+              return (
+                <FadeIn
+                  key={demo.slug}
+                  delay={(i % 2) * 0.08}
+                  className={wide ? "md:col-span-3" : "md:col-span-2"}
                 >
-                  <div className={`h-32 bg-gradient-to-br ${demo.color} flex items-end p-4`}>
-                    <span className="rounded border border-white/20 bg-black/30 px-2.5 py-1 text-xs font-semibold text-white/80 backdrop-blur">
-                      {demo.industry}
-                    </span>
-                  </div>
-                  <div className="flex flex-1 flex-col p-5">
-                    <h3 className="mb-1.5 font-semibold text-white group-hover:text-blue-300 transition-colors">{demo.title}</h3>
-                    <p className="flex-1 text-sm text-gray-400 leading-relaxed">{demo.desc}</p>
-                    <div className="mt-4 flex items-center text-sm font-medium text-blue-400 group-hover:text-blue-300">
-                      View demo <ArrowRightIcon className="ml-1.5 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                  <Link href={`/portfolio/${demo.slug}`} className="group block">
+                    {/* Full-bleed screenshot with overlaid title */}
+                    <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-white/10 group-hover:border-blue-500/40 transition-colors">
+                      <Image
+                        src={demo.image}
+                        alt={`${demo.title} — ${demo.industry} demo site`}
+                        fill
+                        sizes={wide ? "(max-width: 768px) 100vw, 600px" : "(max-width: 768px) 100vw, 400px"}
+                        className="object-cover object-top transition duration-500 group-hover:scale-[1.03]"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-transparent" />
+                      <div className="absolute inset-x-0 bottom-0 p-5">
+                        <p className="font-mono text-[10px] uppercase tracking-wider text-blue-300 mb-1">{demo.industry}</p>
+                        <h3 className="text-lg md:text-xl font-semibold text-white group-hover:text-blue-300 transition-colors">
+                          {demo.title}
+                        </h3>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              </FadeIn>
-            ))}
+                    {/* Outcome-focused metadata strip */}
+                    <div className="mt-3 border-t border-white/10 pt-3">
+                      <p className="font-mono text-[11px] uppercase tracking-wider text-gray-500">{demo.stack}</p>
+                      <p className="mt-1.5 text-sm text-gray-400 font-light">{demo.highlight}</p>
+                    </div>
+                  </Link>
+                </FadeIn>
+              );
+            })}
           </div>
 
           {/* ── WordPress Services ── */}

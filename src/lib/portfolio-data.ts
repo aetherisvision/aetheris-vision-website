@@ -263,90 +263,126 @@ export const faqs = [
 
 /* ── Demo Sites ── */
 
-export const demos = [
+export interface Demo {
+  slug: string;
+  title: string;
+  industry: string;
+  desc: string;
+  /** Real screenshot of the demo route, captured via scripts/capture-demos.mjs. */
+  image: string;
+  stack: string;
+  /** What the build demonstrates — outcome-focused, honest (these are self-built demos, not client work). */
+  highlight: string;
+}
+
+export const demos: Demo[] = [
   {
     slug: "law-firm",
     title: "Mitchell & Associates",
     industry: "Law Firm",
     desc: "Practice areas, attorney bios, free consultation form. Dark navy & gold palette with serif accents: formal, trust-forward, classic corporate-professional aesthetic.",
-    color: "from-[#1e3a5f] to-[#0f2240]",
+    image: "/images/portfolio/law-firm.webp",
+    stack: "Next.js · Tailwind CSS",
+    highlight: "Trust-forward IA with a free-consultation conversion path",
   },
   {
     slug: "restaurant",
     title: "Casa Verde Kitchen",
     industry: "Restaurant",
     desc: "Menu sections, hours, reservation form. Warm amber & terracotta palette; photography-forward layout with handwritten accent fonts for a rustic-modern, inviting atmosphere.",
-    color: "from-[#92400e] to-[#5c2a08]",
+    image: "/images/portfolio/restaurant.webp",
+    stack: "Next.js · Tailwind CSS",
+    highlight: "Photography-forward menu with a reservation flow",
   },
   {
     slug: "trades-contractor",
     title: "Summit Home Services",
     industry: "Home Services",
     desc: "Services, trust badges, free quote form. Bold blue & orange palette; utility-first layout built around credibility and conversions, in a clean, no-nonsense tradesman style.",
-    color: "from-[#1d4ed8] to-[#1e3a8a]",
+    image: "/images/portfolio/trades-contractor.webp",
+    stack: "Next.js · Tailwind CSS",
+    highlight: "Quote-first layout built around credibility and conversion",
   },
   {
     slug: "veteran-nonprofit",
     title: "Veterans Forward Oklahoma",
     industry: "Nonprofit",
     desc: "Impact stats, programs, donate & volunteer CTAs. Patriotic red, white & blue; emotion-first storytelling with bold stat callouts for a rallying, community-centered aesthetic.",
-    color: "from-[#b91c1c] to-[#7f1d1d]",
+    image: "/images/portfolio/veteran-nonprofit.webp",
+    stack: "Next.js · Tailwind CSS",
+    highlight: "Story-led giving — impact stats, donate and volunteer funnels",
   },
   {
     slug: "analytics-dashboard",
     title: "DataViz Pro Analytics",
     industry: "SaaS Platform",
     desc: "Real-time metrics, interactive charts, performance monitoring. Deep slate & indigo dark-mode UI with glassmorphism accents: data-dense, modern enterprise SaaS aesthetic.",
-    color: "from-[#0f172a] via-[#1e293b] to-[#334155]",
+    image: "/images/portfolio/analytics-dashboard.webp",
+    stack: "Next.js · React · Framer Motion",
+    highlight: "Data-dense dashboard UI with live interactive charts",
   },
   {
     slug: "international-market",
     title: "Global Harvest Market",
     industry: "International Foods",
     desc: "Product search & filtering, cultural sections, online ordering. Vibrant emerald & gold palette: multicultural market energy blended with clean e-commerce structure.",
-    color: "from-[#059669] via-[#10b981] to-[#d97706]",
+    image: "/images/portfolio/international-market.webp",
+    stack: "Next.js · React · Tailwind CSS",
+    highlight: "Product search and filtering with e-commerce structure",
   },
   {
     slug: "portal-pro",
     title: "Portal Pro Business Suite",
     industry: "Business Platform",
     desc: "User management, role-based dashboards, CRM features. Purple & indigo glassmorphism on dark background: polished enterprise SaaS aesthetic, modern Drupal alternative.",
-    color: "from-[#6366f1] via-[#8b5cf6] to-[#a855f7]",
+    image: "/images/portfolio/portal-pro.webp",
+    stack: "Next.js · React · Framer Motion",
+    highlight: "Role-based dashboards and user-management flows",
   },
   {
     slug: "healthcare",
     title: "Clarity Health Group",
     industry: "Healthcare",
     desc: "Physician profiles, services grid, insurance lookup, appointment booking. Clean white & sky-blue light theme: calm, clinical, ADA-compliant design that projects trust.",
-    color: "from-[#0369a1] via-[#0ea5e9] to-[#e0f2fe]",
+    image: "/images/portfolio/healthcare.webp",
+    stack: "Next.js · Tailwind CSS",
+    highlight: "ADA-minded patient UX with appointment booking",
   },
   {
     slug: "wp-editorial",
     title: "The Prairie Standard",
     industry: "Editorial / Publishing",
     desc: "Article grid, categories, headless WordPress via WPGraphQL. Charcoal & warm stone with Georgia serif typography: dark broadsheet aesthetic, editorial newspaper layout.",
-    color: "from-[#1c1917] via-[#44403c] to-[#a8a29e]",
+    image: "/images/portfolio/wp-editorial.webp",
+    stack: "Next.js · Headless WordPress · WPGraphQL",
+    highlight: "Editorial workflow on a headless CMS, broadsheet layout",
   },
   {
     slug: "real-estate",
     title: "Pinnacle Realty Group",
     industry: "Real Estate",
     desc: "Property listings with search filters, agent profiles, home valuation form. Warm stone & amber palette: luxury-aspirational feel with property-forward imagery and upscale minimal layout.",
-    color: "from-[#92400e] via-[#b45309] to-[#fef3c7]",
+    image: "/images/portfolio/real-estate.webp",
+    stack: "Next.js · Tailwind CSS",
+    highlight: "Filterable property listings with valuation lead capture",
   },
   {
     slug: "fitness",
     title: "Iron District Fitness",
     industry: "Fitness & Gym",
     desc: "Class schedule, membership tiers, free trial CTA. All-black with neon green accents; aggressive high-contrast typography and bold full-bleed imagery for a dark, high-intensity motivational aesthetic.",
-    color: "from-[#052e16] via-[#14532d] to-[#22c55e]",
+    image: "/images/portfolio/fitness.webp",
+    stack: "Next.js · Tailwind CSS",
+    highlight: "High-contrast brand system with a trial-signup funnel",
   },
   {
     slug: "photography-studio",
     title: "Lumen & Co. Photography",
     industry: "Photography / Creative",
     desc: "Portfolio gallery, session packages, booking form, client testimonials. Deep charcoal & warm gold palette; full-bleed image-first layout with minimal sans type for an elegant, gallery-style creative aesthetic.",
-    color: "from-[#1a1a1a] via-[#2d2d2d] to-[#c8a882]",
+    image: "/images/portfolio/photography-studio.webp",
+    stack: "Next.js · Tailwind CSS",
+    highlight: "Gallery-first layout with session booking",
   },
 ];
 

@@ -89,12 +89,20 @@ describe("portfolio-data", () => {
         expect(demo.slug).toBeTruthy();
         expect(demo.desc).toBeTruthy();
         expect(demo.industry).toBeTruthy();
+        expect(demo.stack).toBeTruthy();
+        expect(demo.highlight).toBeTruthy();
       }
     });
 
     it("demo slugs are URL-safe", () => {
       for (const demo of demos) {
         expect(demo.slug).toMatch(/^[a-z0-9-]+$/);
+      }
+    });
+
+    it("each demo image is a local WebP matching its slug", () => {
+      for (const demo of demos) {
+        expect(demo.image).toBe(`/images/portfolio/${demo.slug}.webp`);
       }
     });
   });
