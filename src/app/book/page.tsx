@@ -30,18 +30,17 @@ export default function BookPage() {
         </div>
 
         <div className="mx-auto max-w-5xl px-6">
-          {/* Header */}
-          <div className="mb-10">
+          {/* Header — single action, centered and brief */}
+          <div className="mb-10 text-center mx-auto max-w-xl">
             <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">
               Schedule a Meeting
             </p>
             <h1 className="text-3xl md:text-5xl font-semibold text-white tracking-tight mb-4">
               Book a Consultation
             </h1>
-            <p className="text-gray-400 font-light text-lg max-w-2xl leading-relaxed">
-              Select a time that works for you. We engage directly with program
-              managers, technical leads, and business owners to discuss your
-              requirements.
+            <p className="text-gray-400 font-light leading-relaxed">
+              Pick a time below. We engage directly with program managers,
+              technical leads, and business owners.
             </p>
           </div>
 

@@ -5,6 +5,8 @@ export const SITE = {
   url: "https://aetherisvision.com",
   logoUrl: "https://aetherisvision.com/logo/av-logo-horizontal-dark.png",
   email: "contact@aetherisvision.com",
+  phone: "(346) 381-9629",
+  phoneHref: "tel:+13463819629",
   description:
     "Aetheris Vision builds custom websites, web applications, and AI-powered atmospheric intelligence systems. Veteran-owned. Based in Mustang, OK.",
   ogDescription:

@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import FadeIn from "@/components/FadeIn";
+import { SITE } from "@/lib/constants";
 
-const CONTACT_PHONE = "(346) 381-9629";
-// Derive the tel: URI from the display number so the two never drift.
-const CONTACT_PHONE_HREF = `tel:+1${CONTACT_PHONE.replace(/\D/g, "")}`;
+const CONTACT_PHONE = SITE.phone;
+const CONTACT_PHONE_HREF = SITE.phoneHref;
 
 const requirementTypes = [
   "New Website (Custom Build)",
