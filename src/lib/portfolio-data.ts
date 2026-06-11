@@ -38,7 +38,7 @@ export const tiers: Tier[] = [
       "Mobile-first responsive design with accessibility standards",
       "Advanced contact forms with validation & CRM integration",
       "SEO optimization + structured data for rich results",
-      "Lighthouse 95+ performance guarantee",
+      "Lighthouse 90+ performance guarantee",
       "SSL A+ with security headers & CSP implementation",
       "Privacy Policy + Terms of Service (legally compliant)",
       "Vercel Pro deployment with custom domain",
@@ -118,19 +118,19 @@ export const processSteps: ProcessStep[] = [
   {
     step: "02",
     title: "Design Mockup",
-    time: "Day 2-3",
+    time: "Day 5-7",
     desc: "A high-fidelity page layout delivered for your review: color palette, typography, and layout before a single line of code is written.",
   },
   {
     step: "03",
     title: "Build & Review",
-    time: "Day 3-8",
+    time: "Day 10-14",
     desc: "Full site built in Next.js. You get a live preview link to review on any device. Feedback captured, revisions applied.",
   },
   {
     step: "04",
     title: "Launch",
-    time: "Day 5-10",
+    time: "Day 15-21",
     desc: "Domain connected, SSL configured, deployed to production. You receive login access to manage content and a handoff walkthrough.",
   },
 ];
@@ -145,7 +145,7 @@ export const sla = [
   { label: "Production deployment", value: "15-21 business days" },
   { label: "Quality assurance period", value: "30 days comprehensive warranty" },
   { label: "Priority support response", value: "4 hours on business days / 8 hours on weekends" },
-  { label: "Performance guarantee", value: "Lighthouse 90+ or full refund" },
+  { label: "Performance guarantee", value: "Lighthouse 90+ on every build" },
 ];
 
 /* ── Security Features ── */
@@ -233,7 +233,7 @@ export const faqs = [
   },
   {
     q: "Do you host the site?",
-    a: "Sites are deployed to Vercel. The free tier covers most small business traffic. You own the deployment. I just set it up and hand it over.",
+    a: "Sites are deployed to Vercel Pro with your custom domain connected. You own the deployment and the code — I set it up and hand it over. Ongoing monitoring, updates, and content changes are covered by the optional maintenance plans.",
   },
   {
     q: "Can you match our existing brand?",
@@ -261,92 +261,153 @@ export const faqs = [
   },
 ];
 
+/* ── Client Work ── */
+
+export interface ClientCaseStudy {
+  title: string;
+  client: string;
+  url: string;
+  industry: string;
+  image: string;
+  stack: string;
+  /** Factual description of what was built — no invented results or metrics. */
+  desc: string;
+}
+
+export const clientWork: ClientCaseStudy[] = [
+  {
+    title: "Tropical Hut OKC",
+    client: "Tropical Hut OKC",
+    url: "https://www.tropicalhutokc.com",
+    industry: "Retail · International Grocery",
+    image: "/images/portfolio/tropical-hut-okc.webp",
+    stack: "Next.js 16 · Sanity CMS · Neon Postgres · Vercel",
+    desc: "Full production site for an Oklahoma City Caribbean, African & Indian grocery: department and weekly-specials pages the owner manages through an embedded Sanity Studio, store info and hours, product search, and contact — live at tropicalhutokc.com.",
+  },
+];
+
 /* ── Demo Sites ── */
 
-export const demos = [
+export interface Demo {
+  slug: string;
+  title: string;
+  industry: string;
+  desc: string;
+  /** Real screenshot of the demo route, captured via scripts/capture-demos.mjs. */
+  image: string;
+  stack: string;
+  /** What the build demonstrates — outcome-focused, honest (these are self-built demos, not client work). */
+  highlight: string;
+}
+
+export const demos: Demo[] = [
   {
     slug: "law-firm",
     title: "Mitchell & Associates",
     industry: "Law Firm",
     desc: "Practice areas, attorney bios, free consultation form. Dark navy & gold palette with serif accents: formal, trust-forward, classic corporate-professional aesthetic.",
-    color: "from-[#1e3a5f] to-[#0f2240]",
+    image: "/images/portfolio/law-firm.webp",
+    stack: "Next.js · Tailwind CSS",
+    highlight: "Trust-forward IA with a free-consultation conversion path",
   },
   {
     slug: "restaurant",
     title: "Casa Verde Kitchen",
     industry: "Restaurant",
     desc: "Menu sections, hours, reservation form. Warm amber & terracotta palette; photography-forward layout with handwritten accent fonts for a rustic-modern, inviting atmosphere.",
-    color: "from-[#92400e] to-[#5c2a08]",
+    image: "/images/portfolio/restaurant.webp",
+    stack: "Next.js · Tailwind CSS",
+    highlight: "Photography-forward menu with a reservation flow",
   },
   {
     slug: "trades-contractor",
     title: "Summit Home Services",
     industry: "Home Services",
     desc: "Services, trust badges, free quote form. Bold blue & orange palette; utility-first layout built around credibility and conversions, in a clean, no-nonsense tradesman style.",
-    color: "from-[#1d4ed8] to-[#1e3a8a]",
+    image: "/images/portfolio/trades-contractor.webp",
+    stack: "Next.js · Tailwind CSS",
+    highlight: "Quote-first layout built around credibility and conversion",
   },
   {
     slug: "veteran-nonprofit",
     title: "Veterans Forward Oklahoma",
     industry: "Nonprofit",
     desc: "Impact stats, programs, donate & volunteer CTAs. Patriotic red, white & blue; emotion-first storytelling with bold stat callouts for a rallying, community-centered aesthetic.",
-    color: "from-[#b91c1c] to-[#7f1d1d]",
+    image: "/images/portfolio/veteran-nonprofit.webp",
+    stack: "Next.js · Tailwind CSS",
+    highlight: "Story-led giving — impact stats, donate and volunteer funnels",
   },
   {
     slug: "analytics-dashboard",
     title: "DataViz Pro Analytics",
     industry: "SaaS Platform",
     desc: "Real-time metrics, interactive charts, performance monitoring. Deep slate & indigo dark-mode UI with glassmorphism accents: data-dense, modern enterprise SaaS aesthetic.",
-    color: "from-[#0f172a] via-[#1e293b] to-[#334155]",
+    image: "/images/portfolio/analytics-dashboard.webp",
+    stack: "Next.js · React · Framer Motion",
+    highlight: "Data-dense dashboard UI with live interactive charts",
   },
   {
     slug: "international-market",
     title: "Global Harvest Market",
     industry: "International Foods",
     desc: "Product search & filtering, cultural sections, online ordering. Vibrant emerald & gold palette: multicultural market energy blended with clean e-commerce structure.",
-    color: "from-[#059669] via-[#10b981] to-[#d97706]",
+    image: "/images/portfolio/international-market.webp",
+    stack: "Next.js · React · Tailwind CSS",
+    highlight: "Product search and filtering with e-commerce structure",
   },
   {
     slug: "portal-pro",
     title: "Portal Pro Business Suite",
     industry: "Business Platform",
     desc: "User management, role-based dashboards, CRM features. Purple & indigo glassmorphism on dark background: polished enterprise SaaS aesthetic, modern Drupal alternative.",
-    color: "from-[#6366f1] via-[#8b5cf6] to-[#a855f7]",
+    image: "/images/portfolio/portal-pro.webp",
+    stack: "Next.js · React · Framer Motion",
+    highlight: "Role-based dashboards and user-management flows",
   },
   {
     slug: "healthcare",
     title: "Clarity Health Group",
     industry: "Healthcare",
     desc: "Physician profiles, services grid, insurance lookup, appointment booking. Clean white & sky-blue light theme: calm, clinical, ADA-compliant design that projects trust.",
-    color: "from-[#0369a1] via-[#0ea5e9] to-[#e0f2fe]",
+    image: "/images/portfolio/healthcare.webp",
+    stack: "Next.js · Tailwind CSS",
+    highlight: "ADA-minded patient UX with appointment booking",
   },
   {
     slug: "wp-editorial",
     title: "The Prairie Standard",
     industry: "Editorial / Publishing",
     desc: "Article grid, categories, headless WordPress via WPGraphQL. Charcoal & warm stone with Georgia serif typography: dark broadsheet aesthetic, editorial newspaper layout.",
-    color: "from-[#1c1917] via-[#44403c] to-[#a8a29e]",
+    image: "/images/portfolio/wp-editorial.webp",
+    stack: "Next.js · Headless WordPress · WPGraphQL",
+    highlight: "Editorial workflow on a headless CMS, broadsheet layout",
   },
   {
     slug: "real-estate",
     title: "Pinnacle Realty Group",
     industry: "Real Estate",
     desc: "Property listings with search filters, agent profiles, home valuation form. Warm stone & amber palette: luxury-aspirational feel with property-forward imagery and upscale minimal layout.",
-    color: "from-[#92400e] via-[#b45309] to-[#fef3c7]",
+    image: "/images/portfolio/real-estate.webp",
+    stack: "Next.js · Tailwind CSS",
+    highlight: "Filterable property listings with valuation lead capture",
   },
   {
     slug: "fitness",
     title: "Iron District Fitness",
     industry: "Fitness & Gym",
     desc: "Class schedule, membership tiers, free trial CTA. All-black with neon green accents; aggressive high-contrast typography and bold full-bleed imagery for a dark, high-intensity motivational aesthetic.",
-    color: "from-[#052e16] via-[#14532d] to-[#22c55e]",
+    image: "/images/portfolio/fitness.webp",
+    stack: "Next.js · Tailwind CSS",
+    highlight: "High-contrast brand system with a trial-signup funnel",
   },
   {
     slug: "photography-studio",
     title: "Lumen & Co. Photography",
     industry: "Photography / Creative",
     desc: "Portfolio gallery, session packages, booking form, client testimonials. Deep charcoal & warm gold palette; full-bleed image-first layout with minimal sans type for an elegant, gallery-style creative aesthetic.",
-    color: "from-[#1a1a1a] via-[#2d2d2d] to-[#c8a882]",
+    image: "/images/portfolio/photography-studio.webp",
+    stack: "Next.js · Tailwind CSS",
+    highlight: "Gallery-first layout with session booking",
   },
 ];
 

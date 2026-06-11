@@ -6,6 +6,7 @@ import {
   securityFeatures,
   includedFeatures,
   faqs,
+  clientWork,
   demos,
   maintenancePlans,
 } from "@/lib/portfolio-data";
@@ -82,6 +83,19 @@ describe("portfolio-data", () => {
     });
   });
 
+  describe("clientWork", () => {
+    it("each case study has required fields and a live https URL", () => {
+      for (const cs of clientWork) {
+        expect(cs.title).toBeTruthy();
+        expect(cs.client).toBeTruthy();
+        expect(cs.desc).toBeTruthy();
+        expect(cs.stack).toBeTruthy();
+        expect(cs.image).toMatch(/^\/images\/portfolio\/.+\.webp$/);
+        expect(cs.url).toMatch(/^https:\/\//);
+      }
+    });
+  });
+
   describe("demos", () => {
     it("each demo has required fields", () => {
       for (const demo of demos) {
@@ -89,12 +103,20 @@ describe("portfolio-data", () => {
         expect(demo.slug).toBeTruthy();
         expect(demo.desc).toBeTruthy();
         expect(demo.industry).toBeTruthy();
+        expect(demo.stack).toBeTruthy();
+        expect(demo.highlight).toBeTruthy();
       }
     });
 
     it("demo slugs are URL-safe", () => {
       for (const demo of demos) {
         expect(demo.slug).toMatch(/^[a-z0-9-]+$/);
+      }
+    });
+
+    it("each demo image is a local WebP matching its slug", () => {
+      for (const demo of demos) {
+        expect(demo.image).toBe(`/images/portfolio/${demo.slug}.webp`);
       }
     });
   });
