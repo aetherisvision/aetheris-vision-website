@@ -63,12 +63,12 @@ export default function ContactPage() {
               </Suspense>
             </div>
 
-            {/* Sidebar */}
+            {/* Sidebar — plain hairline rows, form stays the single action */}
             <FadeIn delay={0.15}>
-              <div className="space-y-4">
-                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <PhoneIcon className="h-5 w-5 text-blue-400" />
+              <div className="divide-y divide-white/10 border-y border-white/10">
+                <div className="py-5">
+                  <div className="flex items-center gap-3 mb-1.5">
+                    <PhoneIcon className="h-4 w-4 text-blue-400" />
                     <p className="text-white font-medium text-sm">Call or text</p>
                   </div>
                   <a
@@ -79,40 +79,35 @@ export default function ContactPage() {
                   </a>
                 </div>
 
-                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <CalendarDaysIcon className="h-5 w-5 text-blue-400" />
+                <div className="py-5">
+                  <div className="flex items-center gap-3 mb-1.5">
+                    <CalendarDaysIcon className="h-4 w-4 text-blue-400" />
                     <p className="text-white font-medium text-sm">Schedule a call</p>
                   </div>
-                  <p className="text-sm text-gray-400 mb-3 leading-relaxed">
-                    Prefer to talk? Book a 30-minute consultation directly on our calendar.
+                  <p className="text-sm text-gray-400 leading-relaxed">
+                    Prefer to talk?{" "}
+                    <a href="/book" className="text-blue-400 hover:text-blue-300 transition">
+                      Book a 30-minute consultation →
+                    </a>
                   </p>
-                  <a
-                    href="/book"
-                    className="inline-flex h-9 items-center justify-center rounded-md bg-white px-4 text-xs font-medium text-black hover:bg-gray-200 transition"
-                  >
-                    Book a Time
-                  </a>
                 </div>
 
-                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <ClipboardDocumentIcon className="h-5 w-5 text-blue-400" />
-                    <p className="text-white font-medium text-sm">Project Intake</p>
+                <div className="py-5">
+                  <div className="flex items-center gap-3 mb-1.5">
+                    <ClipboardDocumentIcon className="h-4 w-4 text-blue-400" />
+                    <p className="text-white font-medium text-sm">Project intake</p>
                   </div>
-                  <p className="text-sm text-gray-400 mb-3 leading-relaxed">
-                    For website projects, complete our comprehensive intake form for immediate, accurate pricing.
+                  <p className="text-sm text-gray-400 leading-relaxed">
+                    Website project?{" "}
+                    <a href="/intake" className="text-blue-400 hover:text-blue-300 transition">
+                      Start the intake form →
+                    </a>{" "}
+                    for immediate, accurate pricing.
                   </p>
-                  <a
-                    href="/intake"
-                    className="inline-flex h-9 items-center justify-center rounded-md border border-white/20 bg-black/50 px-4 text-xs font-medium text-white hover:bg-white/5 transition"
-                  >
-                    Start Intake Form
-                  </a>
                 </div>
 
-                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6">
-                  <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase mb-3">
+                <div className="py-5">
+                  <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase mb-2">
                     Federal Contracting
                   </p>
                   <div className="space-y-1 text-sm text-gray-400 font-light">
@@ -123,7 +118,7 @@ export default function ContactPage() {
                   </div>
                   <a
                     href="/capabilities"
-                    className="inline-block mt-4 text-xs text-blue-400 hover:text-blue-300 transition"
+                    className="inline-block mt-3 text-xs text-blue-400 hover:text-blue-300 transition"
                   >
                     View Capabilities Statement →
                   </a>
