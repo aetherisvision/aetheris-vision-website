@@ -5,7 +5,7 @@ import { chromium } from "playwright-core";
 import sharp from "sharp";
 import { mkdirSync } from "node:fs";
 
-const BASE = process.argv[2] ?? "http://localhost:3012";
+const BASE = process.argv[2] ?? "http://localhost:3000";
 const OUT = "public/images/portfolio";
 const SLUGS = [
   "law-firm", "restaurant", "trades-contractor", "veteran-nonprofit",
@@ -14,11 +14,11 @@ const SLUGS = [
 ];
 
 mkdirSync(OUT, { recursive: true });
-const browser = await chromium.launch({
-  executablePath:
-    process.env.PW_CHROMIUM_PATH ||
-    "/Users/marston.ward/Library/Caches/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-mac-arm64/chrome-headless-shell",
-});
+// Playwright resolves its own browser; set PW_CHROMIUM_PATH to override
+// (e.g. to reuse a cached Chromium without running `npx playwright install`).
+const browser = await chromium.launch(
+  process.env.PW_CHROMIUM_PATH ? { executablePath: process.env.PW_CHROMIUM_PATH } : {},
+);
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
 
 for (const slug of SLUGS) {
