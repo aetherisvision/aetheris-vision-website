@@ -1,9 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRightIcon } from "@heroicons/react/24/outline";
+import Image from "next/image";
 import type { Post } from "@/lib/posts";
 import BlogSubscribeCard from "@/components/BlogSubscribeCard";
+
+/** Mono metadata line shared by the featured banner and list rows. */
+function PostMeta({ post }: { post: Post }) {
+  return (
+    <p className="font-mono text-[11px] uppercase tracking-wider text-gray-500">
+      {post.date} · <span className="text-blue-400">{post.category}</span> · {post.readTime}
+    </p>
+  );
+}
 
 export default function BlogClientPage({
   posts,
@@ -25,71 +34,69 @@ export default function BlogClientPage({
   return (
     <>
       {/* Page header */}
-      <div className="mb-12">
-        <h1 className="text-4xl md:text-6xl font-semibold tracking-tighter text-white mb-4">
-          Insights & <span className="text-blue-500">Analysis</span>
+      <header className="mb-14">
+        <h1 className="font-serif text-5xl md:text-6xl font-medium tracking-tight text-white mb-4">
+          Insights &amp; Analysis
         </h1>
-        <p className="text-gray-400 text-lg md:text-xl max-w-2xl font-light">
-          Executive perspectives on atmospheric modeling, machine learning architecture, and complex systems engineering.
+        <p className="text-gray-400 text-lg font-light leading-relaxed">
+          Perspectives on atmospheric modeling, machine learning architecture, and
+          complex systems engineering.
         </p>
-      </div>
-
-      <BlogSubscribeCard />
+      </header>
 
       {/* Featured post */}
       {featured && (
         <a
           href={`/blog/${featured.slug}`}
-          className="group block rounded-2xl border border-white/10 bg-white/[0.03] p-8 md:p-10 mb-14 relative overflow-hidden transition-all hover:bg-white/[0.05] hover:border-white/20 no-underline"
+          className="group block mb-16 no-underline"
         >
-          {/* Subtle blue glow top-left */}
-          <div className="absolute -top-16 -left-16 w-64 h-64 rounded-full bg-blue-600/10 blur-3xl pointer-events-none" />
-
-          <div className="relative z-10 flex flex-col md:flex-row md:items-start gap-6 md:gap-10">
-            <div className="md:w-56 shrink-0 flex flex-col gap-2">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-widest text-blue-400 uppercase">
-                <span className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse" />
-                Featured
-              </span>
-              <span className="text-sm font-medium text-gray-400 mt-1">{featured.category}</span>
-              <span className="text-sm text-gray-600">{featured.date}</span>
-              <span className="text-sm text-gray-700">{featured.readTime}</span>
-            </div>
-
-            <div className="flex-1">
-              <h2 className="text-2xl md:text-3xl font-semibold text-white mb-3 group-hover:text-blue-300 transition-colors leading-snug">
-                {featured.title}
-              </h2>
-              <p className="text-gray-400 font-light leading-relaxed mb-5">
-                {featured.summary}
-              </p>
-              <div className="inline-flex items-center gap-2 text-sm font-medium text-white group-hover:gap-3 transition-all">
-                Read Article <ArrowRightIcon className="h-4 w-4" />
-              </div>
-            </div>
+          <div className="relative aspect-[21/9] rounded-lg overflow-hidden border border-white/10 mb-5">
+            <Image
+              src="/images/blog/blog-post-bg.webp"
+              alt=""
+              aria-hidden="true"
+              fill
+              className="object-cover opacity-80 group-hover:opacity-95 group-hover:scale-[1.02] transition duration-500"
+              sizes="(max-width: 768px) 100vw, 768px"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/85 via-[#050505]/20 to-transparent" />
+            <span className="absolute top-4 left-4 font-mono text-[11px] uppercase tracking-wider text-white/90 border border-white/25 bg-black/40 backdrop-blur-sm rounded-sm px-2 py-1">
+              Featured
+            </span>
           </div>
+          <PostMeta post={featured} />
+          <h2 className="font-serif text-3xl md:text-4xl font-medium text-white leading-snug mt-2 mb-3 group-hover:text-blue-300 transition-colors">
+            {featured.title}
+          </h2>
+          <p className="text-gray-400 font-light leading-relaxed">{featured.summary}</p>
         </a>
       )}
 
-      {/* Category filter pills */}
-      <div className="flex flex-wrap gap-2 mb-10">
+      {/* Category filter */}
+      <nav
+        aria-label="Filter posts by category"
+        className="flex flex-wrap gap-x-6 gap-y-2 border-y border-white/10 py-3 mb-12"
+      >
         {["All", ...categories].map((cat) => (
           <button
             key={cat}
+            type="button"
             onClick={() => setActiveCategory(cat)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
+            aria-pressed={activeCategory === cat}
+            className={`text-sm transition-colors ${
               activeCategory === cat
-                ? "bg-blue-600 border-blue-600 text-white"
-                : "border-white/10 text-gray-400 hover:text-white hover:border-white/20 bg-transparent"
+                ? "text-white underline underline-offset-8 decoration-blue-500"
+                : "text-gray-500 hover:text-gray-300"
             }`}
           >
             {cat}
           </button>
         ))}
-      </div>
+      </nav>
 
-      {/* Post list */}
-      <div className="grid gap-6">
+      {/* Post list — plain hairline-separated reading rows */}
+      <div className="divide-y divide-white/[0.08] mb-20">
         {filtered.length === 0 && (
           <p className="text-gray-600 font-light py-8">No posts in this category yet.</p>
         )}
@@ -97,28 +104,19 @@ export default function BlogClientPage({
           <a
             key={post.id}
             href={`/blog/${post.slug}`}
-            className="group flex flex-col md:flex-row md:items-start gap-4 md:gap-8 rounded-2xl border border-white/5 bg-white/[0.02] p-8 transition-all hover:bg-white/[0.04] hover:border-white/10 cursor-pointer no-underline"
+            className="group block py-8 first:pt-0 no-underline"
           >
-            <div className="md:w-48 shrink-0 text-sm text-gray-500 py-1 flex flex-col gap-1">
-              <span className="font-medium text-blue-400">{post.category}</span>
-              <span>{post.date}</span>
-              <span className="text-gray-600">{post.readTime}</span>
-            </div>
-
-            <div className="flex-1">
-              <h2 className="text-2xl font-medium text-white mb-3 group-hover:text-blue-400 transition-colors">
-                {post.title}
-              </h2>
-              <p className="text-gray-400 font-light leading-relaxed mb-4">
-                {post.summary}
-              </p>
-              <div className="text-sm font-medium text-white inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                Read Article &#8594;
-              </div>
-            </div>
+            <PostMeta post={post} />
+            <h2 className="font-serif text-2xl md:text-[1.75rem] font-medium text-white leading-snug mt-2 mb-2.5 group-hover:text-blue-300 transition-colors">
+              {post.title}
+            </h2>
+            <p className="text-gray-400 font-light leading-relaxed">{post.summary}</p>
           </a>
         ))}
       </div>
+
+      {/* Subscribe — moved below the reading list */}
+      <BlogSubscribeCard />
     </>
   );
 }

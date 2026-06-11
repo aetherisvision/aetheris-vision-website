@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Newsreader } from "next/font/google";
 import { headers } from "next/headers";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
@@ -10,6 +10,13 @@ import BackToTop from "@/components/BackToTop";
 import ChatWidget from "@/components/ChatWidget";
 
 const inter = Inter({ subsets: ["latin"] });
+
+/** Editorial display serif — used for blog/article headlines (and the About editorial layout). */
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  variable: "--font-newsreader",
+});
 
 export const metadata: Metadata = {
   title: `${SITE.name} | Custom Web Development & Technical Consulting`,
@@ -64,7 +71,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className="dark scroll-smooth">
       <body
-        className={`${inter.className} bg-black text-gray-100 antialiased min-h-screen selection:bg-gray-800 selection:text-white`}
+        className={`${inter.className} ${newsreader.variable} bg-black text-gray-100 antialiased min-h-screen selection:bg-gray-800 selection:text-white`}
       >
         {/* Skip to main content — accessibility */}
         <a
