@@ -72,10 +72,10 @@ export default function ContactPage() {
                     <p className="text-white font-medium text-sm">Call or text</p>
                   </div>
                   <a
-                    href="tel:+13463819629"
+                    href={SITE.phoneHref}
                     className="text-sm text-gray-400 hover:text-white transition"
                   >
-                    (346) 381-9629
+                    {SITE.phone}
                   </a>
                 </div>
 
