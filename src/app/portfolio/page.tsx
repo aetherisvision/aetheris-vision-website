@@ -10,6 +10,7 @@ import {
   securityFeatures,
   includedFeatures,
   faqs,
+  clientWork,
   demos,
   maintenancePlans,
   wpTiers,
@@ -24,7 +25,7 @@ export const metadata = {
     "Professional web development for serious businesses. Custom platforms, business applications, and enterprise-grade websites. From $2,800.",
   openGraph: {
     title: `Enterprise-Grade Web Development | ${SITE.name}`,
-    description: "Custom business platforms and sophisticated web applications. Lighthouse 95+ performance, enterprise security, comprehensive warranties. Starting at $2,800.",
+    description: "Custom business platforms and sophisticated web applications. Lighthouse 90+ performance, enterprise security, comprehensive warranties. Starting at $2,800.",
     type: "website",
   },
 };
@@ -49,7 +50,7 @@ export default function PortfolioPage() {
             <h1 className="text-4xl md:text-6xl font-semibold tracking-tighter text-white mb-6 leading-[1.1]">
               A Professional Website,<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">
-                Delivered in Days.
+                Delivered in Weeks, Not Months.
               </span>
             </h1>
           </FadeIn>
@@ -85,7 +86,7 @@ export default function PortfolioPage() {
                 { icon: CpuChipIcon, label: "Enterprise Architecture", sub: "Scalable & maintainable" },
                 { icon: ShieldCheckIcon, label: "SOC-2 Ready", sub: "Enterprise security standards" },
                 { icon: CheckIcon, label: "30-90 Day Warranty", sub: "Comprehensive guarantee" },
-                { icon: SparklesIcon, label: "Lighthouse 95+", sub: "Performance guaranteed" },
+                { icon: SparklesIcon, label: "Lighthouse 90+", sub: "Performance guaranteed" },
                 { icon: LockClosedIcon, label: "GDPR/CCPA Compliant", sub: "Data protection ready" },
               ].map(({ icon: Icon, label, sub }) => (
                 <div key={label} className="flex items-start gap-3">
@@ -238,8 +239,53 @@ export default function PortfolioPage() {
             ))}
           </div>
 
-          {/* ── Demo Gallery ── */}
+          {/* ── Client Work ── */}
           <div id="demos">
+            <FadeIn>
+              <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Client Work</p>
+              <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">In Production for a Real Client</h2>
+            </FadeIn>
+          </div>
+
+          {clientWork.map((cs) => (
+            <FadeIn key={cs.url}>
+              <a
+                href={cs.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block mb-24"
+              >
+                <div className="relative aspect-[21/9] overflow-hidden rounded-xl border border-white/10 group-hover:border-blue-500/40 transition-colors">
+                  <Image
+                    src={cs.image}
+                    alt={`${cs.title} — live client site`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 1000px"
+                    className="object-cover object-top transition duration-500 group-hover:scale-[1.02]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
+                  <span className="absolute top-4 left-4 font-mono text-[10px] uppercase tracking-wider text-white border border-blue-400/50 bg-blue-950/60 backdrop-blur-sm rounded-sm px-2 py-1">
+                    Client: {cs.client}
+                  </span>
+                  <div className="absolute inset-x-0 bottom-0 p-6">
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-blue-300 mb-1">{cs.industry}</p>
+                    <h3 className="text-xl md:text-2xl font-semibold text-white group-hover:text-blue-300 transition-colors">
+                      {cs.title}
+                    </h3>
+                  </div>
+                </div>
+                <div className="mt-3 border-t border-white/10 pt-3">
+                  <p className="font-mono text-[11px] uppercase tracking-wider text-gray-500">
+                    {cs.stack} · <span className="text-blue-400">Visit live site ↗</span>
+                  </p>
+                  <p className="mt-1.5 text-sm text-gray-400 font-light max-w-3xl">{cs.desc}</p>
+                </div>
+              </a>
+            </FadeIn>
+          ))}
+
+          {/* ── Demo Gallery ── */}
+          <div>
             <FadeIn>
               <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Example Builds</p>
               <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">Demo Sites We Built to Show Range</h2>

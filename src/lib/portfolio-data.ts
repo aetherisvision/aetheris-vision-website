@@ -38,7 +38,7 @@ export const tiers: Tier[] = [
       "Mobile-first responsive design with accessibility standards",
       "Advanced contact forms with validation & CRM integration",
       "SEO optimization + structured data for rich results",
-      "Lighthouse 95+ performance guarantee",
+      "Lighthouse 90+ performance guarantee",
       "SSL A+ with security headers & CSP implementation",
       "Privacy Policy + Terms of Service (legally compliant)",
       "Vercel Pro deployment with custom domain",
@@ -118,19 +118,19 @@ export const processSteps: ProcessStep[] = [
   {
     step: "02",
     title: "Design Mockup",
-    time: "Day 2-3",
+    time: "Day 5-7",
     desc: "A high-fidelity page layout delivered for your review: color palette, typography, and layout before a single line of code is written.",
   },
   {
     step: "03",
     title: "Build & Review",
-    time: "Day 3-8",
+    time: "Day 10-14",
     desc: "Full site built in Next.js. You get a live preview link to review on any device. Feedback captured, revisions applied.",
   },
   {
     step: "04",
     title: "Launch",
-    time: "Day 5-10",
+    time: "Day 15-21",
     desc: "Domain connected, SSL configured, deployed to production. You receive login access to manage content and a handoff walkthrough.",
   },
 ];
@@ -145,7 +145,7 @@ export const sla = [
   { label: "Production deployment", value: "15-21 business days" },
   { label: "Quality assurance period", value: "30 days comprehensive warranty" },
   { label: "Priority support response", value: "4 hours on business days / 8 hours on weekends" },
-  { label: "Performance guarantee", value: "Lighthouse 90+ or full refund" },
+  { label: "Performance guarantee", value: "Lighthouse 90+ on every build" },
 ];
 
 /* ── Security Features ── */
@@ -233,7 +233,7 @@ export const faqs = [
   },
   {
     q: "Do you host the site?",
-    a: "Sites are deployed to Vercel. The free tier covers most small business traffic. You own the deployment. I just set it up and hand it over.",
+    a: "Sites are deployed to Vercel Pro with your custom domain connected. You own the deployment and the code — I set it up and hand it over. Ongoing monitoring, updates, and content changes are covered by the optional maintenance plans.",
   },
   {
     q: "Can you match our existing brand?",
@@ -258,6 +258,31 @@ export const faqs = [
   {
     q: "Can you help with my Google Business Profile?",
     a: "Yes, included in the Business tier and above. I'll connect your site to Google Business Profile so your business shows up in Google Maps with hours, reviews, and a link to your site.",
+  },
+];
+
+/* ── Client Work ── */
+
+export interface ClientCaseStudy {
+  title: string;
+  client: string;
+  url: string;
+  industry: string;
+  image: string;
+  stack: string;
+  /** Factual description of what was built — no invented results or metrics. */
+  desc: string;
+}
+
+export const clientWork: ClientCaseStudy[] = [
+  {
+    title: "Tropical Hut OKC",
+    client: "Tropical Hut OKC",
+    url: "https://www.tropicalhutokc.com",
+    industry: "Retail · International Grocery",
+    image: "/images/portfolio/tropical-hut-okc.webp",
+    stack: "Next.js 16 · Sanity CMS · Neon Postgres · Vercel",
+    desc: "Full production site for an Oklahoma City Caribbean, African & Indian grocery: department and weekly-specials pages the owner manages through an embedded Sanity Studio, store info and hours, product search, and contact — live at tropicalhutokc.com.",
   },
 ];
 

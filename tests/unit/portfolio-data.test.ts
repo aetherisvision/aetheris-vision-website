@@ -6,6 +6,7 @@ import {
   securityFeatures,
   includedFeatures,
   faqs,
+  clientWork,
   demos,
   maintenancePlans,
 } from "@/lib/portfolio-data";
@@ -78,6 +79,19 @@ describe("portfolio-data", () => {
       for (const faq of faqs) {
         expect(faq.q).toBeTruthy();
         expect(faq.a).toBeTruthy();
+      }
+    });
+  });
+
+  describe("clientWork", () => {
+    it("each case study has required fields and a live https URL", () => {
+      for (const cs of clientWork) {
+        expect(cs.title).toBeTruthy();
+        expect(cs.client).toBeTruthy();
+        expect(cs.desc).toBeTruthy();
+        expect(cs.stack).toBeTruthy();
+        expect(cs.image).toMatch(/^\/images\/portfolio\/.+\.webp$/);
+        expect(cs.url).toMatch(/^https:\/\//);
       }
     });
   });

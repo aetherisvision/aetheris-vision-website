@@ -56,7 +56,7 @@ The company was founded by a meteorologist with 35 years of field-validated oper
 - Mobile-first responsive design with accessibility standards
 - Advanced contact forms with validation & CRM integration
 - SEO optimization + structured data for rich results
-- Lighthouse 95+ performance guarantee
+- Lighthouse 90+ performance guarantee
 - SSL A+ with security headers & CSP implementation
 - Privacy Policy + Terms of Service
 - Vercel Pro deployment with custom domain
