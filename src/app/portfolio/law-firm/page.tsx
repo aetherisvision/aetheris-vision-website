@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
-import { HeroImage, CardImage } from "@/components/PortfolioImage";
+import PortfolioImage, { HeroImage, CardImage } from "@/components/PortfolioImage";
 import LocationMap from "@/components/LocationMap";
 
 const practiceAreas = [
@@ -175,17 +175,32 @@ export default function LawFirmPage() {
           
           {/* Attorney Profiles */}
           <div className="grid gap-8 sm:grid-cols-3">
-            {attorneys.map((atty) => (
-              <div key={atty.name} className="text-center bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
-                <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-[#1e3a5f] to-[#2d5aa0] text-2xl font-bold text-yellow-400 shadow-lg">
-                  {atty.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+            {attorneys.map((atty) => {
+              const nameMap: Record<string, string> = {
+                "James R. Mitchell": "mitchell",
+                "Sarah L. Torres": "torres",
+                "David K. Okonkwo": "okonkwo"
+              };
+              return (
+                <div key={atty.name} className="text-center bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
+                  <div className="mx-auto mb-4 rounded-full overflow-hidden border border-[#1e3a5f]/15 w-24 h-24 relative shadow-md">
+                    <PortfolioImage
+                      category="law"
+                      type="team"
+                      description={nameMap[atty.name] || "mitchell"}
+                      size="800x600"
+                      width={96}
+                      height={96}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <h3 className="text-lg font-bold text-[#1e3a5f]">{atty.name}</h3>
+                  <p className="text-sm font-semibold text-yellow-600 mb-2">{atty.title}</p>
+                  <p className="mt-1 text-sm text-zinc-600 mb-1">{atty.focus}</p>
+                  <p className="text-xs text-zinc-500">{atty.years}</p>
                 </div>
-                <h3 className="text-lg font-bold text-[#1e3a5f]">{atty.name}</h3>
-                <p className="text-sm font-semibold text-yellow-600 mb-2">{atty.title}</p>
-                <p className="mt-1 text-sm text-zinc-600 mb-1">{atty.focus}</p>
-                <p className="text-xs text-zinc-500">{atty.years}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

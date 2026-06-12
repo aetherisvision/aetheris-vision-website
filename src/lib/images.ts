@@ -11,7 +11,11 @@ export type ImageCategory =
   | 'nonprofit' 
   | 'analytics' 
   | 'international' 
-  | 'tech';
+  | 'tech'
+  | 'clients'
+  | 'real-estate'
+  | 'wp-editorial'
+  | 'photography';
 
 export type ImageType = 'hero' | 'card' | 'portrait' | 'banner' | 'interior' | 'team' | 'product';
 
@@ -80,6 +84,16 @@ export const DEMO_IMAGES = {
       workers: 'Skilled contractors on job site',
       safety: 'Team wearing proper safety equipment'
     }
+  },
+  healthcare: {
+    hero: {
+      clinic: 'Modern medical clinic interior',
+      appointment: 'Doctor consulting with patient'
+    },
+    team: {
+      doctors: 'Medical professionals in hallway',
+      portrait: 'Professional physician portrait'
+    }
   }
 } as const;
 
@@ -95,7 +109,7 @@ export function getPlaceholderImage(width: number, height: number, category?: Im
  * Get brand color for each category
  */
 function getCategoryColor(category: ImageCategory): string {
-  const colors = {
+  const colors: Record<ImageCategory, string> = {
     law: '1e3a5f',        // Navy blue
     restaurant: '92400e',  // Warm brown
     contractor: '1d4ed8',  // Blue
@@ -104,7 +118,11 @@ function getCategoryColor(category: ImageCategory): string {
     nonprofit: 'dc2626',   // Red
     analytics: '7c3aed',   // Purple
     international: '059669', // Emerald
-    tech: '0f172a'         // Dark
+    tech: '0f172a',        // Dark
+    clients: '3b82f6',     // Blue
+    'real-estate': '78350f', // Warm stone/amber
+    'wp-editorial': '111827', // Dark slate
+    'photography': 'a0784a'   // Gold
   };
   return colors[category];
 }

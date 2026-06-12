@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
+import PortfolioImage from "@/components/PortfolioImage";
 
 export const metadata = {
   title: `Prairie Standard WordPress Headless Demo | ${SITE.name} Portfolio`,
@@ -130,13 +131,18 @@ export default function WpEditorialPage() {
                 Read full story →
               </a>
             </div>
-            {/* Image placeholder */}
+            {/* Featured Image */}
             <div className="lg:col-span-2">
-              <div className="aspect-[4/3] w-full rounded bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
-                <div className="text-center text-amber-600">
-                  <div className="text-4xl mb-2">🌾</div>
-                  <p className="text-xs font-sans" style={{ fontFamily: "system-ui, sans-serif" }}>Featured Image</p>
-                </div>
+              <div className="aspect-[4/3] w-full rounded overflow-hidden border border-gray-200 shadow-sm relative">
+                <PortfolioImage
+                  category="wp-editorial"
+                  type="hero"
+                  description="wheat-field"
+                  size="1920x1080"
+                  width={600}
+                  height={450}
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
           </div>

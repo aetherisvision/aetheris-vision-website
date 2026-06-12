@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
+import PortfolioImage from "@/components/PortfolioImage";
 
 export const metadata = {
   title: `Clarity Health Group Healthcare Demo | ${SITE.name} Portfolio`,
@@ -59,10 +60,21 @@ export default function HealthcarePage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#f0f9ff] via-white to-[#e0f2fe] px-6 py-24">
-        <div className="absolute right-0 top-0 h-full w-1/3 opacity-5">
+        <div className="absolute inset-0 -z-10">
+          <PortfolioImage
+            category="healthcare"
+            type="hero"
+            description="clinic"
+            size="1920x1080"
+            width={1920}
+            height={1080}
+            className="w-full h-full object-cover opacity-20"
+          />
+        </div>
+        <div className="absolute right-0 top-0 h-full w-1/3 opacity-5 -z-10">
           <div className="h-full w-full bg-[radial-gradient(circle_at_80%_20%,#0369a1,transparent_60%)]" />
         </div>
-        <div className="relative mx-auto max-w-6xl">
+        <div className="relative mx-auto max-w-6xl relative z-10">
           <div className="max-w-2xl">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-4 py-1.5 text-sm font-medium text-[#0369a1]">
               <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
@@ -131,17 +143,32 @@ export default function HealthcarePage() {
             <p className="mt-3 text-gray-500">Board-certified, experienced, and committed to your long-term health.</p>
           </div>
           <div className="grid gap-6 sm:grid-cols-3">
-            {physicians.map((p) => (
-              <div key={p.name} className="rounded-xl border border-sky-100 bg-white p-8 text-center shadow-sm">
-                <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[#0369a1] text-2xl font-bold text-white">
-                  {p.initials}
+            {physicians.map((p) => {
+              const descriptionMap: Record<string, string> = {
+                SO: "portrait",
+                JW: "dr-whitfield",
+                PN: "dr-nair"
+              };
+              return (
+                <div key={p.name} className="rounded-xl border border-sky-100 bg-white p-8 text-center shadow-sm flex flex-col items-center">
+                  <div className="mb-5 rounded-full overflow-hidden border border-sky-100 w-20 h-20 relative">
+                    <PortfolioImage
+                      category="healthcare"
+                      type="team"
+                      description={descriptionMap[p.initials] || "portrait"}
+                      size="800x600"
+                      width={80}
+                      height={80}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <h3 className="font-bold text-[#0c4a6e]">{p.name}</h3>
+                  <p className="text-sm font-medium text-[#0369a1]">{p.title}</p>
+                  <p className="mt-1 text-sm text-gray-500">{p.specialty}</p>
+                  <p className="mt-3 text-xs text-gray-400">{p.years} years experience</p>
                 </div>
-                <h3 className="font-bold text-[#0c4a6e]">{p.name}</h3>
-                <p className="text-sm font-medium text-[#0369a1]">{p.title}</p>
-                <p className="mt-1 text-sm text-gray-500">{p.specialty}</p>
-                <p className="mt-3 text-xs text-gray-400">{p.years} years experience</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

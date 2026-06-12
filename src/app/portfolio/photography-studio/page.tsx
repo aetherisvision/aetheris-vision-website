@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
+import PortfolioImage from "@/components/PortfolioImage";
 
 export const metadata = {
   title: `Lumen & Co. Photography Creative Studio Demo | ${SITE.name} Portfolio`,
@@ -162,8 +163,18 @@ export default function PhotographyStudioPage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {gallery.map((item) => (
-              <div key={item.label} className="group relative overflow-hidden rounded-lg cursor-pointer">
-                <div className={`h-56 bg-gradient-to-br ${item.gradient} flex items-end p-5 transition-all duration-500 group-hover:scale-105`}>
+              <div key={item.label} className="group relative overflow-hidden rounded-lg cursor-pointer h-56 border border-white/5">
+                <PortfolioImage
+                  category="photography"
+                  type="card"
+                  description={item.tag.toLowerCase()}
+                  size="1200x800"
+                  width={400}
+                  height={280}
+                  className="absolute inset-0 w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-5 flex items-end">
                   <div>
                     <span className="mb-2 inline-block rounded border border-white/20 bg-black/40 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-white/70 backdrop-blur">
                       {item.tag}
@@ -238,15 +249,19 @@ export default function PhotographyStudioPage() {
               </p>
             </div>
             <div className="flex justify-center">
-              <div className="h-72 w-64 rounded-xl" style={{ background: "linear-gradient(160deg, #2d2d2d, #1a1a1a)", border: "1px solid rgba(200,168,130,0.15)" }}>
-                <div className="flex h-full items-center justify-center">
-                  <div className="text-center">
-                    <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full" style={{ background: "linear-gradient(135deg, #c8a882, #a0784a)" }}>
-                      <span className="text-2xl font-bold text-[#111111]">ML</span>
-                    </div>
-                    <p className="text-sm font-semibold text-white">Mariah Lumen</p>
-                    <p className="text-xs font-light text-stone-500">Lead Photographer</p>
-                  </div>
+              <div className="h-72 w-64 rounded-xl overflow-hidden relative border" style={{ borderColor: "rgba(200,168,130,0.15)" }}>
+                <PortfolioImage
+                  category="photography"
+                  type="team"
+                  description="mariahlumen"
+                  size="800x600"
+                  width={256}
+                  height={288}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/40 to-transparent p-5 text-center">
+                  <p className="text-sm font-semibold text-white">Mariah Lumen</p>
+                  <p className="text-xs font-light text-stone-300">Lead Photographer</p>
                 </div>
               </div>
             </div>
@@ -262,21 +277,35 @@ export default function PhotographyStudioPage() {
             <h2 className="text-3xl font-light tracking-tight text-white">What Clients Say</h2>
           </div>
           <div className="grid gap-6 sm:grid-cols-3">
-            {testimonials.map((t) => (
-              <div key={t.name} className="rounded-xl border border-white/5 p-7" style={{ background: "#161616" }}>
-                <p className="mb-6 text-sm font-light leading-relaxed text-stone-300">&quot;{t.quote}&quot;</p>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-bold text-[#111111]"
-                    style={{ background: "linear-gradient(135deg, #c8a882, #a0784a)" }}>
-                    {t.initials}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">{t.name}</p>
-                    <p className="text-xs font-light text-stone-500">{t.detail}</p>
+            {testimonials.map((t) => {
+              const testimonialMap: Record<string, string> = {
+                SW: "testimonial1",
+                DR: "testimonial2",
+                LR: "testimonial3"
+              };
+              return (
+                <div key={t.name} className="rounded-xl border border-white/5 p-7" style={{ background: "#161616" }}>
+                  <p className="mb-6 text-sm font-light leading-relaxed text-stone-300">&quot;{t.quote}&quot;</p>
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 shrink-0 rounded-full overflow-hidden border border-white/10 relative">
+                      <PortfolioImage
+                        category="photography"
+                        type="team"
+                        description={testimonialMap[t.initials] || "testimonial1"}
+                        size="800x600"
+                        width={40}
+                        height={40}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-white">{t.name}</p>
+                       <p className="text-xs font-light text-stone-500">{t.detail}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

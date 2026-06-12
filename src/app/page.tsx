@@ -319,7 +319,7 @@ export default async function Home() {
               </FadeIn>
             </div>
           </div>
-        </section>
+         </section>
 
         {/* Contact CTA Section */}
         <section className="py-24 bg-[#111014] border-t border-white/5">

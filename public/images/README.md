@@ -118,3 +118,34 @@ imgix params (`fm=webp&q=55–75`), then served through `next/image`.
 |---|---|---|---|
 | `blog-index-bg.webp` | Towering storm clouds | https://images.unsplash.com/photo-1534088568595-a066f410bcda (pre-existing site asset, localized as-is) | — |
 | `blog-post-bg.webp` | Earth's atmospheric limb, deep navy | https://unsplash.com/photos/t7EL2iG3jMc (`photo-1534996858221-380b92700493`) | ActionVance |
+
+## Custom Premium Generated Imagery
+
+These assets are generated custom high-fidelity `.webp` images to ensure professional, realistic, and cohesive visuals across Aetheris Vision and its demo sites.
+
+### home/ & competencies/ — Homepage backgrounds
+- `hero-earth.webp` - Cinematic view of Earth at night with glowing satellite tracks.
+- `philosophy-atmosphere.webp` - Atmospheric limb sunrise from space.
+- `cta-storm-watch.webp` - Meteorologist facing a supercell storm on a plains road.
+- `applied-meteorology.webp` - Supercell storm cloud structure over plains.
+- `ai-ml-integration.webp` - Abstract glowing teal neural network point-cloud mesh.
+- `web-digital-solutions.webp` - Developer desk with colorful code on a laptop.
+- `technical-advisory.webp` - Architectural skyscraper facade with blueprint overlay.
+- `technical-leadership.webp` - Dramatic photo of a hand moving a dark glass chess piece.
+- `state-federal-contracting.webp` - Illuminated United States Capitol dome at night.
+
+### clients/ — Potential Client Showcase
+- `client_law.webp` - Modern conference room meeting with lawyers.
+- `client_healthcare.webp` - Professional female physician in a clinic.
+- `client_restaurant.webp` - Upscale dining room and chef plating in the background.
+- `client_contractor.webp` - Contractor and client reviewing blueprints at a home framing site.
+- `client_tech.webp` - Sleek dark mode SaaS analytics dashboard UI.
+- `client_government.webp` - EOC operations center weather briefing for officials.
+
+### Demos (restaurant/, contractor/, healthcare/) — Photography-forward Demo upgrades
+- `restaurant/restaurant_hero_dining_1920x1080.webp/.jpg` - Cozy dining room during evening service.
+- `restaurant/restaurant_hero_chef_1920x1080.webp/.jpg` - Chef plating a gourmet dish.
+- `contractor/contractor_hero_construction_1920x1080.webp/.jpg` - Beautiful luxury home under construction.
+- `healthcare/healthcare_hero_clinic_1920x1080.webp/.jpg` - Modern reception lobby.
+- `healthcare/healthcare_team_portrait_800x600.webp/.jpg` - Professional portrait of Dr. Sarah Okonkwo.
+

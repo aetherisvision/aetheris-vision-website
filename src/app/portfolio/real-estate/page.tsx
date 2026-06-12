@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
+import PortfolioImage from "@/components/PortfolioImage";
 
 export const metadata = {
   title: `Pinnacle Realty Group Real Estate Demo | ${SITE.name} Portfolio`,
@@ -153,20 +154,35 @@ export default function RealEstatePage() {
 
           {/* Listing Grid */}
           <div className="grid gap-6 sm:grid-cols-2">
-            {listings.map((l) => (
-              <div key={l.address} className="group cursor-pointer overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm hover:shadow-md transition-shadow">
-                {/* Image placeholder */}
-                <div className={`relative h-48 bg-gradient-to-br ${l.gradient} flex items-center justify-center`}>
-                  <span className="text-4xl opacity-30">🏡</span>
-                  <div className="absolute top-3 left-3">
-                    <span className={`rounded-full px-3 py-1 text-xs font-bold ${l.tag === "Under Contract" ? "bg-stone-700 text-white" : l.tag === "Luxury" ? "bg-[#92400e] text-white" : "bg-white text-stone-800"}`}>
-                      {l.tag}
-                    </span>
+            {listings.map((l) => {
+              const houseMap: Record<string, string> = {
+                "4821 Classen Blvd": "house1",
+                "1103 NW 52nd St": "house2",
+                "7240 Nichols Road": "house3",
+                "2214 Linwood Blvd": "house4"
+              };
+              return (
+                <div key={l.address} className="group cursor-pointer overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+                  {/* Image card */}
+                  <div className="relative h-48 bg-[#78350f] overflow-hidden">
+                    <PortfolioImage
+                      category="real-estate"
+                      type="card"
+                      description={houseMap[l.address] || "house1"}
+                      size="1200x800"
+                      width={600}
+                      height={400}
+                      className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute top-3 left-3 z-10">
+                      <span className={`rounded-full px-3 py-1 text-xs font-bold ${l.tag === "Under Contract" ? "bg-stone-700 text-white" : l.tag === "Luxury" ? "bg-[#92400e] text-white" : "bg-white text-stone-800"}`}>
+                        {l.tag}
+                      </span>
+                    </div>
+                    <div className="absolute top-3 right-3 z-10">
+                      <span className="rounded-full bg-black/50 px-3 py-1 text-xs font-semibold text-white backdrop-blur">{l.status}</span>
+                    </div>
                   </div>
-                  <div className="absolute top-3 right-3">
-                    <span className="rounded-full bg-black/50 px-3 py-1 text-xs font-semibold text-white backdrop-blur">{l.status}</span>
-                  </div>
-                </div>
                 <div className="p-5">
                   <p className="text-xl font-bold text-[#1c1917]">{l.price}</p>
                   <p className="mt-1 font-medium text-stone-700">{l.address}</p>
@@ -178,7 +194,8 @@ export default function RealEstatePage() {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -192,16 +209,31 @@ export default function RealEstatePage() {
             <p className="mt-3 text-stone-500">Local expertise. Personal service. Results you can count on.</p>
           </div>
           <div className="grid gap-6 sm:grid-cols-3">
-            {agents.map((a) => (
-              <div key={a.name} className="rounded-2xl border border-stone-200 bg-white p-8 text-center shadow-sm">
-                <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[#92400e] text-xl font-bold text-white">
-                  {a.initials}
+            {agents.map((a) => {
+              const agentMap: Record<string, string> = {
+                "Rebecca Thorn": "thorn",
+                "Marcus Ellington": "ellington",
+                "Dana Kurosawa": "kurosawa"
+              };
+              return (
+                <div key={a.name} className="rounded-2xl border border-stone-200 bg-white p-8 text-center shadow-sm flex flex-col items-center">
+                  <div className="mb-5 rounded-full overflow-hidden border border-stone-200 w-20 h-20 relative shadow-md">
+                    <PortfolioImage
+                      category="real-estate"
+                      type="team"
+                      description={agentMap[a.name] || "thorn"}
+                      size="800x600"
+                      width={80}
+                      height={80}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <h3 className="font-bold text-[#1c1917]">{a.name}</h3>
+                  <p className="text-sm font-medium text-[#92400e]">{a.title}</p>
+                  <p className="mt-2 text-sm text-stone-400">{a.sales}</p>
                 </div>
-                <h3 className="font-bold text-[#1c1917]">{a.name}</h3>
-                <p className="text-sm font-medium text-[#92400e]">{a.title}</p>
-                <p className="mt-2 text-sm text-stone-400">{a.sales}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

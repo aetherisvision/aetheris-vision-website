@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
 import LocationMap from "@/components/LocationMap";
+import PortfolioImage from "@/components/PortfolioImage";
 
 export const metadata = {
   title: `Casa Verde Kitchen Restaurant Demo | ${SITE.name} Portfolio`,
@@ -60,7 +61,18 @@ export default function RestaurantPage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-[#92400e] px-6 py-28 text-white">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_30%_50%,#fbbf24,transparent_60%),radial-gradient(circle_at_70%_50%,#ea580c,transparent_60%)]" />
+        <div className="absolute inset-0 -z-10">
+          <PortfolioImage
+            category="restaurant"
+            type="hero"
+            description="dining"
+            size="1920x1080"
+            width={1920}
+            height={1080}
+            className="w-full h-full object-cover opacity-35"
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#92400e]/30 via-[#92400e]/70 to-[#92400e] -z-10" />
         <div className="relative mx-auto max-w-3xl text-center">
           <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-amber-300">Fresh · Authentic · Handmade</p>
           <h1 className="mb-5 text-5xl font-bold leading-tight sm:text-6xl">
@@ -112,6 +124,41 @@ export default function RestaurantPage() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Our Kitchen / Behind the Scenes Section */}
+      <section className="bg-zinc-50 border-t border-b border-amber-100 px-6 py-20">
+        <div className="mx-auto max-w-5xl flex flex-col md:flex-row items-center gap-12">
+          <div className="flex-1">
+            <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-[#92400e]">Culinary Craft</p>
+            <h2 className="mb-6 text-3xl font-bold text-zinc-900">Behind the Scenes</h2>
+            <p className="text-zinc-600 leading-relaxed mb-6 font-light">
+              Led by our head chef, every dish at Casa Verde Kitchen is crafted by hand, combining imported Mexican chilies and spices with fresh, locally grown Oklahoma produce.
+            </p>
+            <div className="flex gap-4">
+              <div>
+                <p className="text-2xl font-bold text-[#92400e]">100%</p>
+                <p className="text-xs text-zinc-500">Handmade Tortillas</p>
+              </div>
+              <div className="w-px h-10 bg-amber-200"></div>
+              <div>
+                <p className="text-2xl font-bold text-[#92400e]">Local</p>
+                <p className="text-xs text-zinc-500">Sourced Farms</p>
+              </div>
+            </div>
+          </div>
+          <div className="w-full md:w-1/2 aspect-[4/3] rounded-2xl overflow-hidden border border-amber-200 shadow-lg relative">
+            <PortfolioImage
+              category="restaurant"
+              type="hero"
+              description="chef"
+              size="1920x1080"
+              width={800}
+              height={600}
+              className="w-full h-full object-cover"
+            />
+          </div>
         </div>
       </section>
 

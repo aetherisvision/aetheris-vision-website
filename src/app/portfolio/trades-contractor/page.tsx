@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SITE } from "@/lib/constants";
 import LocationMap from "@/components/LocationMap";
+import PortfolioImage from "@/components/PortfolioImage";
 
 export const metadata = {
   title: `Summit Home Services Contractor Demo | ${SITE.name} Portfolio`,
@@ -48,8 +49,20 @@ export default function TradesContractorPage() {
       </nav>
 
       {/* Hero */}
-      <section className="bg-[#1d4ed8] px-6 py-28 text-white">
-        <div className="mx-auto max-w-4xl">
+      <section className="relative overflow-hidden bg-[#1d4ed8] px-6 py-28 text-white">
+        <div className="absolute inset-0 -z-10">
+          <PortfolioImage
+            category="contractor"
+            type="hero"
+            description="construction"
+            size="1920x1080"
+            width={1920}
+            height={1080}
+            className="w-full h-full object-cover opacity-25"
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1d4ed8]/35 via-[#1d4ed8]/75 to-[#1d4ed8] -z-10" />
+        <div className="mx-auto max-w-4xl relative z-10">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-400/40 bg-blue-600/30 px-4 py-1.5 text-sm font-semibold text-blue-200">
             <span className="inline-block h-2 w-2 rounded-full bg-green-400" />
             Serving OKC Metro · Licensed & Insured
