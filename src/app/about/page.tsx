@@ -35,8 +35,9 @@ const timeline = [
 ];
 
 const registrations = [
+  { label: "AMS Certified Consulting Meteorologist (CCM)", detail: "One of ~600 active nationwide (Achieved June 2026)" },
   { label: "U.S. Government Secret Clearance", detail: "Held" },
-  { label: "VOSB Eligible", detail: "Veteran-Owned Small Business" },
+  { label: "SDVOSB / VOSB Eligible", detail: "Service-Disabled Veteran-Owned Small Business" },
   { label: "SAM.gov Registration", detail: `Active · UEI ${SAM.uei} · CAGE ${SAM.cage}` },
   { label: "8(a) Eligible", detail: "SBA program · application opens 2027" },
   { label: "Operational Experience", detail: "35+ years · global atmospheric modeling & forecasting" },
@@ -94,7 +95,7 @@ export default function AboutPage() {
 
                 {/* Narrative lead — larger serif measure */}
                 <p className="font-serif text-xl md:text-2xl text-gray-200 leading-relaxed mb-8">
-                  Our founder holds a Ph.D. in atmospheric and environmental science and brings more than 35 years of operational meteorology to Aetheris Vision. His career began as a United States Air Force weather forecaster, where he supported real-world operations under conditions that left no room for guesswork.
+                  Our founder is an AMS Certified Consulting Meteorologist (CCM), holds a Ph.D. in atmospheric and environmental science, and brings more than 35 years of operational meteorology to Aetheris Vision. His career began as a United States Air Force weather forecaster, where he supported real-world operations under conditions that left no room for guesswork.
                 </p>
 
                 <div className="space-y-5 text-gray-400 font-light leading-relaxed">

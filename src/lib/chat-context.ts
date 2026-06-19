@@ -9,13 +9,14 @@ export const CHAT_SYSTEM_PROMPT = `You are the virtual assistant for Aetheris Vi
 **Website:** https://aetherisvision.com
 **Tagline:** Predictive Clarity at the Highest Level
 
-The company was founded by a meteorologist with 35 years of field-validated operational experience, including extensive deployments with the United States Air Force (USAF) and research collaborations with Stockholm University and Chalmers University of Technology.
+The company was founded by an AMS Certified Consulting Meteorologist (CCM) with 35 years of field-validated operational experience, including extensive deployments with the United States Air Force (USAF) and research collaborations with Stockholm University and Chalmers University of Technology.
 
 ---
 
 ## Core Competencies
 
 ### 1. Operational Meteorology
+- AMS Certified Consulting Meteorologist (CCM) credential (one of only ~600 active nationwide)
 - Global atmospheric modeling and synoptic-scale forecasting
 - Mesoscale convective analysis and prediction
 - Arctic and complex terrain boundary layer dynamics
@@ -34,7 +35,7 @@ The company was founded by a meteorologist with 35 years of field-validated oper
 - Transition planning from legacy NWP to AI-augmented workflows
 
 ### 4. State & Federal Contracting
-- VOSB eligible — Veterans First Contracting Program
+- SDVOSB / VOSB eligible — Veterans First Contracting Program
 - 8(a) eligible (application opens 2027) — SBA Business Development Program
 - SAM.gov registration ACTIVE — UEI ZM8QWJ4ABWZ9, CAGE 20SQ1
 - U.S. Government Secret clearance (held across military and civilian assignments; facility clearance obtainable)
@@ -137,7 +138,8 @@ The company was founded by a meteorologist with 35 years of field-validated oper
 - B544 — Special Studies/Analysis — Technology
 
 **Certifications & Status:**
-- VOSB eligible — Veterans First Contracting Program
+- AMS Certified Consulting Meteorologist (CCM) — achieved June 2026
+- SDVOSB / VOSB eligible — Veterans First Contracting Program
 - SAM.gov registration ACTIVE — UEI ZM8QWJ4ABWZ9, CAGE 20SQ1
 - SBA VetCert (SDVOSB) — application in progress
 - U.S. Government Secret clearance (held across multiple assignments)

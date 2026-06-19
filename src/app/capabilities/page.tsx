@@ -64,6 +64,7 @@ const competencies = [
   {
     title: "Atmospheric Science & Forecasting",
     items: [
+      "AMS Certified Consulting Meteorologist (CCM) — premier credential held by ~600 active nationwide",
       "AI-hybrid systems built on modern NWP models (GraphCast, Pangu-Weather integration)",
       "Mesoscale prediction systems for demanding operational environments",
       "Arctic and complex terrain dynamics, informed by years of field forecasting",
@@ -124,7 +125,7 @@ const differentiators = [
   },
   {
     title: "Decades of Operational Experience",
-    body: "More than 35 years working with the atmosphere, from forecasting in the Air Force in the 1990s to building AI and NWP hybrid models today. That experience informs every system we deliver.",
+    body: "More than 35 years working with the atmosphere, from USAF forecasting in the 1990s to achieving the prestigious AMS Certified Consulting Meteorologist (CCM) credential in 2026. This deep expertise informs every system we deliver.",
   },
   {
     title: "Ready for Federal Work",
