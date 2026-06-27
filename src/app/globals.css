@@ -82,3 +82,8 @@ body {
 .md-preview a { color: var(--av-accent); }
 .md-preview blockquote { border-left: 3px solid var(--av-accent); padding: 6px 12px; margin: 0 0 0.8em; background: rgba(91, 168, 217, 0.06); border-radius: 0 4px 4px 0; }
 .md-preview blockquote p { color: rgba(255,255,255,0.55); margin: 0; }
+
+/* ── KaTeX dark theme overrides ──────────────────────────────────────────── */
+.katex { color: #e2e8f0; font-size: 1.05em; }
+.katex-display { color: #e2e8f0; overflow-x: auto; padding: 1rem 0; }
+.katex-display > .katex { display: inline-block; text-align: left; }
