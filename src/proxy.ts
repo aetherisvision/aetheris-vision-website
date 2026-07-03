@@ -27,6 +27,41 @@ async function isAdminSession(request: NextRequest): Promise<boolean> {
 }
 
 
+/**
+ * HTTP Basic Auth site lock, checked in Edge Runtime (Web Crypto, no Buffer).
+ * Returns a 401 response if the request should be blocked, or null to let
+ * it through. Unset PREVIEW_PASSWORD disables the lock entirely — the site
+ * is open by default and must be explicitly locked.
+ */
+function checkSiteLock(request: NextRequest): NextResponse | null {
+  const password = process.env.PREVIEW_PASSWORD
+  if (!password) return null
+
+  const authHeader = request.headers.get('authorization')
+  if (authHeader?.startsWith('Basic ')) {
+    const decoded = atob(authHeader.slice('Basic '.length))
+    const separatorIndex = decoded.indexOf(':')
+    const suppliedPassword = separatorIndex === -1 ? decoded : decoded.slice(separatorIndex + 1)
+    if (constantTimeEqual(suppliedPassword, password)) {
+      return null
+    }
+  }
+
+  return new NextResponse('Authentication required', {
+    status: 401,
+    headers: { 'WWW-Authenticate': 'Basic realm="Aetheris Vision"' },
+  })
+}
+
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  let diff = 0
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  }
+  return diff === 0
+}
+
 function buildCsp(nonce: string): string {
   const allowEval = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
   return [
@@ -66,6 +101,15 @@ export async function proxy(request: NextRequest) {
   // Cron routes enforce their own auth (e.g. CRON_SECRET) at the handler level.
   if (pathname.startsWith('/api/cron/')) {
     return NextResponse.next()
+  }
+
+  // Site lock: the public site is intentionally gated while it's retooled
+  // around Agentic OG. /admin/* keeps its own passphrase gate below and
+  // stays reachable through this check (rather than being blocked by it)
+  // so admin work isn't blocked by the site lock.
+  if (!pathname.startsWith('/admin')) {
+    const lockResponse = checkSiteLock(request)
+    if (lockResponse) return lockResponse
   }
 
   // Generate nonce for CSP and security

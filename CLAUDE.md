@@ -39,8 +39,12 @@ Uses `getToken()` not `getServerSession()` for App Router compatibility.
 
 ## Site Lock
 
-`src/proxy.ts` has basic-auth active — site intentionally locked until SAM.gov registration completes.
-Password: `PREVIEW_PASSWORD` env var (default: `marston-av`).
+`src/proxy.ts` gates every route except `/admin/*` (which has its own passphrase gate),
+`/api/webhooks/*`, and `/api/cron/*` behind HTTP Basic Auth when `PREVIEW_PASSWORD` is set.
+Unset `PREVIEW_PASSWORD` = site fully open; this is opt-in, not opt-out.
+
+Re-locked 2026-07-03 while the site is retooled to focus on Agentic OG (omni-gridder).
+Value lives in Vercel env / Bitwarden — not hardcoded in the repo.
 
 ---
 
