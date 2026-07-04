@@ -5,13 +5,13 @@ import { BRAND_LOGO } from "@/lib/brand";
 import { LockClosedIcon } from "@heroicons/react/24/outline";
 
 const footerLinks = [
-  { label: "Services", href: "/services/web" },
+  { label: "Agentic OG", href: "/agentic-og" },
   { label: "About", href: "/about" },
+  { label: "Capabilities", href: "/capabilities" },
   { label: "Portfolio", href: "/portfolio" },
   { label: "Blog", href: "/blog" },
-  { label: "Capabilities", href: "/capabilities" },
   { label: "Contact", href: "/contact" },
-  { label: "Book a Call", href: "/book" },
+  { label: "Request API Access", href: "/contact?topic=Agentic%20OG%20API%20Access" },
 ];
 
 export default function Footer() {

@@ -1,6 +1,5 @@
-import { ArrowRightIcon, GlobeAltIcon, CpuChipIcon, ShieldCheckIcon, ChartBarIcon, EnvelopeIcon, CodeBracketIcon, AcademicCapIcon } from "@heroicons/react/24/outline";
+import { ArrowRightIcon, GlobeAltIcon, AcademicCapIcon, ShieldCheckIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
-import Link from "next/link";
 import { SITE } from "@/lib/constants";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -9,6 +8,8 @@ import HeroVideo from "@/components/HeroVideo";
 import SatelliteDisplay, { type SatelliteSource } from "@/components/SatelliteDisplay";
 
 export const revalidate = 3600;
+
+const API_ACCESS_HREF = "/contact?topic=Agentic%20OG%20API%20Access";
 
 /** Route an external satellite image URL through our same-origin proxy. */
 function sat(url: string) {
@@ -29,12 +30,17 @@ const STATIC_SOURCES: SatelliteSource[] = [
   },
 ];
 
-
+const pipelineStages = [
+  { num: "1", title: "Submit", body: "A typed job spec — source URI, destination grid, method — hits an authenticated API. Per-key concurrency limits enforce fairness before a job is even queued." },
+  { num: "2", title: "Queue", body: "State lands in Firestore, the job publishes to Pub/Sub. Submission and execution are decoupled — a slow client never blocks the worker fleet." },
+  { num: "3", title: "Compute", body: "A persistent Julia process (spawned once per worker, reused across every job) computes conservative, bilinear, or nearest-neighbor weights — no per-call cold start." },
+  { num: "4", title: "Render & Deliver", body: "Output is optionally rendered to a publication-quality map and delivered behind a short-lived signed URL — never a raw bucket path." },
+];
 
 export const metadata = {
   title: `${SITE.name} | ${SITE.tagline}`,
   description:
-    "Applied meteorology and AI-powered atmospheric intelligence for complex operational systems. Veteran-owned. SAM registered. Based in Oklahoma.",
+    "Agentic OG: a cloud-native regridding engine for satellite and NWP data, built by a career atmospheric scientist. Veteran-owned. SAM registered. Based in Oklahoma.",
 };
 
 export default async function Home() {
@@ -65,44 +71,44 @@ export default async function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/40 via-[#0d0c0f]/90 to-[#0d0c0f] -z-10" />
 
           <SatelliteDisplay sources={sources} />
-          
+
           <div className="mx-auto max-w-5xl px-6 relative z-10">
             <FadeIn delay={0.2}>
               <h1 className="text-5xl md:text-7xl font-semibold tracking-tighter text-white mb-6 leading-[1.1]">
-                Applied Meteorology <br />
+                Agentic Regridding, <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">
-                  and AI Intelligence.
+                  For Real Pipelines.
                 </span>
               </h1>
             </FadeIn>
 
             <FadeIn delay={0.3}>
               <p className="max-w-2xl text-lg md:text-xl text-gray-400 mb-10 leading-relaxed font-light">
-                AI-powered atmospheric intelligence and scientific consulting for complex operational systems. We also design and build custom websites and software for businesses that need more than a template.
+                Agentic OG moves satellite and NWP data onto whatever grid a downstream system needs — a cloud-native regridding engine, not another team reimplementing interpolation math.
               </p>
             </FadeIn>
-            
+
             <FadeIn delay={0.4}>
               <div className="flex flex-col sm:flex-row gap-4">
-                <a 
-                  href="/book"
+                <a
+                  href={API_ACCESS_HREF}
                   className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-black transition-colors hover:bg-gray-200"
                 >
-                  Book a Consultation
+                  Request API Access
                 </a>
-                <a 
-                  href="#expertise"
+                <a
+                  href="#pipeline"
                   className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 bg-black px-8 text-sm font-medium text-white transition-colors hover:bg-white/5"
                 >
-                  View Expertise <ArrowRightIcon className="ml-2 h-4 w-4" />
+                  See How It Works <ArrowRightIcon className="ml-2 h-4 w-4" />
                 </a>
               </div>
             </FadeIn>
           </div>
         </section>
 
-        {/* About Our Name & Philosophy Section */}
-        <section id="about" className="py-24 bg-[#111014] border-t border-white/5 relative overflow-hidden">
+        {/* Pipeline Section */}
+        <section id="pipeline" className="py-24 bg-[#111014] border-t border-white/5 relative overflow-hidden">
           {/* Subtle atmospheric background */}
           <div className="absolute inset-0 -z-20">
             <Image
@@ -117,209 +123,154 @@ export default async function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-[#0d0c0f] via-[#0d0c0f]/85 to-[#0d0c0f]/25 -z-10" />
 
           <div className="mx-auto max-w-5xl px-6">
-            <div className="max-w-2xl">
-              <FadeIn delay={0}>
-                <h2 className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Our Philosophy</h2>
-                <h3 className="text-3xl md:text-5xl font-semibold text-white tracking-tight mb-6">
-                  The <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">Aetheris</span> Vision
-                </h3>
-              </FadeIn>
-              
-              <FadeIn delay={0.15}>
-                <p className="text-lg md:text-xl text-gray-300 font-light leading-relaxed mb-6">
-                  Derived from <span className="text-white italic">aetheris</span>, a form of the Latin <span className="text-white italic">aether</span>{' '}(from the Greek <span className="text-white italic">aith&#275;r</span>, the bright upper air of the heavens, the pure air breathed by the gods), our name reflects a profound commitment to mapping the unknown.
-                </p>
-              </FadeIn>
-              
-              <FadeIn delay={0.2}>
-                <div className="h-px w-12 bg-blue-500/50 mb-6"></div>
-                
-                <p className="text-base text-gray-400 font-light leading-relaxed mb-8">
-                  In ancient philosophy, aether was the fifth element that filled the universe above the terrestrial sphere. For our business, it represents 35 years of deep operational meteorology expertise paired with a vision for the future: bringing clarity, structure, and advanced AI/ML capabilities to highly complex operational and enterprise systems charting the skies, space, and earth.
-                </p>
-              </FadeIn>
-              
-              <FadeIn delay={0.25}>
-                <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <span className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div> Meteorology</span>
-                  <span className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div> AI Integration</span>
-                  <span className="flex items-center gap-2"><div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div> Systems Engineering</span>
+            <FadeIn delay={0}>
+              <h2 className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">How It Works</h2>
+              <h3 className="text-3xl md:text-5xl font-semibold text-white tracking-tight mb-12">
+                How a Job Runs
+              </h3>
+            </FadeIn>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+              {pipelineStages.map((stage, i) => (
+                <FadeIn key={stage.num} delay={0.1 + i * 0.05}>
+                  <h4 className="flex items-baseline gap-3 text-white font-medium mb-3">
+                    <span className="font-mono text-xs text-blue-400">{stage.num}</span>
+                    {stage.title}
+                  </h4>
+                  <p className="text-sm text-gray-400 font-light leading-relaxed">{stage.body}</p>
+                </FadeIn>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Real Proof Section */}
+        <section className="py-24 bg-[#0d0c0f] border-t border-white/5">
+          <div className="mx-auto max-w-5xl px-6">
+            <FadeIn>
+              <h2 className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Real Output</h2>
+              <h3 className="text-3xl md:text-5xl font-semibold text-white tracking-tight mb-12">
+                Not a Mockup
+              </h3>
+            </FadeIn>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+              <FadeIn delay={0.1}>
+                <div className="rounded-lg overflow-hidden border border-white/10 bg-black">
+                  <Image
+                    src="/images/omni-gridder/staging-demo-plot.png"
+                    alt="Regridded temperature field rendered by Agentic OG's PlotProcessor from a live staging job"
+                    width={800}
+                    height={860}
+                    className="w-full h-auto"
+                  />
                 </div>
+              </FadeIn>
+              <FadeIn delay={0.2}>
+                <p className="text-gray-400 font-light leading-relaxed mb-6">
+                  This is the actual output of a regrid job submitted to our staging deployment on Google Cloud — a temperature field regridded by the Julia kernel and rendered through the same signed-URL delivery path a production job would use. Not a rendered mockup.
+                </p>
+                <a href="/agentic-og" className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition">
+                  Read the full technical brief <ArrowRightIcon className="h-3.5 w-3.5" />
+                </a>
               </FadeIn>
             </div>
           </div>
         </section>
 
-        {/* Expertise Grid */}
-        <section id="expertise" className="py-24 bg-[#0d0c0f] border-t border-white/5 relative overflow-hidden">
-
+        {/* Why Trust This Section */}
+        <section className="py-24 bg-[#111014] border-t border-white/5 relative overflow-hidden">
           <div className="mx-auto max-w-5xl px-6 relative z-10">
             <FadeIn>
-              <h2 className="text-3xl md:text-5xl font-semibold text-white tracking-tight mb-12">Core Competencies</h2>
+              <h2 className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Why Trust This</h2>
+              <h3 className="text-3xl md:text-5xl font-semibold text-white tracking-tight mb-12">
+                Built by Someone Who Depends on It
+              </h3>
             </FadeIn>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-              {/* Card 1 — Applied Meteorology (primary) */}
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
               <FadeIn delay={0.05} direction="up" className="h-full">
-              <div className="group relative rounded-xl border border-blue-500/20 bg-blue-500/[0.04] p-6 md:p-8 transition hover:bg-blue-500/[0.07] hover:border-blue-500/30 flex flex-col h-full overflow-hidden">
-                <div className="absolute inset-0 rounded-xl overflow-hidden">
-                  <Image
-                    src="/images/competencies/applied-meteorology.webp"
-                    alt=""
-                    aria-hidden="true"
-                    fill
-                    className="object-cover object-[50%_22%] opacity-[0.65] group-hover:opacity-[0.8] transition-opacity duration-500"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/20 via-[#0d0c0f]/70 to-[#0d0c0f]/92" />
-                </div>
-                <div className="relative z-10">
-                  <div className="h-12 w-12 rounded-lg bg-gray-900 border border-blue-500/30 flex items-center justify-center mb-6">
-                    <GlobeAltIcon className="h-6 w-6 text-blue-400" />
+                <div className="group relative rounded-xl border border-blue-500/20 bg-blue-500/[0.04] p-6 md:p-8 transition hover:bg-blue-500/[0.07] hover:border-blue-500/30 flex flex-col h-full overflow-hidden">
+                  <div className="absolute inset-0 rounded-xl overflow-hidden">
+                    <Image
+                      src="/images/competencies/applied-meteorology.webp"
+                      alt=""
+                      aria-hidden="true"
+                      fill
+                      className="object-cover object-[50%_22%] opacity-[0.65] group-hover:opacity-[0.8] transition-opacity duration-500"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/20 via-[#0d0c0f]/70 to-[#0d0c0f]/92" />
                   </div>
-                  <h3 className="text-xl md:text-2xl font-medium text-white mb-3">Applied Meteorology</h3>
-                  <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base mb-4">
-                    Over 35 years of global atmospheric modeling and operational forecasting. Expertise honed through deployments with the <strong className="text-gray-200">United States Air Force</strong> and research with <strong className="text-gray-200">Stockholm University</strong> and <strong className="text-gray-200">Chalmers University of Technology</strong>.
-                  </p>
-                  <a href="/capabilities" className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition">
-                    View capabilities <ArrowRightIcon className="h-3.5 w-3.5" />
-                  </a>
+                  <div className="relative z-10">
+                    <div className="h-12 w-12 rounded-lg bg-gray-900 border border-blue-500/30 flex items-center justify-center mb-6">
+                      <GlobeAltIcon className="h-6 w-6 text-blue-400" />
+                    </div>
+                    <h4 className="text-xl font-medium text-white mb-3">35 Years With This Data</h4>
+                    <p className="text-gray-400 font-light leading-relaxed text-sm">
+                      Global atmospheric modeling and operational forecasting since a career that began as a <strong className="text-gray-200">United States Air Force</strong> weather forecaster — the exact data this engine regrids.
+                    </p>
+                  </div>
                 </div>
-              </div>
               </FadeIn>
 
-              {/* Card 2 — AI / ML Integration */}
               <FadeIn delay={0.1} direction="up" className="h-full">
-              <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 md:p-8 transition hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full overflow-hidden">
-                <div className="absolute inset-0 rounded-xl overflow-hidden">
-                  <Image
-                    src="/images/competencies/ai-ml-integration.webp"
-                    alt=""
-                    aria-hidden="true"
-                    fill
-                    className="object-cover object-[35%_45%] opacity-[0.8] group-hover:opacity-[0.95] transition-opacity duration-500"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/10 via-[#0d0c0f]/50 to-[#0d0c0f]/85" />
-                </div>
-                <div className="relative z-10">
-                  <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">
-                    <CpuChipIcon className="h-6 w-6 text-blue-400" />
+                <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 md:p-8 transition hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full overflow-hidden">
+                  <div className="absolute inset-0 rounded-xl overflow-hidden">
+                    <Image
+                      src="/images/competencies/technical-advisory.webp"
+                      alt=""
+                      aria-hidden="true"
+                      fill
+                      className="object-cover opacity-[0.65] group-hover:opacity-[0.8] transition-opacity duration-500"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/20 via-[#0d0c0f]/70 to-[#0d0c0f]/92" />
                   </div>
-                  <h3 className="text-xl md:text-2xl font-medium text-white mb-3">AI / ML Integration</h3>
-                  <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base">
-                    Pioneering machine learning techniques tailored for complex, large-scale meteorological datasets to increase predictive accuracy and operational readiness.
-                  </p>
+                  <div className="relative z-10">
+                    <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">
+                      <AcademicCapIcon className="h-6 w-6 text-blue-400" />
+                    </div>
+                    <h4 className="text-xl font-medium text-white mb-3">PhD-Level Science</h4>
+                    <p className="text-gray-400 font-light leading-relaxed text-sm">
+                      AMS Certified Consulting Meteorologist, PhD in atmospheric and environmental science — the interpolation math is checked against decades of domain judgment, not just unit tests.
+                    </p>
+                    <a href="/about" className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition mt-4">
+                      Read the founder&apos;s story <ArrowRightIcon className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
                 </div>
-              </div>
               </FadeIn>
 
-              {/* Card 3 — Web & Digital Solutions */}
               <FadeIn delay={0.15} direction="up" className="h-full">
-              <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 md:p-8 transition hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full overflow-hidden">
-                <div className="absolute inset-0 rounded-xl overflow-hidden">
-                  <Image
-                    src="/images/competencies/web-digital-solutions.webp"
-                    alt=""
-                    aria-hidden="true"
-                    fill
-                    className="object-cover opacity-[0.65] group-hover:opacity-[0.8] transition-opacity duration-500"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/20 via-[#0d0c0f]/70 to-[#0d0c0f]/92" />
-                </div>
-                <div className="relative z-10">
-                  <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">
-                    <CodeBracketIcon className="h-6 w-6 text-blue-400" />
+                <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 md:p-8 transition hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full overflow-hidden">
+                  <div className="absolute inset-0 rounded-xl overflow-hidden">
+                    <Image
+                      src="/images/competencies/state-federal-contracting.webp"
+                      alt=""
+                      aria-hidden="true"
+                      fill
+                      className="object-cover object-[50%_72%] opacity-[0.8] group-hover:opacity-[0.95] transition-opacity duration-500"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/10 via-[#0d0c0f]/50 to-[#0d0c0f]/85" />
                   </div>
-                  <h3 className="text-xl md:text-2xl font-medium text-white mb-3">Web & Digital Solutions</h3>
-                  <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base">
-                    Custom websites, web applications, and client portals built for businesses. Performance-first, mobile-first, engineered to last, not templated and forgotten.
-                  </p>
-                </div>
-              </div>
-              </FadeIn>
-
-              {/* Card 4 — Technical Advisory */}
-              <FadeIn delay={0.2} direction="up" className="h-full">
-              <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 md:p-8 transition hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full overflow-hidden">
-                <div className="absolute inset-0 rounded-xl overflow-hidden">
-                  <Image
-                    src="/images/competencies/technical-advisory.webp"
-                    alt=""
-                    aria-hidden="true"
-                    fill
-                    className="object-cover opacity-[0.65] group-hover:opacity-[0.8] transition-opacity duration-500"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/20 via-[#0d0c0f]/70 to-[#0d0c0f]/92" />
-                </div>
-                <div className="relative z-10">
-                  <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">
-                    <ChartBarIcon className="h-6 w-6 text-blue-400" />
+                  <div className="relative z-10">
+                    <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">
+                      <ShieldCheckIcon className="h-6 w-6 text-blue-400" />
+                    </div>
+                    <h4 className="text-xl font-medium text-white mb-3">Federal-Ready</h4>
+                    <p className="text-gray-400 font-light leading-relaxed text-sm">
+                      SAM.gov registered, SDVOSB/VOSB eligible, U.S. Government Secret clearance held. Ready to work directly with agencies on specialized weather, AI, and defense system requirements.
+                    </p>
+                    <a href="/capabilities" className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition mt-4">
+                      View capabilities statement <ArrowRightIcon className="h-3.5 w-3.5" />
+                    </a>
                   </div>
-                  <h3 className="text-xl md:text-2xl font-medium text-white mb-3">Technical Advisory</h3>
-                  <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base">
-                    Bridging the gap between deep environmental science (PhD level) and scalable software engineering architecture for production systems.
-                  </p>
                 </div>
-              </div>
-              </FadeIn>
-
-              {/* Card 5 — Technical Leadership */}
-              <FadeIn delay={0.25} direction="up" className="h-full">
-              <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 md:p-8 transition hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full overflow-hidden">
-                <div className="absolute inset-0 rounded-xl overflow-hidden">
-                  <Image
-                    src="/images/competencies/technical-leadership.webp"
-                    alt=""
-                    aria-hidden="true"
-                    fill
-                    className="object-cover opacity-[0.75] group-hover:opacity-[0.9] transition-opacity duration-500"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/10 via-[#0d0c0f]/50 to-[#0d0c0f]/85" />
-                </div>
-                <div className="relative z-10">
-                  <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">
-                    <AcademicCapIcon className="h-6 w-6 text-blue-400" />
-                  </div>
-                  <h3 className="text-xl md:text-2xl font-medium text-white mb-3">Technical Leadership</h3>
-                  <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base">
-                    Program and project technical direction for large-scale operational programs. IPT leadership, emerging technology assessment, and workforce capability development for operational environments.
-                  </p>
-                </div>
-              </div>
-              </FadeIn>
-
-              {/* Card 6 — State & Federal Contracting */}
-              <FadeIn delay={0.3} direction="up" className="h-full">
-              <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 md:p-8 transition hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full overflow-hidden">
-                <div className="absolute inset-0 rounded-xl overflow-hidden">
-                  <Image
-                    src="/images/competencies/state-federal-contracting.webp"
-                    alt=""
-                    aria-hidden="true"
-                    fill
-                    className="object-cover object-[50%_72%] opacity-[0.8] group-hover:opacity-[0.95] transition-opacity duration-500"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/10 via-[#0d0c0f]/50 to-[#0d0c0f]/85" />
-                </div>
-                <div className="relative z-10">
-                  <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">
-                    <ShieldCheckIcon className="h-6 w-6 text-blue-400" />
-                  </div>
-                  <h3 className="text-xl md:text-2xl font-medium text-white mb-3">State & Federal Contracting</h3>
-                  <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base">
-                    SAM.gov registered: UEI ZM8QWJ4ABWZ9, CAGE 20SQ1. SDVOSB/VOSB certification in process. U.S. Government Secret clearance held across military and civilian assignments. Purpose-built to work directly with state and federal agencies on specialized weather, AI, and defense system requirements.
-                  </p>
-                </div>
-              </div>
               </FadeIn>
             </div>
           </div>
-         </section>
+        </section>
 
         {/* Contact CTA Section */}
         <section className="py-24 bg-[#111014] border-t border-white/5">
@@ -343,30 +294,30 @@ export default async function Home() {
 
                 <div className="relative z-10 max-w-xl">
                   <div className="flex items-center gap-2 text-blue-400 text-sm font-semibold tracking-widest uppercase mb-4">
-                    <span className="h-px w-6 bg-blue-500"></span> Start a Project
+                    <span className="h-px w-6 bg-blue-500"></span> Get Started
                   </div>
                   <h2 className="text-3xl md:text-4xl font-semibold text-white tracking-tight mb-4">
-                    Ready to build something?
+                    Ready to regrid something real?
                   </h2>
                   <p className="text-gray-400 font-light leading-relaxed">
-                    Tell us about your project and we&apos;ll respond within one business day. No pressure, no sales pitch, just an honest conversation about what you need and whether we&apos;re the right fit.
+                    Tell us about your pipeline and we&apos;ll respond within one business day — API access, a live demo walkthrough, or a conversation about consulting work.
                   </p>
                 </div>
 
                 <div className="relative z-10 flex flex-col gap-4 shrink-0">
                   <a
-                    href="/book"
+                    href={API_ACCESS_HREF}
                     className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-white px-8 text-sm font-medium text-black hover:bg-gray-200 transition"
+                  >
+                    <ArrowRightIcon className="h-4 w-4" />
+                    Request API Access
+                  </a>
+                  <a
+                    href="/book"
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-white/10 bg-transparent px-8 text-sm font-medium text-white hover:bg-white/5 transition"
                   >
                     <EnvelopeIcon className="h-4 w-4" />
                     Book a Consultation
-                  </a>
-                  <a
-                    href="/intake"
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-white/10 bg-transparent px-8 text-sm font-medium text-white hover:bg-white/5 transition"
-                  >
-                    <ArrowRightIcon className="h-4 w-4" />
-                    Start a Web Project
                   </a>
                   <a
                     href="/contact"
@@ -374,12 +325,6 @@ export default async function Home() {
                   >
                     Contact Us
                   </a>
-                  <Link
-                    href="/blog"
-                    className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 bg-transparent px-8 text-sm font-medium text-white hover:bg-white/5 transition"
-                  >
-                    Read Our Insights
-                  </Link>
                 </div>
               </div>
             </FadeIn>

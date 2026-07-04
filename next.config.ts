@@ -44,6 +44,12 @@ const nextConfig: NextConfig = {
         destination: "/services/web",
         permanent: true,
       },
+      // Agentic OG was promoted from a capabilities sub-page to a top-level route
+      {
+        source: "/capabilities/omni-gridder",
+        destination: "/agentic-og",
+        permanent: true,
+      },
     ];
   },
 

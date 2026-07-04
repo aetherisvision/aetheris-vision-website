@@ -78,7 +78,7 @@ export default function AboutPage() {
               </p>
               <h1 className="font-serif text-4xl md:text-6xl text-white tracking-tight leading-[1.08] mb-6">
                 Thirty-five years of reading the sky,{" "}
-                <em className="text-gray-400">now building the systems that do it.</em>
+                <em className="text-gray-400">now building the agentic systems that regrid it.</em>
               </h1>
               <div className="h-px w-12 bg-blue-500/50" />
             </header>
@@ -103,7 +103,7 @@ export default function AboutPage() {
                     After his military service, he pursued research at <strong className="text-gray-200">Stockholm University</strong> and <strong className="text-gray-200">Chalmers University of Technology</strong>, deepening his work in atmospheric modeling and environmental science alongside academic collaborators in Sweden.
                   </p>
                   <p>
-                    Today his focus is engineering: building AI and numerical weather prediction (NWP) systems, along with custom software, that turn large, messy datasets into clear, usable answers.
+                    Today his focus is engineering: building AI and numerical weather prediction (NWP) systems, along with custom software, that turn large, messy datasets into clear, usable answers. That work led to <a href="/agentic-og" className="text-blue-400 hover:text-blue-300 underline underline-offset-2">Agentic OG</a> — a regridding engine built by someone who has spent a career depending on the correctness of exactly this kind of data transformation, not guessing at it.
                   </p>
                 </div>
 

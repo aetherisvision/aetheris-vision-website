@@ -9,11 +9,11 @@ import clsx from "clsx";
 import { BRAND_LOGO } from "@/lib/brand";
 
 const navLinks = [
-  { label: "Services", href: "/services/web" },
+  { label: "Agentic OG", href: "/agentic-og" },
   { label: "About", href: "/about" },
+  { label: "Capabilities", href: "/capabilities" },
   { label: "Portfolio", href: "/portfolio" },
   { label: "Blog", href: "/blog" },
-  { label: "Capabilities", href: "/capabilities" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -33,6 +33,7 @@ export default function Navbar() {
   useEffect(() => setMobileOpen(false), [pathname]);
 
   function isActive(href: string) {
+    if (href === "/agentic-og") return pathname.startsWith("/agentic-og");
     if (href === "/blog") return pathname.startsWith("/blog");
     if (href === "/about") return pathname === "/about";
     if (href === "/capabilities") return pathname === "/capabilities";
@@ -99,10 +100,10 @@ export default function Navbar() {
             ))}
           </nav>
           <a
-            href="/book"
+            href="/contact?topic=Agentic%20OG%20API%20Access"
             className="inline-flex h-8 items-center justify-center rounded-md bg-white px-4 text-xs font-medium text-black hover:bg-gray-200 transition"
           >
-            Book a Call
+            Request API Access
           </a>
         </div>
 

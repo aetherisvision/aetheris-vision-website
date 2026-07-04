@@ -3,13 +3,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { SITE } from "@/lib/constants";
 
-const DEMO_REQUEST_HREF = "/contact?topic=Omni-Gridder%20Live%20Demo%20Request";
+const API_ACCESS_HREF = "/contact?topic=Agentic%20OG%20API%20Access";
 const DOC_REFERENCE = "AV-OG-2026";
 
 export const metadata = {
   title: `Agentic OG — Regridding as a Service | ${SITE.name}`,
   description:
-    "Omni-Gridder: an agentic regridding engine for Earth-observation data — conservative/bilinear/nearest weight computation, cloud-native job pipeline, deployed and validated on Google Cloud.",
+    "Agentic OG: an agentic regridding engine for Earth-observation data — conservative/bilinear/nearest weight computation, cloud-native job pipeline, deployed and validated on Google Cloud.",
 };
 
 const pipelineStages = [
@@ -43,7 +43,7 @@ const engineeringFacts = [
   "Deployed on Google Cloud (Cloud Run Service + Cloud Run Job + Pub/Sub + Firestore), validated end-to-end against real jobs, not just unit tests.",
 ];
 
-export default function OmniGridderCapabilityPage() {
+export default function AgenticOgPage() {
   return (
     <div className="flex flex-col min-h-[100dvh] bg-[#050505]">
       <Navbar />
@@ -69,10 +69,10 @@ export default function OmniGridderCapabilityPage() {
                 </p>
               </div>
               <a
-                href={DEMO_REQUEST_HREF}
+                href={API_ACCESS_HREF}
                 className="inline-flex h-11 items-center gap-2 rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition shrink-0"
               >
-                Request a Live Demo
+                Request API Access
               </a>
             </div>
           </header>
@@ -110,7 +110,7 @@ export default function OmniGridderCapabilityPage() {
               <div className="rounded-lg overflow-hidden border border-white/10 bg-black">
                 <Image
                   src="/images/omni-gridder/staging-demo-plot.png"
-                  alt="Regridded temperature field rendered by omni-gridder's PlotProcessor from a live staging job"
+                  alt="Regridded temperature field rendered by Agentic OG's PlotProcessor from a live staging job"
                   width={800}
                   height={860}
                   className="w-full h-auto"
@@ -118,7 +118,7 @@ export default function OmniGridderCapabilityPage() {
               </div>
               <div className="space-y-4">
                 <p className="text-sm text-gray-400 font-light leading-relaxed">
-                  This is the actual output of a nearest-neighbor regrid job submitted to
+                  This is the actual output of a bilinear regrid job submitted to
                   our staging deployment on Google Cloud (project <code className="font-mono text-blue-400">esmai-dev</code>):
                   a synthetic temperature field regridded by the Julia kernel and rendered
                   by <code className="font-mono text-blue-400">og-worker</code>&apos;s Python/cartopy
@@ -159,10 +159,10 @@ export default function OmniGridderCapabilityPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
-                href={DEMO_REQUEST_HREF}
+                href={API_ACCESS_HREF}
                 className="inline-flex h-11 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
               >
-                Request a Live Demo
+                Request API Access
               </a>
             </div>
           </footer>

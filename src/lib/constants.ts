@@ -1,16 +1,16 @@
 export const SITE = {
   name: "Aetheris Vision",
   legalName: "Aetheris Vision LLC",
-  tagline: "Custom Websites & AI Solutions for Oklahoma Businesses",
+  tagline: "Agentic Regridding for Earth-Observation Data",
   url: "https://aetherisvision.com",
   logoUrl: "https://aetherisvision.com/logo/av-logo-horizontal-dark.png",
   email: "contact@aetherisvision.com",
   phone: "(346) 381-9629",
   phoneHref: "tel:+13463819629",
   description:
-    "Aetheris Vision builds custom websites, web applications, and AI-powered atmospheric intelligence systems. Veteran-owned. Based in Mustang, OK.",
+    "Aetheris Vision builds Agentic OG, a cloud-native regridding engine for satellite and NWP data, backed by 35 years of operational atmospheric-science experience. Veteran-owned. Based in Mustang, OK.",
   ogDescription:
-    "Custom websites, web apps, and client portals for Oklahoma businesses — and AI-powered atmospheric intelligence for operational decision-making. No templates. No outsourcing. Veteran-owned, based in Mustang, OK.",
+    "Agentic OG: a cloud-native, agentic regridding engine for Earth-observation and model data — built by a career atmospheric scientist, not just engineers guessing at grids. Veteran-owned, based in Mustang, OK.",
 } as const;
 
 /** Federal contracting registration data */

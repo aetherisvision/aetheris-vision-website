@@ -212,7 +212,7 @@ export default function CapabilitiesPage() {
               </div>
               <div className="flex flex-col sm:flex-row gap-3 shrink-0">
                 <a
-                  href="/capabilities/omni-gridder"
+                  href="/agentic-og"
                   className="inline-flex h-11 items-center gap-2 rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
                 >
                   See Agentic OG →

@@ -15,7 +15,7 @@ const badgeStyle = {
   padding: "6px 16px",
 } as const;
 
-const badges = ["VOSB Eligible", "U.S. Government Secret Clearance", "Applied Meteorology · Oklahoma"];
+const badges = ["Agentic Regridding", "Google Cloud Deployed", "Built by a Career Atmospheric Scientist"];
 
 export default function OGImage() {
   return new ImageResponse(
@@ -63,7 +63,7 @@ export default function OGImage() {
             letterSpacing: "-2px",
           }}
         >
-          Predictive Clarity
+          Agentic Regridding,
         </h1>
         <h1
           style={{
@@ -77,7 +77,7 @@ export default function OGImage() {
             letterSpacing: "-2px",
           }}
         >
-          At The Highest Level.
+          For Real Pipelines.
         </h1>
         <p
           style={{
@@ -88,7 +88,7 @@ export default function OGImage() {
             lineHeight: 1.5,
           }}
         >
-          AI/ML Weather Prediction · Operational Meteorology · Technical Systems Consulting
+          Cloud-native regridding for Earth-observation and model data — Agentic OG by Aetheris Vision
         </p>
         <div
           style={{
