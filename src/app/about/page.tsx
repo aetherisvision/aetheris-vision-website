@@ -147,21 +147,21 @@ export default function AboutPage() {
             <FadeIn delay={0.2}>
               <aside className="md:sticky md:top-28 space-y-8">
                 {/*
-                  Portrait slot. No founder photo exists yet — the field-research
-                  image stands in and the layout reads correctly either way.
+                  Portrait slot. No founder photo exists yet — licensed stock
+                  photography (real photograph, not AI-generated) stands in.
                   Swap src for a real portrait when one is available.
                 */}
                 <figure className="relative rounded-xl border border-white/5 overflow-hidden aspect-[4/5]">
                   <Image
-                    src="/images/about/field-research-balloon.webp"
-                    alt="NOAA researchers launching an ozonesonde weather balloon at a polar research station at dusk"
+                    src="https://images.unsplash.com/photo-1705579607707-717fb965145f?fm=jpg&q=80&w=1200&auto=format&fit=crop"
+                    alt="An engineer reviewing data at a workstation"
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 33vw"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/85 via-transparent to-transparent" />
                   <figcaption className="absolute bottom-3 left-4 right-4 text-xs text-gray-400 font-light">
-                    Atmospheric science is fieldwork: an ozonesonde launch at a polar station. (NOAA)
+                    Engineering discipline applied to atmospheric data, every day.
                   </figcaption>
                 </figure>
 

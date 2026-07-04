@@ -177,6 +177,27 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* People Banner — every job is watched by someone, not just a dashboard */}
+        <section className="relative h-64 md:h-80 border-t border-white/5 overflow-hidden">
+          <Image
+            src="https://images.unsplash.com/photo-1754152365074-b1014729ce37?fm=jpg&q=80&w=1920&auto=format&fit=crop"
+            alt="An engineer monitoring live data on screen"
+            fill
+            className="object-cover"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0d0c0f] via-[#0d0c0f]/60 to-[#0d0c0f]/20" />
+          <div className="absolute inset-0 flex items-end">
+            <div className="mx-auto max-w-5xl px-6 pb-8 w-full">
+              <FadeIn>
+                <p className="text-white font-light text-lg md:text-xl max-w-xl">
+                  Every job is monitored end to end — submission, queueing, compute, and delivery — not a fire-and-forget API call.
+                </p>
+              </FadeIn>
+            </div>
+          </div>
+        </section>
+
         {/* Why Trust This Section */}
         <section className="py-24 bg-[#111014] border-t border-white/5 relative overflow-hidden">
           <div className="mx-auto max-w-5xl px-6 relative z-10">
