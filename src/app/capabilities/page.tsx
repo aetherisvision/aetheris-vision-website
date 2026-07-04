@@ -210,12 +210,20 @@ export default function CapabilitiesPage() {
                   statement; a signed PDF is available on request.
                 </p>
               </div>
-              <a
-                href={PDF_REQUEST_HREF}
-                className="inline-flex h-11 items-center gap-2 rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition shrink-0"
-              >
-                Request Statement (PDF)
-              </a>
+              <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+                <a
+                  href="/capabilities/omni-gridder"
+                  className="inline-flex h-11 items-center gap-2 rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
+                >
+                  See Agentic OG →
+                </a>
+                <a
+                  href={PDF_REQUEST_HREF}
+                  className="inline-flex h-11 items-center gap-2 rounded-md border border-white/20 px-6 text-sm font-medium text-white hover:bg-white/10 transition"
+                >
+                  Request Statement (PDF)
+                </a>
+              </div>
             </div>
           </header>
 
