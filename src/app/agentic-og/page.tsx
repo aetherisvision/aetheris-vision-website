@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ShieldCheckIcon } from "@heroicons/react/24/outline";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { SITE } from "@/lib/constants";
@@ -61,12 +62,16 @@ export default function AgenticOgPage() {
                 <h1 className="text-4xl md:text-5xl font-semibold text-white tracking-tight mb-4">
                   Agentic OG
                 </h1>
-                <p className="text-gray-400 font-light leading-relaxed">
+                <p className="text-gray-400 font-light leading-relaxed mb-4">
                   An agentic, cloud-native regridding engine for Earth-observation and
                   model data — built to move raw satellite and NWP grids onto whatever
                   grid a downstream system needs, without every team reimplementing
                   interpolation math.
                 </p>
+                <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 text-xs text-blue-300">
+                  <ShieldCheckIcon className="h-4 w-4" />
+                  Reviewed by an AMS Certified Consulting Meteorologist (CCM) with an MSc in Applied AI
+                </div>
               </div>
               <a
                 href={API_ACCESS_HREF}

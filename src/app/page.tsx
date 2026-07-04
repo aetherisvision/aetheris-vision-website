@@ -166,10 +166,14 @@ export default async function Home() {
                 </div>
               </FadeIn>
               <FadeIn delay={0.2}>
-                <p className="text-gray-400 font-light leading-relaxed mb-6">
+                <p className="text-gray-400 font-light leading-relaxed mb-4">
                   This is the actual output of a regrid job submitted to our staging deployment on Google Cloud — a temperature field regridded by the Julia kernel and rendered through the same signed-URL delivery path a production job would use. Not a rendered mockup.
                 </p>
-                <a href="/agentic-og" className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition">
+                <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 text-xs text-blue-300 mb-6">
+                  <ShieldCheckIcon className="h-4 w-4" />
+                  Reviewed by an AMS Certified Consulting Meteorologist (CCM) with an MSc in Applied AI
+                </div>
+                <a href="/agentic-og" className="flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition">
                   Read the full technical brief <ArrowRightIcon className="h-3.5 w-3.5" />
                 </a>
               </FadeIn>
