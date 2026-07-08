@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 import { getJobStatus, submitJob } from '@/lib/omni-gridder-client'
+import { allowedInputUris } from '@/lib/og-demo-inputs'
 
 const GCS_STAGING_BUCKET = process.env.OG_GCS_STAGING_BUCKET
 const PLOT_SUFFIX = '-plot'
@@ -38,6 +39,12 @@ export async function GET(
   // URI to read via DataReader, not a browser-facing signed download link.
   const isRegridJob = status.processor_type === 'regrid' && !jobId.endsWith(PLOT_SUFFIX)
   if (chainPlot && isRegridJob && status.status === 'succeeded') {
+    // Optional before/after panel: the client passes back the input URI it
+    // was told at submit time (?compare=...); it is only honored if it's in
+    // the same server-side allowlist the submit route enforces — the plot
+    // worker reads this URI from GCS, so it must never be client-arbitrary.
+    const compare = request.nextUrl.searchParams.get('compare')
+    const compareUri = compare && allowedInputUris().includes(compare) ? compare : undefined
     const plotJobId = `${jobId}${PLOT_SUFFIX}`
     await submitJob({
       job_id: plotJobId,
@@ -49,6 +56,7 @@ export async function GET(
         variable: 'HGT',
         title: 'Agentic OG — Method Comparison Demo',
         colormap: 'RdYlBu_r',
+        ...(compareUri ? { compare_uri: compareUri } : {}),
       },
     })
     return NextResponse.json({ ...status, nextJobId: plotJobId })
