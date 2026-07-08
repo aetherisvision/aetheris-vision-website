@@ -102,35 +102,46 @@ export async function POST(request: NextRequest) {
   const dstGrid = buildConusGrid()
   const batchSuffix = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 
-  const submitted: SubmittedJob[] = []
-  for (const method of methods as RegridMethod[]) {
-    const jobId = `demo-${batchSuffix}-${method}`
-    const outputUri = `gs://${GCS_STAGING_BUCKET}/demo/regrid/${jobId}/output.nc`
-    await submitJob({
-      job_id: jobId,
-      processor_type: 'regrid',
-      kind: 'regrid',
-      input_uri: inputUri,
-      output_uri: outputUri,
-      params: { method, dst_grid: dstGrid },
+  // Everything past this point talks to external systems (WIF token
+  // minting, og-server, Cloud Run Admin API) — any throw here must come
+  // back as JSON with the real message, not Next's HTML 500 page, or the
+  // admin UI can only display a bare "HTTP 500" (which is exactly how a
+  // missing/stale env var hid from us in production).
+  try {
+    const submitted: SubmittedJob[] = []
+    for (const method of methods as RegridMethod[]) {
+      const jobId = `demo-${batchSuffix}-${method}`
+      const outputUri = `gs://${GCS_STAGING_BUCKET}/demo/regrid/${jobId}/output.nc`
+      await submitJob({
+        job_id: jobId,
+        processor_type: 'regrid',
+        kind: 'regrid',
+        input_uri: inputUri,
+        output_uri: outputUri,
+        params: { method, dst_grid: dstGrid },
+      })
+      submitted.push({ jobId, method })
+    }
+
+    // Debounced: one worker-execution request per batch (not per job), so a
+    // 3-method comparison doesn't launch 3 concurrent Cloud Run Job
+    // executions. Best-effort — see triggerWorkerRun() for why this may 403
+    // until the SA's IAM grant is confirmed. Never blocks the response: jobs
+    // are already submitted and will run whenever the worker next executes,
+    // triggered or not.
+    const workerTrigger = await triggerWorkerRun()
+    if (!workerTrigger.triggered) {
+      console.warn(`omni-gridder submit: worker not auto-triggered (${workerTrigger.reason})`)
+    }
+
+    return NextResponse.json({
+      jobs: submitted,
+      inputUri,
+      workerTriggered: workerTrigger.triggered,
     })
-    submitted.push({ jobId, method })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error(`omni-gridder submit failed: ${message}`)
+    return NextResponse.json({ error: `Job submission failed: ${message}` }, { status: 500 })
   }
-
-  // Debounced: one worker-execution request per batch (not per job), so a
-  // 3-method comparison doesn't launch 3 concurrent Cloud Run Job
-  // executions. Best-effort — see triggerWorkerRun() for why this may 403
-  // until the SA's IAM grant is confirmed. Never blocks the response: jobs
-  // are already submitted and will run whenever the worker next executes,
-  // triggered or not.
-  const workerTrigger = await triggerWorkerRun()
-  if (!workerTrigger.triggered) {
-    console.warn(`omni-gridder submit: worker not auto-triggered (${workerTrigger.reason})`)
-  }
-
-  return NextResponse.json({
-    jobs: submitted,
-    inputUri,
-    workerTriggered: workerTrigger.triggered,
-  })
 }
