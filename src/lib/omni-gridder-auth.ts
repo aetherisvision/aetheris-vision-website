@@ -1,9 +1,13 @@
 import { getVercelOidcToken } from '@vercel/oidc'
-import { ExternalAccountClient } from 'google-auth-library'
+import { ExternalAccountClient, type BaseExternalAccountClient } from 'google-auth-library'
 
 /**
- * Mints a Google-signed ID token authorized to invoke the private omni-gridder
- * (og-server) Cloud Run service, with no long-lived credential anywhere.
+ * Builds the WIF-federated auth client used to impersonate
+ * omni-gridder-website-wif. Shared by both the ID-token path (og-server
+ * invocation) and the raw access-token path (any other Google API call the
+ * impersonated SA happens to be authorized for — e.g. Cloud Run Admin API,
+ * IF that SA has been granted an IAM role on the target resource, which is
+ * NOT guaranteed — see getOgWorkerAccessToken()).
  *
  * Flow: Vercel issues a short-lived OIDC token for this deployment
  * (VERCEL_OIDC_TOKEN / x-vercel-oidc-token) -> exchanged via GCP Workload
@@ -19,7 +23,7 @@ import { ExternalAccountClient } from 'google-auth-library'
  * this WIF path is the only route that lets this codebase call og-server at
  * all — see the two failed attempts documented in git history before this.
  */
-export async function getOgServerIdToken(audience: string): Promise<string> {
+function buildWifAuthClient(): BaseExternalAccountClient {
   const projectNumber = requireEnv('GCP_PROJECT_NUMBER')
   const poolId = requireEnv('GCP_WORKLOAD_IDENTITY_POOL_ID')
   const providerId = requireEnv('GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID')
@@ -47,6 +51,12 @@ export async function getOgServerIdToken(audience: string): Promise<string> {
   if (!authClient) {
     throw new Error('Failed to construct ExternalAccountClient from WIF config')
   }
+  return authClient
+}
+
+export async function getOgServerIdToken(audience: string): Promise<string> {
+  const serviceAccountEmail = requireEnv('GCP_SERVICE_ACCOUNT_EMAIL')
+  const authClient = buildWifAuthClient()
 
   const accessTokenResponse = await authClient.getAccessToken()
   const accessToken = accessTokenResponse.token
@@ -71,6 +81,29 @@ export async function getOgServerIdToken(audience: string): Promise<string> {
   }
   const { token } = (await idTokenRes.json()) as { token: string }
   return token
+}
+
+/**
+ * Returns a raw OAuth access token for the omni-gridder-website-wif SA (the
+ * same impersonation as getOgServerIdToken, minus the final ID-token mint).
+ *
+ * NOT verified to work for anything beyond og-server invocation. The SA was
+ * provisioned "scoped to only invoke og-server" (see buildWifAuthClient
+ * above) — calling Cloud Run Admin API's jobs:run with this token requires
+ * the SA to additionally hold roles/run.invoker (or the narrower
+ * `run.jobs.run` permission) on the og-worker Job resource specifically.
+ * That grant has not been confirmed as of this change. Callers must treat a
+ * 403 from googleapis.com here as an expected, non-fatal outcome — see
+ * triggerWorkerRun() in omni-gridder-client.ts.
+ */
+export async function getOgWorkerAccessToken(): Promise<string> {
+  const authClient = buildWifAuthClient()
+  const accessTokenResponse = await authClient.getAccessToken()
+  const accessToken = accessTokenResponse.token
+  if (!accessToken) {
+    throw new Error('WIF token exchange returned no access token')
+  }
+  return accessToken
 }
 
 function requireEnv(name: string): string {
