@@ -41,7 +41,7 @@ export interface OmniGridderJobStatus {
   submitted_at: number
   result_uri: string | null
   error_message: string | null
-  // null for queued/running/failed/legacy jobs pre-dating diagnostics support.
+  // null for queued/processing/failed/legacy jobs pre-dating diagnostics support.
   diagnostics: OmniGridderJobDiagnostics | null
 }
 

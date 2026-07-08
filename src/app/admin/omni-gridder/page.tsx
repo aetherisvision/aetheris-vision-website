@@ -160,7 +160,18 @@ export default function OmniGridderDemoPage() {
 
     if (data.status === 'failed') {
       if (isPlotJob) {
+        // The chained Plot job failing does not make the regrid a failure —
+        // the primary method's regrid already succeeded (that's what
+        // scheduled this plot job in the first place). Keep the row
+        // "succeeded" and surface the plot failure as a note underneath so
+        // the table stays honest and isRunning can clear (it treats
+        // 'plotting' as still-running, and this row would otherwise be
+        // stuck there forever).
         setGlobalError(data.error_message ?? 'Plot job failed with no error message')
+        updateRow(method, {
+          errorMessage: `Plot rendering failed: ${data.error_message ?? 'no error message'} (regrid itself succeeded)`,
+          status: 'succeeded',
+        })
       } else {
         updateRow(method, {
           status: 'failed',
@@ -175,6 +186,10 @@ export default function OmniGridderDemoPage() {
     if (data.status === 'succeeded') {
       if (isPlotJob) {
         if (data.result_uri) setPlotUrl(data.result_uri)
+        // Transition the primary row out of 'plotting' now that the chained
+        // plot job is done, so isRunning clears and the action buttons
+        // re-enable.
+        updateRow(method, { status: 'succeeded' })
         return
       }
       updateRow(method, {

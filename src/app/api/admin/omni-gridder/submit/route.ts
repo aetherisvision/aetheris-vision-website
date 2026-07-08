@@ -60,7 +60,12 @@ export async function POST(request: NextRequest) {
 
   const body = (await request.json().catch(() => ({}))) as SubmitRequestBody
 
-  const methods = (body.methods && body.methods.length > 0 ? body.methods : ['bilinear']) as string[]
+  const requestedMethods =
+    body.methods && body.methods.length > 0 ? body.methods : ['bilinear']
+  // Dedupe before validation/submission — {methods:["bilinear","bilinear"]}
+  // would otherwise submit the same jobId twice and schedule duplicate
+  // polling for what is really a single job. Preserve request order.
+  const methods = [...new Set(requestedMethods)] as string[]
   const invalidMethod = methods.find((m) => !VALID_METHODS.includes(m as RegridMethod))
   if (invalidMethod) {
     return NextResponse.json(
