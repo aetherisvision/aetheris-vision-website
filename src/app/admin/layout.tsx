@@ -13,6 +13,7 @@ const NAV = [
   { href: '/admin/expenses',  label: 'Expenses' },
   { href: '/admin/reviews',   label: 'Reviews' },
   { href: '/admin/gmail',     label: 'Gmail' },
+  { href: '/admin/omni-gridder', label: 'OG Demo' },
 ]
 
 const MORE_NAV = [
