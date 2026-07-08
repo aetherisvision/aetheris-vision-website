@@ -5,24 +5,7 @@ import { rateLimit } from '@/lib/rate-limit'
 
 const GCS_STAGING_BUCKET = process.env.OG_GCS_STAGING_BUCKET
 
-// Server-side allowlist of demo input URIs — never accept an arbitrary
-// client-supplied gs:// URI here (SSRF / cross-tenant data exposure via
-// og-server reading whatever bucket/object we hand it). First entry is the
-// default when the client doesn't specify one. Configure via
-// OG_DEMO_INPUT_URIS="gs://bucket/a.nc,gs://bucket/b.nc" in Vercel env.
-const DEFAULT_DEMO_INPUT_URIS = [
-  'gs://esmai-dev-esmai-objects/demo/hgt500_2026070706_f006.nc',
-]
-
-function allowedInputUris(): string[] {
-  const raw = process.env.OG_DEMO_INPUT_URIS
-  if (!raw) return DEFAULT_DEMO_INPUT_URIS
-  const uris = raw
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
-  return uris.length > 0 ? uris : DEFAULT_DEMO_INPUT_URIS
-}
+import { allowedInputUris } from '@/lib/og-demo-inputs'
 
 // 0.5° CONUS grid, generated server-side (never client-supplied — same SSRF/
 // resource-exhaustion reasoning as the input allowlist above: an arbitrary

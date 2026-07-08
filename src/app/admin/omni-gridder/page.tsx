@@ -100,6 +100,10 @@ export default function OmniGridderDemoPage() {
   const [globalError, setGlobalError] = useState<string | null>(null)
   const [workerTriggered, setWorkerTriggered] = useState<boolean | null>(null)
   const pollTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+  // Input URI from the last submit response — passed back on the chainPlot
+  // poll so the server can chain a before/after plot (server re-validates
+  // it against its own allowlist; this is display plumbing, not authority).
+  const inputUriRef = useRef<string>('')
 
   const log = useCallback((label: string) => {
     setTimeline((prev) => [...prev, { at: Date.now(), label }])
@@ -131,7 +135,9 @@ export default function OmniGridderDemoPage() {
   ): Promise<void> {
     let res: Response
     try {
-      const qs = chainPlot ? '?chainPlot=1' : ''
+      const qs = chainPlot
+        ? `?chainPlot=1${inputUriRef.current ? `&compare=${encodeURIComponent(inputUriRef.current)}` : ''}`
+        : ''
       res = await fetch(`/api/admin/omni-gridder/status/${jobId}${qs}`)
     } catch {
       log(`Network error polling ${jobId} — retrying`)
@@ -258,8 +264,10 @@ export default function OmniGridderDemoPage() {
 
       const data = (await res.json()) as {
         jobs: { jobId: string; method: RegridMethod }[]
+        inputUri: string
         workerTriggered: boolean
       }
+      inputUriRef.current = data.inputUri ?? ''
       setWorkerTriggered(data.workerTriggered)
       if (!data.workerTriggered) {
         log('Worker auto-trigger unavailable — jobs stay queued until og-worker is run manually')
