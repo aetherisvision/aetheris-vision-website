@@ -218,4 +218,42 @@ describe("GET /api/admin/omni-gridder/status/[jobId] — chainPlot gating", () =
     expect(res.status).toBe(200);
     expect(submitJobMock).not.toHaveBeenCalled();
   });
+
+  it("passes an allowlisted ?compare= URI through as the plot job's compare_uri", async () => {
+    getJobStatusMock.mockResolvedValue(baseStatus);
+    const { GET } = await importStatusRoute();
+
+    // First entry of the default server-side allowlist (OG_DEMO_INPUT_URIS unset).
+    const allowed = "gs://esmai-dev-esmai-objects/demo/hgt500_2026070706_f006.nc";
+    const req = new NextRequest(
+      `http://localhost/api/admin/omni-gridder/status/${baseStatus.job_id}?chainPlot=1&compare=${encodeURIComponent(allowed)}`,
+      { headers: adminHeaders("1.1.2.4") },
+    );
+    const res = await GET(req, { params: Promise.resolve({ jobId: baseStatus.job_id }) });
+    expect(res.status).toBe(200);
+
+    expect(submitJobMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        processor_type: "plot",
+        params: expect.objectContaining({ compare_uri: allowed }),
+      }),
+    );
+  });
+
+  it("drops a non-allowlisted ?compare= URI instead of forwarding it to the worker", async () => {
+    getJobStatusMock.mockResolvedValue(baseStatus);
+    const { GET } = await importStatusRoute();
+
+    const req = new NextRequest(
+      `http://localhost/api/admin/omni-gridder/status/${baseStatus.job_id}?chainPlot=1&compare=${encodeURIComponent("gs://attacker-bucket/secret.nc")}`,
+      { headers: adminHeaders("1.1.2.5") },
+    );
+    const res = await GET(req, { params: Promise.resolve({ jobId: baseStatus.job_id }) });
+    expect(res.status).toBe(200);
+
+    // Plot still chains — but without any compare_uri param.
+    expect(submitJobMock).toHaveBeenCalledTimes(1);
+    const params = submitJobMock.mock.calls[0][0].params as Record<string, unknown>;
+    expect(params.compare_uri).toBeUndefined();
+  });
 });

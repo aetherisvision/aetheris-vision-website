@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
+import { allowedInputUris } from '@/lib/og-demo-inputs'
 import { submitJob, triggerWorkerRun } from '@/lib/omni-gridder-client'
 import { rateLimit } from '@/lib/rate-limit'
 
 const GCS_STAGING_BUCKET = process.env.OG_GCS_STAGING_BUCKET
-
-import { allowedInputUris } from '@/lib/og-demo-inputs'
 
 // 0.5° CONUS grid, generated server-side (never client-supplied — same SSRF/
 // resource-exhaustion reasoning as the input allowlist above: an arbitrary
