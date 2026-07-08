@@ -20,6 +20,14 @@ export async function GET(
     return NextResponse.json({ error: 'Job not found' }, { status: 404 })
   }
 
+  // In comparison mode three regrid jobs (nearest/bilinear/conservative)
+  // poll this route independently. Only ONE of them should chain a Plot
+  // job — otherwise every poller that lands after the transition submits
+  // its own plot, wasting worker cycles for images nobody's UI shows. The
+  // frontend opts a single "primary" poll loop in via ?chainPlot=1 (the
+  // bilinear job in comparison mode, or the sole job in single-method mode).
+  const chainPlot = request.nextUrl.searchParams.get('chainPlot') === '1'
+
   // Once the regrid stage succeeds, chain a Plot job reading its output.
   // Job IDs are unique-insert-only in og-server's job store (409 on
   // duplicate), so re-submitting on every subsequent poll hit that lands
@@ -29,17 +37,17 @@ export async function GET(
   // (signed, HTTPS) result_uri og-server returns — workers need a raw gs://
   // URI to read via DataReader, not a browser-facing signed download link.
   const isRegridJob = status.processor_type === 'regrid' && !jobId.endsWith(PLOT_SUFFIX)
-  if (isRegridJob && status.status === 'succeeded') {
+  if (chainPlot && isRegridJob && status.status === 'succeeded') {
     const plotJobId = `${jobId}${PLOT_SUFFIX}`
     await submitJob({
       job_id: plotJobId,
       processor_type: 'plot',
       kind: 'plot',
-      input_uri: `gs://${GCS_STAGING_BUCKET}/demo/${jobId}/output.nc`,
-      output_uri: `gs://${GCS_STAGING_BUCKET}/demo/${jobId}/plot.png`,
+      input_uri: `gs://${GCS_STAGING_BUCKET}/demo/regrid/${jobId}/output.nc`,
+      output_uri: `gs://${GCS_STAGING_BUCKET}/demo/regrid/${jobId}/plot.png`,
       params: {
-        variable: 'temperature',
-        title: 'Agentic OG — Live Demo',
+        variable: 'HGT',
+        title: 'Agentic OG — Method Comparison Demo',
         colormap: 'RdYlBu_r',
       },
     })

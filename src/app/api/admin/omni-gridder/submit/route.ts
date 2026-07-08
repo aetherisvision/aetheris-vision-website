@@ -1,17 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
-import { submitJob } from '@/lib/omni-gridder-client'
+import { submitJob, triggerWorkerRun } from '@/lib/omni-gridder-client'
 import { rateLimit } from '@/lib/rate-limit'
 
 const GCS_STAGING_BUCKET = process.env.OG_GCS_STAGING_BUCKET
-const DEMO_INPUT_URI = 'gs://esmai-dev-esmai-objects/staging-smoke-test/input.nc'
 
-// Same 2x2 [0,1]x[0,1] temperature field used throughout the esmai-dev
-// staging validation this session — reusing a known-good input avoids a
-// silent all-NaN plot from guessing at bounds the real file may not cover.
-const DEMO_DST_GRID = {
-  lat: [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0],
-  lon: [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0],
+// Server-side allowlist of demo input URIs — never accept an arbitrary
+// client-supplied gs:// URI here (SSRF / cross-tenant data exposure via
+// og-server reading whatever bucket/object we hand it). First entry is the
+// default when the client doesn't specify one. Configure via
+// OG_DEMO_INPUT_URIS="gs://bucket/a.nc,gs://bucket/b.nc" in Vercel env.
+const DEFAULT_DEMO_INPUT_URIS = [
+  'gs://esmai-dev-esmai-objects/demo/hgt500_2026070706_f006.nc',
+]
+
+function allowedInputUris(): string[] {
+  const raw = process.env.OG_DEMO_INPUT_URIS
+  if (!raw) return DEFAULT_DEMO_INPUT_URIS
+  const uris = raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  return uris.length > 0 ? uris : DEFAULT_DEMO_INPUT_URIS
+}
+
+// 0.5° CONUS grid, generated server-side (never client-supplied — same SSRF/
+// resource-exhaustion reasoning as the input allowlist above: an arbitrary
+// dst_grid from the client could ask og-server to materialize an enormous
+// output array). lat 24..49 step 0.5 = 51 points; lon -125..-66 step 0.5 =
+// 119 points.
+function buildConusGrid(): { lat: number[]; lon: number[] } {
+  const lat: number[] = []
+  for (let i = 0; i <= 50; i++) lat.push(Math.round((24 + i * 0.5) * 1000) / 1000)
+  const lon: number[] = []
+  for (let i = 0; i <= 118; i++) lon.push(Math.round((-125 + i * 0.5) * 1000) / 1000)
+  return { lat, lon }
+}
+
+export type RegridMethod = 'nearest' | 'bilinear' | 'conservative'
+const VALID_METHODS: RegridMethod[] = ['nearest', 'bilinear', 'conservative']
+
+interface SubmitRequestBody {
+  /** One or more methods to run against the same input+grid. Defaults to ['bilinear']. */
+  methods?: string[]
+  /** Must be one of the server allowlist; defaults to the first allowlisted URI. */
+  inputUri?: string
+}
+
+interface SubmittedJob {
+  jobId: string
+  method: RegridMethod
 }
 
 export async function POST(request: NextRequest) {
@@ -20,13 +58,35 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'OG_GCS_STAGING_BUCKET is not set' }, { status: 500 })
   }
 
-  // A submit triggers a real Cloud Run job pickup (Scheduler-polled) — cheap,
-  // but not free, and not something an admin page should let run away with
-  // even though it's passphrase-gated.
+  const body = (await request.json().catch(() => ({}))) as SubmitRequestBody
+
+  const methods = (body.methods && body.methods.length > 0 ? body.methods : ['bilinear']) as string[]
+  const invalidMethod = methods.find((m) => !VALID_METHODS.includes(m as RegridMethod))
+  if (invalidMethod) {
+    return NextResponse.json(
+      { error: `Invalid method "${invalidMethod}" — must be one of ${VALID_METHODS.join(', ')}` },
+      { status: 400 },
+    )
+  }
+  if (methods.length > VALID_METHODS.length) {
+    return NextResponse.json({ error: 'Too many methods requested' }, { status: 400 })
+  }
+
+  const allowlist = allowedInputUris()
+  const inputUri = body.inputUri ?? allowlist[0]
+  if (!allowlist.includes(inputUri)) {
+    return NextResponse.json({ error: 'input URI is not in the server allowlist' }, { status: 400 })
+  }
+
+  // A submit triggers real Cloud Run job pickup — cheap, but not free, and
+  // not something an admin page should let run away with even though it's
+  // passphrase-gated. A comparison batch is up to 3 jobs in one call, so the
+  // per-request budget is tighter than the old single-job limit: one
+  // comparison (or a few singles) per 2-minute window per IP.
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
              request.headers.get('x-real-ip') ||
              'unknown'
-  const limit = await rateLimit(ip, { limit: 3, windowMs: 2 * 60 * 1000, prefix: 'og-demo-submit' })
+  const limit = await rateLimit(ip, { limit: 2, windowMs: 2 * 60 * 1000, prefix: 'og-demo-submit' })
   if (!limit.success) {
     return NextResponse.json(
       { error: 'Rate limit exceeded — wait before submitting another demo job' },
@@ -34,18 +94,38 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const suffix = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
-  const jobId = `demo-${suffix}`
-  const outputUri = `gs://${GCS_STAGING_BUCKET}/demo/${jobId}/output.nc`
+  const dstGrid = buildConusGrid()
+  const batchSuffix = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 
-  await submitJob({
-    job_id: jobId,
-    processor_type: 'regrid',
-    kind: 'regrid',
-    input_uri: DEMO_INPUT_URI,
-    output_uri: outputUri,
-    params: { method: 'bilinear', dst_grid: DEMO_DST_GRID },
+  const submitted: SubmittedJob[] = []
+  for (const method of methods as RegridMethod[]) {
+    const jobId = `demo-${batchSuffix}-${method}`
+    const outputUri = `gs://${GCS_STAGING_BUCKET}/demo/regrid/${jobId}/output.nc`
+    await submitJob({
+      job_id: jobId,
+      processor_type: 'regrid',
+      kind: 'regrid',
+      input_uri: inputUri,
+      output_uri: outputUri,
+      params: { method, dst_grid: dstGrid },
+    })
+    submitted.push({ jobId, method })
+  }
+
+  // Debounced: one worker-execution request per batch (not per job), so a
+  // 3-method comparison doesn't launch 3 concurrent Cloud Run Job
+  // executions. Best-effort — see triggerWorkerRun() for why this may 403
+  // until the SA's IAM grant is confirmed. Never blocks the response: jobs
+  // are already submitted and will run whenever the worker next executes,
+  // triggered or not.
+  const workerTrigger = await triggerWorkerRun()
+  if (!workerTrigger.triggered) {
+    console.warn(`omni-gridder submit: worker not auto-triggered (${workerTrigger.reason})`)
+  }
+
+  return NextResponse.json({
+    jobs: submitted,
+    inputUri,
+    workerTriggered: workerTrigger.triggered,
   })
-
-  return NextResponse.json({ jobId })
 }
