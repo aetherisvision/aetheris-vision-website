@@ -461,10 +461,18 @@ export default function OmniGridderDemoPage() {
                 alt="Regridded 500mb height field from this demo run"
                 className="w-full max-w-xl rounded-lg border border-white/10"
               />
-              <p className="mt-3 text-xs text-gray-500">
-                This link is a short-lived signed URL (15-minute TTL) — reload the page and run
-                again if it expires.
-              </p>
+              <div className="mt-3 flex items-center gap-4">
+                <a
+                  href={`/api/admin/omni-gridder/download?url=${encodeURIComponent(plotUrl)}`}
+                  className="inline-block rounded-md border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-medium text-gray-200 hover:bg-white/10"
+                >
+                  Download PNG
+                </a>
+                <p className="text-xs text-gray-500">
+                  Rendered from a short-lived signed URL (15-minute TTL) — reload and run again if
+                  it expires.
+                </p>
+              </div>
             </div>
           )}
         </div>
