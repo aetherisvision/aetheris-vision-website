@@ -105,6 +105,15 @@ export default function OmniGridderDemoPage() {
   // poll so the server can chain a before/after plot (server re-validates
   // it against its own allowlist; this is display plumbing, not authority).
   const inputUriRef = useRef<string>('')
+  // Comparison mode: all regrid job ids from the batch, the set that have
+  // succeeded so far, and whether the (single) multi-panel plot chain has
+  // fired. The panel plot must wait for EVERY method to finish — chaining
+  // on the primary alone would render panels for outputs that don't exist
+  // yet. Server-side, the ids are re-validated and mapped to output URIs
+  // by the server's own convention (see the status route).
+  const panelJobIdsRef = useRef<string[]>([])
+  const succeededJobsRef = useRef<Set<string>>(new Set())
+  const panelChainFiredRef = useRef(false)
 
   const log = useCallback((label: string) => {
     setTimeline((prev) => [...prev, { at: Date.now(), label }])
@@ -136,8 +145,12 @@ export default function OmniGridderDemoPage() {
   ): Promise<void> {
     let res: Response
     try {
+      const panelsQs =
+        panelJobIdsRef.current.length > 1
+          ? `&panels=${encodeURIComponent(panelJobIdsRef.current.join(','))}`
+          : ''
       const qs = chainPlot
-        ? `?chainPlot=1${inputUriRef.current ? `&compare=${encodeURIComponent(inputUriRef.current)}` : ''}`
+        ? `?chainPlot=1${inputUriRef.current ? `&compare=${encodeURIComponent(inputUriRef.current)}` : ''}${panelsQs}`
         : ''
       res = await fetch(`/api/admin/omni-gridder/status/${jobId}${qs}`)
     } catch {
@@ -211,6 +224,24 @@ export default function OmniGridderDemoPage() {
           data.nextJobId,
           setTimeout(() => pollJob(data.nextJobId!, method, false, true, null), POLL_INTERVAL_MS),
         )
+        return
+      }
+      // Comparison mode: the multi-panel plot needs EVERY method's output on
+      // GCS, so no per-method poll carries chainPlot — instead, the last
+      // method to succeed fires one chain request against the primary job,
+      // whose panels= param lists the whole batch.
+      succeededJobsRef.current.add(jobId)
+      if (
+        panelJobIdsRef.current.length > 1 &&
+        !panelChainFiredRef.current &&
+        panelJobIdsRef.current.every((id) => succeededJobsRef.current.has(id))
+      ) {
+        panelChainFiredRef.current = true
+        const primary =
+          panelJobIdsRef.current.find((id) => id.endsWith(`-${PRIMARY_METHOD}`)) ??
+          panelJobIdsRef.current[0]
+        log('All methods succeeded — chaining multi-panel comparison plot')
+        void pollJob(primary, PRIMARY_METHOD, true, false, 'succeeded')
       }
       return
     }
@@ -277,11 +308,23 @@ export default function OmniGridderDemoPage() {
       }
 
       const submittedAt = Date.now()
+      const comparisonMode = data.jobs.length > 1
+      // Comparison mode chains ONE multi-panel plot only after ALL methods
+      // succeed (see the succeeded branch in pollJob) — so no per-method
+      // poll carries chainPlot. Single-method mode keeps chaining its own
+      // before/after plot directly.
+      panelJobIdsRef.current = comparisonMode ? data.jobs.map((j) => j.jobId) : []
+      succeededJobsRef.current = new Set()
+      panelChainFiredRef.current = false
       const hasPrimary = data.jobs.some((j) => j.method === PRIMARY_METHOD)
       for (const { jobId, method } of data.jobs) {
         log(`Submitted ${jobId}`)
         updateRow(method, { jobId, status: 'queued', submittedAt })
-        const chainPlot = hasPrimary ? method === PRIMARY_METHOD : method === data.jobs[0].method
+        const chainPlot = comparisonMode
+          ? false
+          : hasPrimary
+            ? method === PRIMARY_METHOD
+            : method === data.jobs[0].method
         pollTimers.current.set(
           jobId,
           setTimeout(() => pollJob(jobId, method, chainPlot, false, null), POLL_INTERVAL_MS),

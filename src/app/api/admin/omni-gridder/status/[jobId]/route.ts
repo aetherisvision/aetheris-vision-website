@@ -45,6 +45,33 @@ export async function GET(
     // worker reads this URI from GCS, so it must never be client-arbitrary.
     const compare = request.nextUrl.searchParams.get('compare')
     const compareUri = compare && allowedInputUris().includes(compare) ? compare : undefined
+
+    // Comparison mode: ?panels=<jobId,jobId,...> chains ONE multi-panel plot
+    // (input + every method's output) once the client has seen all methods
+    // succeed. Only job IDs are accepted — each is strictly validated and
+    // its output URI reconstructed from OUR bucket/jobId convention, so the
+    // client never supplies a URI. Invalid ids are a loud 400, not a silent
+    // drop: a typo'd panel list should never quietly render fewer methods.
+    const panelsRaw = request.nextUrl.searchParams.get('panels')
+    let panelUris: { uri: string; label: string }[] | undefined
+    if (panelsRaw) {
+      const ids = panelsRaw.split(',').map((s) => s.trim()).filter(Boolean)
+      const idPattern = /^[a-z][a-z0-9-]{0,58}-(nearest|bilinear|conservative|ewa)$/
+      if (ids.length === 0 || ids.length > 4 || ids.some((id) => !idPattern.test(id))) {
+        return NextResponse.json(
+          { error: 'panels must be 1-4 valid regrid job ids' },
+          { status: 400 },
+        )
+      }
+      panelUris = ids.map((id) => {
+        const method = id.slice(id.lastIndexOf('-') + 1)
+        return {
+          uri: `gs://${GCS_STAGING_BUCKET}/demo/regrid/${id}/output.nc`,
+          label: method.charAt(0).toUpperCase() + method.slice(1),
+        }
+      })
+    }
+
     const plotJobId = `${jobId}${PLOT_SUFFIX}`
     await submitJob({
       job_id: plotJobId,
@@ -57,6 +84,7 @@ export async function GET(
         title: 'Agentic OG — Method Comparison Demo',
         colormap: 'RdYlBu_r',
         ...(compareUri ? { compare_uri: compareUri } : {}),
+        ...(panelUris ? { panel_uris: panelUris } : {}),
       },
     })
     return NextResponse.json({ ...status, nextJobId: plotJobId })
