@@ -256,6 +256,46 @@ describe("GET /api/admin/omni-gridder/status/[jobId] — chainPlot gating", () =
     const params = submitJobMock.mock.calls[0][0].params as Record<string, unknown>;
     expect(params.compare_uri).toBeUndefined();
   });
+
+  it("maps a valid ?panels= list to reconstructed panel_uris with method labels", async () => {
+    getJobStatusMock.mockResolvedValue(baseStatus);
+    const { GET } = await importStatusRoute();
+
+    const panels = ["demo-batch-nearest", "demo-batch-bilinear", "demo-batch-conservative"];
+    const req = new NextRequest(
+      `http://localhost/api/admin/omni-gridder/status/${baseStatus.job_id}?chainPlot=1&panels=${encodeURIComponent(panels.join(","))}`,
+      { headers: adminHeaders("1.1.2.6") },
+    );
+    const res = await GET(req, { params: Promise.resolve({ jobId: baseStatus.job_id }) });
+    expect(res.status).toBe(200);
+
+    const params = submitJobMock.mock.calls[0][0].params as {
+      panel_uris: { uri: string; label: string }[];
+    };
+    expect(params.panel_uris).toHaveLength(3);
+    expect(params.panel_uris[0]).toEqual({
+      uri: "gs://test-staging-bucket/demo/regrid/demo-batch-nearest/output.nc",
+      label: "Nearest",
+    });
+    expect(params.panel_uris.map((p) => p.label)).toEqual([
+      "Nearest",
+      "Bilinear",
+      "Conservative",
+    ]);
+  });
+
+  it("rejects an invalid ?panels= job id with 400 and submits nothing", async () => {
+    getJobStatusMock.mockResolvedValue(baseStatus);
+    const { GET } = await importStatusRoute();
+
+    const req = new NextRequest(
+      `http://localhost/api/admin/omni-gridder/status/${baseStatus.job_id}?chainPlot=1&panels=${encodeURIComponent("demo-batch-nearest,gs://evil/../../x")}`,
+      { headers: adminHeaders("1.1.2.7") },
+    );
+    const res = await GET(req, { params: Promise.resolve({ jobId: baseStatus.job_id }) });
+    expect(res.status).toBe(400);
+    expect(submitJobMock).not.toHaveBeenCalled();
+  });
 });
 
 describe("GET /api/admin/omni-gridder/download", () => {
