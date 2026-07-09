@@ -97,6 +97,7 @@ export default function OmniGridderDemoPage() {
   const [activeMethods, setActiveMethods] = useState<RegridMethod[]>([])
   const [timeline, setTimeline] = useState<TimelineEntry[]>([])
   const [plotUrl, setPlotUrl] = useState<string | null>(null)
+  const [plotJobId, setPlotJobId] = useState<string | null>(null)
   const [globalError, setGlobalError] = useState<string | null>(null)
   const [workerTriggered, setWorkerTriggered] = useState<boolean | null>(null)
   const pollTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
@@ -205,6 +206,7 @@ export default function OmniGridderDemoPage() {
       })
       if (data.nextJobId) {
         log(`Chained plot job ${data.nextJobId} (from ${method})`)
+        setPlotJobId(data.nextJobId)
         pollTimers.current.set(
           data.nextJobId,
           setTimeout(() => pollJob(data.nextJobId!, method, false, true, null), POLL_INTERVAL_MS),
@@ -227,6 +229,7 @@ export default function OmniGridderDemoPage() {
       stopAllPolling()
       setGlobalError(null)
       setPlotUrl(null)
+      setPlotJobId(null)
       setTimeline([])
       setWorkerTriggered(null)
       setActiveMethods(methods)
@@ -462,12 +465,14 @@ export default function OmniGridderDemoPage() {
                 className="w-full max-w-xl rounded-lg border border-white/10"
               />
               <div className="mt-3 flex items-center gap-4">
-                <a
-                  href={`/api/admin/omni-gridder/download?url=${encodeURIComponent(plotUrl)}`}
-                  className="inline-block rounded-md border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-medium text-gray-200 hover:bg-white/10"
-                >
-                  Download PNG
-                </a>
+                {plotJobId && (
+                  <a
+                    href={`/api/admin/omni-gridder/download?job=${encodeURIComponent(plotJobId)}`}
+                    className="inline-block rounded-md border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-medium text-gray-200 hover:bg-white/10"
+                  >
+                    Download PNG
+                  </a>
+                )}
                 <p className="text-xs text-gray-500">
                   Rendered from a short-lived signed URL (15-minute TTL) — reload and run again if
                   it expires.
