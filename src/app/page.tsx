@@ -145,7 +145,7 @@ export default async function Home() {
         </section>
 
         {/* Real Proof Section */}
-        <section className="py-24 bg-[#101820] border-t border-white/5">
+        <section className="py-24 bg-background border-t border-white/5">
           <div className="mx-auto max-w-5xl px-6">
             <FadeIn>
               <h2 className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Real Output</h2>

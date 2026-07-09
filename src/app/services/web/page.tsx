@@ -128,7 +128,7 @@ export default function WebServicesPage() {
         </section>
 
         {/* Services Grid */}
-        <section className="border-t border-white/5 bg-[#101820] py-20">
+        <section className="border-t border-white/5 bg-background py-20">
           <div className="mx-auto max-w-5xl px-6">
             <FadeIn>
               <h2 className="text-2xl md:text-3xl font-semibold text-white mb-12">What We Build</h2>
@@ -172,7 +172,7 @@ export default function WebServicesPage() {
         </section>
 
         {/* Process */}
-        <section className="border-t border-white/5 bg-[#101820] py-20">
+        <section className="border-t border-white/5 bg-background py-20">
           <div className="mx-auto max-w-5xl px-6">
             <FadeIn>
               <h2 className="text-2xl md:text-3xl font-semibold text-white mb-3">How It Works</h2>
@@ -219,7 +219,7 @@ export default function WebServicesPage() {
         </section>
 
         {/* CTA */}
-        <section className="border-t border-white/5 bg-[#101820] py-20">
+        <section className="border-t border-white/5 bg-background py-20">
           <div className="mx-auto max-w-5xl px-6 text-center">
             <FadeIn>
               <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4">Ready to get started?</h2>

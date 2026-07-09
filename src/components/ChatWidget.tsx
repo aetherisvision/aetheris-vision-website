@@ -149,7 +149,7 @@ export default function ChatWidget() {
         <div
           role="region"
           aria-label="Chat"
-          className="fixed bottom-24 left-6 z-50 flex w-[22rem] flex-col rounded-2xl border border-white/10 bg-[#101820] shadow-2xl overflow-hidden"
+          className="fixed bottom-24 left-6 z-50 flex w-[22rem] flex-col rounded-2xl border border-white/10 bg-background shadow-2xl overflow-hidden"
           style={{ maxHeight: "min(32rem, calc(100svh - 8rem))" }}
         >
 

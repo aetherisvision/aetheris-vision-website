@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function ReviewPage() {
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-[#101820]">
+    <div className="flex flex-col min-h-[100dvh] bg-background">
       <Navbar />
 
       <main id="main" className="flex-1 py-24 px-6">
