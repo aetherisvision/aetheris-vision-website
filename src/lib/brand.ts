@@ -9,7 +9,7 @@ export const BRAND = {
   light: "#7EABCA",
   accent: "#5BA8D9",
   cyan: "#6EC4D6",
-  siteBackground: "#0d0c0f",
+  siteBackground: "#101820",
   siteForeground: "#eae8ec",
 } as const;
 

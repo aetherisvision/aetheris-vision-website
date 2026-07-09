@@ -68,7 +68,7 @@ export default async function Home() {
             />
           </div>
 
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/40 via-[#0d0c0f]/90 to-[#0d0c0f] -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#101820]/40 via-[#101820]/90 to-[#101820] -z-10" />
 
           <SatelliteDisplay sources={sources} />
 
@@ -120,7 +120,7 @@ export default async function Home() {
               sizes="100vw"
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0d0c0f] via-[#0d0c0f]/85 to-[#0d0c0f]/25 -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#101820] via-[#101820]/85 to-[#101820]/25 -z-10" />
 
           <div className="mx-auto max-w-5xl px-6">
             <FadeIn delay={0}>
@@ -145,7 +145,7 @@ export default async function Home() {
         </section>
 
         {/* Real Proof Section */}
-        <section className="py-24 bg-[#0d0c0f] border-t border-white/5">
+        <section className="py-24 bg-background border-t border-white/5">
           <div className="mx-auto max-w-5xl px-6">
             <FadeIn>
               <h2 className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Real Output</h2>
@@ -190,7 +190,7 @@ export default async function Home() {
             className="object-cover"
             sizes="100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0d0c0f] via-[#0d0c0f]/60 to-[#0d0c0f]/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#101820] via-[#101820]/60 to-[#101820]/20" />
           <div className="absolute inset-0 flex items-end">
             <div className="mx-auto max-w-5xl px-6 pb-8 w-full">
               <FadeIn>
@@ -224,7 +224,7 @@ export default async function Home() {
                       className="object-cover object-[50%_22%] opacity-[0.65] group-hover:opacity-[0.8] transition-opacity duration-500"
                       sizes="(max-width: 768px) 100vw, 33vw"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/20 via-[#0d0c0f]/70 to-[#0d0c0f]/92" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#101820]/20 via-[#101820]/70 to-[#101820]/92" />
                   </div>
                   <div className="relative z-10">
                     <div className="h-12 w-12 rounded-lg bg-gray-900 border border-blue-500/30 flex items-center justify-center mb-6">
@@ -249,7 +249,7 @@ export default async function Home() {
                       className="object-cover opacity-[0.65] group-hover:opacity-[0.8] transition-opacity duration-500"
                       sizes="(max-width: 768px) 100vw, 33vw"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/20 via-[#0d0c0f]/70 to-[#0d0c0f]/92" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#101820]/20 via-[#101820]/70 to-[#101820]/92" />
                   </div>
                   <div className="relative z-10">
                     <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">
@@ -277,7 +277,7 @@ export default async function Home() {
                       className="object-cover object-[50%_72%] opacity-[0.8] group-hover:opacity-[0.95] transition-opacity duration-500"
                       sizes="(max-width: 768px) 100vw, 33vw"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#0d0c0f]/10 via-[#0d0c0f]/50 to-[#0d0c0f]/85" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#101820]/10 via-[#101820]/50 to-[#101820]/85" />
                   </div>
                   <div className="relative z-10">
                     <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">
@@ -312,7 +312,7 @@ export default async function Home() {
                     className="object-cover object-[50%_45%] opacity-[0.5]"
                     sizes="(max-width: 1024px) 100vw, 1024px"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#0d0c0f]/95 via-[#0d0c0f]/75 to-[#0d0c0f]/35" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#101820]/95 via-[#101820]/75 to-[#101820]/35" />
                 </div>
                 {/* Glow */}
                 <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-blue-600/10 blur-3xl pointer-events-none" />
