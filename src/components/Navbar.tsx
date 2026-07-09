@@ -11,7 +11,6 @@ import { BRAND_LOGO } from "@/lib/brand";
 const navLinks = [
   { label: "Agentic OG", href: "/agentic-og" },
   { label: "About", href: "/about" },
-  { label: "Services", href: "/services" },
   { label: "Capabilities", href: "/capabilities" },
   { label: "Portfolio", href: "/portfolio" },
   { label: "Blog", href: "/blog" },
@@ -43,7 +42,7 @@ export default function Navbar() {
     if (href === "/metrics") return pathname === "/metrics";
     if (href === "/portfolio") return pathname.startsWith("/portfolio");
     if (href === "/contact") return pathname === "/contact";
-    if (href === "/services") return pathname.startsWith("/services");
+    if (href === "/services/web") return pathname.startsWith("/services");
     return false;
   }
 
@@ -52,8 +51,8 @@ export default function Navbar() {
       className={clsx(
         "fixed top-0 w-full z-50 border-b transition-all duration-300",
         scrolled
-          ? "border-white/10 bg-[#0d0c0f]/88 backdrop-blur-md shadow-[0_1px_30px_rgba(0,0,0,0.5)]"
-          : "border-white/5 bg-[#0d0c0f]/50 backdrop-blur-sm"
+          ? "border-white/10 bg-[#101820]/88 backdrop-blur-md shadow-[0_1px_30px_rgba(0,0,0,0.5)]"
+          : "border-white/5 bg-[#101820]/50 backdrop-blur-sm"
       )}
     >
       <div
@@ -124,7 +123,7 @@ export default function Navbar() {
 
       {/* Mobile Menu Panel */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-white/5 bg-[#0d0c0f]/97 backdrop-blur-md">
+        <div className="md:hidden border-t border-white/5 bg-[#101820]/97 backdrop-blur-md">
           <nav className="mx-auto max-w-5xl px-6 py-4 flex flex-col gap-1">
             {navLinks.map((link) => (
               <a
