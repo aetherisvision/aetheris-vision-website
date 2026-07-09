@@ -257,3 +257,115 @@ describe("GET /api/admin/omni-gridder/status/[jobId] — chainPlot gating", () =
     expect(params.compare_uri).toBeUndefined();
   });
 });
+
+describe("GET /api/admin/omni-gridder/download", () => {
+  const PLOT_JOB_ID = "demo-1a2b3c-4d5e6f-bilinear-plot";
+  const SIGNED_URL = `https://storage.googleapis.com/${TEST_BUCKET}/demo/regrid/demo-1a2b3c-4d5e6f-bilinear/plot.png?X-Goog-Signature=abc`;
+
+  async function importDownloadRoute() {
+    return import("@/app/api/admin/omni-gridder/download/route");
+  }
+
+  function makeDownloadRequest(job: string | null, ip: string): NextRequest {
+    const url = new URL("http://localhost/api/admin/omni-gridder/download");
+    if (job !== null) url.searchParams.set("job", job);
+    return new NextRequest(url, { headers: adminHeaders(ip) });
+  }
+
+  it("rejects a malformed job id with 400 and never calls og-server", async () => {
+    const { GET } = await importDownloadRoute();
+    const res = await GET(makeDownloadRequest("not-a-plot-job", "1.1.3.1"));
+    expect(res.status).toBe(400);
+    expect(getJobStatusMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects a missing job param with 400", async () => {
+    const { GET } = await importDownloadRoute();
+    const res = await GET(makeDownloadRequest(null, "1.1.3.2"));
+    expect(res.status).toBe(400);
+    expect(getJobStatusMock).not.toHaveBeenCalled();
+  });
+
+  it("returns 409 for a job that has not succeeded yet", async () => {
+    getJobStatusMock.mockResolvedValue({
+      job_id: PLOT_JOB_ID,
+      processor_type: "plot",
+      status: "processing",
+      submitted_at: Date.now(),
+      result_uri: null,
+      error_message: null,
+      diagnostics: null,
+    });
+    const { GET } = await importDownloadRoute();
+    const res = await GET(makeDownloadRequest(PLOT_JOB_ID, "1.1.3.3"));
+    expect(res.status).toBe(409);
+    const body = await res.json();
+    expect(body.error).toMatch(/not ready/i);
+  });
+
+  it("returns 400 and never fetches when result_uri is on a non-allowlisted host", async () => {
+    getJobStatusMock.mockResolvedValue({
+      job_id: PLOT_JOB_ID,
+      processor_type: "plot",
+      status: "succeeded",
+      submitted_at: Date.now(),
+      result_uri: "https://evil.example.com/plot.png",
+      error_message: null,
+      diagnostics: null,
+    });
+    const fetchSpy = vi.spyOn(global, "fetch");
+    const { GET } = await importDownloadRoute();
+    const res = await GET(makeDownloadRequest(PLOT_JOB_ID, "1.1.3.4"));
+    expect(res.status).toBe(400);
+    expect(fetchSpy).not.toHaveBeenCalled();
+    fetchSpy.mockRestore();
+  });
+
+  it("streams the plot with attachment headers on the happy path", async () => {
+    getJobStatusMock.mockResolvedValue({
+      job_id: PLOT_JOB_ID,
+      processor_type: "plot",
+      status: "succeeded",
+      submitted_at: Date.now(),
+      result_uri: SIGNED_URL,
+      error_message: null,
+      diagnostics: null,
+    });
+    const fakeBody = new ReadableStream();
+    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(fakeBody, {
+        status: 200,
+        headers: { "content-type": "image/png" },
+      }),
+    );
+    const { GET } = await importDownloadRoute();
+    const res = await GET(makeDownloadRequest(PLOT_JOB_ID, "1.1.3.5"));
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("image/png");
+    expect(res.headers.get("content-disposition")).toMatch(/^attachment; filename="og-method-comparison-.*\.png"$/);
+
+    const [calledUrl, calledInit] = fetchSpy.mock.calls[0];
+    expect(calledUrl).toBe(SIGNED_URL);
+    expect((calledInit as RequestInit).redirect).toBe("error");
+    fetchSpy.mockRestore();
+  });
+
+  it("returns a 502 JSON error when the upstream fetch rejects", async () => {
+    getJobStatusMock.mockResolvedValue({
+      job_id: PLOT_JOB_ID,
+      processor_type: "plot",
+      status: "succeeded",
+      submitted_at: Date.now(),
+      result_uri: SIGNED_URL,
+      error_message: null,
+      diagnostics: null,
+    });
+    const fetchSpy = vi.spyOn(global, "fetch").mockRejectedValue(new TypeError("fetch failed"));
+    const { GET } = await importDownloadRoute();
+    const res = await GET(makeDownloadRequest(PLOT_JOB_ID, "1.1.3.6"));
+    expect(res.status).toBe(502);
+    const body = await res.json();
+    expect(body.error).toMatch(/upstream fetch failed/i);
+    fetchSpy.mockRestore();
+  });
+});
