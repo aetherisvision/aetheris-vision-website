@@ -11,6 +11,7 @@ import { BRAND_LOGO } from "@/lib/brand";
 const navLinks = [
   { label: "Agentic OG", href: "/agentic-og" },
   { label: "About", href: "/about" },
+  { label: "Services", href: "/services" },
   { label: "Capabilities", href: "/capabilities" },
   { label: "Portfolio", href: "/portfolio" },
   { label: "Blog", href: "/blog" },
@@ -42,7 +43,7 @@ export default function Navbar() {
     if (href === "/metrics") return pathname === "/metrics";
     if (href === "/portfolio") return pathname.startsWith("/portfolio");
     if (href === "/contact") return pathname === "/contact";
-    if (href === "/services/web") return pathname.startsWith("/services");
+    if (href === "/services") return pathname.startsWith("/services");
     return false;
   }
 

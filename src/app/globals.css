@@ -5,13 +5,19 @@ html {
 }
 
 :root {
-  --background: #0d0c0f;
+  /* Aetheris Vision brand tokens — canonical source: Figma "Aetheris Vision
+     Brand System" (Brand Brief page), reconciled with the shipped site
+     2026-07-09. Typography ratified: Newsreader (display serif) + Inter
+     (body). Do not introduce ad-hoc colors — extend this ramp. */
+  --background: #101820; /* brand "Ink Black" (was #0d0c0f pre-reconciliation) */
   --foreground: #eae8ec;
-  --av-navy: #29426c;
-  --av-mid: #486890;
-  --av-accent: #5ba8d9;
-  --av-light: #7eabca;
-  --av-cyan: #6ec4d6;
+  --av-midnight: #0a1628; /* brand "Midnight Navy" — deepest surface/header band */
+  --av-navy: #29426c; /* brand "Aetheris Navy" */
+  --av-mid: #486890; /* brand "Mid Blue" */
+  --av-accent: #5ba8d9; /* brand "Sky Accent" */
+  --av-light: #7eabca; /* brand "Pale Sky" */
+  --av-cyan: #6ec4d6; /* brand "Data Cyan" — data/diagnostics highlight (promoted from site use 2026-07-09) */
+  --av-ice: #f3f7f9; /* brand "Ice Gray" — light panels on print/light surfaces */
 }
 
 @theme inline {
@@ -19,11 +25,13 @@ html {
   --font-serif: var(--font-newsreader), ui-serif, Georgia, serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-av-midnight: var(--av-midnight);
   --color-av-navy: var(--av-navy);
   --color-av-mid: var(--av-mid);
   --color-av-accent: var(--av-accent);
   --color-av-light: var(--av-light);
   --color-av-cyan: var(--av-cyan);
+  --color-av-ice: var(--av-ice);
 }
 
 body {
