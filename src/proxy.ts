@@ -125,13 +125,20 @@ export async function proxy(request: NextRequest) {
              request.headers.get('x-real-ip') ||
              'unknown'
   const isApiRoute = pathname === '/api' || pathname.startsWith('/api/')
-  const maxRequests = 100
+  // Authenticated admin API traffic gets a far higher ceiling: the coarse
+  // limit exists for anonymous abuse, but the passphrase-gated demo page
+  // legitimately polls job status every few seconds (a 3-method comparison
+  // run alone is ~100 requests), and the old shared 100/15min budget made
+  // the Download button 429 right after a successful run.
+  const isAuthedAdminApi =
+    isApiRoute && pathname.startsWith('/api/admin/') && (await isAdminSession(request))
+  const maxRequests = isAuthedAdminApi ? 2000 : 100
   let rateRemaining = maxRequests - 1
   if (isApiRoute) {
     const result = await rateLimit(ip, {
       limit: maxRequests,
       windowMs: 15 * 60 * 1000, // 15 minutes
-      prefix: 'proxy-api',
+      prefix: isAuthedAdminApi ? 'proxy-api-admin' : 'proxy-api',
     })
     rateRemaining = result.remaining
     if (!result.success) {
