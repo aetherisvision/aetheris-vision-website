@@ -73,7 +73,7 @@ export default function ServicesPage() {
                   </span>
                 </h1>
                 <p className="text-lg text-gray-400 font-light leading-relaxed">
-                  Aetheris Vision runs on two co-equal disciplines: a regridding
+                  {SITE.name} runs on two co-equal disciplines: a regridding
                   engine that puts an expert in the loop on every job, and a
                   consulting practice in atmospheric science and applied AI. Both
                   are available through commercial, federal, and cleared delivery
