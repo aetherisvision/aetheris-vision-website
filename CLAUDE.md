@@ -1,7 +1,7 @@
 # CLAUDE.md — website (aetherisvision.com)
 
 Aetheris Vision primary website. Read this before every session.
-Root manifest at `~/Documents/GitHub/CLAUDE.md` has the full business identity, secrets, and PDF pipeline.
+Root manifest at `~/Developer/CLAUDE.md` has the full business identity, secrets, and PDF pipeline.
 
 ---
 
@@ -44,7 +44,7 @@ Uses `getToken()` not `getServerSession()` for App Router compatibility.
 Unset `PREVIEW_PASSWORD` = site fully open; this is opt-in, not opt-out.
 
 Re-locked 2026-07-03 while the site is retooled to focus on Agentic OG (omni-gridder).
-Value lives in Vercel env / Bitwarden — not hardcoded in the repo.
+Value lives in Vercel env / `~/.secrets` — not hardcoded in the repo.
 
 ---
 
@@ -104,12 +104,12 @@ PREVIEW_PASSWORD=       # Site lock (default: marston-av)
 CRON_SECRET=            # Vercel cron auth
 STRIPE_SECRET_KEY=      # Stripe dashboard → Developers → API keys
 STRIPE_WEBHOOK_SECRET=
-DOCUSEAL_API_KEY=       # Bitwarden: "Docuseal API Key"
+DOCUSEAL_API_KEY=       # in ~/.secrets
 VERCEL_TEAM_SCOPE=      # Auto-resolved via scripts/vercel-resolve-scope.mjs
 ```
 
-All secrets in Bitwarden under info@aetherisvision.com vault.
-`website/.envrc` loads via `scripts/bw-envrc-av.sh` — requires `BW_SESSION` set.
+All secrets in `~/.secrets` (chmod 600, single source of truth — no external vault).
+Secrets load from `~/.secrets` (sourced by `~/.zshrc`); in a bare shell run `source ~/.secrets`.
 
 ---
 
@@ -130,7 +130,7 @@ Pending: wire Docuseal submission ID to Tropical Hut, link bank account to Strip
 npm run dev          # localhost:3000
 npm run build
 npm run lint
-npm run monitor:business  # Neon ping + Vercel logs (requires direnv + BW_SESSION)
+npm run monitor:business  # Neon ping + Vercel logs (secrets from ~/.secrets)
 ```
 
 ---

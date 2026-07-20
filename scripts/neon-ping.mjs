@@ -6,7 +6,7 @@ import { neon } from '@neondatabase/serverless'
 
 const url = process.env.DATABASE_URL
 if (!url) {
-  console.error('[Neon] FAIL — DATABASE_URL unset (unlock Bitwarden + cd website with direnv)')
+  console.error('[Neon] FAIL — DATABASE_URL unset (source ~/.secrets)')
   process.exit(2)
 }
 

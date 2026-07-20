@@ -2,8 +2,8 @@
   "mcpServers": {
     "vercel-deployment-monitor": {
       "command": "python",
-      "args": ["/Users/marston.ward/Documents/GitHub/website/mcp/vercel-server.py"],
-      "cwd": "/Users/marston.ward/Documents/GitHub/website/mcp",
+      "args": ["/Users/marston.ward/Developer/business/website/mcp/vercel-server.py"],
+      "cwd": "/Users/marston.ward/Developer/business/website/mcp",
       "env": {
         "VERCEL_TOKEN": "",
         "VERCEL_TEAM_ID": ""

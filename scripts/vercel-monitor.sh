@@ -8,7 +8,7 @@ cd "$ROOT"
 
 if [[ -z "${VERCEL_TOKEN:-}" ]]; then
   echo "ERROR: VERCEL_TOKEN is not set."
-  echo "Add it to website/.envrc (gitignored) from Bitwarden \"Vercel AV Token\", then: cd website && direnv allow"
+  echo "Add it to website/.envrc (gitignored) from ~/.secrets \"Vercel AV Token\", then: cd website && direnv allow"
   exit 1
 fi
 

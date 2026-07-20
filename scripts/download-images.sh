@@ -6,7 +6,7 @@
 set -e
 
 # Base directory
-IMAGE_DIR="/Users/marston.ward/Documents/GitHub/website/public/images"
+IMAGE_DIR="/Users/marston.ward/Developer/business/website/public/images"
 
 # Colors for output
 RED='\033[0;31m'

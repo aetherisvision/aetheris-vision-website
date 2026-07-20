@@ -1,7 +1,7 @@
 #!/bin/bash
 # Website cleanup script 
 
-cd /Users/marston.ward/Documents/GitHub/website
+cd /Users/marston.ward/Developer/business/website
 
 echo "Cleaning up temporary files..."
 
