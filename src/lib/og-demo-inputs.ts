@@ -113,14 +113,21 @@ export const SWATH_METHOD_REFUSAL =
  * regrids to all-NaN, so these are taken from a run known to produce real
  * output.
  *
- * NOTE (pre-public, issue #89): these objects live in an `esmai-*` bucket — a
- * cross-project dependency that must move to an og-owned demo bucket before
- * this surface is opened publicly. Acceptable while the showcase is admin-only.
+ * They live in `gs://aetherisvision-og-demo`, an OG-owned bucket (uniform
+ * bucket-level access, public-access-prevention enforced, no lifecycle rule —
+ * these are demo INPUTS and must not expire; only job artifacts do). The
+ * og-server and og-worker runtime service accounts hold `objectViewer` and
+ * nothing more: the engine reads these and has no business writing to them.
+ *
+ * They were moved off the shared `esmai-*` bucket deliberately. That bucket's
+ * lifecycle is owned by another project, so an esmai-side cleanup could have
+ * removed the demo's inputs without warning — an availability risk, not just
+ * hygiene.
  */
 export const DEMO_DATASETS: DemoDataset[] = [
   {
     id: 'gfs-hgt500',
-    uri: 'gs://esmai-dev-esmai-objects/demo/hgt500_2026070706_f006.nc',
+    uri: 'gs://aetherisvision-og-demo/inputs/gfs/hgt500_2026070706_f006.nc',
     label: 'GFS 500 hPa geopotential height',
     source: 'NOAA GFS — global forecast model, +006 h',
     variable: 'hgt500',
@@ -136,7 +143,7 @@ export const DEMO_DATASETS: DemoDataset[] = [
   },
   {
     id: 'gfs-hgt500-utm',
-    uri: 'gs://esmai-dev-esmai-objects/demo/hgt500_2026070706_f006.nc',
+    uri: 'gs://aetherisvision-og-demo/inputs/gfs/hgt500_2026070706_f006.nc',
     label: 'GFS 500 hPa — onto a projected UTM grid',
     source: 'NOAA GFS — global forecast model, +006 h',
     variable: 'hgt500',
@@ -161,7 +168,7 @@ export const DEMO_DATASETS: DemoDataset[] = [
   },
   {
     id: 'goes18-abi-c13',
-    uri: 'gs://esmai-dev-esmai-objects/demo/multisat/bhiecbhied8920/goes18/granule.nc',
+    uri: 'gs://aetherisvision-og-demo/inputs/goes18/abi_c13_granule.nc',
     label: 'GOES-18 ABI band 13 — clean IR window',
     source: 'NOAA GOES-18 (GOES-West) ABI L1b',
     variable: 'C13',
@@ -182,7 +189,7 @@ export const DEMO_DATASETS: DemoDataset[] = [
   },
   {
     id: 'himawari9-ahi-c13',
-    uri: 'gs://esmai-dev-esmai-objects/demo/multisat/bhiecbhied8920/himawari9/granule.nc',
+    uri: 'gs://aetherisvision-og-demo/inputs/himawari9/ahi_c13_granule.nc',
     label: 'Himawari-9 AHI band 13 — clean IR window',
     source: 'JMA Himawari-9 AHI (ISatSS T001 tile)',
     variable: 'C13',
