@@ -21,7 +21,10 @@ vi.mock("@/lib/omni-gridder-client", () => ({
 
 const TEST_PASSPHRASE = "super-secret-test-passphrase";
 const TEST_BUCKET = "test-staging-bucket";
-const TEST_INPUT_URI = "gs://esmai-dev-esmai-objects/demo/hgt500_2026070706_f006.nc";
+// The gfs-hgt500 catalog row's URI (og-demo bucket) — the deprecated inputUri
+// form resolves against the CATALOG, so this must be a catalogued URI, not
+// the pre-migration staging-bucket path.
+const TEST_INPUT_URI = "gs://aetherisvision-og-demo/inputs/gfs/hgt500_2026070706_f006.nc";
 
 function hmacToken(passphrase: string): string {
   return createHmac("sha256", passphrase).update("admin-session").digest("hex");
@@ -223,8 +226,8 @@ describe("GET /api/admin/omni-gridder/status/[jobId] — chainPlot gating", () =
     getJobStatusMock.mockResolvedValue(baseStatus);
     const { GET } = await importStatusRoute();
 
-    // First entry of the default server-side allowlist (OG_DEMO_INPUT_URIS unset).
-    const allowed = "gs://esmai-dev-esmai-objects/demo/hgt500_2026070706_f006.nc";
+    // A catalogued input URI — the compare allowlist derives from the catalog.
+    const allowed = "gs://aetherisvision-og-demo/inputs/gfs/hgt500_2026070706_f006.nc";
     const req = new NextRequest(
       `http://localhost/api/admin/omni-gridder/status/${baseStatus.job_id}?chainPlot=1&compare=${encodeURIComponent(allowed)}`,
       { headers: adminHeaders("1.1.2.4") },

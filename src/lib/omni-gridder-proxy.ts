@@ -139,21 +139,31 @@ export async function submitRegridBatch(
 
   // Resolve the dataset FIRST: it decides the destination grid and which
   // methods are even meaningful, so method validation cannot be done against a
-  // global list ahead of it.
-  let dataset = datasetById(body.datasetId)
-  if (body.datasetId && !dataset) {
-    return { ok: false, status: 400, error: `Unknown dataset "${body.datasetId}"` }
-  }
-  if (!dataset && body.inputUri) {
+  // global list ahead of it. Resolution precedence matters: the deprecated
+  // inputUri form must be checked when datasetId is ABSENT — datasetById()
+  // falls back to the default dataset on undefined, which would otherwise
+  // make the URI-allowlist rejection below unreachable for exactly the
+  // callers it exists for (and silently run the default dataset for a
+  // request that named a different URI).
+  let dataset: ReturnType<typeof datasetById>
+  if (body.datasetId) {
+    dataset = datasetById(body.datasetId)
+    if (!dataset) {
+      return { ok: false, status: 400, error: `Unknown dataset "${body.datasetId}"` }
+    }
+  } else if (body.inputUri) {
     // Deprecated URI form: resolve it against the catalog rather than trusting
     // it. An allowlisted URI with no catalog row would have no target grid.
     dataset = DEMO_DATASETS.find((d) => d.uri === body.inputUri) ?? null
     if (!dataset) {
       return { ok: false, status: 400, error: 'input URI is not in the server allowlist' }
     }
-  }
-  if (!dataset) {
-    return { ok: false, status: 500, error: 'showcase dataset catalog is empty' }
+  } else {
+    // Bare body: neither identifier given — the documented default applies.
+    dataset = datasetById(undefined)
+    if (!dataset) {
+      return { ok: false, status: 500, error: 'showcase dataset catalog is empty' }
+    }
   }
 
   const requestedMethods =
