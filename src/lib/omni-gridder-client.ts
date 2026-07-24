@@ -21,6 +21,34 @@ export interface OmniGridderJobSpec {
   params: Record<string, unknown>
 }
 
+/**
+ * An `og_core::Grid` as returned by `POST /v1/target-grids`, ready to embed
+ * verbatim as a regrid job's `params.dst_grid`.
+ *
+ * Deliberately not re-modelled field-by-field: the grid is a pass-through
+ * artifact, and a partial local mirror of og-core's schema would be a second
+ * definition that drifts. Only the fields the showcase actually reads are
+ * named; the rest ride along untouched.
+ */
+export interface OmniGridderGrid {
+  name: string
+  shape: number[]
+  /** The RESOLVED CRS — never the `"utm"` alias, which og-server resolves to a concrete EPSG code before returning. */
+  crs: string
+  dim_names: string[]
+  coordinates: Record<string, number[]>
+}
+
+export interface TargetGridRequest {
+  name: string
+  /** PROJ-acceptable CRS, or the convenience key `"utm"` / `"utm_auto"`. */
+  crs: string
+  /** `[min_lon, min_lat, max_lon, max_lat]` in EPSG:4326 degrees. */
+  bbox: [number, number, number, number]
+  /** Spacing in the target CRS's native units — metres for a projected CRS. */
+  resolution: number
+}
+
 export interface OmniGridderJobDiagnostics {
   interpolation_method: string | null
   weight_cache_hit: boolean | null
@@ -63,6 +91,135 @@ async function ogFetch(path: string, init?: RequestInit): Promise<Response> {
       'X-Api-Key': OG_SERVER_API_KEY,
     },
   })
+}
+
+/**
+ * Ask og-server to generate a target grid.
+ *
+ * Grid generation lives in the engine, not here: og-geo is PROJ-backed and
+ * owns zone selection and the projected axis walk. A TypeScript
+ * reimplementation would be a second, quietly-diverging copy of coordinate
+ * math — and one whose errors would be invisible, because a plausible-looking
+ * grid regrids to plausible-looking garbage rather than failing.
+ *
+ * The response is validated, not trusted. It crosses a process boundary, so a
+ * 200 is not evidence the body has the shape the caller is about to embed;
+ * a malformed grid passed on as `dst_grid` would fail later, further away,
+ * with a worse message.
+ */
+export async function generateTargetGrid(req: TargetGridRequest): Promise<OmniGridderGrid> {
+  const res = await ogFetch('/v1/target-grids', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+
+  if (!res.ok) {
+    // og-server returns { code, message } for this route; fall back to raw
+    // text when the body is not that shape (e.g. an infra-level error page).
+    const body = await res.text()
+    let detail = body
+    try {
+      const parsed = JSON.parse(body) as { code?: string; message?: string }
+      if (parsed.message) detail = `${parsed.code ?? 'ERROR'}: ${parsed.message}`
+    } catch {
+      // keep the raw text
+    }
+    throw new Error(`generateTargetGrid failed (${res.status}): ${detail}`)
+  }
+
+  return validateGrid(await res.json())
+}
+
+/**
+ * The axis-array shape `JobSpec.params.dst_grid` requires: the worker's
+ * `parse_dst_grid` (og-process) reads the two separable axes from `lat`/`lon`
+ * regardless of interpretation — a projected grid puts its native-unit
+ * `y`/`x` axes under those same keys and carries `crs` to govern how they are
+ * read. See the C2 contract comment on `parse_dst_grid`.
+ */
+export interface JobDstGrid {
+  name: string
+  crs: string
+  lat: number[]
+  lon: number[]
+}
+
+/**
+ * Converts a `/v1/target-grids` response into the `dst_grid` shape a job spec
+ * embeds. The response names its coordinate axes per CRS family (`y`/`x` when
+ * projected, `lat`/`lon` when geographic); the worker's job contract uses
+ * `lat`/`lon` for both, so this is the one place the rename happens. Passing
+ * the response through verbatim instead fails in the worker with
+ * "dst_grid.lat array required" — after the job was accepted.
+ */
+export function toJobDstGrid(grid: OmniGridderGrid): JobDstGrid {
+  const axes = grid.coordinates
+  // A COHERENT pair only: y/x (projected) or lat/lon (geographic). A mixed
+  // pair like {y, lon} is contract drift, not a grid — embedding it would
+  // fail (or worse, half-work) in the worker instead of here.
+  if (axes.y && axes.x) {
+    return { name: grid.name, crs: grid.crs, lat: axes.y, lon: axes.x }
+  }
+  if (axes.lat && axes.lon) {
+    return { name: grid.name, crs: grid.crs, lat: axes.lat, lon: axes.lon }
+  }
+  throw new Error(
+    `target grid "${grid.name}" has no embeddable axis pair — coordinates carry [${Object.keys(axes).join(', ')}], expected y/x or lat/lon`,
+  )
+}
+
+/** Structural validation of a target-grid response. Throws with a specific reason. */
+export function validateGrid(value: unknown): OmniGridderGrid {
+  // Annotated on the VARIABLE, not just the arrow: TypeScript only treats a
+  // call as control-flow-terminating when the binding itself is declared to
+  // return `never`. Without this the narrowing below silently stops working
+  // and every access reads as possibly-undefined — which invites papering
+  // over it with `!`, defeating the point of validating at all.
+  const fail: (why: string) => never = (why) => {
+    throw new Error(`generateTargetGrid returned a malformed grid: ${why}`)
+  }
+
+  if (typeof value !== 'object' || value === null) fail('not an object')
+  const g = value as Partial<OmniGridderGrid>
+
+  if (typeof g.name !== 'string') fail('missing name')
+  if (typeof g.crs !== 'string' || g.crs.length === 0) fail('missing crs')
+  // The alias must never survive into the returned grid: og-server resolves it
+  // to a concrete EPSG code so the artifact records the zone actually used. If
+  // it ever did survive, the provenance claim would be silently false.
+  if (/^utm(_auto)?$/i.test(g.crs.trim())) {
+    fail(`crs is the unresolved alias "${g.crs}" rather than a concrete CRS`)
+  }
+  if (!Array.isArray(g.shape) || g.shape.length === 0) fail('missing or empty shape')
+  if (!g.shape.every((n) => Number.isInteger(n) && n > 0)) {
+    fail('shape has a non-integer or non-positive entry')
+  }
+  if (!Array.isArray(g.dim_names) || g.dim_names.length !== g.shape.length) {
+    fail('dim_names does not match shape rank')
+  }
+  if (typeof g.coordinates !== 'object' || g.coordinates === null) fail('missing coordinates')
+
+  for (const [key, axis] of Object.entries(g.coordinates as Record<string, unknown>)) {
+    if (!Array.isArray(axis)) fail(`coordinate "${key}" is not an array`)
+    if (!(axis as unknown[]).every((n) => typeof n === 'number' && Number.isFinite(n))) {
+      fail(`coordinate "${key}" has a non-finite value`)
+    }
+  }
+
+  // dim_names must name real axes whose lengths agree with shape —
+  // destinationCells is computed from shape, so an inconsistent response
+  // would misreport job size (or embed a grid the worker rejects) with no
+  // failure at this boundary.
+  g.dim_names.forEach((dim, i) => {
+    const axis = (g.coordinates as Record<string, unknown>)[dim]
+    if (!Array.isArray(axis)) fail(`dim_names[${i}] "${dim}" has no coordinate axis`)
+    if (axis.length !== (g.shape as number[])[i]) {
+      fail(`axis "${dim}" has ${axis.length} values but shape[${i}] is ${(g.shape as number[])[i]}`)
+    }
+  })
+
+  return g as OmniGridderGrid
 }
 
 export async function submitJob(spec: OmniGridderJobSpec): Promise<void> {

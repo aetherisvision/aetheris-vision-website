@@ -1,19 +1,59 @@
 'use client'
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-type RegridMethod = 'nearest' | 'bilinear' | 'conservative'
-const METHODS: RegridMethod[] = ['nearest', 'bilinear', 'conservative']
+type RegridMethod = 'nearest' | 'bilinear' | 'conservative' | 'ewa'
+// No local list of "all methods": the compatibility matrix renders whatever the
+// server sends for the selected dataset. A second enumeration here would be a
+// place for the page's idea of the method set to drift from the engine's.
 const METHOD_LABELS: Record<RegridMethod, string> = {
-  nearest: 'Nearest neighbor',
+  nearest: 'Nearest neighbour',
   bilinear: 'Bilinear',
   conservative: 'Conservative',
+  ewa: 'EWA (swath)',
 }
 
-// Bilinear is the "primary" method whose regrid result gets plotted — it's
-// the one method present in both single mode and every comparison run, so
-// the map panel never has to pick between three plots.
-const PRIMARY_METHOD: RegridMethod = 'bilinear'
+/**
+ * Which methods are valid depends on the DATASET, not on the app.
+ *
+ * The primary method — the one whose result gets plotted when several run —
+ * used to be the constant `bilinear`. That is not merely a style choice once
+ * satellite datasets exist: bilinear is invalid on a swath source, so a fixed
+ * primary would ask for a plot of a job that was refused and never submitted.
+ * It now comes from the selected dataset's first allowed method.
+ */
+interface MethodAvailability {
+  method: RegridMethod
+  allowed: boolean
+  reason: string | null
+}
+
+interface DatasetView {
+  id: string
+  label: string
+  source: string
+  variable: string
+  units: string
+  geometry: 'rectilinear' | 'geostationary-swath'
+  nativeResolution: string
+  demonstrates: string
+  targetSummary: string
+  targetCrsLabel: string
+  destinationCells: number | null
+  methods: MethodAvailability[]
+  primaryMethod: RegridMethod
+}
+
+/**
+ * Where a number on this page came from.
+ *
+ * Every figure the showcase displays is either measured by the run you just
+ * watched, or a recorded result from a verification that happened elsewhere.
+ * Those are not the same claim, and a page that renders them identically is
+ * quietly overstating one of them. The badge is deliberately visible rather
+ * than a footnote.
+ */
+type Provenance = 'live' | 'verified'
 
 type RowStatus = 'idle' | 'submitting' | 'queued' | 'processing' | 'plotting' | 'succeeded' | 'failed'
 
@@ -54,6 +94,51 @@ interface TimelineEntry {
   label: string
 }
 
+/**
+ * One completed run, kept so a later run of the same (dataset, method) can be
+ * compared against it.
+ *
+ * This is what makes the weight-reuse claim demonstrable rather than asserted.
+ * The engine separates weight GENERATION (the expensive, accuracy-gated step)
+ * from weight APPLICATION (the cheap, parity-gated one); the visible
+ * consequence is that the second run of an identical job skips generation
+ * entirely. A cache-hit column alone does not show that — it takes two runs
+ * side by side, and both have to be ones the viewer actually watched.
+ */
+interface RunObservation {
+  wallClockMs: number
+  cacheHit: boolean | null
+}
+
+/** Session-scoped run history, keyed `datasetId::method`. */
+type RunHistory = Record<string, RunObservation[]>
+
+function historyKey(datasetId: string, method: RegridMethod): string {
+  return `${datasetId}::${method}`
+}
+
+/**
+ * The first cold run and the first subsequent warm run for one key, or `null`
+ * when the session has not observed both.
+ *
+ * Returns `null` rather than a partial answer on purpose: a speedup figure
+ * derived from one measurement is not a speedup figure. Until both exist the
+ * panel says how to produce the second one.
+ */
+function coldWarmPair(
+  observations: RunObservation[] | undefined,
+): { cold: RunObservation; warm: RunObservation } | null {
+  if (!observations) return null
+  const coldIndex = observations.findIndex((o) => o.cacheHit === false)
+  if (coldIndex === -1) return null
+  const warm = observations.slice(coldIndex + 1).find((o) => o.cacheHit === true)
+  return warm ? { cold: observations[coldIndex], warm } : null
+}
+
+function formatDuration(ms: number): string {
+  return ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(1)} s`
+}
+
 const POLL_INTERVAL_MS = 3000
 
 function idleRow(method: RegridMethod): MethodRow {
@@ -87,12 +172,133 @@ function formatNumber(value: number | null): string {
   return value === null ? '—' : value.toString()
 }
 
+/**
+ * Marks whether a figure was measured by the run you just watched, or is a
+ * recorded result from a verification performed elsewhere.
+ *
+ * Visible rather than a footnote, on purpose. A page that renders a live
+ * measurement and a recorded benchmark in the same style is overstating one of
+ * them, and the reader has no way to tell which.
+ */
+function ProvenanceBadge({ kind }: { kind: Provenance }) {
+  const live = kind === 'live'
+  return (
+    <span
+      className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
+        live ? 'bg-emerald-500/15 text-emerald-300' : 'bg-sky-500/15 text-sky-300'
+      }`}
+      title={
+        live
+          ? 'Measured by this run, on this hardware'
+          : 'Recorded result from a verification performed elsewhere — not exercised by this demo'
+      }
+    >
+      {live ? 'live run' : 'recorded verification'}
+    </span>
+  )
+}
+
+/**
+ * The speed story, told with the viewer's own runs.
+ *
+ * ADR #290's keystone separation — weight GENERATION (expensive, oracle-gated)
+ * from weight APPLICATION (cheap, parity-gated) — has one consequence a
+ * non-specialist can see: rerun the same job and the expensive step vanishes,
+ * because the operator is already in the cache. This panel shows that as a
+ * cold/warm pair measured in this browser session, or tells the viewer how to
+ * produce one. It never substitutes a recorded benchmark for the pair: a
+ * speed claim on this page is either measured live or absent.
+ *
+ * Wall clock here includes queue + polling latency, and says so — the honest
+ * comparison is end-to-end time for the same job, not a flattering subset.
+ */
+function WeightReusePanel({
+  dataset,
+  allowedMethods,
+  runHistory,
+}: {
+  dataset: DatasetView
+  allowedMethods: RegridMethod[]
+  runHistory: RunHistory
+}) {
+  const pairs = allowedMethods
+    .map((method) => ({
+      method,
+      pair: coldWarmPair(runHistory[historyKey(dataset.id, method)]),
+    }))
+    .filter((p): p is { method: RegridMethod; pair: NonNullable<ReturnType<typeof coldWarmPair>> } =>
+      p.pair !== null,
+    )
+
+  return (
+    <div className="mb-10">
+      <h2 className="font-mono text-[11px] uppercase tracking-wider text-gray-500 mb-3">
+        Weight reuse · {dataset.label}
+      </h2>
+      {pairs.length === 0 ? (
+        <p className="text-sm text-gray-500">
+          Run the same method twice on this dataset to measure it: the first run generates the
+          remap operator (the expensive, accuracy-gated step), the second finds it in the cache
+          and only applies it. Both runs are timed in this session — no recorded benchmark stands
+          in for the pair.
+        </p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[560px] border-collapse text-sm">
+            <thead>
+              <tr className="text-left text-gray-500 font-mono text-[11px] uppercase tracking-wider">
+                <th className="border-b border-white/10 pb-2 pr-4">Method</th>
+                <th className="border-b border-white/10 pb-2 pr-4">Cold (generates weights)</th>
+                <th className="border-b border-white/10 pb-2 pr-4">Warm (reuses weights)</th>
+                <th className="border-b border-white/10 pb-2 pr-4">Speedup</th>
+                <th className="border-b border-white/10 pb-2">Provenance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pairs.map(({ method, pair }) => (
+                <tr key={method} className="text-gray-300">
+                  <td className="border-b border-white/5 py-2 pr-4 font-medium text-white">
+                    {METHOD_LABELS[method]}
+                  </td>
+                  <td className="border-b border-white/5 py-2 pr-4 font-mono">
+                    {formatDuration(pair.cold.wallClockMs)}
+                  </td>
+                  <td className="border-b border-white/5 py-2 pr-4 font-mono">
+                    {formatDuration(pair.warm.wallClockMs)}
+                  </td>
+                  <td className="border-b border-white/5 py-2 pr-4 font-mono text-emerald-300">
+                    {pair.warm.wallClockMs > 0
+                      ? `${(pair.cold.wallClockMs / pair.warm.wallClockMs).toFixed(1)}×`
+                      : '—'}
+                  </td>
+                  <td className="border-b border-white/5 py-2">
+                    <ProvenanceBadge kind="live" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="mt-2 text-xs text-gray-500">
+            End-to-end wall clock, including queue and polling latency — the same overhead in both
+            columns, so the difference is the generation step. Cold/warm classification comes from
+            the engine&apos;s own <code>weight_cache_hit</code> diagnostic, not from run order.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function OmniGridderDemoPage() {
+  const [datasets, setDatasets] = useState<DatasetView[]>([])
+  const [selectedDatasetId, setSelectedDatasetId] = useState<string | null>(null)
+  const [catalogError, setCatalogError] = useState<string | null>(null)
   const [selectedMethod, setSelectedMethod] = useState<RegridMethod>('bilinear')
   const [rows, setRows] = useState<Record<RegridMethod, MethodRow>>({
     nearest: idleRow('nearest'),
     bilinear: idleRow('bilinear'),
     conservative: idleRow('conservative'),
+    ewa: idleRow('ewa'),
   })
   const [activeMethods, setActiveMethods] = useState<RegridMethod[]>([])
   const [timeline, setTimeline] = useState<TimelineEntry[]>([])
@@ -100,6 +306,14 @@ export default function OmniGridderDemoPage() {
   const [plotJobId, setPlotJobId] = useState<string | null>(null)
   const [globalError, setGlobalError] = useState<string | null>(null)
   const [workerTriggered, setWorkerTriggered] = useState<boolean | null>(null)
+  const [runHistory, setRunHistory] = useState<RunHistory>({})
+  // The dataset a run was submitted UNDER, not whatever is selected when it
+  // finishes. A job takes seconds and the picker stays live throughout, so
+  // reading `selectedDatasetId` at completion time would file a GOES run under
+  // whichever dataset the viewer clicked while waiting.
+  const runDatasetIdRef = useRef<string | null>(null)
+  /** Client-side submit time per method, consumed once when that run completes. */
+  const runStartRef = useRef<Map<RegridMethod, number>>(new Map())
   const pollTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
   // Input URI from the last submit response — passed back on the chainPlot
   // poll so the server can chain a before/after plot (server re-validates
@@ -115,6 +329,55 @@ export default function OmniGridderDemoPage() {
   const succeededJobsRef = useRef<Set<string>>(new Set())
   const panelChainFiredRef = useRef(false)
 
+  // The catalog comes from the server rather than being duplicated here: the
+  // compatibility matrix the page renders and the one the proxy ENFORCES must
+  // be the same fact, or the UI will offer a combination the server refuses.
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      try {
+        const res = await fetch('/api/admin/omni-gridder/datasets')
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = (await res.json()) as { datasets: DatasetView[] }
+        if (cancelled) return
+        if (!Array.isArray(data.datasets) || data.datasets.length === 0) {
+          setCatalogError('The showcase catalog is empty')
+          return
+        }
+        setDatasets(data.datasets)
+        setSelectedDatasetId((current) => current ?? data.datasets[0].id)
+      } catch (err) {
+        if (!cancelled) {
+          setCatalogError(err instanceof Error ? err.message : 'Could not load the dataset catalog')
+        }
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const selectedDataset = useMemo(
+    () => datasets.find((d) => d.id === selectedDatasetId) ?? null,
+    [datasets, selectedDatasetId],
+  )
+  const allowedMethods = useMemo(
+    () => selectedDataset?.methods.filter((m) => m.allowed).map((m) => m.method) ?? [],
+    [selectedDataset],
+  )
+  const primaryMethod: RegridMethod = selectedDataset?.primaryMethod ?? 'bilinear'
+
+  // Keep the single-method selection valid when the dataset changes. Silently
+  // leaving `bilinear` selected after switching to a satellite would submit a
+  // combination the server refuses — the user would see an error for a choice
+  // the UI made on their behalf.
+  useEffect(() => {
+    if (!selectedDataset) return
+    if (!allowedMethods.includes(selectedMethod)) {
+      setSelectedMethod(selectedDataset.primaryMethod)
+    }
+  }, [selectedDataset, allowedMethods, selectedMethod])
+
   const log = useCallback((label: string) => {
     setTimeline((prev) => [...prev, { at: Date.now(), label }])
   }, [])
@@ -127,6 +390,31 @@ export default function OmniGridderDemoPage() {
   const updateRow = useCallback((method: RegridMethod, patch: Partial<MethodRow>) => {
     setRows((prev) => ({ ...prev, [method]: { ...prev[method], ...patch } }))
   }, [])
+
+  /**
+   * Appends one completed regrid to the session's run history.
+   *
+   * Start times come from `runStartRef`, not from the `rows` state. This runs
+   * inside a poll callback that may have closed over a stale render, and a
+   * wrong start time would silently produce a wrong speedup — the exact kind
+   * of number this panel exists to make trustworthy. A ref is also the only
+   * place it can be read without doing state updates inside another updater,
+   * which StrictMode would double-invoke into a double-counted run.
+   */
+  const recordRun = useCallback(
+    (method: RegridMethod, completedAt: number, cacheHit: boolean | null) => {
+      const datasetId = runDatasetIdRef.current
+      const submittedAt = runStartRef.current.get(method)
+      if (!datasetId || submittedAt === undefined) return
+      // Consume it, so a chained plot poll or a duplicate terminal status
+      // cannot append the same run twice.
+      runStartRef.current.delete(method)
+      const key = historyKey(datasetId, method)
+      const observation: RunObservation = { wallClockMs: completedAt - submittedAt, cacheHit }
+      setRunHistory((h) => ({ ...h, [key]: [...(h[key] ?? []), observation] }))
+    },
+    [],
+  )
 
   // Plain function, not useCallback: it recurses on itself via setTimeout,
   // which the React Compiler's lint rules flag as unsafe inside a hook
@@ -212,11 +500,15 @@ export default function OmniGridderDemoPage() {
         updateRow(method, { status: 'succeeded' })
         return
       }
+      const completedAt = Date.now()
       updateRow(method, {
         status: data.nextJobId ? 'plotting' : 'succeeded',
-        completedAt: Date.now(),
+        completedAt,
         diagnostics: data.diagnostics,
       })
+      // Record the REGRID job only. A chained plot job is separate work and
+      // its wall clock has nothing to say about weight reuse.
+      recordRun(method, completedAt, data.diagnostics?.weight_cache_hit ?? null)
       if (data.nextJobId) {
         log(`Chained plot job ${data.nextJobId} (from ${method})`)
         setPlotJobId(data.nextJobId)
@@ -238,10 +530,10 @@ export default function OmniGridderDemoPage() {
       ) {
         panelChainFiredRef.current = true
         const primary =
-          panelJobIdsRef.current.find((id) => id.endsWith(`-${PRIMARY_METHOD}`)) ??
+          panelJobIdsRef.current.find((id) => id.endsWith(`-${primaryMethod}`)) ??
           panelJobIdsRef.current[0]
         log('All methods succeeded — chaining multi-panel comparison plot')
-        void pollJob(primary, PRIMARY_METHOD, true, false, 'succeeded')
+        void pollJob(primary, primaryMethod, true, false, 'succeeded')
       }
       return
     }
@@ -257,6 +549,13 @@ export default function OmniGridderDemoPage() {
 
   const runJobs = useCallback(
     async (methods: RegridMethod[]) => {
+      // The catalog loads async; a click before it lands would submit
+      // datasetId: null and let the server silently default. Refuse instead —
+      // run history and the weight-reuse panel key off the dataset id.
+      if (!selectedDatasetId) {
+        setGlobalError('Catalog is still loading — select a dataset first')
+        return
+      }
       stopAllPolling()
       setGlobalError(null)
       setPlotUrl(null)
@@ -280,7 +579,7 @@ export default function OmniGridderDemoPage() {
         res = await fetch('/api/admin/omni-gridder/submit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ methods }),
+          body: JSON.stringify({ methods, datasetId: selectedDatasetId }),
         })
       } catch {
         setGlobalError('Network error submitting job')
@@ -299,6 +598,7 @@ export default function OmniGridderDemoPage() {
       const data = (await res.json()) as {
         jobs: { jobId: string; method: RegridMethod }[]
         inputUri: string
+        datasetId: string
         workerTriggered: boolean
       }
       inputUriRef.current = data.inputUri ?? ''
@@ -308,6 +608,10 @@ export default function OmniGridderDemoPage() {
       }
 
       const submittedAt = Date.now()
+      // Record history under what the SERVER says ran — the resolved id in the
+      // response — not the client-side selection it was derived from.
+      runDatasetIdRef.current = data.datasetId ?? selectedDatasetId
+      for (const { method } of data.jobs) runStartRef.current.set(method, submittedAt)
       const comparisonMode = data.jobs.length > 1
       // Comparison mode chains ONE multi-panel plot only after ALL methods
       // succeed (see the succeeded branch in pollJob) — so no per-method
@@ -316,14 +620,14 @@ export default function OmniGridderDemoPage() {
       panelJobIdsRef.current = comparisonMode ? data.jobs.map((j) => j.jobId) : []
       succeededJobsRef.current = new Set()
       panelChainFiredRef.current = false
-      const hasPrimary = data.jobs.some((j) => j.method === PRIMARY_METHOD)
+      const hasPrimary = data.jobs.some((j) => j.method === primaryMethod)
       for (const { jobId, method } of data.jobs) {
         log(`Submitted ${jobId}`)
         updateRow(method, { jobId, status: 'queued', submittedAt })
         const chainPlot = comparisonMode
           ? false
           : hasPrimary
-            ? method === PRIMARY_METHOD
+            ? method === primaryMethod
             : method === data.jobs[0].method
         pollTimers.current.set(
           jobId,
@@ -332,13 +636,24 @@ export default function OmniGridderDemoPage() {
       }
     },
     // pollJob is a plain function (not memoized) recreated every render —
-    // intentionally omitted from deps, see its own definition above.
+    // intentionally omitted from deps, see its own definition above. The
+    // disable is ONLY for pollJob: every state value the closure reads must
+    // still be listed, because this suppression previously hid a real bug —
+    // `selectedDatasetId` was omitted, so the memoized closure kept its
+    // first-render value (null, the catalog loads async) and every submit
+    // POSTed `datasetId: null` regardless of the picker.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [log, stopAllPolling, updateRow],
+    [log, stopAllPolling, updateRow, selectedDatasetId, primaryMethod],
   )
 
   const runSingle = useCallback(() => runJobs([selectedMethod]), [runJobs, selectedMethod])
-  const runComparison = useCallback(() => runJobs(METHODS), [runJobs])
+  // Compare only what this dataset actually supports. Submitting a refused
+  // combination to prove it gets refused would burn a real job to demonstrate
+  // something the compatibility matrix already states.
+  const runComparison = useCallback(
+    () => runJobs(allowedMethods),
+    [runJobs, allowedMethods],
+  )
 
   const isRunning = activeMethods.some((m) => {
     const s = rows[m].status
@@ -349,22 +664,92 @@ export default function OmniGridderDemoPage() {
     <div className="min-h-screen bg-[#050505] text-white px-6 py-16">
       <div className="mx-auto max-w-5xl">
         <div className="mb-10">
-          <h1 className="text-3xl font-semibold tracking-tight mb-2">Omni-Gridder Method Comparison</h1>
+          <h1 className="text-3xl font-semibold tracking-tight mb-2">Omni-Gridder Showcase</h1>
           <p className="text-gray-400 font-light">
-            Submits real regrid jobs to og-server on Google Cloud (esmai-dev) against a live
-            0.25° GFS 500mb height field, regridded to a 0.5° CONUS grid, and compares
-            nearest-neighbor, bilinear, and conservative interpolation side by side.
+            Submits real regrid jobs to og-server on Google Cloud — no precomputed results.
+            Every dataset below runs through the same engine; which interpolation methods are
+            valid depends on the source geometry, and the engine refuses the combinations that
+            do not apply rather than returning an approximation.
           </p>
         </div>
+
+        {catalogError && (
+          <div className="mb-10 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+            Could not load the dataset catalog: {catalogError}
+          </div>
+        )}
+
+        {/* Dataset picker. Each card states what that dataset demonstrates that
+            the others do not — the point of the catalog is variety of kind, not
+            a longer list of files. */}
+        <div className="mb-8 grid gap-3 sm:grid-cols-2">
+          {datasets.map((d) => {
+            const active = d.id === selectedDatasetId
+            return (
+              <button
+                key={d.id}
+                onClick={() => setSelectedDatasetId(d.id)}
+                disabled={isRunning}
+                className={`rounded-lg border p-4 text-left transition disabled:opacity-40 disabled:cursor-not-allowed ${
+                  active
+                    ? 'border-white/40 bg-white/10'
+                    : 'border-white/10 bg-[#0a0a0a] hover:border-white/25'
+                }`}
+              >
+                <div className="text-sm font-medium text-white">{d.label}</div>
+                <div className="mt-1 text-xs text-gray-400">{d.source}</div>
+                <div className="mt-2 text-xs text-gray-500">
+                  {d.nativeResolution} → {d.targetSummary}
+                  {d.destinationCells !== null && (
+                    <> · {d.destinationCells.toLocaleString()} cells</>
+                  )}
+                </div>
+                <div className="mt-2 text-xs text-gray-500 italic">{d.demonstrates}</div>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Compatibility matrix. Refused combinations carry the engine's own
+            reason — "why not" is the interesting part of this product, so it is
+            shown rather than hidden behind a disabled control with no
+            explanation. */}
+        {selectedDataset && (
+          <div className="mb-10 rounded-lg border border-white/10 bg-[#0a0a0a] p-4">
+            <div className="mb-3 text-xs uppercase tracking-wider text-gray-500">
+              Method compatibility · {selectedDataset.label}
+            </div>
+            <div className="space-y-2">
+              {selectedDataset.methods.map((m) => (
+                <div key={m.method} className="flex flex-wrap items-baseline gap-x-3 text-sm">
+                  <span className={m.allowed ? 'text-white' : 'text-gray-500 line-through'}>
+                    {METHOD_LABELS[m.method]}
+                  </span>
+                  {m.allowed ? (
+                    <span className="text-xs text-emerald-400">available</span>
+                  ) : (
+                    <span className="text-xs text-gray-500">{m.reason}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 text-xs text-gray-600">
+              Target CRS: {selectedDataset.targetCrsLabel}
+            </div>
+          </div>
+        )}
 
         <div className="mb-10 flex flex-wrap items-center gap-4">
           <select
             value={selectedMethod}
             onChange={(e) => setSelectedMethod(e.target.value as RegridMethod)}
-            disabled={isRunning}
+            disabled={isRunning || allowedMethods.length === 0}
             className="h-11 rounded-md border border-white/10 bg-[#0a0a0a] px-4 text-sm text-white disabled:opacity-40"
           >
-            {METHODS.map((m) => (
+            {/* Only valid methods are offered. A disabled option for a refused
+                combination would be a dead affordance — it reads as "one click
+                away" for something the server will reject. */}
+            {allowedMethods.map((m) => (
               <option key={m} value={m}>
                 {METHOD_LABELS[m]}
               </option>
@@ -391,6 +776,56 @@ export default function OmniGridderDemoPage() {
             {globalError}
           </div>
         )}
+
+        {/* Acceleration. Deliberately NOT a device toggle: the GPU apply path
+            exists and is parity-verified, but this demo does not exercise it,
+            and a control implying otherwise would be a dead affordance. The
+            live execution path arrives with the routing layer, where the
+            engine chooses the device and shows why. */}
+        <div className="mb-10 rounded-lg border border-white/10 bg-[#0a0a0a] p-5">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="text-xs uppercase tracking-wider text-gray-500">Acceleration</span>
+            <ProvenanceBadge kind="verified" />
+          </div>
+          <p className="text-sm text-gray-300">
+            The engine separates weight <em>generation</em> (where accuracy lives) from weight{' '}
+            <em>application</em> (where speed lives). A GPU backend applies the same frozen
+            operator the CPU does, and is gated at ≤1e-12 relative error against the CPU result
+            — so a faster backend cannot change the science, by construction.
+          </p>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="text-xs uppercase tracking-wider text-gray-500">
+                <tr>
+                  <th className="pb-2 pr-6 font-normal">Method</th>
+                  <th className="pb-2 pr-6 font-normal">Max relative error vs CPU</th>
+                  <th className="pb-2 font-normal">Result</th>
+                </tr>
+              </thead>
+              <tbody className="text-gray-300">
+                <tr>
+                  <td className="py-1 pr-6">Bilinear</td>
+                  <td className="py-1 pr-6 font-mono text-xs">1.2e-15</td>
+                  <td className="py-1 text-emerald-400">pass</td>
+                </tr>
+                <tr>
+                  <td className="py-1 pr-6">Nearest neighbour</td>
+                  <td className="py-1 pr-6 font-mono text-xs">0.0 (bitwise identical)</td>
+                  <td className="py-1 text-emerald-400">pass</td>
+                </tr>
+                <tr>
+                  <td className="py-1 pr-6">Conservative</td>
+                  <td className="py-1 pr-6 font-mono text-xs">1.0e-15</td>
+                  <td className="py-1 text-emerald-400">pass</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-xs italic text-gray-500">
+            Recorded verification on an NVIDIA L4, not a live run in this demo. The runs below
+            execute on CPU; the live GPU execution path ships with the routing layer.
+          </p>
+        </div>
 
         {workerTriggered === false && (
           <div className="mb-10 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4 text-sm text-yellow-200">
@@ -474,6 +909,14 @@ export default function OmniGridderDemoPage() {
           </div>
         )}
 
+        {selectedDataset && (
+          <WeightReusePanel
+            dataset={selectedDataset}
+            allowedMethods={allowedMethods}
+            runHistory={runHistory}
+          />
+        )}
+
         <div className="grid gap-10 md:grid-cols-2">
           {timeline.length > 0 && (
             <div>
@@ -496,7 +939,7 @@ export default function OmniGridderDemoPage() {
           {plotUrl && (
             <div>
               <h2 className="font-mono text-[11px] uppercase tracking-wider text-gray-500 mb-3">
-                Result ({METHOD_LABELS[PRIMARY_METHOD]})
+                Result ({METHOD_LABELS[primaryMethod]})
               </h2>
               {/* Signed GCS URL from og-server — not a same-origin/known-host
                   asset, so next/image's optimizer can't be used without adding
