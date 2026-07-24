@@ -549,6 +549,13 @@ export default function OmniGridderDemoPage() {
 
   const runJobs = useCallback(
     async (methods: RegridMethod[]) => {
+      // The catalog loads async; a click before it lands would submit
+      // datasetId: null and let the server silently default. Refuse instead —
+      // run history and the weight-reuse panel key off the dataset id.
+      if (!selectedDatasetId) {
+        setGlobalError('Catalog is still loading — select a dataset first')
+        return
+      }
       stopAllPolling()
       setGlobalError(null)
       setPlotUrl(null)
@@ -591,6 +598,7 @@ export default function OmniGridderDemoPage() {
       const data = (await res.json()) as {
         jobs: { jobId: string; method: RegridMethod }[]
         inputUri: string
+        datasetId: string
         workerTriggered: boolean
       }
       inputUriRef.current = data.inputUri ?? ''
@@ -600,7 +608,9 @@ export default function OmniGridderDemoPage() {
       }
 
       const submittedAt = Date.now()
-      runDatasetIdRef.current = selectedDatasetId
+      // Record history under what the SERVER says ran — the resolved id in the
+      // response — not the client-side selection it was derived from.
+      runDatasetIdRef.current = data.datasetId ?? selectedDatasetId
       for (const { method } of data.jobs) runStartRef.current.set(method, submittedAt)
       const comparisonMode = data.jobs.length > 1
       // Comparison mode chains ONE multi-panel plot only after ALL methods

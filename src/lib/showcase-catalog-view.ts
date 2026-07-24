@@ -66,7 +66,13 @@ export interface DatasetView {
  * a job that was refused and never submitted.
  */
 export function primaryMethodFor(dataset: DemoDataset): RegridMethod {
-  return dataset.allowedMethods[0]
+  const primary = dataset.allowedMethods[0]
+  if (!primary) {
+    // A row with no methods would otherwise return `undefined` typed as
+    // RegridMethod and break the UI two lookups later (METHOD_LABELS etc.).
+    throw new Error(`showcase catalog row "${dataset.id}" has no allowed methods`)
+  }
+  return primary
 }
 
 function targetSummary(dataset: DemoDataset): string {

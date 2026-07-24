@@ -155,14 +155,18 @@ export interface JobDstGrid {
  */
 export function toJobDstGrid(grid: OmniGridderGrid): JobDstGrid {
   const axes = grid.coordinates
-  const lat = axes.y ?? axes.lat
-  const lon = axes.x ?? axes.lon
-  if (!lat || !lon) {
-    throw new Error(
-      `target grid "${grid.name}" has no embeddable axis pair — coordinates carry [${Object.keys(axes).join(', ')}], expected y/x or lat/lon`,
-    )
+  // A COHERENT pair only: y/x (projected) or lat/lon (geographic). A mixed
+  // pair like {y, lon} is contract drift, not a grid — embedding it would
+  // fail (or worse, half-work) in the worker instead of here.
+  if (axes.y && axes.x) {
+    return { name: grid.name, crs: grid.crs, lat: axes.y, lon: axes.x }
   }
-  return { name: grid.name, crs: grid.crs, lat, lon }
+  if (axes.lat && axes.lon) {
+    return { name: grid.name, crs: grid.crs, lat: axes.lat, lon: axes.lon }
+  }
+  throw new Error(
+    `target grid "${grid.name}" has no embeddable axis pair — coordinates carry [${Object.keys(axes).join(', ')}], expected y/x or lat/lon`,
+  )
 }
 
 /** Structural validation of a target-grid response. Throws with a specific reason. */
@@ -202,6 +206,18 @@ export function validateGrid(value: unknown): OmniGridderGrid {
       fail(`coordinate "${key}" has a non-finite value`)
     }
   }
+
+  // dim_names must name real axes whose lengths agree with shape —
+  // destinationCells is computed from shape, so an inconsistent response
+  // would misreport job size (or embed a grid the worker rejects) with no
+  // failure at this boundary.
+  g.dim_names.forEach((dim, i) => {
+    const axis = (g.coordinates as Record<string, unknown>)[dim]
+    if (!Array.isArray(axis)) fail(`dim_names[${i}] "${dim}" has no coordinate axis`)
+    if (axis.length !== (g.shape as number[])[i]) {
+      fail(`axis "${dim}" has ${axis.length} values but shape[${i}] is ${(g.shape as number[])[i]}`)
+    }
+  })
 
   return g as OmniGridderGrid
 }

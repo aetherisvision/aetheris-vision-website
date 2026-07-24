@@ -166,6 +166,13 @@ export async function submitRegridBatch(
     }
   }
 
+  // A catalog row with no allowed methods is OUR misconfiguration — fail
+  // loudly before it becomes an `undefined` method in a job spec.
+  if (dataset.allowedMethods.length === 0) {
+    console.error(`omni-gridder submit: dataset "${dataset.id}" has no allowed methods`)
+    return { ok: false, status: 500, error: 'showcase dataset catalog is misconfigured' }
+  }
+
   const requestedMethods =
     body.methods && body.methods.length > 0 ? body.methods : [dataset.allowedMethods[0]]
   // Dedupe before validation/submission — {methods:["bilinear","bilinear"]}

@@ -14,9 +14,11 @@ import {
 // the error paths, not just the happy one: a validator whose rejections are
 // untested is a validator nobody knows still rejects.
 
+// Internally consistent: shape must agree with the axis lengths, because
+// validateGrid enforces it (destinationCells is computed from shape).
 const validGrid = (): OmniGridderGrid => ({
   name: "gfs-hgt500-utm-target",
-  shape: [140, 200],
+  shape: [3, 3],
   crs: "EPSG:32614",
   dim_names: ["y", "x"],
   coordinates: {
@@ -54,6 +56,7 @@ describe("toJobDstGrid produces the worker's dst_grid contract", () => {
     const g: OmniGridderGrid = {
       ...validGrid(),
       crs: "EPSG:4326",
+      shape: [2, 2],
       dim_names: ["lat", "lon"],
       coordinates: { lat: [33, 34], lon: [-104, -103] },
     };
@@ -65,6 +68,16 @@ describe("toJobDstGrid produces the worker's dst_grid contract", () => {
     });
   });
 
+  it("rejects a mixed axis pair rather than embedding it", () => {
+    // {y, lon} is contract drift between the two families, not a grid —
+    // it must fail here, not half-work in the worker.
+    const g: OmniGridderGrid = {
+      ...validGrid(),
+      coordinates: { y: [1, 2, 3], lon: [-104, -103, -102] },
+    };
+    expect(() => toJobDstGrid(g)).toThrow(/no embeddable axis pair.*y, lon/);
+  });
+
   it("throws a specific error when no embeddable axis pair exists", () => {
     // A response with axis names this seam does not model must fail HERE,
     // not in the worker after the job was already accepted.
@@ -73,6 +86,18 @@ describe("toJobDstGrid produces the worker's dst_grid contract", () => {
       coordinates: { pix: [1, 2, 3] },
     };
     expect(() => toJobDstGrid(g)).toThrow(/no embeddable axis pair.*pix/);
+  });
+});
+
+describe("validateGrid enforces shape/axis consistency", () => {
+  it("rejects an axis whose length disagrees with shape", () => {
+    const g = { ...validGrid(), shape: [140, 200] };
+    expect(() => validateGrid(g)).toThrow(/axis "y" has 3 values but shape\[0\] is 140/);
+  });
+
+  it("rejects dim_names naming an axis that coordinates does not carry", () => {
+    const g = { ...validGrid(), dim_names: ["y", "time"] };
+    expect(() => validateGrid(g)).toThrow(/"time" has no coordinate axis/);
   });
 });
 
