@@ -24,14 +24,44 @@ import type { RegridMethod } from './omni-gridder-proxy'
  */
 export type DemoGeometry = 'rectilinear' | 'geostationary-swath'
 
-export interface DemoTargetGrid {
-  /** West, South, East, North in degrees. */
-  bbox: [number, number, number, number]
-  /** Uniform spacing in degrees, both axes. */
-  resolutionDeg: number
-  /** Human-readable region name, for the UI. */
-  region: string
-}
+/**
+ * A showcase destination grid.
+ *
+ * Modelled as a discriminated union rather than one shape with optional
+ * `crs`/`resolutionMeters` fields, so the invalid states are unrepresentable:
+ * with optional fields, "resolution is degrees unless crs is set, in which
+ * case it's metres" is an invariant living in a comment, and nothing stops a
+ * row from setting a projected CRS with a 0.03 spacing that silently means
+ * 3 cm. The tag forces the author to say which they meant.
+ *
+ * - `geographic` — lat/lon axes built here, in degrees.
+ * - `projected`  — built by og-server's `POST /v1/target-grids`, which owns
+ *   the PROJ math. Spacing is in the target CRS's native units (metres), and
+ *   `crs` may be the convenience key `"utm"` (auto-zone from the bbox
+ *   centroid; the response carries the resolved concrete EPSG code, never the
+ *   unresolved alias).
+ */
+export type DemoTargetGrid =
+  | {
+      kind: 'geographic'
+      /** West, South, East, North in degrees. */
+      bbox: [number, number, number, number]
+      /** Uniform spacing in degrees, both axes. */
+      resolutionDeg: number
+      /** Human-readable region name, for the UI. */
+      region: string
+    }
+  | {
+      kind: 'projected'
+      /** West, South, East, North in degrees (EPSG:4326), same as geographic. */
+      bbox: [number, number, number, number]
+      /** PROJ-acceptable CRS, or the convenience key `"utm"` / `"utm_auto"`. */
+      crs: string
+      /** Spacing in the target CRS's native units — metres for a projected CRS. */
+      resolutionMeters: number
+      /** Human-readable region name, for the UI. */
+      region: string
+    }
 
 export interface DemoDataset {
   id: string
@@ -97,12 +127,37 @@ export const DEMO_DATASETS: DemoDataset[] = [
     units: 'm',
     geometry: 'rectilinear',
     nativeResolution: '0.25° global',
-    target: { bbox: [-125, 24, -66, 49], resolutionDeg: 0.5, region: 'CONUS' },
+    target: { kind: 'geographic', bbox: [-125, 24, -66, 49], resolutionDeg: 0.5, region: 'CONUS' },
     // Rectilinear source: every method applies, which is what makes this the
     // dataset that can show a true three-way method comparison.
     allowedMethods: ['nearest', 'bilinear', 'conservative'],
     demonstrates:
       'Three-way method comparison on a smooth field, with conservation residual — the accuracy story.',
+  },
+  {
+    id: 'gfs-hgt500-utm',
+    uri: 'gs://esmai-dev-esmai-objects/demo/hgt500_2026070706_f006.nc',
+    label: 'GFS 500 hPa — onto a projected UTM grid',
+    source: 'NOAA GFS — global forecast model, +006 h',
+    variable: 'hgt500',
+    units: 'm',
+    geometry: 'rectilinear',
+    nativeResolution: '0.25° global',
+    // Same source field as `gfs-hgt500`, different DESTINATION CRS — which is
+    // the point: it isolates the projection axis from the method axis. The
+    // zone is resolved server-side from the bbox centroid, and the returned
+    // grid carries the concrete EPSG code rather than the "utm" alias, so the
+    // artifact records which zone was actually used.
+    target: {
+      kind: 'projected',
+      bbox: [-104, 33, -94, 40],
+      crs: 'utm',
+      resolutionMeters: 5000,
+      region: 'Southern Great Plains (UTM auto-zone)',
+    },
+    allowedMethods: ['nearest', 'bilinear', 'conservative'],
+    demonstrates:
+      'The same field onto a projected CRS — target-grid generation and zone selection happen in the engine, not the client.',
   },
   {
     id: 'goes18-abi-c13',
@@ -116,6 +171,7 @@ export const DEMO_DATASETS: DemoDataset[] = [
     // Proven values from the multi-satellite staging run: 0.03° over
     // -135..-100 E, 20..50 N is ~1.17M destination cells.
     target: {
+      kind: 'geographic',
       bbox: [-135, 20, -100, 50],
       resolutionDeg: 0.03,
       region: 'Western CONUS / eastern Pacific',
@@ -134,6 +190,7 @@ export const DEMO_DATASETS: DemoDataset[] = [
     geometry: 'geostationary-swath',
     nativeResolution: '2 km at nadir',
     target: {
+      kind: 'geographic',
       bbox: [70, 49, 106, 62],
       resolutionDeg: 0.02,
       region: 'Central Asia / southern Siberia',
@@ -160,9 +217,16 @@ export function datasetById(id: string | undefined): DemoDataset | null {
   return DEMO_DATASETS.find((d) => d.id === id) ?? null
 }
 
-/** Every URI the catalog can serve — the SSRF allowlist for compare_uri. */
+/**
+ * Every URI the catalog can serve — the SSRF allowlist for compare_uri.
+ *
+ * Deduplicated: two datasets may legitimately share a source URI when they
+ * differ only in destination (the same GFS field onto a geographic and a
+ * projected grid), and the allowlist is a set of permitted URIs, not a list of
+ * datasets.
+ */
 export function allowedInputUris(): string[] {
-  return DEMO_DATASETS.map((d) => d.uri)
+  return [...new Set(DEMO_DATASETS.map((d) => d.uri))]
 }
 
 /**
@@ -195,6 +259,17 @@ const MAX_DESTINATION_CELLS = 4_000_000
  * identical submissions must produce byte-identical numbers.
  */
 export function buildTargetGrid(dataset: DemoDataset): { lat: number[]; lon: number[] } {
+  if (dataset.target.kind !== 'geographic') {
+    // Projected grids are og-server's to build — it owns the PROJ math, and
+    // reimplementing zone selection or a projected axis walk here would be a
+    // second, quietly-diverging implementation of something the engine
+    // already does correctly. Callers must branch on `kind`; reaching here
+    // with a projected target is a caller bug, so it throws rather than
+    // falling back to a degrees interpretation of a metres spacing.
+    throw new Error(
+      `dataset ${dataset.id}: target is projected (${dataset.target.crs}) — build it via og-server POST /v1/target-grids, not locally`,
+    )
+  }
   const { bbox, resolutionDeg } = dataset.target
   const [west, south, east, north] = bbox
 

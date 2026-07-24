@@ -12,8 +12,13 @@ import {
 import type { RegridMethod } from "@/lib/omni-gridder-proxy";
 
 const gfs = () => datasetById("gfs-hgt500") as DemoDataset;
+const gfsUtm = () => datasetById("gfs-hgt500-utm") as DemoDataset;
 const goes = () => datasetById("goes18-abi-c13") as DemoDataset;
 const himawari = () => datasetById("himawari9-ahi-c13") as DemoDataset;
+
+/** Datasets whose grid this module builds; projected ones are og-server's. */
+const geographicDatasets = () =>
+  DEMO_DATASETS.filter((d) => d.target.kind === "geographic");
 
 describe("showcase dataset catalog", () => {
   it("serves a rectilinear model field and two geostationary satellites from different agencies", () => {
@@ -31,15 +36,25 @@ describe("showcase dataset catalog", () => {
     expect(agencies.size).toBeGreaterThanOrEqual(2);
   });
 
-  it("gives every dataset a distinct id and URI", () => {
+  it("gives every dataset a distinct id", () => {
     const ids = DEMO_DATASETS.map((d) => d.id);
-    const uris = DEMO_DATASETS.map((d) => d.uri);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(new Set(uris).size).toBe(uris.length);
   });
 
-  it("exposes exactly the catalogued URIs as the SSRF allowlist", () => {
-    expect(allowedInputUris().sort()).toEqual(DEMO_DATASETS.map((d) => d.uri).sort());
+  it("allows two datasets to share a source URI when they differ in destination", () => {
+    // Deliberate: `gfs-hgt500` and `gfs-hgt500-utm` are the SAME field onto
+    // different target CRSs. The dataset id — not the URI — is the identity
+    // here, because what distinguishes them is where the data is going, not
+    // where it came from.
+    const shared = DEMO_DATASETS.filter((d) => d.uri === gfs().uri);
+    expect(shared.length).toBeGreaterThan(1);
+    expect(new Set(shared.map((d) => d.id)).size).toBe(shared.length);
+  });
+
+  it("exposes the catalogued URIs as a deduplicated SSRF allowlist", () => {
+    const allowlist = allowedInputUris();
+    expect(new Set(allowlist).size).toBe(allowlist.length);
+    expect(new Set(allowlist)).toEqual(new Set(DEMO_DATASETS.map((d) => d.uri)));
   });
 
   it("names a default dataset that exists", () => {
@@ -147,7 +162,7 @@ describe("buildTargetGrid", () => {
   });
 
   it("never overshoots the bbox", () => {
-    for (const dataset of DEMO_DATASETS) {
+    for (const dataset of geographicDatasets()) {
       const [west, south, east, north] = dataset.target.bbox;
       const { lat, lon } = buildTargetGrid(dataset);
       expect(lat[0]).toBeGreaterThanOrEqual(south);
@@ -158,7 +173,8 @@ describe("buildTargetGrid", () => {
   });
 
   it("produces strictly increasing axes at the catalogued spacing", () => {
-    for (const dataset of DEMO_DATASETS) {
+    for (const dataset of geographicDatasets()) {
+      if (dataset.target.kind !== "geographic") continue; // narrowing for TS
       const { lat, lon } = buildTargetGrid(dataset);
       for (const axis of [lat, lon]) {
         expect(axis.length).toBeGreaterThan(1);
@@ -172,10 +188,38 @@ describe("buildTargetGrid", () => {
   });
 
   it("keeps every catalogued grid under the showcase cell cap", () => {
-    for (const dataset of DEMO_DATASETS) {
+    for (const dataset of geographicDatasets()) {
       const { lat, lon } = buildTargetGrid(dataset);
       expect(lat.length * lon.length).toBeLessThanOrEqual(4_000_000);
     }
+  });
+
+  it("refuses to build a projected grid locally", () => {
+    // og-server owns the PROJ math. Building it here would be a second,
+    // quietly-diverging implementation — and a metres spacing read as degrees
+    // is a bug that does not announce itself, so this must throw rather than
+    // fall back.
+    expect(() => buildTargetGrid(gfsUtm())).toThrow(/POST \/v1\/target-grids/);
+  });
+});
+
+describe("the projected row isolates the CRS axis", () => {
+  it("uses the same source field as the geographic row, differing only in destination", () => {
+    // A comparison that changed the field AND the CRS at once would confound
+    // two variables; the showcase claim is "same data, same method, different
+    // target CRS".
+    expect(gfsUtm().uri).toBe(gfs().uri);
+    expect(gfsUtm().variable).toBe(gfs().variable);
+    expect(gfsUtm().allowedMethods).toEqual(gfs().allowedMethods);
+    expect(gfsUtm().target.kind).toBe("projected");
+    expect(gfs().target.kind).toBe("geographic");
+  });
+
+  it("specifies its spacing in metres, not degrees", () => {
+    const target = gfsUtm().target;
+    if (target.kind !== "projected") throw new Error("expected a projected target");
+    expect(target.resolutionMeters).toBeGreaterThan(100);
+    expect(target.crs).toMatch(/^utm/);
   });
 });
 
@@ -183,9 +227,15 @@ describe("buildTargetGrid error paths", () => {
   // A malformed catalog entry is a server bug. It must fail loudly at build
   // time rather than asking og-server to materialize a degenerate or enormous
   // array — so these paths get their own tests, not just the happy path.
-  const withTarget = (target: Partial<DemoDataset["target"]>): DemoDataset => ({
+  type GeographicTarget = Extract<DemoDataset["target"], { kind: "geographic" }>;
+  const baseTarget = (): GeographicTarget => {
+    const t = gfs().target;
+    if (t.kind !== "geographic") throw new Error("gfs-hgt500 must have a geographic target");
+    return t;
+  };
+  const withTarget = (patch: Partial<Omit<GeographicTarget, "kind">>): DemoDataset => ({
     ...gfs(),
-    target: { ...gfs().target, ...target },
+    target: { ...baseTarget(), ...patch },
   });
 
   it("rejects a non-positive or non-finite resolution", () => {
