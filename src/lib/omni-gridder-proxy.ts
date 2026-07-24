@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server'
-import { allowedInputUris } from './og-demo-inputs'
+import {
+  DEMO_DATASETS,
+  allowedInputUris,
+  buildTargetGrid,
+  datasetById,
+  methodRefusalReason,
+} from './og-demo-inputs'
 import {
   getJobStatus,
   submitJob,
@@ -45,13 +51,28 @@ export function proxyErrorResponse(err: ProxyError): NextResponse {
 
 // ---- Submit ----------------------------------------------------------------
 
-export type RegridMethod = 'nearest' | 'bilinear' | 'conservative'
-const VALID_METHODS: RegridMethod[] = ['nearest', 'bilinear', 'conservative']
+/**
+ * Methods the showcase can request. `ewa` (Elliptical Weighted Averaging) is
+ * the swath resampler — it is the method for satellite geolocation, and is
+ * meaningless on a rectilinear source, which is why validity is per-dataset
+ * (see `DemoDataset.allowedMethods`) and not a single global list.
+ */
+export type RegridMethod = 'nearest' | 'bilinear' | 'conservative' | 'ewa'
+const VALID_METHODS: RegridMethod[] = ['nearest', 'bilinear', 'conservative', 'ewa']
 
 export interface SubmitRequestBody {
-  /** One or more methods to run against the same input+grid. Defaults to ['bilinear']. */
+  /** One or more methods to run against the same dataset. Defaults to the dataset's first allowed method. */
   methods?: string[]
-  /** Must be one of the server allowlist; defaults to the first allowlisted URI. */
+  /**
+   * Dataset id from the showcase catalog. The client names a dataset; it never
+   * supplies a URI or a destination grid (SSRF / resource-exhaustion).
+   */
+  datasetId?: string
+  /**
+   * @deprecated Superseded by `datasetId`. Still accepted so an in-flight page
+   * load from before this change keeps working: it is resolved against the
+   * catalog by URI and rejected if it does not match a catalogued dataset.
+   */
   inputUri?: string
 }
 
@@ -63,6 +84,10 @@ export interface SubmittedJob {
 export interface SubmitResult {
   jobs: SubmittedJob[]
   inputUri: string
+  /** Which catalog dataset actually ran — the client should render what was computed, not what it asked for. */
+  datasetId: string
+  /** Destination cell count, so the UI can state the size of the job honestly rather than implying instant work. */
+  destinationCells: number
   workerTriggered: boolean
 }
 
@@ -81,17 +106,18 @@ export interface SubmitResult {
  */
 export type BudgetCheck = () => Promise<ProxyError | null>
 
-// 0.5° CONUS grid, generated server-side (never client-supplied — same SSRF/
-// resource-exhaustion reasoning as the input allowlist: an arbitrary dst_grid
-// from the client could ask og-server to materialize an enormous output
-// array). lat 24..49 step 0.5 = 51 points; lon -125..-66 step 0.5 = 119 points.
-function buildConusGrid(): { lat: number[]; lon: number[] } {
-  const lat: number[] = []
-  for (let i = 0; i <= 50; i++) lat.push(Math.round((24 + i * 0.5) * 1000) / 1000)
-  const lon: number[] = []
-  for (let i = 0; i <= 118; i++) lon.push(Math.round((-125 + i * 0.5) * 1000) / 1000)
-  return { lat, lon }
-}
+// The destination grid is generated server-side from the dataset catalog —
+// never client-supplied (same SSRF / resource-exhaustion reasoning as the
+// input allowlist: an arbitrary dst_grid could ask og-server to materialize an
+// enormous output array). See `buildTargetGrid` in ./og-demo-inputs.
+//
+// It replaced a hard-coded 0.5° CONUS grid, which it reproduces exactly for
+// the `gfs-hgt500` entry (lat 24..49 step 0.5 = 51 points; lon -125..-66 step
+// 0.5 = 119 points). That equivalence matters beyond tidiness: the weight
+// cache is keyed on the destination axes, so a grid that differed even in the
+// last decimal would silently orphan every cached operator built before this
+// change. Pinned by `buildTargetGrid reproduces the legacy CONUS grid` in
+// og-demo-inputs.test.ts.
 
 /**
  * Validate a submit request, optionally enforce a caller-supplied budget, then
@@ -109,8 +135,27 @@ export async function submitRegridBatch(
     return { ok: false, status: 500, error: 'OG_GCS_STAGING_BUCKET is not set' }
   }
 
+  // Resolve the dataset FIRST: it decides the destination grid and which
+  // methods are even meaningful, so method validation cannot be done against a
+  // global list ahead of it.
+  let dataset = datasetById(body.datasetId)
+  if (body.datasetId && !dataset) {
+    return { ok: false, status: 400, error: `Unknown dataset "${body.datasetId}"` }
+  }
+  if (!dataset && body.inputUri) {
+    // Deprecated URI form: resolve it against the catalog rather than trusting
+    // it. An allowlisted URI with no catalog row would have no target grid.
+    dataset = DEMO_DATASETS.find((d) => d.uri === body.inputUri) ?? null
+    if (!dataset) {
+      return { ok: false, status: 400, error: 'input URI is not in the server allowlist' }
+    }
+  }
+  if (!dataset) {
+    return { ok: false, status: 500, error: 'showcase dataset catalog is empty' }
+  }
+
   const requestedMethods =
-    body.methods && body.methods.length > 0 ? body.methods : ['bilinear']
+    body.methods && body.methods.length > 0 ? body.methods : [dataset.allowedMethods[0]]
   // Dedupe before validation/submission — {methods:["bilinear","bilinear"]}
   // would otherwise submit the same jobId twice and schedule duplicate polling
   // for what is really a single job. Preserve request order.
@@ -123,15 +168,25 @@ export async function submitRegridBatch(
       error: `Invalid method "${invalidMethod}" — must be one of ${VALID_METHODS.join(', ')}`,
     }
   }
-  if (methods.length > VALID_METHODS.length) {
+  // Per-dataset compatibility. The UI disables these combinations, but a
+  // UI-only matrix is a suggestion — refuse them here too, and return the
+  // ENGINE'S reason rather than a generic 400, because "why not" is the
+  // interesting part of this product.
+  for (const method of methods as RegridMethod[]) {
+    const refusal = methodRefusalReason(dataset, method)
+    if (refusal) {
+      return {
+        ok: false,
+        status: 400,
+        error: `"${method}" is not valid for ${dataset.label}. ${refusal}`,
+      }
+    }
+  }
+  if (methods.length > dataset.allowedMethods.length) {
     return { ok: false, status: 400, error: 'Too many methods requested' }
   }
 
-  const allowlist = allowedInputUris()
-  const inputUri = body.inputUri ?? allowlist[0]
-  if (!allowlist.includes(inputUri)) {
-    return { ok: false, status: 400, error: 'input URI is not in the server allowlist' }
-  }
+  const inputUri = dataset.uri
 
   // Budget / rate-class gate: after validation, before any external call — an
   // invalid request must never consume budget.
@@ -140,7 +195,20 @@ export async function submitRegridBatch(
     if (budgetError) return { ok: false, ...budgetError }
   }
 
-  const dstGrid = buildConusGrid()
+  // Built from the catalog, never from the client. A throw here means a
+  // malformed catalog entry (bad bbox/resolution, or a grid above the cell
+  // cap) — a SERVER bug, not a client one, so it must not be reported as a
+  // 400. Caught separately from the submission block below so the two failure
+  // modes stay distinguishable in logs.
+  let dstGrid: { lat: number[]; lon: number[] }
+  try {
+    dstGrid = buildTargetGrid(dataset)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error(`omni-gridder submit: invalid catalog entry — ${message}`)
+    return { ok: false, status: 500, error: 'showcase dataset catalog is misconfigured' }
+  }
+
   const batchSuffix = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 
   try {
@@ -171,7 +239,13 @@ export async function submitRegridBatch(
 
     return {
       ok: true,
-      data: { jobs: submitted, inputUri, workerTriggered: workerTrigger.triggered },
+      data: {
+        jobs: submitted,
+        inputUri,
+        datasetId: dataset.id,
+        destinationCells: dstGrid.lat.length * dstGrid.lon.length,
+        workerTriggered: workerTrigger.triggered,
+      },
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
