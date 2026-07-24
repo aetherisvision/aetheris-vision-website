@@ -10,6 +10,7 @@ import {
   generateTargetGrid,
   getJobStatus,
   submitJob,
+  toJobDstGrid,
   triggerWorkerRun,
   type OmniGridderJobStatus,
 } from './omni-gridder-client'
@@ -218,7 +219,10 @@ export async function submitRegridBatch(
         bbox: dataset.target.bbox,
         resolution: dataset.target.resolutionMeters,
       })
-      dstGrid = grid
+      // The response is NOT job-embeddable as-is: its projected axes live
+      // under coordinates.y/x, while the worker's dst_grid contract reads
+      // lat/lon. toJobDstGrid is the rename seam.
+      dstGrid = toJobDstGrid(grid)
       destinationCells = grid.shape.reduce((a, b) => a * b, 1)
     } catch (err) {
       // Upstream: og-server unreachable, unauthenticated, or returning a grid

@@ -1,8 +1,14 @@
 import { describe, it, expect } from "vitest";
-import { validateGrid, type OmniGridderGrid } from "@/lib/omni-gridder-client";
+import {
+  toJobDstGrid,
+  validateGrid,
+  type OmniGridderGrid,
+} from "@/lib/omni-gridder-client";
 
-// `POST /v1/target-grids` returns a grid that is embedded verbatim as a regrid
-// job's `dst_grid`. It crosses a process boundary, so a 200 is not evidence the
+// `POST /v1/target-grids` returns a grid that is validated, then converted by
+// `toJobDstGrid` into the `dst_grid` shape a job spec embeds (the response's
+// projected axes live under coordinates.y/x; the worker reads lat/lon). It
+// crosses a process boundary, so a 200 is not evidence the
 // body has the shape we are about to pass on — and a malformed grid handed to
 // og-server fails later, further away, with a worse message. These tests cover
 // the error paths, not just the happy one: a validator whose rejections are
@@ -30,6 +36,43 @@ describe("validateGrid accepts a well-formed grid", () => {
     // along rather than be stripped or rejected.
     const g = { ...validGrid(), some_future_field: { nested: true } };
     expect(validateGrid(g)).toMatchObject({ crs: "EPSG:32614" });
+  });
+});
+
+describe("toJobDstGrid produces the worker's dst_grid contract", () => {
+  it("renames projected y/x axes to lat/lon and carries crs", () => {
+    const g = validGrid();
+    expect(toJobDstGrid(g)).toEqual({
+      name: "gfs-hgt500-utm-target",
+      crs: "EPSG:32614",
+      lat: g.coordinates.y,
+      lon: g.coordinates.x,
+    });
+  });
+
+  it("passes geographic lat/lon axes through under the same keys", () => {
+    const g: OmniGridderGrid = {
+      ...validGrid(),
+      crs: "EPSG:4326",
+      dim_names: ["lat", "lon"],
+      coordinates: { lat: [33, 34], lon: [-104, -103] },
+    };
+    expect(toJobDstGrid(g)).toEqual({
+      name: g.name,
+      crs: "EPSG:4326",
+      lat: [33, 34],
+      lon: [-104, -103],
+    });
+  });
+
+  it("throws a specific error when no embeddable axis pair exists", () => {
+    // A response with axis names this seam does not model must fail HERE,
+    // not in the worker after the job was already accepted.
+    const g: OmniGridderGrid = {
+      ...validGrid(),
+      coordinates: { pix: [1, 2, 3] },
+    };
+    expect(() => toJobDstGrid(g)).toThrow(/no embeddable axis pair.*pix/);
   });
 });
 

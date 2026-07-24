@@ -131,6 +131,40 @@ export async function generateTargetGrid(req: TargetGridRequest): Promise<OmniGr
   return validateGrid(await res.json())
 }
 
+/**
+ * The axis-array shape `JobSpec.params.dst_grid` requires: the worker's
+ * `parse_dst_grid` (og-process) reads the two separable axes from `lat`/`lon`
+ * regardless of interpretation — a projected grid puts its native-unit
+ * `y`/`x` axes under those same keys and carries `crs` to govern how they are
+ * read. See the C2 contract comment on `parse_dst_grid`.
+ */
+export interface JobDstGrid {
+  name: string
+  crs: string
+  lat: number[]
+  lon: number[]
+}
+
+/**
+ * Converts a `/v1/target-grids` response into the `dst_grid` shape a job spec
+ * embeds. The response names its coordinate axes per CRS family (`y`/`x` when
+ * projected, `lat`/`lon` when geographic); the worker's job contract uses
+ * `lat`/`lon` for both, so this is the one place the rename happens. Passing
+ * the response through verbatim instead fails in the worker with
+ * "dst_grid.lat array required" — after the job was accepted.
+ */
+export function toJobDstGrid(grid: OmniGridderGrid): JobDstGrid {
+  const axes = grid.coordinates
+  const lat = axes.y ?? axes.lat
+  const lon = axes.x ?? axes.lon
+  if (!lat || !lon) {
+    throw new Error(
+      `target grid "${grid.name}" has no embeddable axis pair — coordinates carry [${Object.keys(axes).join(', ')}], expected y/x or lat/lon`,
+    )
+  }
+  return { name: grid.name, crs: grid.crs, lat, lon }
+}
+
 /** Structural validation of a target-grid response. Throws with a specific reason. */
 export function validateGrid(value: unknown): OmniGridderGrid {
   // Annotated on the VARIABLE, not just the arrow: TypeScript only treats a
