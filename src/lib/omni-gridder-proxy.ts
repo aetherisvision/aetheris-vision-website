@@ -7,6 +7,7 @@ import {
   methodRefusalReason,
 } from './og-demo-inputs'
 import {
+  generateTargetGrid,
   getJobStatus,
   submitJob,
   triggerWorkerRun,
@@ -195,18 +196,55 @@ export async function submitRegridBatch(
     if (budgetError) return { ok: false, ...budgetError }
   }
 
-  // Built from the catalog, never from the client. A throw here means a
-  // malformed catalog entry (bad bbox/resolution, or a grid above the cell
-  // cap) — a SERVER bug, not a client one, so it must not be reported as a
-  // 400. Caught separately from the submission block below so the two failure
-  // modes stay distinguishable in logs.
-  let dstGrid: { lat: number[]; lon: number[] }
-  try {
-    dstGrid = buildTargetGrid(dataset)
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    console.error(`omni-gridder submit: invalid catalog entry — ${message}`)
-    return { ok: false, status: 500, error: 'showcase dataset catalog is misconfigured' }
+  // The destination grid comes from the catalog, never from the client — and
+  // for a PROJECTED target it comes from og-server, which owns the PROJ math.
+  //
+  // A throw in the geographic branch means a malformed catalog entry (bad
+  // bbox/resolution, or a grid above the cell cap) — a SERVER bug, not a
+  // client one, so it must not be reported as a 400. The projected branch can
+  // additionally fail on a network/auth problem reaching og-server, which is
+  // also not the caller's fault. Both are caught here, separately from the
+  // submission block below, so the failure modes stay distinguishable in logs.
+  let dstGrid: unknown
+  let destinationCells: number
+
+  if (dataset.target.kind === 'projected') {
+    // Note the units: `resolutionMeters`, because the target CRS is projected.
+    // The tagged union is what keeps this from silently being read as degrees.
+    try {
+      const grid = await generateTargetGrid({
+        name: `${dataset.id}-target`,
+        crs: dataset.target.crs,
+        bbox: dataset.target.bbox,
+        resolution: dataset.target.resolutionMeters,
+      })
+      dstGrid = grid
+      destinationCells = grid.shape.reduce((a, b) => a * b, 1)
+    } catch (err) {
+      // Upstream: og-server unreachable, unauthenticated, or returning a grid
+      // that failed validation. Reported as 502 — distinct from a catalog bug
+      // below — because "the engine did not answer" and "our catalog is wrong"
+      // want different responses from whoever is looking at the logs.
+      const message = err instanceof Error ? err.message : String(err)
+      console.error(`omni-gridder submit: target-grid generation failed for ${dataset.id} — ${message}`)
+      return {
+        ok: false,
+        status: 502,
+        error: 'the regridding engine could not generate the destination grid',
+      }
+    }
+  } else {
+    try {
+      const grid = buildTargetGrid(dataset)
+      dstGrid = grid
+      destinationCells = grid.lat.length * grid.lon.length
+    } catch (err) {
+      // A malformed catalog entry (bad bbox/resolution, or above the cell cap)
+      // is OUR bug, not the caller's, so it is never reported as a 400.
+      const message = err instanceof Error ? err.message : String(err)
+      console.error(`omni-gridder submit: invalid catalog entry — ${message}`)
+      return { ok: false, status: 500, error: 'showcase dataset catalog is misconfigured' }
+    }
   }
 
   const batchSuffix = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
@@ -243,7 +281,7 @@ export async function submitRegridBatch(
         jobs: submitted,
         inputUri,
         datasetId: dataset.id,
-        destinationCells: dstGrid.lat.length * dstGrid.lon.length,
+        destinationCells,
         workerTriggered: workerTrigger.triggered,
       },
     }
