@@ -4,6 +4,7 @@ name: Mirror to GitLab
 # recovery repository to GitHub's complete branch-and-tag state.
 on:
   push:
+  create:
   delete:
   schedule:
     - cron: '17 5 * * *'
@@ -29,11 +30,14 @@ jobs:
       - name: Check out the canonical branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: main
+          ref: ${{ github.event.repository.default_branch }}
           fetch-depth: 0
 
       - name: Fetch the complete GitHub ref set
         run: |
+          set -euo pipefail
+          git for-each-ref --format='delete %(refname)' refs/mirror/heads |
+            git update-ref --stdin
           git fetch --force --prune --prune-tags origin \
             '+refs/heads/*:refs/mirror/heads/*' \
             '+refs/tags/*:refs/tags/*'
