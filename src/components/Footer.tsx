@@ -1,13 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
-import { SITE } from "@/lib/constants";
+import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE } from "@/lib/constants";
 import { BRAND_LOGO } from "@/lib/brand";
 import { LockClosedIcon } from "@heroicons/react/24/outline";
 
 const footerLinks = [
   { label: "Agentic OG", href: "/agentic-og" },
   { label: "About", href: "/about" },
-  { label: "Capabilities", href: "/capabilities" },
+  { label: "Request Capability Statement", href: CAPABILITY_STATEMENT_REQUEST_HREF },
   { label: "Portfolio", href: "/portfolio" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },

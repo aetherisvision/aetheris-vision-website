@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import ContactForm from "@/components/ContactForm";
 import FadeIn from "@/components/FadeIn";
 import { CalendarDaysIcon, ClipboardDocumentIcon, PhoneIcon } from "@heroicons/react/24/outline";
-import { SITE } from "@/lib/constants";
+import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE } from "@/lib/constants";
 
 export const metadata = {
   title: `Contact | ${SITE.name}`,
@@ -49,7 +49,7 @@ export default function ContactPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {/* Form */}
-            <div className="md:col-span-2">
+            <div id="contact-form" className="md:col-span-2 scroll-mt-28">
               <Suspense
                 fallback={
                   <div
@@ -117,10 +117,10 @@ export default function ContactPage() {
                     <p>U.S. Government Secret Clearance (held)</p>
                   </div>
                   <a
-                    href="/capabilities"
+                    href={CAPABILITY_STATEMENT_REQUEST_HREF}
                     className="inline-block mt-3 text-xs text-blue-400 hover:text-blue-300 transition"
                   >
-                    View Capabilities Statement →
+                    Request Capability Statement →
                   </a>
                 </div>
               </div>

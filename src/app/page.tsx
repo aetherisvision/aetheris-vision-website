@@ -1,6 +1,6 @@
 import { ArrowRightIcon, GlobeAltIcon, AcademicCapIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
-import { SITE } from "@/lib/constants";
+import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE } from "@/lib/constants";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
@@ -278,8 +278,8 @@ export default async function Home() {
                     <p className="text-gray-400 font-light leading-relaxed text-sm">
                       SAM.gov registered, SDVOSB/VOSB eligible, U.S. Government Secret clearance held. Ready to work directly with agencies on specialized weather, AI, and defense system requirements.
                     </p>
-                    <a href="/capabilities" className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition mt-4">
-                      View capabilities statement <ArrowRightIcon className="h-3.5 w-3.5" />
+                    <a href={CAPABILITY_STATEMENT_REQUEST_HREF} className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition mt-4">
+                      Request capability statement <ArrowRightIcon className="h-3.5 w-3.5" />
                     </a>
                   </div>
                 </div>

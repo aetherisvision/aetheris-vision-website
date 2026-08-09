@@ -9,7 +9,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
-import { SITE, SAM } from "@/lib/constants";
+import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE, SAM } from "@/lib/constants";
 
 const DOC_REFERENCE = "AV-SVC-2026";
 
@@ -189,10 +189,10 @@ export default function ServicesPage() {
                   ))}
                 </div>
                 <a
-                  href="/capabilities"
+                  href={CAPABILITY_STATEMENT_REQUEST_HREF}
                   className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition"
                 >
-                  View the full capabilities statement <ArrowRightIcon className="h-3.5 w-3.5" />
+                  Request the capability statement <ArrowRightIcon className="h-3.5 w-3.5" />
                 </a>
               </div>
             </section>

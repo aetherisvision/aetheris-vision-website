@@ -7,12 +7,13 @@ import Image from "next/image";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import { BRAND_LOGO } from "@/lib/brand";
+import { CAPABILITY_STATEMENT_REQUEST_HREF } from "@/lib/constants";
 
 const navLinks = [
   { label: "Agentic OG", href: "/agentic-og" },
   { label: "About", href: "/about" },
   { label: "Services", href: "/services" },
-  { label: "Capabilities", href: "/capabilities" },
+  { label: "Request Statement", href: CAPABILITY_STATEMENT_REQUEST_HREF },
   { label: "Portfolio", href: "/portfolio" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
@@ -37,7 +38,6 @@ export default function Navbar() {
     if (href === "/agentic-og") return pathname.startsWith("/agentic-og");
     if (href === "/blog") return pathname.startsWith("/blog");
     if (href === "/about") return pathname === "/about";
-    if (href === "/capabilities") return pathname === "/capabilities";
     if (href === "/performance") return pathname === "/performance";
     if (href === "/metrics") return pathname === "/metrics";
     if (href === "/portfolio") return pathname.startsWith("/portfolio");

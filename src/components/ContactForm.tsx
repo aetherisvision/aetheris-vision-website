@@ -17,6 +17,7 @@ const requirementTypes = [
   "Website Maintenance",
   "Meteorology / AI Consulting",
   "Federal Contracting",
+  "Capability Statement Request",
   "Other",
 ];
 
@@ -94,14 +95,20 @@ export default function ContactForm() {
   // we surface a clear "unavailable" notice pointing visitors to the phone /
   // scheduling alternatives instead of silently failing.
 
-  // Optional prefill of the message field from a ?topic= (or ?subject=)
-  // query param, e.g. /contact?topic=Capabilities%20Statement%20PDF%20Request.
+  // Optional prefill from query params so focused calls to action can open a
+  // ready-to-send request while still letting the visitor add context.
   const searchParams = useSearchParams();
   const prefillTopic =
     searchParams.get("topic")?.trim() || searchParams.get("subject")?.trim() || "";
+  const requestedRequirement = searchParams.get("requirement")?.trim() || "";
+  const prefillRequirement = requirementTypes.includes(requestedRequirement)
+    ? requestedRequirement
+    : "";
 
   const [fields, setFields] = useState<Fields>(() =>
-    prefillTopic ? { ...EMPTY, message: prefillTopic } : EMPTY,
+    prefillTopic || prefillRequirement
+      ? { ...EMPTY, requirement: prefillRequirement, message: prefillTopic }
+      : EMPTY,
   );
   const [touched, setTouched] = useState<Partial<Record<keyof FieldErrors, boolean>>>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error" | "unavailable">("idle");

@@ -2,7 +2,7 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
-import { SITE, SAM } from "@/lib/constants";
+import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE, SAM } from "@/lib/constants";
 
 export const metadata = {
   title: `About | ${SITE.name}`,
@@ -225,10 +225,10 @@ export default function AboutPage() {
                 Book a Consultation
               </a>
               <a
-                href="/capabilities"
+                href={CAPABILITY_STATEMENT_REQUEST_HREF}
                 className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 px-8 text-sm font-medium text-white hover:bg-white/5 transition"
               >
-                View Capabilities Statement
+                Request Capability Statement
               </a>
             </div>
           </FadeIn>

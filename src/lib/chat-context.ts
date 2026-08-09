@@ -149,7 +149,7 @@ The company was founded by an AMS Certified Consulting Meteorologist (CCM) with 
 ## Key Pages
 
 - **/portfolio** — Web development packages, pricing, and demo sites
-- **/capabilities** — Full capabilities statement for federal procurement
+- **/capabilities** — Public federal-capabilities overview; the PDF capability statement is available through a request form
 - **/about** — Founder background and company philosophy
 - **/book** — Book a free discovery call (Cal.com)
 - **/intake** — Project intake form for web development

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { posts, getPostBySlug, getPrevNextPosts, getPostISODate, parsePostDate } from "@/lib/posts";
-import { SITE, SAM } from "@/lib/constants";
+import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE, SAM } from "@/lib/constants";
 import { publisherRef } from "@/lib/jsonld";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -162,10 +162,10 @@ export default async function BlogPost({ params }: Props) {
             </div>
             <div className="flex flex-col sm:flex-row gap-3 shrink-0">
               <a
-                href="/capabilities"
+                href={CAPABILITY_STATEMENT_REQUEST_HREF}
                 className="inline-flex h-10 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
               >
-                View Capabilities
+                Request Capability Statement
               </a>
               <a
                 href="/contact"

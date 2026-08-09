@@ -160,10 +160,24 @@ describe("ContactForm — blur validation", () => {
 
 describe("ContactForm — query param prefill", () => {
   it("prefills the message field from the ?topic= param", () => {
-    holder.params = new URLSearchParams("topic=Capabilities Statement PDF Request");
+    holder.params = new URLSearchParams("topic=Please send me the Aetheris Vision capability statement.");
     render(<ContactForm />);
     const message = document.getElementById("message") as HTMLTextAreaElement;
-    expect(message.value).toBe("Capabilities Statement PDF Request");
+    expect(message.value).toBe("Please send me the Aetheris Vision capability statement.");
+  });
+
+  it("prefills a recognized requirement from the ?requirement= param", () => {
+    holder.params = new URLSearchParams("requirement=Capability Statement Request");
+    render(<ContactForm />);
+    const requirement = document.getElementById("requirement") as HTMLSelectElement;
+    expect(requirement.value).toBe("Capability Statement Request");
+  });
+
+  it("ignores an unrecognized requirement from the query string", () => {
+    holder.params = new URLSearchParams("requirement=Not A Real Category");
+    render(<ContactForm />);
+    const requirement = document.getElementById("requirement") as HTMLSelectElement;
+    expect(requirement.value).toBe("");
   });
 
   it("prefills the message field from the ?subject= param", () => {

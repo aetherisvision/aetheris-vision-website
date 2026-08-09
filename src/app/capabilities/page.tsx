@@ -1,9 +1,8 @@
 import type { ReactNode } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { SITE, SAM } from "@/lib/constants";
+import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE, SAM } from "@/lib/constants";
 
-const PDF_REQUEST_HREF = "/contact?topic=Capabilities%20Statement%20PDF%20Request";
 const DOC_REFERENCE = "AV-CS-2026";
 const DOC_REVISION = "Rev. June 2026";
 
@@ -218,7 +217,7 @@ export default function CapabilitiesPage() {
                   See Agentic OG →
                 </a>
                 <a
-                  href={PDF_REQUEST_HREF}
+                  href={CAPABILITY_STATEMENT_REQUEST_HREF}
                   className="inline-flex h-11 items-center gap-2 rounded-md border border-white/20 px-6 text-sm font-medium text-white hover:bg-white/10 transition"
                 >
                   Request Statement (PDF)
@@ -308,7 +307,7 @@ export default function CapabilitiesPage() {
                 Book a Consultation
               </a>
               <a
-                href={PDF_REQUEST_HREF}
+                href={CAPABILITY_STATEMENT_REQUEST_HREF}
                 className="inline-flex h-11 items-center justify-center text-sm text-gray-300 hover:text-white transition underline underline-offset-4 decoration-white/30"
               >
                 Request Capabilities Statement (PDF)

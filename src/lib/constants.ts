@@ -13,6 +13,10 @@ export const SITE = {
     "Agentic OG: a cloud-native, agentic regridding engine for Earth-observation and model data — built by a career atmospheric scientist, not just engineers guessing at grids. Veteran-owned, based in Mustang, OK.",
 } as const;
 
+/** Public request flow for the current capability statement PDF. */
+export const CAPABILITY_STATEMENT_REQUEST_HREF =
+  "/contact?requirement=Capability%20Statement%20Request&topic=Please%20send%20me%20the%20Aetheris%20Vision%20capability%20statement.#contact-form";
+
 /** Federal contracting registration data */
 export const SAM = {
   uei: "ZM8QWJ4ABWZ9",
