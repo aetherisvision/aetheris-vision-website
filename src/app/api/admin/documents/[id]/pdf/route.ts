@@ -187,7 +187,7 @@ export async function GET(
 
     <!-- Footer -->
     <div class="doc-footer">
-      <span>Aetheris Vision LLC · marston@aetherisvision.com</span>
+      <span>Aetheris Vision LLC · contact@aetherisvision.com</span>
       <span>aetherisvision.com</span>
     </div>
   </div>

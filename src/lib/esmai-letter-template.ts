@@ -68,7 +68,7 @@ const BRAND = {
   projectFull:  'Environmental & Spatial Meteorology AI',
   principalName:'Marston Ward',
   principalTitle:'Principal — Applied Meteorology & AI',
-  email:        'marston@aetherisvision.com',
+  email:        'contact@aetherisvision.com',
   website:      'aetherisvision.com',
   location:     'Mustang, OK',
   phone:        '',           // add if/when a business line is set up

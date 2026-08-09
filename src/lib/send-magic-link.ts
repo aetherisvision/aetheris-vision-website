@@ -30,6 +30,7 @@ export async function sendMagicLink(email: string): Promise<void> {
   await resend.emails.send({
     from: 'Aetheris Vision <noreply@aetherisvision.com>',
     to: email,
+    replyTo: 'contact@aetherisvision.com',
     subject: 'Your Aetheris Vision login link',
     html: `
       <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;">

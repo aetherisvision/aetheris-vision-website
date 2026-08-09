@@ -24,5 +24,5 @@ export const SAM = {
   naicsPrimary: "541690",
   setAside: "SDVOSB / VOSB",
   samUrl: "https://sam.gov",
-  federalEmail: "marston@aetherisvision.com",
+  federalEmail: SITE.email,
 } as const;

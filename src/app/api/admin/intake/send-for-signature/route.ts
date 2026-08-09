@@ -44,7 +44,7 @@ function markdownToHtml(markdown: string, title: string, signerName: string, isS
     <h1>Statement of Work</h1>
     <div class="meta">
       Aetheris Vision LLC &nbsp;·&nbsp; 210 N Mustang Mall Terrace PMB 29, Mustang, OK 73064<br>
-      marston@aetherisvision.com &nbsp;·&nbsp; aetherisvision.com
+      contact@aetherisvision.com &nbsp;·&nbsp; aetherisvision.com
     </div>
   </div>
   <div class="content"><p>${body}</p></div>

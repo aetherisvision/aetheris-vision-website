@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
       try {
         await resend.emails.send({
           from: 'system@aetherisvision.com',
-          to: ['marston@aetherisvision.com'],
+          to: ['contact@aetherisvision.com'],
           subject: `✅ SOW Signed (Pro Bono) — ${client_name}`,
           text: `${contact_name} at ${client_name} has signed the pro bono SOW for "${project_name}".\n\nNo invoice has been generated — this is a complimentary engagement.\n\nProject ID: ${project_id} | Client ID: ${client_id}`,
         })
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
     try {
       await resend.emails.send({
         from: 'system@aetherisvision.com',
-        to: ['marston@aetherisvision.com'],
+        to: ['contact@aetherisvision.com'],
         subject: `✅ SOW Signed — ${client_name} | Invoice Sent`,
         text: `${contact_name} at ${client_name} has signed the SOW for "${project_name}".\n\nA 50% deposit invoice ($${(depositCents / 100).toLocaleString()}) has been sent to ${client_email} via Stripe.\n\nInvoice: ${finalizedInvoice.hosted_invoice_url ?? 'N/A'}\n\nProject ID: ${project_id} | Client ID: ${client_id}`,
       })

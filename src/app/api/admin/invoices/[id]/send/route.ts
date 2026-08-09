@@ -88,6 +88,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   await resend.emails.send({
     from: 'Aetheris Vision <noreply@aetherisvision.com>',
     to: inv.client_email,
+    replyTo: 'contact@aetherisvision.com',
     subject: `Invoice ${inv.number} from Aetheris Vision — ${amount}`,
     html: `
       <!DOCTYPE html>
@@ -146,7 +147,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
                   <p style="color:#94a3b8;font-size:13px;line-height:1.6;margin:0;">
                     Questions? Reply to this email or reach us at
-                    <a href="mailto:marston@aetherisvision.com" style="color:#5BA8D9;text-decoration:none;">marston@aetherisvision.com</a>
+                    <a href="mailto:contact@aetherisvision.com" style="color:#5BA8D9;text-decoration:none;">contact@aetherisvision.com</a>
                   </p>
                 </td>
               </tr>
