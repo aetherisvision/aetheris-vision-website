@@ -3,17 +3,44 @@ import Image from "next/image";
 const comparisonFrames = [
   {
     label: "Before",
-    title: "Geographic source view",
-    detail: "0.5° latitude–longitude grid · EPSG:4326",
+    title: "Original source grid",
+    detail: "Geographic coordinates",
     src: "/images/omni-gridder/source-grid-plate-carree.png",
     alt: "Synthetic CONUS temperature field shown on its original latitude-longitude grid before projection",
   },
   {
     label: "After",
-    title: "Projected delivery view",
-    detail: "Lambert Conformal target · same field",
+    title: "Delivery-ready grid",
+    detail: "Same field, transformed for use",
     src: "/images/omni-gridder/target-grid-lambert.png",
     alt: "The same synthetic CONUS temperature field transformed into a Lambert Conformal map projection",
+  },
+];
+
+const transformationCapabilities = [
+  {
+    title: "Coordinate systems",
+    detail: "Geographic and projected systems, including Lambert, polar, Albers, LAEA, and UTM.",
+  },
+  {
+    title: "Grid structures",
+    detail: "Rectilinear, curvilinear, point-based, and HEALPix geometries.",
+  },
+  {
+    title: "Resolution changes",
+    detail: "Fine-to-coarse aggregation and coarse-to-fine interpolation.",
+  },
+  {
+    title: "Data behavior",
+    detail: "Continuous fields, categories, and quantities whose totals must be preserved.",
+  },
+  {
+    title: "Remapping methods",
+    detail: "Automatic selection or nearest-neighbor, bilinear, conservative, and EWA methods.",
+  },
+  {
+    title: "Source-to-target workflows",
+    detail: "A fit-for-purpose path selected for the geometry and meaning of the data.",
   },
 ];
 
@@ -47,21 +74,31 @@ export default function OmniGridderComparison() {
         ))}
       </div>
 
-      <div className="mt-6 grid gap-4 rounded-xl border border-blue-500/15 bg-blue-500/[0.04] p-5 text-sm md:grid-cols-[1.5fr_1fr]">
-        <p className="font-light leading-relaxed text-gray-300">
-          The data field is held constant so the geometry change is easy to judge.
-          Both images are deterministic outputs from Omni Gridder&apos;s Rust plotting
-          engine and are retained as pixel-regression fixtures.
+      <div className="mt-8">
+        <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-blue-400">
+          Transformation coverage
         </p>
-        <div className="space-y-2 font-mono text-xs text-gray-400">
-          <p><span className="text-blue-400">Changed:</span> coordinate geometry</p>
-          <p><span className="text-blue-400">Preserved:</span> values and missing-data mask</p>
+        <h3 className="mt-2 text-xl font-medium text-white">
+          Built for more than one type of grid change
+        </h3>
+        <p className="mt-2 max-w-3xl text-sm font-light leading-relaxed text-gray-400">
+          Omni Gridder handles a broad range of Earth-data transformations while
+          matching the method to the geometry and the meaning of the data.
+        </p>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {transformationCapabilities.map((capability) => (
+            <div
+              key={capability.title}
+              className="rounded-xl border border-white/10 bg-white/[0.025] p-4"
+            >
+              <h4 className="text-sm font-medium text-white">{capability.title}</h4>
+              <p className="mt-2 text-xs font-light leading-relaxed text-gray-400">
+                {capability.detail}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
-      <p className="mt-3 text-xs leading-relaxed text-gray-500">
-        The white area over the central Rockies is an intentional missing-data test,
-        not a rendering defect. This is a controlled engineering result, not customer data.
-      </p>
     </div>
   );
 }
