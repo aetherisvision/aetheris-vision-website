@@ -39,7 +39,6 @@ export default function Navbar() {
     if (href === "/about") return pathname === "/about";
     if (href === "/capabilities") return pathname === "/capabilities";
     if (href === "/performance") return pathname === "/performance";
-    if (href === "/api-docs") return pathname === "/api-docs";
     if (href === "/metrics") return pathname === "/metrics";
     if (href === "/portfolio") return pathname.startsWith("/portfolio");
     if (href === "/contact") return pathname === "/contact";
@@ -80,7 +79,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-6 text-sm">
+        <div className="hidden lg:flex items-center gap-6 text-sm">
           <nav className="flex gap-6">
             {navLinks.map((link) => (
               <a
@@ -101,18 +100,20 @@ export default function Navbar() {
             ))}
           </nav>
           <a
-            href="/contact?topic=Agentic%20OG%20API%20Access"
+            href="/book"
             className="inline-flex h-8 items-center justify-center rounded-md bg-white px-4 text-xs font-medium text-black hover:bg-gray-200 transition"
           >
-            Request API Access
+            Schedule a Conversation
           </a>
         </div>
 
         {/* Mobile Hamburger */}
         <button
-          className="md:hidden text-gray-400 hover:text-white transition p-2 -mr-2"
+          className="lg:hidden text-gray-400 hover:text-white transition p-2 -mr-2"
           onClick={() => setMobileOpen((prev) => !prev)}
-          aria-label="Toggle navigation"
+          aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+          aria-controls="mobile-navigation"
+          aria-expanded={mobileOpen}
         >
           {mobileOpen ? (
             <XMarkIcon className="h-6 w-6" />
@@ -124,7 +125,7 @@ export default function Navbar() {
 
       {/* Mobile Menu Panel */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-white/5 bg-background/97 backdrop-blur-md">
+        <div id="mobile-navigation" className="lg:hidden border-t border-white/5 bg-background/97 backdrop-blur-md">
           <nav className="mx-auto max-w-5xl px-6 py-4 flex flex-col gap-1">
             {navLinks.map((link) => (
               <a

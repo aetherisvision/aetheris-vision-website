@@ -150,7 +150,7 @@ const mockPlugins: Plugin[] = [
   },
   {
     id: "integrations",
-    name: "API Integrations",
+    name: "Systems Integrations",
     description: "Connect with Slack, Stripe, Mailchimp, and 100+ services",
     enabled: false,
     category: "Integrations", 

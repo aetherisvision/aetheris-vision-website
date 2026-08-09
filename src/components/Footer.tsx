@@ -11,7 +11,7 @@ const footerLinks = [
   { label: "Portfolio", href: "/portfolio" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
-  { label: "Request API Access", href: "/contact?topic=Agentic%20OG%20API%20Access" },
+  { label: "Schedule a Conversation", href: "/book" },
 ];
 
 export default function Footer() {

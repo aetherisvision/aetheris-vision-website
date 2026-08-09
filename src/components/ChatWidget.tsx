@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { XMarkIcon, ChatBubbleOvalLeftEllipsisIcon, PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import { SITE } from "@/lib/constants";
 
@@ -19,6 +20,7 @@ const SUGGESTIONS = [
 ];
 
 export default function ChatWidget() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -127,6 +129,8 @@ export default function ChatWidget() {
       send(input);
     }
   }
+
+  if (pathname === "/preview") return null;
 
   return (
     <>

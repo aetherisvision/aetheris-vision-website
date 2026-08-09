@@ -112,7 +112,7 @@ const competencies = [
     items: [
       "Custom applications built to streamline real operational workflows (Next.js, React, TypeScript)",
       "High-performance, mobile-first sites with a strong focus on user experience",
-      "API integration: connecting and optimizing disparate business systems",
+      "Systems integration: connecting and optimizing disparate business tools",
       "Ongoing maintenance model: sites that improve and adapt over time without constant rebuilds",
     ],
   },

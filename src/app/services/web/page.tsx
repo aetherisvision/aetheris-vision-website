@@ -39,7 +39,7 @@ const services = [
     icon: ChartBarIcon,
     title: "Integrations & Automation",
     description:
-      "We connect your site to the tools you already use (CRMs, scheduling platforms, payment processors, and e-signature services) through their APIs. That removes manual data entry and keeps everything in sync.",
+      "We connect your site to the tools you already use, including CRMs, scheduling platforms, payment processors, and e-signature services. That removes manual data entry and keeps everything in sync.",
   },
   {
     icon: WrenchScrewdriverIcon,

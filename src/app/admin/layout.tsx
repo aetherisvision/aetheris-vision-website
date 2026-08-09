@@ -18,8 +18,6 @@ const NAV = [
 
 const MORE_NAV = [
   { href: '/performance', label: 'Performance' },
-  { href: '/api-docs',    label: 'API Docs' },
-  { href: '/metrics',     label: 'Metrics' },
 ]
 
 const dark = {

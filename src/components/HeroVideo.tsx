@@ -2,10 +2,12 @@
 
 import { useCallback, useRef, useState } from "react";
 
-const VIDEOS = ["/hero-1.mp4", "/hero-2.mp4", "/hero-3.mp4"];
+const VIDEOS = ["/hero-1.mp4", "/hero-2.mp4"];
 
 export default function HeroVideo() {
-  const [index, setIndex] = useState(() => Math.floor(Math.random() * VIDEOS.length));
+  // Keep the first render deterministic so the server and client hydrate with
+  // the same source. Subsequent clips still rotate when playback completes.
+  const [index, setIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const advance = useCallback(() => {
@@ -19,9 +21,10 @@ export default function HeroVideo() {
       autoPlay
       muted
       playsInline
+      preload="metadata"
       onEnded={advance}
       aria-hidden="true"
-      className="absolute inset-0 -z-20 h-full w-full object-cover opacity-30"
+      className="absolute inset-0 -z-20 h-full w-full object-cover opacity-30 motion-reduce:hidden"
     >
       <source src={VIDEOS[index]} type="video/mp4" />
     </video>

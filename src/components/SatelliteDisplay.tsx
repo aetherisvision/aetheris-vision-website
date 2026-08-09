@@ -66,7 +66,7 @@ export default function SatelliteDisplay({ sources }: { sources: SatelliteSource
   const current = sources[index];
 
   return (
-    <div className="absolute inset-y-0 right-8 z-0 hidden w-[48vw] max-w-[640px] items-center justify-center md:flex">
+    <div className="absolute inset-y-0 right-8 z-0 hidden w-[48vw] max-w-[640px] items-center justify-center lg:flex">
       <div className="relative h-[420px] w-[420px] lg:h-[500px] lg:w-[500px]">
         <div
           className="relative h-full w-full"

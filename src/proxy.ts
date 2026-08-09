@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/rate-limit'
+import { hasPreviewSession } from '@/lib/preview-auth'
 
 /**
  * Verify the admin session cookie using Web Crypto (Edge Runtime compatible).
@@ -26,41 +27,6 @@ async function isAdminSession(request: NextRequest): Promise<boolean> {
   return diff === 0
 }
 
-
-/**
- * HTTP Basic Auth site lock, checked in Edge Runtime (Web Crypto, no Buffer).
- * Returns a 401 response if the request should be blocked, or null to let
- * it through. Unset PREVIEW_PASSWORD disables the lock entirely — the site
- * is open by default and must be explicitly locked.
- */
-function checkSiteLock(request: NextRequest): NextResponse | null {
-  const password = process.env.PREVIEW_PASSWORD
-  if (!password) return null
-
-  const authHeader = request.headers.get('authorization')
-  if (authHeader?.startsWith('Basic ')) {
-    const decoded = atob(authHeader.slice('Basic '.length))
-    const separatorIndex = decoded.indexOf(':')
-    const suppliedPassword = separatorIndex === -1 ? decoded : decoded.slice(separatorIndex + 1)
-    if (constantTimeEqual(suppliedPassword, password)) {
-      return null
-    }
-  }
-
-  return new NextResponse('Authentication required', {
-    status: 401,
-    headers: { 'WWW-Authenticate': 'Basic realm="Aetheris Vision"' },
-  })
-}
-
-function constantTimeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false
-  let diff = 0
-  for (let i = 0; i < a.length; i++) {
-    diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
-  }
-  return diff === 0
-}
 
 function buildCsp(nonce: string): string {
   const allowEval = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
@@ -103,13 +69,21 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Site lock: the public site is intentionally gated while it's retooled
-  // around Agentic OG. /admin/* keeps its own passphrase gate below and
-  // stays reachable through this check (rather than being blocked by it)
-  // so admin work isn't blocked by the site lock.
-  if (!pathname.startsWith('/admin')) {
-    const lockResponse = checkSiteLock(request)
-    if (lockResponse) return lockResponse
+  // Site lock: the public site remains gated while Agentic OG is prepared for
+  // reliable demos and published results. A signed cookie avoids browser-native
+  // Basic Auth dialogs, which do not work consistently in embedded browsers.
+  // /admin/* retains its separate passphrase gate below.
+  const isPreviewAccessRoute =
+    pathname === '/preview' || pathname === '/api/preview/auth'
+  if (
+    process.env.PREVIEW_PASSWORD &&
+    !pathname.startsWith('/admin') &&
+    !isPreviewAccessRoute &&
+    !(await hasPreviewSession(request))
+  ) {
+    const loginUrl = new URL('/preview', request.url)
+    loginUrl.searchParams.set('next', `${pathname}${request.nextUrl.search}`)
+    return NextResponse.redirect(loginUrl)
   }
 
   // Generate nonce for CSP and security

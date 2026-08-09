@@ -297,7 +297,7 @@ export default function PerformancePage() {
               🔬 Performance Engineering Notes
             </h3>
             <ul className="space-y-2 text-slate-700 dark:text-slate-300">
-              <li>• Metrics collected using native Performance API and PerformanceObserver</li>
+              <li>• Metrics collected using native browser performance tools</li>
               <li>• Real-time measurement with no synthetic testing</li>
               <li>• Grades based on Core Web Vitals thresholds from Google</li>
               <li>• Memory metrics available in Chromium-based browsers</li>

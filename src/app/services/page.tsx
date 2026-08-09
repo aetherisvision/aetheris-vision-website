@@ -96,7 +96,7 @@ export default function ServicesPage() {
                 <p className="max-w-2xl text-gray-400 font-light leading-relaxed mb-10">
                   Moving satellite and NWP data onto whatever grid a downstream
                   system needs — with an expert in the loop at every job, not a
-                  black-box API. Every job carries diagnostics, not just output.
+                  black-box handoff. Every job carries diagnostics, not just output.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
                   {ogWorkflow.map((stage) => (

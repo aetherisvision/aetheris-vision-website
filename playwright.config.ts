@@ -1,4 +1,23 @@
+import { createHmac } from "node:crypto";
 import { defineConfig, devices } from "@playwright/test";
+
+const previewPassword = process.env.PREVIEW_PASSWORD;
+const previewCookies = previewPassword
+  ? [
+      {
+        name: "av-preview-session",
+        value: createHmac("sha256", previewPassword)
+          .update("preview-session")
+          .digest("hex"),
+        domain: "127.0.0.1",
+        path: "/",
+        httpOnly: true,
+        secure: false,
+        sameSite: "Lax" as const,
+        expires: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+      },
+    ]
+  : [];
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -7,11 +26,7 @@ export default defineConfig({
   reporter: "list",
   use: {
     baseURL: "http://localhost:3000",
-    // Basic-auth site lock
-    httpCredentials: {
-      username: "",
-      password: process.env.PREVIEW_PASSWORD ?? "marston-av",
-    },
+    storageState: { cookies: previewCookies, origins: [] },
     trace: "on-first-retry",
   },
   projects: [
