@@ -95,7 +95,7 @@ export const tiers: Tier[] = [
       "Dedicated project timeline (4-8 weeks)",
     ],
     highlight: false,
-    cta: "Schedule Consultation",
+    cta: "Consultation",
   },
 ];
 

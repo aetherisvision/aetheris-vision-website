@@ -58,7 +58,6 @@ export const metadata: Metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
 };
 
 export default async function RootLayout({
@@ -71,7 +70,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className="dark scroll-smooth">
       <body
-        className={`${inter.className} ${newsreader.variable} bg-black text-gray-100 antialiased min-h-screen selection:bg-gray-800 selection:text-white`}
+        className={`${inter.className} ${newsreader.variable} min-h-[100dvh] bg-black text-gray-100 antialiased selection:bg-gray-800 selection:text-white`}
       >
         {/* Skip to main content — accessibility */}
         <a

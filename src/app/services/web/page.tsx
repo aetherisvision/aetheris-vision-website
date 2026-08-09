@@ -93,10 +93,10 @@ export default function WebServicesPage() {
     <div className="flex flex-col min-h-[100dvh] bg-[#050505]">
       <Navbar />
 
-      <main id="main" className="flex-1 pt-28 pb-20">
+      <main id="main" className="flex-1 pb-20 pt-24 sm:pt-28">
 
         {/* Hero */}
-        <section className="mx-auto max-w-5xl px-6 pb-20">
+        <section className="mx-auto max-w-5xl px-4 pb-20 sm:px-6">
           <FadeIn>
             <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">
               Web Development
@@ -129,7 +129,7 @@ export default function WebServicesPage() {
 
         {/* Services Grid */}
         <section className="border-t border-white/5 bg-background py-20">
-          <div className="mx-auto max-w-5xl px-6">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6">
             <FadeIn>
               <h2 className="text-2xl md:text-3xl font-semibold text-white mb-12">What We Build</h2>
             </FadeIn>
@@ -151,7 +151,7 @@ export default function WebServicesPage() {
 
         {/* Tech Stack */}
         <section className="border-t border-white/5 py-20">
-          <div className="mx-auto max-w-5xl px-6">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6">
             <FadeIn>
               <h2 className="text-2xl md:text-3xl font-semibold text-white mb-3">Our Stack</h2>
               <p className="text-gray-400 font-light mb-10">
@@ -173,14 +173,14 @@ export default function WebServicesPage() {
 
         {/* Process */}
         <section className="border-t border-white/5 bg-background py-20">
-          <div className="mx-auto max-w-5xl px-6">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6">
             <FadeIn>
               <h2 className="text-2xl md:text-3xl font-semibold text-white mb-3">How It Works</h2>
               <p className="text-gray-400 font-light mb-12">
                 A clear, step-by-step process. Fixed price, no surprises.
               </p>
             </FadeIn>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-5">
               {process.map((p, i) => (
                 <FadeIn key={p.step} delay={i * 0.07} direction="up">
                   <div className="relative">
@@ -196,9 +196,9 @@ export default function WebServicesPage() {
 
         {/* About the builder */}
         <section className="border-t border-white/5 py-20">
-          <div className="mx-auto max-w-5xl px-6">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6">
             <FadeIn>
-              <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-8 md:p-12">
+              <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 sm:p-8 md:p-12">
                 <p className="text-xs font-semibold tracking-widest text-blue-500 uppercase mb-4">Who builds your site</p>
                 <h2 className="text-2xl md:text-3xl font-semibold text-white mb-4">
                   You work directly with the founder, not a junior dev or an overseas team.
@@ -220,7 +220,7 @@ export default function WebServicesPage() {
 
         {/* CTA */}
         <section className="border-t border-white/5 bg-background py-20">
-          <div className="mx-auto max-w-5xl px-6 text-center">
+          <div className="mx-auto max-w-5xl px-4 text-center sm:px-6">
             <FadeIn>
               <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4">Ready to get started?</h2>
               <p className="text-gray-400 font-light mb-8 max-w-xl mx-auto">

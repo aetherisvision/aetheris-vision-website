@@ -34,6 +34,17 @@ export default function Navbar() {
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMobileOpen(false), [pathname]);
 
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileOpen(false);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [mobileOpen]);
+
   function isActive(href: string) {
     if (href === "/agentic-og") return pathname.startsWith("/agentic-og");
     if (href === "/blog") return pathname.startsWith("/blog");
@@ -57,15 +68,16 @@ export default function Navbar() {
     >
       <div
         className={clsx(
-          "mx-auto max-w-5xl px-6 flex items-center justify-between transition-all duration-300",
+          "mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 transition-all duration-300 sm:px-6 lg:px-8",
           scrolled ? "h-14" : "h-16"
         )}
       >
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-3" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+        <Link href="/" className="flex shrink-0 items-center gap-3 whitespace-nowrap" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
           <Image
             src={BRAND_LOGO.markSvg}
-            alt="Aetheris Vision Logo"
+            alt=""
+            aria-hidden="true"
             width={44}
             height={44}
             className={clsx(
@@ -79,14 +91,15 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center gap-6 text-sm">
-          <nav className="flex gap-6">
+        <div className="hidden min-w-0 items-center gap-4 text-sm xl:flex 2xl:gap-6">
+          <nav aria-label="Primary navigation" className="flex min-w-0 gap-4 2xl:gap-6">
             {navLinks.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
+                aria-current={isActive(link.href) ? "page" : undefined}
                 className={clsx(
-                  "transition-colors flex flex-col items-center",
+                  "flex flex-col items-center whitespace-nowrap transition-colors",
                   isActive(link.href)
                     ? "text-white font-medium"
                     : "text-gray-400 hover:text-white"
@@ -101,15 +114,15 @@ export default function Navbar() {
           </nav>
           <a
             href="/book"
-            className="inline-flex h-8 items-center justify-center rounded-md bg-white px-4 text-xs font-medium text-black hover:bg-gray-200 transition"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-md bg-white px-4 text-xs font-medium text-black transition hover:bg-gray-200"
           >
-            Schedule a Conversation
+            Consultation
           </a>
         </div>
 
         {/* Mobile Hamburger */}
         <button
-          className="lg:hidden text-gray-400 hover:text-white transition p-2 -mr-2"
+          className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-gray-400 transition hover:bg-white/5 hover:text-white xl:hidden"
           onClick={() => setMobileOpen((prev) => !prev)}
           aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
           aria-controls="mobile-navigation"
@@ -125,15 +138,16 @@ export default function Navbar() {
 
       {/* Mobile Menu Panel */}
       {mobileOpen && (
-        <div id="mobile-navigation" className="lg:hidden border-t border-white/5 bg-background/97 backdrop-blur-md">
-          <nav className="mx-auto max-w-5xl px-6 py-4 flex flex-col gap-1">
+        <div id="mobile-navigation" className="max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-t border-white/5 bg-background/97 backdrop-blur-md xl:hidden">
+          <nav aria-label="Mobile navigation" className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4 sm:px-6">
             {navLinks.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
+                aria-current={isActive(link.href) ? "page" : undefined}
                 onClick={() => setMobileOpen(false)}
                 className={clsx(
-                  "py-3 px-2 text-sm transition border-b border-white/5 last:border-0",
+                  "flex min-h-11 items-center border-b border-white/5 px-2 py-3 text-sm transition last:border-0",
                   isActive(link.href)
                     ? "text-white font-medium"
                     : "text-gray-400 hover:text-white"
@@ -142,6 +156,13 @@ export default function Navbar() {
                 {link.label}
               </a>
             ))}
+            <a
+              href="/book"
+              onClick={() => setMobileOpen(false)}
+              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-gray-200"
+            >
+              Consultation
+            </a>
           </nav>
         </div>
       )}

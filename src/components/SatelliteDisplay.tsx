@@ -11,15 +11,32 @@ export type SatelliteSource = {
 const CYCLE_MS = 12_000;
 
 export default function SatelliteDisplay({ sources }: { sources: SatelliteSource[] }) {
+  const [enabled, setEnabled] = useState(false);
   const [index, setIndex] = useState(0);
   const [opacity, setOpacity] = useState(1);
   const [allFailed, setAllFailed] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const fadeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const failedRef = useRef<Set<number>>(new Set());
+
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const syncEnabled = () => setEnabled(desktop.matches);
+
+    syncEnabled();
+    if (typeof desktop.addEventListener === "function") {
+      desktop.addEventListener("change", syncEnabled);
+      return () => desktop.removeEventListener("change", syncEnabled);
+    }
+
+    desktop.addListener(syncEnabled);
+    return () => desktop.removeListener(syncEnabled);
+  }, []);
 
   const go = useCallback((next: number) => {
     setOpacity(0);
-    setTimeout(() => {
+    if (fadeRef.current) clearTimeout(fadeRef.current);
+    fadeRef.current = setTimeout(() => {
       setIndex(next);
       setOpacity(1);
     }, 600);
@@ -27,15 +44,18 @@ export default function SatelliteDisplay({ sources }: { sources: SatelliteSource
 
   const resetTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
-    if (sources.length <= 1) return;
+    if (!enabled || sources.length <= 1) return;
     timerRef.current = setInterval(() => {
       setIndex((i) => { go((i + 1) % sources.length); return i; });
     }, CYCLE_MS);
-  }, [sources.length, go]);
+  }, [enabled, sources.length, go]);
 
   useEffect(() => {
     resetTimer();
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (fadeRef.current) clearTimeout(fadeRef.current);
+    };
   }, [resetTimer]);
 
   const navigate = (next: number) => { go(next); resetTimer(); };
@@ -61,7 +81,7 @@ export default function SatelliteDisplay({ sources }: { sources: SatelliteSource
     failedRef.current.delete(index);
   }, [index]);
 
-  if (!sources.length) return null;
+  if (!enabled || !sources.length) return null;
 
   const current = sources[index];
 
@@ -94,23 +114,25 @@ export default function SatelliteDisplay({ sources }: { sources: SatelliteSource
               className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2"
               style={{ opacity, transition: "opacity 0.6s ease-in-out" }}
             >
-              <button onClick={prev} aria-label="Previous source" className="flex h-5 w-5 items-center justify-center rounded-full border border-white/10 bg-black/60 text-gray-400 backdrop-blur-sm hover:text-white transition-colors">‹</button>
+              <button onClick={prev} aria-label="Previous source" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-black/60 text-gray-400 backdrop-blur-sm transition-colors hover:text-white">‹</button>
               <span className="whitespace-nowrap rounded-full border border-white/10 bg-black/60 px-3 py-1 text-[11px] uppercase tracking-wider text-gray-400 backdrop-blur-sm">
                 Live · {current.label} · {current.region}
               </span>
-              <button onClick={next} aria-label="Next source" className="flex h-5 w-5 items-center justify-center rounded-full border border-white/10 bg-black/60 text-gray-400 backdrop-blur-sm hover:text-white transition-colors">›</button>
+              <button onClick={next} aria-label="Next source" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-black/60 text-gray-400 backdrop-blur-sm transition-colors hover:text-white">›</button>
             </div>
 
-            <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex gap-1.5">
+            <div className="absolute -bottom-20 left-1/2 flex -translate-x-1/2 gap-1.5">
               {sources.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => navigate(i)}
                   aria-label={`View source ${i + 1}`}
-                  className={`h-1 rounded-full transition-all duration-300 ${
-                    i === index ? "w-4 bg-white/60" : "w-1 bg-white/20 hover:bg-white/40"
-                  }`}
-                />
+                  className="group flex h-11 w-11 items-center justify-center rounded-full"
+                >
+                  <span className={`h-1 rounded-full transition-all duration-300 ${
+                    i === index ? "w-4 bg-white/60" : "w-1 bg-white/20 group-hover:bg-white/40"
+                  }`} />
+                </button>
               ))}
             </div>
           </>

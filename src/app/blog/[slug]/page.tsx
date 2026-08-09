@@ -58,7 +58,7 @@ export default async function BlogPost({ params }: Props) {
     <div className="flex flex-col min-h-[100dvh]">
       <Navbar />
 
-      <main id="main" className="flex-1 pt-32 pb-24 bg-[#050505] relative overflow-hidden">
+      <main id="main" className="flex-1 pt-24 sm:pt-32 pb-16 sm:pb-24 bg-[#050505] relative overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 -z-20">
           <Image
@@ -72,7 +72,7 @@ export default async function BlogPost({ params }: Props) {
         </div>
         <div className="absolute inset-0 bg-gradient-to-br from-[#0e1726]/60 via-black/90 to-black -z-10" />
 
-        <div className="mx-auto max-w-3xl px-6">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6">
           {/* Back link */}
           <Link
             href="/blog"

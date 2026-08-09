@@ -14,8 +14,11 @@ import Footer from "@/components/Footer";
 
 // next/image may rewrite the src through the optimizer; decode before asserting
 // so we match on the underlying asset path regardless of query-param encoding.
-function logoSrc(): string {
-  const img = screen.getAllByAltText(/Aetheris Vision Logo|Logo$/i)[0];
+function logoSrc(container?: HTMLElement): string {
+  const img = container
+    ? container.querySelector("img")
+    : screen.getAllByAltText(/Aetheris Vision Logo|Logo$/i)[0];
+  if (!img) throw new Error("Expected a rendered brand image");
   return decodeURIComponent(img.getAttribute("src") ?? "");
 }
 
@@ -25,8 +28,8 @@ describe("brand logo", () => {
   });
 
   it("Navbar renders the canonical mark from BRAND_LOGO", () => {
-    render(<Navbar />);
-    expect(logoSrc()).toContain(BRAND_LOGO.markSvg);
+    const { container } = render(<Navbar />);
+    expect(logoSrc(container)).toContain(BRAND_LOGO.markSvg);
   });
 
   it("Footer renders the canonical mark from BRAND_LOGO", () => {

@@ -73,9 +73,9 @@ export default async function Home() {
 
           <SatelliteDisplay sources={sources} />
 
-          <div className="mx-auto max-w-5xl px-6 relative z-10">
+          <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6">
             <FadeIn delay={0.2}>
-              <h1 className="text-[2.75rem] sm:text-5xl md:text-7xl font-semibold tracking-tighter text-white mb-6 leading-[1.1]">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-semibold tracking-tighter text-white mb-6 leading-[1.1]">
                 Agentic Regridding, <br className="hidden sm:block" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-av-ice to-av-light">
                   For Real Pipelines.
@@ -95,7 +95,7 @@ export default async function Home() {
                   href={CONSULTATION_HREF}
                   className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-black transition-colors hover:bg-gray-200"
                 >
-                  Schedule a Conversation
+                  Consultation
                 </a>
                 <a
                   href="#pipeline"
@@ -123,7 +123,7 @@ export default async function Home() {
           </div>
           <div className="absolute inset-0 bg-gradient-to-r from-[#101820] via-[#101820]/85 to-[#101820]/25 -z-10" />
 
-          <div className="mx-auto max-w-5xl px-6">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6">
             <FadeIn delay={0}>
               <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">How It Works</p>
               <h2 className="text-3xl md:text-5xl font-semibold text-white tracking-tight mb-12">
@@ -131,7 +131,7 @@ export default async function Home() {
               </h2>
             </FadeIn>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-4">
               {pipelineStages.map((stage, i) => (
                 <FadeIn key={stage.num} delay={0.1 + i * 0.05}>
                   <h3 className="flex items-baseline gap-3 text-white font-medium mb-3">
@@ -147,7 +147,7 @@ export default async function Home() {
 
         {/* Real Proof Section */}
         <section className="py-24 bg-background border-t border-white/5">
-          <div className="mx-auto max-w-5xl px-6">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6">
             <FadeIn>
               <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Before &amp; After</p>
               <h2 className="text-3xl md:text-5xl font-semibold text-white tracking-tight mb-5">
@@ -160,9 +160,9 @@ export default async function Home() {
             <FadeIn delay={0.1}>
               <OmniGridderComparison />
               <div className="mt-7 flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
-                <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 text-xs text-blue-300">
-                  <ShieldCheckIcon className="h-4 w-4" />
-                  Reviewed by an AMS Certified Consulting Meteorologist (CCM) with an MSc in Applied AI
+                <div className="inline-flex max-w-full items-start gap-2 rounded-2xl border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-xs text-blue-300 sm:items-center sm:rounded-full sm:py-1.5">
+                  <ShieldCheckIcon className="h-4 w-4 shrink-0" />
+                  <span>Reviewed by an AMS Certified Consulting Meteorologist (CCM) with an MSc in Applied AI</span>
                 </div>
                 <a href="/agentic-og" className="flex shrink-0 items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition">
                   Read the full technical brief <ArrowRightIcon className="h-3.5 w-3.5" />
@@ -183,7 +183,7 @@ export default async function Home() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#101820] via-[#101820]/60 to-[#101820]/20" />
           <div className="absolute inset-0 flex items-end">
-            <div className="mx-auto max-w-5xl px-6 pb-8 w-full">
+            <div className="mx-auto w-full max-w-5xl px-4 pb-8 sm:px-6">
               <FadeIn>
                 <p className="text-white font-light text-lg md:text-xl max-w-xl">
                   Every job is monitored end to end — submission, queueing, compute, and delivery — with a person accountable for the result.
@@ -195,7 +195,7 @@ export default async function Home() {
 
         {/* Why Trust This Section */}
         <section className="py-24 bg-[#111014] border-t border-white/5 relative overflow-hidden">
-          <div className="mx-auto max-w-5xl px-6 relative z-10">
+          <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6">
             <FadeIn>
               <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Why Trust This</p>
               <h2 className="text-3xl md:text-5xl font-semibold text-white tracking-tight mb-12">
@@ -290,9 +290,9 @@ export default async function Home() {
 
         {/* Contact CTA Section */}
         <section className="py-24 bg-[#111014] border-t border-white/5">
-          <div className="mx-auto max-w-5xl px-6">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6">
             <FadeIn>
-              <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-10 md:p-14 flex flex-col md:flex-row md:items-center justify-between gap-10 relative overflow-hidden">
+              <div className="relative flex flex-col justify-between gap-10 overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] p-6 sm:p-10 md:flex-row md:items-center md:p-14">
                 {/* Background — a storm watcher facing an approaching plains storm (see public/images/README.md) */}
                 <div className="absolute inset-0 rounded-2xl overflow-hidden">
                   <Image
@@ -326,7 +326,7 @@ export default async function Home() {
                     className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-white px-8 text-sm font-medium text-black hover:bg-gray-200 transition"
                   >
                     <ArrowRightIcon className="h-4 w-4" />
-                    Schedule a Conversation
+                    Consultation
                   </a>
                   <a
                     href="/contact"

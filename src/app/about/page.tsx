@@ -67,8 +67,8 @@ export default function AboutPage() {
     <div className="flex flex-col min-h-[100dvh] bg-[#050505]">
       <Navbar />
 
-      <main id="main" className="flex-1 pt-28 pb-20">
-        <div className="mx-auto max-w-5xl px-6">
+      <main id="main" className="flex-1 pt-24 sm:pt-28 pb-16 sm:pb-20">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6">
 
           {/* Editorial header */}
           <FadeIn>
@@ -222,7 +222,7 @@ export default function AboutPage() {
                 href="/book"
                 className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-black hover:bg-gray-200 transition"
               >
-                Book a Consultation
+                Consultation
               </a>
               <a
                 href={CAPABILITY_STATEMENT_REQUEST_HREF}

@@ -30,7 +30,7 @@ async function isAdminSession(request: NextRequest): Promise<boolean> {
 
 function buildCsp(nonce: string): string {
   const allowEval = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
-  return [
+  const directives = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}'${allowEval} https://analytics.google.com https://www.googletagmanager.com https://js.stripe.com https://giscus.app https://cal.com https://app.cal.com`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://giscus.app",
@@ -41,9 +41,16 @@ function buildCsp(nonce: string): string {
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
-    "frame-ancestors 'self'",
-    "upgrade-insecure-requests"
-  ].join('; ')
+    "frame-ancestors 'self'"
+  ]
+
+  // WebKit upgrades even localhost subresources when this directive is present,
+  // which breaks local development because Next.js serves HTTP locally.
+  if (process.env.NODE_ENV === 'production') {
+    directives.push("upgrade-insecure-requests")
+  }
+
+  return directives.join('; ')
 }
 
 export async function proxy(request: NextRequest) {

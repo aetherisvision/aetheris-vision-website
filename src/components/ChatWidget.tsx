@@ -27,6 +27,11 @@ export default function ChatWidget() {
   const [streaming, setStreaming] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    triggerRef.current?.setAttribute("data-chat-ready", "true");
+  }, []);
 
   useEffect(() => {
     if (open && messages.length === 0) {
@@ -45,6 +50,20 @@ export default function ChatWidget() {
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
   async function send(text: string) {
@@ -136,10 +155,13 @@ export default function ChatWidget() {
     <>
       {/* Floating button */}
       <button
+        ref={triggerRef}
+        data-chat-ready="false"
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? "Close chat" : "Open chat"}
         aria-expanded={open}
-        className="fixed bottom-6 left-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-av-mid text-white shadow-lg hover:bg-av-accent transition-colors focus:outline-none focus:ring-2 focus:ring-av-light focus:ring-offset-2 focus:ring-offset-black"
+        className="fixed left-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-av-mid text-white shadow-lg transition-colors hover:bg-av-accent focus:outline-none focus:ring-2 focus:ring-av-light focus:ring-offset-2 focus:ring-offset-black sm:left-6"
+        style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom, 0px))" }}
       >
         {open ? (
           <XMarkIcon className="h-6 w-6" />
@@ -151,10 +173,14 @@ export default function ChatWidget() {
       {/* Chat panel */}
       {open && (
         <div
-          role="region"
+          role="dialog"
           aria-label="Chat"
-          className="fixed bottom-24 left-6 z-50 flex w-[22rem] flex-col rounded-2xl border border-white/10 bg-background shadow-2xl overflow-hidden"
-          style={{ maxHeight: "min(32rem, calc(100svh - 8rem))" }}
+          aria-modal="false"
+          className="fixed left-3 right-3 z-50 flex w-auto flex-col overflow-hidden overscroll-contain rounded-2xl border border-white/10 bg-background shadow-2xl sm:left-6 sm:right-auto sm:w-[22rem]"
+          style={{
+            bottom: "calc(5.75rem + env(safe-area-inset-bottom, 0px))",
+            maxHeight: "min(32rem, calc(100dvh - 7rem))",
+          }}
         >
 
           {/* Header */}
@@ -170,14 +196,14 @@ export default function ChatWidget() {
               type="button"
               onClick={clearChat}
               aria-label="Clear chat"
-              className="rounded-lg px-2 py-1 text-xs text-gray-400 hover:bg-white/[0.06] hover:text-white transition-colors shrink-0"
+              className="flex min-h-11 shrink-0 items-center rounded-lg px-3 py-1 text-xs text-gray-400 transition-colors hover:bg-white/[0.06] hover:text-white"
             >
               Clear
             </button>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0">
+          <div aria-live="polite" className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
             {messages.map((msg, i) => (
               <div
                 key={i}
@@ -208,7 +234,7 @@ export default function ChatWidget() {
                   <button
                     key={s}
                     onClick={() => send(s)}
-                    className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-gray-300 hover:bg-white/[0.08] hover:text-white transition-colors"
+                    className="min-h-11 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-gray-300 transition-colors hover:bg-white/[0.08] hover:text-white"
                   >
                     {s}
                   </button>
@@ -228,17 +254,18 @@ export default function ChatWidget() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask about our services…"
+                aria-label="Chat message"
                 rows={1}
                 disabled={streaming}
                 maxLength={500}
-                className="flex-1 resize-none rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-av-accent/50 focus:bg-white/[0.07] transition disabled:opacity-50"
+                className="min-h-11 flex-1 resize-none rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-sm text-white placeholder-gray-600 transition focus:border-av-accent/50 focus:bg-white/[0.07] focus:outline-none disabled:opacity-50"
                 style={{ maxHeight: "6rem" }}
               />
               <button
                 onClick={() => send(input)}
                 disabled={streaming || !input.trim()}
                 aria-label="Send"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-av-mid text-white hover:bg-av-accent transition disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-av-mid text-white transition hover:bg-av-accent disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <PaperAirplaneIcon className="h-4 w-4" />
               </button>

@@ -55,8 +55,8 @@ export default function ServicesPage() {
     <div className="flex flex-col min-h-[100dvh] bg-[#050505]">
       <Navbar />
 
-      <main id="main" className="flex-1 pt-28 pb-24">
-        <div className="mx-auto max-w-6xl px-6">
+      <main id="main" className="flex-1 pb-24 pt-24 sm:pt-28">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
 
           {/* ── Document header ── */}
           <header className="mb-16">
@@ -86,8 +86,8 @@ export default function ServicesPage() {
           {/* ── 1.0 Agentic OG ── */}
           <FadeIn delay={0.05}>
             <section className="mb-8" aria-labelledby="sec-og">
-              <div className="rounded-2xl border border-blue-500/20 bg-blue-500/[0.04] p-8 md:p-12">
-                <div className="flex items-baseline gap-4 border-b border-white/15 pb-3 mb-6">
+              <div className="rounded-2xl border border-blue-500/20 bg-blue-500/[0.04] p-6 sm:p-8 md:p-12">
+                <div className="flex items-start gap-4 border-b border-white/15 pb-3 mb-6 sm:items-baseline">
                   <span className="font-mono text-sm text-blue-400">1.0</span>
                   <h2 id="sec-og" className="text-lg font-semibold text-white tracking-tight uppercase">
                     Agentic OG — Regridding as a Service
@@ -98,7 +98,7 @@ export default function ServicesPage() {
                   system needs — with an expert in the loop at every job, not a
                   black-box handoff. Every job carries diagnostics, not just output.
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
+                <div className="grid grid-cols-1 gap-6 mb-10 sm:grid-cols-2 xl:grid-cols-5">
                   {ogWorkflow.map((stage) => (
                     <div key={stage.num}>
                       <h3 className="flex items-baseline gap-3 text-white font-medium mb-2">
@@ -122,8 +122,8 @@ export default function ServicesPage() {
           {/* ── 2.0 Scientific Software & Earth-Data Consulting ── */}
           <FadeIn delay={0.1}>
             <section className="mb-8" aria-labelledby="sec-consulting">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-8 md:p-12">
-                <div className="flex items-baseline gap-4 border-b border-white/15 pb-3 mb-6">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8 md:p-12">
+                <div className="flex items-start gap-4 border-b border-white/15 pb-3 mb-6 sm:items-baseline">
                   <span className="font-mono text-sm text-blue-400">2.0</span>
                   <h2 id="sec-consulting" className="text-lg font-semibold text-white tracking-tight uppercase">
                     Scientific Software &amp; Earth-Data Consulting
@@ -160,8 +160,8 @@ export default function ServicesPage() {
           {/* ── 3.0 Federal & cleared delivery (channel layer, not a third service) ── */}
           <FadeIn delay={0.15}>
             <section className="mb-8" aria-labelledby="sec-federal">
-              <div className="rounded-2xl border border-white/5 bg-black p-8 md:p-12">
-                <div className="flex items-baseline gap-4 border-b border-white/15 pb-3 mb-6">
+              <div className="rounded-2xl border border-white/5 bg-black p-6 sm:p-8 md:p-12">
+                <div className="flex items-start gap-4 border-b border-white/15 pb-3 mb-6 sm:items-baseline">
                   <span className="font-mono text-sm text-blue-400">3.0</span>
                   <h2 id="sec-federal" className="text-lg font-semibold text-white tracking-tight uppercase">
                     Federal &amp; Cleared Delivery
@@ -201,7 +201,7 @@ export default function ServicesPage() {
           {/* ── 4.0 Custom software & web (quiet final tier) ── */}
           <FadeIn delay={0.2}>
             <section className="mb-16" aria-labelledby="sec-web">
-              <div className="flex items-baseline gap-4 border-b border-white/15 pb-3 mb-4">
+              <div className="flex items-start gap-4 border-b border-white/15 pb-3 mb-4 sm:items-baseline">
                 <span className="font-mono text-sm text-gray-500">4.0</span>
                 <h2 id="sec-web" className="text-sm font-semibold text-gray-400 tracking-tight uppercase">
                   Custom Software &amp; Web

@@ -11,13 +11,13 @@ const footerLinks = [
   { label: "Portfolio", href: "/portfolio" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
-  { label: "Schedule a Conversation", href: "/book" },
+  { label: "Consultation", href: "/book" },
 ];
 
 export default function Footer() {
   return (
     <footer className="border-t border-white/5 bg-background">
-      <div className="mx-auto max-w-5xl px-6 py-12">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Top row: logo + nav */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-10">
           {/* Logo */}
@@ -73,7 +73,7 @@ export default function Footer() {
         {/* Bottom row */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs text-gray-600">
           <span>&copy; {new Date().getFullYear()} {SITE.legalName}. All rights reserved.</span>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <span>Veteran-Owned Small Business (VOSB)</span>
             <span className="text-white/10">·</span>
             <a href="/contact" className="hover:text-gray-400 transition">Contact us</a>

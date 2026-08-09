@@ -49,17 +49,17 @@ export default function AgenticOgPage() {
     <div className="flex flex-col min-h-[100dvh] bg-[#050505]">
       <Navbar />
 
-      <main id="main" className="flex-1 pt-28 pb-24">
-        <div className="mx-auto max-w-6xl px-6">
+      <main id="main" className="flex-1 pb-16 pt-24 sm:pb-24 sm:pt-28">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
           {/* ── Document header ── */}
           <header className="mb-14">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/15 pb-3 mb-8 font-mono text-[11px] uppercase tracking-wider text-gray-500">
               <span>{SITE.legalName} · Product Brief</span>
-              <span>{DOC_REFERENCE} · Status: Private Staging Deployment</span>
+              <span className="sm:text-right">{DOC_REFERENCE} · Status: Private Staging Deployment</span>
             </div>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div className="max-w-2xl">
-                <h1 className="text-4xl md:text-5xl font-semibold text-white tracking-tight mb-4">
+                <h1 className="mb-4 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
                   Agentic OG
                 </h1>
                 <p className="text-gray-400 font-light leading-relaxed mb-4">
@@ -68,16 +68,16 @@ export default function AgenticOgPage() {
                   grid a downstream system needs, without every team reimplementing
                   interpolation math.
                 </p>
-                <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 text-xs text-blue-300">
-                  <ShieldCheckIcon className="h-4 w-4" />
-                  Reviewed by an AMS Certified Consulting Meteorologist (CCM) with an MSc in Applied AI
+                <div className="inline-flex max-w-full items-start gap-2 rounded-2xl border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-xs leading-relaxed text-blue-300 sm:rounded-full">
+                  <ShieldCheckIcon className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>Reviewed by an AMS Certified Consulting Meteorologist (CCM) with an MSc in Applied AI</span>
                 </div>
               </div>
               <a
                 href={CONSULTATION_HREF}
-                className="inline-flex h-11 items-center gap-2 rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition shrink-0"
+                className="inline-flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-md bg-white px-6 text-sm font-medium text-black transition hover:bg-gray-200 sm:w-auto"
               >
-                Schedule a Conversation
+                Consultation
               </a>
             </div>
           </header>
@@ -90,7 +90,7 @@ export default function AgenticOgPage() {
                 How a Job Runs
               </h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-4">
               {pipelineStages.map((stage) => (
                 <div key={stage.num}>
                   <h3 className="flex items-baseline gap-3 text-white font-medium mb-3">
@@ -105,8 +105,8 @@ export default function AgenticOgPage() {
 
           {/* ── 2.0 Live proof ── */}
           <section className="mb-14" aria-labelledby="sec-proof">
-            <div className="flex items-baseline gap-4 border-b border-white/15 pb-3 mb-6">
-              <span className="font-mono text-sm text-blue-400">2.0</span>
+            <div className="mb-6 flex items-start gap-4 border-b border-white/15 pb-3 sm:items-baseline">
+              <span className="shrink-0 font-mono text-sm text-blue-400">2.0</span>
               <h2 id="sec-proof" className="text-lg font-semibold text-white tracking-tight uppercase">
                 Before &amp; After: Coordinate Geometry
               </h2>
@@ -119,8 +119,8 @@ export default function AgenticOgPage() {
 
           {/* ── 3.0 Engineering facts ── */}
           <section className="mb-16" aria-labelledby="sec-engineering">
-            <div className="flex items-baseline gap-4 border-b border-white/15 pb-3 mb-6">
-              <span className="font-mono text-sm text-blue-400">3.0</span>
+            <div className="mb-6 flex items-start gap-4 border-b border-white/15 pb-3 sm:items-baseline">
+              <span className="shrink-0 font-mono text-sm text-blue-400">3.0</span>
               <h2 id="sec-engineering" className="text-lg font-semibold text-white tracking-tight uppercase">
                 Engineering Notes
               </h2>
@@ -144,7 +144,7 @@ export default function AgenticOgPage() {
                 href={CONSULTATION_HREF}
                 className="inline-flex h-11 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
               >
-                Schedule a Conversation
+                Consultation
               </a>
             </div>
           </footer>

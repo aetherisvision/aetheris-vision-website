@@ -35,8 +35,8 @@ export default function PortfolioPage() {
     <div className="flex flex-col min-h-[100dvh] bg-[#050505]">
       <Navbar />
 
-      <main id="main" className="flex-1 pt-28 pb-20">
-        <div className="mx-auto max-w-5xl px-6">
+      <main id="main" className="flex-1 pt-24 sm:pt-28 pb-16 sm:pb-20">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6">
 
           {/* ── Hero ── */}
           <FadeIn delay={0.1}>
@@ -67,7 +67,7 @@ export default function PortfolioPage() {
                 href="/book"
                 className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-black transition-colors hover:bg-gray-200"
               >
-                Book a Free Discovery Call
+                Consultation
               </a>
               <a
                 href="#demos"

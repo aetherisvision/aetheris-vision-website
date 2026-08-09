@@ -135,8 +135,8 @@ const differentiators = [
 /** Numbered section heading in the document register. */
 function SectionHeading({ id, num, title }: { id: string; num: string; title: string }) {
   return (
-    <div className="flex items-baseline gap-4 border-b border-white/15 pb-3 mb-6">
-      <span className="font-mono text-sm text-blue-400">{num}</span>
+    <div className="flex items-start gap-4 border-b border-white/15 pb-3 mb-6 sm:items-baseline">
+      <span className="shrink-0 font-mono text-sm text-blue-400">{num}</span>
       <h2 id={id} className="text-lg font-semibold text-white tracking-tight uppercase">
         {title}
       </h2>
@@ -187,8 +187,8 @@ export default function CapabilitiesPage() {
     <div className="flex flex-col min-h-[100dvh] bg-[#050505]">
       <Navbar />
 
-      <main id="main" className="flex-1 pt-28 pb-24">
-        <div className="mx-auto max-w-6xl px-6">
+      <main id="main" className="flex-1 pb-24 pt-24 sm:pt-28">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
 
           {/* ── Document header ── */}
           <header className="mb-14">
@@ -233,7 +233,7 @@ export default function CapabilitiesPage() {
               {companyData.map((item) => (
                 <div
                   key={item.label}
-                  className="grid grid-cols-[11rem_1fr] gap-4 border-b border-white/[0.07] py-2.5"
+                  className="grid grid-cols-1 gap-1 border-b border-white/[0.07] py-2.5 sm:grid-cols-[11rem_1fr] sm:gap-4"
                 >
                   <dt className="font-mono text-[11px] uppercase tracking-wider text-gray-500 pt-0.5">
                     {item.label}
@@ -304,7 +304,7 @@ export default function CapabilitiesPage() {
                 href="/book"
                 className="inline-flex h-11 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
               >
-                Book a Consultation
+                Consultation
               </a>
               <a
                 href={CAPABILITY_STATEMENT_REQUEST_HREF}

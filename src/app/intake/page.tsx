@@ -16,8 +16,8 @@ export default function IntakePage() {
     <div className="flex flex-col min-h-[100dvh] bg-[#050505]">
       <Navbar />
 
-      <main id="main" className="flex-1 pt-28 pb-20">
-        <div className="mx-auto max-w-2xl px-6">
+      <main id="main" className="flex-1 pt-24 sm:pt-28 pb-16 sm:pb-20">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6">
 
           {/* Header */}
           <FadeIn>
@@ -40,7 +40,7 @@ export default function IntakePage() {
 
           {/* Form */}
           <FadeIn delay={0.1}>
-            <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-8">
+            <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-5 sm:p-8">
               <ProjectIntakeForm />
             </div>
           </FadeIn>

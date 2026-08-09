@@ -9,7 +9,7 @@ const previewCookies = previewPassword
         value: createHmac("sha256", previewPassword)
           .update("preview-session")
           .digest("hex"),
-        domain: "127.0.0.1",
+        domain: "localhost",
         path: "/",
         httpOnly: true,
         secure: false,
@@ -32,7 +32,23 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: { ...devices["Desktop Chrome"], channel: "chromium" },
+    },
+    {
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
+    },
+    {
+      name: "webkit",
+      use: { ...devices["Desktop Safari"] },
+    },
+    {
+      name: "mobile-chrome",
+      use: { ...devices["Pixel 7"], channel: "chromium" },
+    },
+    {
+      name: "mobile-safari",
+      use: { ...devices["iPhone 13"] },
     },
   ],
   webServer: {
