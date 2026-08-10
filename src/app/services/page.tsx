@@ -11,8 +11,6 @@ import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
 import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE, SAM } from "@/lib/constants";
 
-const DOC_REFERENCE = "AV-SVC-2026";
-
 export const metadata = {
   title: `Services | ${SITE.name}`,
   description:
@@ -69,12 +67,8 @@ export default function ServicesPage() {
       <main id="main" className="flex-1 pb-24 pt-24 sm:pt-28">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
 
-          {/* ── Document header ── */}
+          {/* Hero */}
           <header className="mb-16">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/15 pb-3 mb-8 font-mono text-[11px] uppercase tracking-wider text-gray-500">
-              <span>{SITE.legalName} · Services Overview</span>
-              <span>{DOC_REFERENCE}</span>
-            </div>
             <FadeIn>
               <div className="max-w-3xl">
                 <h1 className="text-4xl md:text-6xl font-semibold text-white tracking-tight mb-6 leading-[1.1]">
@@ -94,12 +88,11 @@ export default function ServicesPage() {
             </FadeIn>
           </header>
 
-          {/* ── 1.0 Earth-data transformation ── */}
+          {/* Earth-data transformation */}
           <FadeIn delay={0.05}>
             <section className="mb-8" aria-labelledby="sec-og">
               <div className="rounded-2xl border border-blue-500/20 bg-blue-500/[0.04] p-6 sm:p-8 md:p-12">
-                <div className="flex items-start gap-4 border-b border-white/15 pb-3 mb-6 sm:items-baseline">
-                  <span className="font-mono text-sm text-blue-400">1.0</span>
+                <div className="border-b border-white/15 pb-3 mb-6">
                   <h2 id="sec-og" className="text-lg font-semibold text-white tracking-tight uppercase">
                     Earth-Data Transformation
                   </h2>
@@ -144,12 +137,11 @@ export default function ServicesPage() {
             </section>
           </FadeIn>
 
-          {/* ── 2.0 Scientific Software & Earth-Data Consulting ── */}
+          {/* Scientific software and Earth-data consulting */}
           <FadeIn delay={0.1}>
             <section className="mb-8" aria-labelledby="sec-consulting">
               <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8 md:p-12">
-                <div className="flex items-start gap-4 border-b border-white/15 pb-3 mb-6 sm:items-baseline">
-                  <span className="font-mono text-sm text-blue-400">2.0</span>
+                <div className="border-b border-white/15 pb-3 mb-6">
                   <h2 id="sec-consulting" className="text-lg font-semibold text-white tracking-tight uppercase">
                     Scientific Software &amp; Earth-Data Consulting
                   </h2>
@@ -182,12 +174,11 @@ export default function ServicesPage() {
             </section>
           </FadeIn>
 
-          {/* ── 3.0 Federal & cleared delivery (channel layer, not a third service) ── */}
+          {/* Federal and cleared delivery */}
           <FadeIn delay={0.15}>
             <section className="mb-8" aria-labelledby="sec-federal">
               <div className="rounded-2xl border border-white/5 bg-black p-6 sm:p-8 md:p-12">
-                <div className="flex items-start gap-4 border-b border-white/15 pb-3 mb-6 sm:items-baseline">
-                  <span className="font-mono text-sm text-blue-400">3.0</span>
+                <div className="border-b border-white/15 pb-3 mb-6">
                   <h2 id="sec-federal" className="text-lg font-semibold text-white tracking-tight uppercase">
                     Federal &amp; Cleared Delivery
                   </h2>
@@ -223,11 +214,10 @@ export default function ServicesPage() {
             </section>
           </FadeIn>
 
-          {/* ── 4.0 Custom software & web (quiet final tier) ── */}
+          {/* Custom software and web */}
           <FadeIn delay={0.2}>
             <section className="mb-16" aria-labelledby="sec-web">
-              <div className="flex items-start gap-4 border-b border-white/15 pb-3 mb-4 sm:items-baseline">
-                <span className="font-mono text-sm text-gray-500">4.0</span>
+              <div className="border-b border-white/15 pb-3 mb-4">
                 <h2 id="sec-web" className="text-sm font-semibold text-gray-400 tracking-tight uppercase">
                   Custom Software &amp; Web
                 </h2>
@@ -246,16 +236,16 @@ export default function ServicesPage() {
             </section>
           </FadeIn>
 
-          {/* ── Document footer / CTA ── */}
+          {/* Footer CTA */}
           <footer className="border-t border-white/15 pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-            <p className="font-mono text-[11px] uppercase tracking-wider text-gray-500">
-              {DOC_REFERENCE} · No pricing published — every engagement starts with a conversation
+            <p className="max-w-2xl text-sm font-light leading-relaxed text-gray-500">
+              Every engagement starts with a conversation about the result you need.
             </p>
             <a
-              href="/contact"
+              href="/book"
               className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-white px-8 text-sm font-medium text-black hover:bg-gray-200 transition"
             >
-              Start a Conversation
+              Discuss Your Data
             </a>
           </footer>
 

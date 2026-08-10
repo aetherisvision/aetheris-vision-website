@@ -3,9 +3,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE, SAM } from "@/lib/constants";
 
-const DOC_REFERENCE = "AV-CS-2026";
-const DOC_REVISION = "Rev. June 2026";
-
 export const metadata = {
   title: `Capabilities Statement | ${SITE.name}`,
   description:
@@ -132,11 +129,9 @@ const differentiators = [
   },
 ];
 
-/** Numbered section heading in the document register. */
-function SectionHeading({ id, num, title }: { id: string; num: string; title: string }) {
+function SectionHeading({ id, title }: { id: string; title: string }) {
   return (
-    <div className="flex items-start gap-4 border-b border-white/15 pb-3 mb-6 sm:items-baseline">
-      <span className="shrink-0 font-mono text-sm text-blue-400">{num}</span>
+    <div className="border-b border-white/15 pb-3 mb-6">
       <h2 id={id} className="text-lg font-semibold text-white tracking-tight uppercase">
         {title}
       </h2>
@@ -190,16 +185,13 @@ export default function CapabilitiesPage() {
       <main id="main" className="flex-1 pb-24 pt-24 sm:pt-28">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
 
-          {/* ── Document header ── */}
+          {/* Hero */}
           <header className="mb-14">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/15 pb-3 mb-8 font-mono text-[11px] uppercase tracking-wider text-gray-500">
-              <span>{SITE.legalName} · Contracting Reference</span>
-              <span>
-                {DOC_REFERENCE} · {DOC_REVISION}
-              </span>
-            </div>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div className="max-w-2xl">
+                <p className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-blue-400">
+                  Government Contracting
+                </p>
                 <h1 className="text-4xl md:text-5xl font-semibold text-white tracking-tight mb-4">
                   Capabilities Statement
                 </h1>
@@ -226,9 +218,9 @@ export default function CapabilitiesPage() {
             </div>
           </header>
 
-          {/* ── 1.0 Company data ── */}
+          {/* Company data */}
           <section className="mb-14" aria-labelledby="sec-company">
-            <SectionHeading id="sec-company" num="1.0" title="Company Data" />
+            <SectionHeading id="sec-company" title="Company Data" />
             <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-12">
               {companyData.map((item) => (
                 <div
@@ -244,26 +236,25 @@ export default function CapabilitiesPage() {
             </dl>
           </section>
 
-          {/* ── 2.0 / 3.0 Codes ── */}
+          {/* Contracting codes */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 mb-14">
             <section aria-labelledby="sec-naics" className="mb-14 lg:mb-0">
-              <SectionHeading id="sec-naics" num="2.0" title="NAICS Codes" />
+              <SectionHeading id="sec-naics" title="NAICS Codes" />
               <CodeTable caption="NAICS Codes" rows={naicsCodes} />
             </section>
             <section aria-labelledby="sec-psc">
-              <SectionHeading id="sec-psc" num="3.0" title="PSC / Product Service Codes" />
+              <SectionHeading id="sec-psc" title="PSC / Product Service Codes" />
               <CodeTable caption="PSC / Product Service Codes" rows={pscCodes} />
             </section>
           </div>
 
-          {/* ── 4.0 Core competencies ── */}
+          {/* Core competencies */}
           <section className="mb-14" aria-labelledby="sec-competencies">
-            <SectionHeading id="sec-competencies" num="4.0" title="Core Competencies" />
+            <SectionHeading id="sec-competencies" title="Core Competencies" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-10">
-              {competencies.map((section, i) => (
+              {competencies.map((section) => (
                 <div key={section.title}>
-                  <h3 className="flex items-baseline gap-3 text-white font-medium mb-3">
-                    <span className="font-mono text-xs text-gray-500">4.{i + 1}</span>
+                  <h3 className="text-white font-medium mb-3">
                     {section.title}
                   </h3>
                   <ul className="space-y-2 border-l border-white/10 pl-5 ml-1">
@@ -278,14 +269,13 @@ export default function CapabilitiesPage() {
             </div>
           </section>
 
-          {/* ── 5.0 Differentiators ── */}
+          {/* Differentiators */}
           <section className="mb-16" aria-labelledby="sec-differentiators">
-            <SectionHeading id="sec-differentiators" num="5.0" title="Why Agencies Work With Us" />
+            <SectionHeading id="sec-differentiators" title="Why Agencies Work With Us" />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-8">
-              {differentiators.map((d, i) => (
+              {differentiators.map((d) => (
                 <div key={d.title}>
-                  <h3 className="flex items-baseline gap-3 text-white font-medium text-sm mb-2">
-                    <span className="font-mono text-xs text-gray-500">5.{i + 1}</span>
+                  <h3 className="text-white font-medium text-sm mb-2">
                     {d.title}
                   </h3>
                   <p className="text-gray-400 text-sm font-light leading-relaxed">{d.body}</p>
@@ -294,17 +284,17 @@ export default function CapabilitiesPage() {
             </div>
           </section>
 
-          {/* ── Document footer / CTA ── */}
+          {/* Footer CTA */}
           <footer className="border-t border-white/15 pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <p className="font-mono text-[11px] uppercase tracking-wider text-gray-500">
-              {DOC_REFERENCE} · {DOC_REVISION} · UEI {SAM.uei} · CAGE {SAM.cage}
+              Active in SAM.gov · UEI {SAM.uei} · CAGE {SAM.cage}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
                 href="/book"
                 className="inline-flex h-11 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
               >
-                Consultation
+                Discuss Your Data
               </a>
               <a
                 href={CAPABILITY_STATEMENT_REQUEST_HREF}

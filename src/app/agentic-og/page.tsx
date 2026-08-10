@@ -5,7 +5,6 @@ import OmniGridderComparison from "@/components/OmniGridderComparison";
 import { SITE } from "@/lib/constants";
 
 const CONSULTATION_HREF = "/book";
-const DOC_REFERENCE = "AV-OG-2026";
 
 export const metadata = {
   title: `Agentic OG — Regridding as a Service | ${SITE.name}`,
@@ -20,14 +19,13 @@ export default function AgenticOgPage() {
 
       <main id="main" className="flex-1 pb-16 pt-24 sm:pb-24 sm:pt-28">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          {/* ── Document header ── */}
+          {/* Hero */}
           <header className="mb-14">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/15 pb-3 mb-8 font-mono text-[11px] uppercase tracking-wider text-gray-500">
-              <span>{SITE.legalName} · Product Brief</span>
-              <span className="sm:text-right">{DOC_REFERENCE} · Status: Private Staging Deployment</span>
-            </div>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div className="max-w-2xl">
+                <p className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-blue-400">
+                  Earth-Data Transformation
+                </p>
                 <h1 className="mb-4 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
                   Agentic OG
                 </h1>
@@ -51,10 +49,9 @@ export default function AgenticOgPage() {
             </div>
           </header>
 
-          {/* ── 1.0 Live proof ── */}
+          {/* Results comparison */}
           <section className="mb-14" aria-labelledby="sec-proof">
-            <div className="mb-6 flex items-start gap-4 border-b border-white/15 pb-3 sm:items-baseline">
-              <span className="shrink-0 font-mono text-sm text-blue-400">1.0</span>
+            <div className="mb-6 border-b border-white/15 pb-3">
               <h2 id="sec-proof" className="text-lg font-semibold text-white tracking-tight uppercase">
                 Before &amp; After: Coordinate Geometry
               </h2>
@@ -65,7 +62,7 @@ export default function AgenticOgPage() {
             <OmniGridderComparison />
           </section>
 
-          {/* ── 2.0 Buyer CTA ── */}
+          {/* Buyer CTA */}
           <section className="mb-16 rounded-xl border border-blue-500/25 bg-blue-500/[0.06] p-6 sm:p-8" aria-labelledby="sec-next-step">
             <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-blue-400">
               Avoid the toolchain detour
@@ -84,10 +81,10 @@ export default function AgenticOgPage() {
             </a>
           </section>
 
-          {/* ── Document footer / CTA ── */}
+          {/* Footer CTA */}
           <footer className="border-t border-white/15 pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-            <p className="font-mono text-[11px] uppercase tracking-wider text-gray-500">
-              {DOC_REFERENCE} · Deployed on Google Cloud · Private demonstrations by consultation
+            <p className="max-w-2xl text-sm font-light leading-relaxed text-gray-500">
+              Private demonstrations are available for teams with a specific transformation need.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
