@@ -10,39 +10,8 @@ const DOC_REFERENCE = "AV-OG-2026";
 export const metadata = {
   title: `Agentic OG — Regridding as a Service | ${SITE.name}`,
   description:
-    "Agentic OG: an agentic regridding engine for Earth-observation data — conservative/bilinear/nearest weight computation, cloud-native job pipeline, deployed and validated on Google Cloud.",
+    "Agentic OG transforms Earth-observation and model data onto the grid your downstream work requires, with the method matched to the geometry and data meaning.",
 };
-
-const pipelineStages = [
-  {
-    num: "1",
-    title: "Submit",
-    body: "A typed job spec (source URI, destination grid, interpolation method) enters og-server through an authenticated submission service. Per-customer concurrency limits enforce tenant fairness before a job is ever queued.",
-  },
-  {
-    num: "2",
-    title: "Queue",
-    body: "og-server writes job state to Firestore and publishes to a Pub/Sub topic. Submission and execution are decoupled — a slow or bursty client never blocks the worker fleet.",
-  },
-  {
-    num: "3",
-    title: "Compute",
-    body: "og-worker pulls the job and dispatches to a Rust regrid engine backed by a persistent Julia process (spawned once per worker, reused across every job) computing conservative, bilinear, or nearest-neighbor weights — eliminating the 2-5s cold-start/JIT tax a fresh Julia process pays on every call.",
-  },
-  {
-    num: "4",
-    title: "Render & Deliver",
-    body: "Regridded output is optionally rendered to a publication-quality map (Python/cartopy) and written to Cloud Storage behind a short-lived V4 signed URL — the job record never exposes a raw bucket path.",
-  },
-];
-
-const engineeringFacts = [
-  "Rust core (axum submission service + Pub/Sub worker) with a Julia numerical kernel bridge for weight computation — not a Python monolith.",
-  "Per-customer concurrency limiting (tenant fairness) enforced at the service boundary before a job reaches the queue.",
-  "V4 signed GCS URLs for result delivery — generated with short-lived machine credentials, not long-lived bucket ACLs.",
-  "Quality diagnostics computed for every job: mass-conservation residual, NaN fraction, artifact flags — surfaced alongside the result, not buried in logs.",
-  "Deployed on Google Cloud (Cloud Run Service + Cloud Run Job + Pub/Sub + Firestore), validated end-to-end against real jobs, not just unit tests.",
-];
 
 export default function AgenticOgPage() {
   return (
@@ -77,36 +46,15 @@ export default function AgenticOgPage() {
                 href={CONSULTATION_HREF}
                 className="inline-flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-md bg-white px-6 text-sm font-medium text-black transition hover:bg-gray-200 sm:w-auto"
               >
-                Consultation
+                Discuss Your Data
               </a>
             </div>
           </header>
 
-          {/* ── 1.0 Pipeline ── */}
-          <section className="mb-14" aria-labelledby="sec-pipeline">
-            <div className="flex items-baseline gap-4 border-b border-white/15 pb-3 mb-6">
-              <span className="font-mono text-sm text-blue-400">1.0</span>
-              <h2 id="sec-pipeline" className="text-lg font-semibold text-white tracking-tight uppercase">
-                How a Job Runs
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-4">
-              {pipelineStages.map((stage) => (
-                <div key={stage.num}>
-                  <h3 className="flex items-baseline gap-3 text-white font-medium mb-3">
-                    <span className="font-mono text-xs text-gray-500">{stage.num}</span>
-                    {stage.title}
-                  </h3>
-                  <p className="text-sm text-gray-400 font-light leading-relaxed">{stage.body}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* ── 2.0 Live proof ── */}
+          {/* ── 1.0 Live proof ── */}
           <section className="mb-14" aria-labelledby="sec-proof">
             <div className="mb-6 flex items-start gap-4 border-b border-white/15 pb-3 sm:items-baseline">
-              <span className="shrink-0 font-mono text-sm text-blue-400">2.0</span>
+              <span className="shrink-0 font-mono text-sm text-blue-400">1.0</span>
               <h2 id="sec-proof" className="text-lg font-semibold text-white tracking-tight uppercase">
                 Before &amp; After: Coordinate Geometry
               </h2>
@@ -117,21 +65,23 @@ export default function AgenticOgPage() {
             <OmniGridderComparison />
           </section>
 
-          {/* ── 3.0 Engineering facts ── */}
-          <section className="mb-16" aria-labelledby="sec-engineering">
-            <div className="mb-6 flex items-start gap-4 border-b border-white/15 pb-3 sm:items-baseline">
-              <span className="shrink-0 font-mono text-sm text-blue-400">3.0</span>
-              <h2 id="sec-engineering" className="text-lg font-semibold text-white tracking-tight uppercase">
-                Engineering Notes
-              </h2>
-            </div>
-            <ul className="space-y-2 border-l border-white/10 pl-5 ml-1">
-              {engineeringFacts.map((item) => (
-                <li key={item} className="text-sm text-gray-400 font-light leading-relaxed">
-                  {item}
-                </li>
-              ))}
-            </ul>
+          {/* ── 2.0 Buyer CTA ── */}
+          <section className="mb-16 rounded-xl border border-blue-500/25 bg-blue-500/[0.06] p-6 sm:p-8" aria-labelledby="sec-next-step">
+            <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-blue-400">
+              Avoid the toolchain detour
+            </p>
+            <h2 id="sec-next-step" className="mt-3 max-w-3xl text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+              Get the transformation your work needs without spending months finding, installing, and validating the tools.
+            </h2>
+            <p className="mt-4 max-w-3xl text-sm font-light leading-relaxed text-gray-400">
+              Tell us what data you have, what the destination requires, and how the result will be used. We&apos;ll identify the right approach and handle the specialized transformation work.
+            </p>
+            <a
+              href={CONSULTATION_HREF}
+              className="mt-6 inline-flex h-11 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black transition hover:bg-gray-200"
+            >
+              Discuss Your Data
+            </a>
           </section>
 
           {/* ── Document footer / CTA ── */}
@@ -144,7 +94,7 @@ export default function AgenticOgPage() {
                 href={CONSULTATION_HREF}
                 className="inline-flex h-11 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
               >
-                Consultation
+                Discuss Your Data
               </a>
             </div>
           </footer>

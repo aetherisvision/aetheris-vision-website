@@ -291,19 +291,6 @@ export default function PerformancePage() {
             />
           </div>
 
-          {/* Technical Notes */}
-          <div className="mt-16 bg-slate-100 dark:bg-slate-800 rounded-lg p-8">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-4">
-              🔬 Performance Engineering Notes
-            </h3>
-            <ul className="space-y-2 text-slate-700 dark:text-slate-300">
-              <li>• Metrics collected using native browser performance tools</li>
-              <li>• Real-time measurement with no synthetic testing</li>
-              <li>• Grades based on Core Web Vitals thresholds from Google</li>
-              <li>• Memory metrics available in Chromium-based browsers</li>
-              <li>• Data collected at {metrics ? new Date(metrics.timestamp).toLocaleString() : 'N/A'}</li>
-            </ul>
-          </div>
         </div>
       </section>
     </main>

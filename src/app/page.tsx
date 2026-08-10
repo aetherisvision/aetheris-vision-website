@@ -31,11 +31,23 @@ const STATIC_SOURCES: SatelliteSource[] = [
   },
 ];
 
-const pipelineStages = [
-  { num: "1", title: "Submit", body: "A typed job spec — source URI, destination grid, method — enters the secure submission service. Per-customer concurrency limits enforce fairness before a job is even queued." },
-  { num: "2", title: "Queue", body: "State lands in Firestore, the job publishes to Pub/Sub. Submission and execution are decoupled — a slow client never blocks the worker fleet." },
-  { num: "3", title: "Compute", body: "A persistent Julia process (spawned once per worker, reused across every job) computes conservative, bilinear, or nearest-neighbor weights — no per-call cold start." },
-  { num: "4", title: "Render & Deliver", body: "Output is optionally rendered to a publication-quality map and delivered behind a short-lived signed URL — never a raw bucket path." },
+const transformationSkills = [
+  {
+    title: "Projection & CRS expertise",
+    body: "Move between geographic and projected coordinate systems while respecting the geometry your operational workflow requires.",
+  },
+  {
+    title: "Complex grid transformations",
+    body: "Work across rectilinear, curvilinear, point-based, and HEALPix grids, including changes in resolution and extent.",
+  },
+  {
+    title: "Method matched to the data",
+    body: "Select interpolation and remapping methods according to whether the field is continuous, categorical, or must preserve totals.",
+  },
+  {
+    title: "Validated, usable delivery",
+    body: "Receive the requested target grid with quality checks and outputs prepared for the system, model, or analysis that needs them.",
+  },
 ];
 
 export const metadata = {
@@ -95,58 +107,64 @@ export default async function Home() {
                   href={CONSULTATION_HREF}
                   className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-black transition-colors hover:bg-gray-200"
                 >
-                  Consultation
+                  Discuss Your Data
                 </a>
                 <a
-                  href="#pipeline"
+                  href="#results"
                   className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 bg-black px-8 text-sm font-medium text-white transition-colors hover:bg-white/5"
                 >
-                  See How It Works <ArrowRightIcon className="ml-2 h-4 w-4" />
+                  See Before &amp; After <ArrowRightIcon className="ml-2 h-4 w-4" />
                 </a>
               </div>
             </FadeIn>
           </div>
         </section>
 
-        {/* Pipeline Section */}
-        <section id="pipeline" className="py-24 bg-[#111014] border-t border-white/5 relative overflow-hidden">
-          {/* Subtle atmospheric background */}
-          <div className="absolute inset-0 -z-20">
-            <Image
-              src="/images/home/philosophy-atmosphere.webp"
-              alt=""
-              aria-hidden="true"
-              fill
-              className="object-cover opacity-[0.45]"
-              sizes="100vw"
-            />
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#101820] via-[#101820]/85 to-[#101820]/25 -z-10" />
-
+        {/* Transformation Expertise Section */}
+        <section id="expertise" className="py-24 bg-[#111014] border-t border-white/5">
           <div className="mx-auto max-w-5xl px-4 sm:px-6">
             <FadeIn delay={0}>
-              <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">How It Works</p>
-              <h2 className="text-3xl md:text-5xl font-semibold text-white tracking-tight mb-12">
-                How a Job Runs
+              <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Earth-Data Transformation Expertise</p>
+              <h2 className="max-w-4xl text-3xl md:text-5xl font-semibold text-white tracking-tight mb-5">
+                Get the data right without losing months to the tooling
               </h2>
+              <p className="max-w-3xl text-gray-400 font-light leading-relaxed">
+                Finding the right library is only the beginning. Installation, dependencies, grid definitions, method selection, validation, and production integration can consume months before the first trustworthy result. Bring us the source data and the required destination; we handle the specialized work between them.
+              </p>
             </FadeIn>
 
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-4">
-              {pipelineStages.map((stage, i) => (
-                <FadeIn key={stage.num} delay={0.1 + i * 0.05}>
-                  <h3 className="flex items-baseline gap-3 text-white font-medium mb-3">
-                    <span className="font-mono text-xs text-blue-400">{stage.num}</span>
-                    {stage.title}
-                  </h3>
-                  <p className="text-sm text-gray-400 font-light leading-relaxed">{stage.body}</p>
+            <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {transformationSkills.map((skill, i) => (
+                <FadeIn key={skill.title} delay={0.05 + i * 0.05} className="h-full">
+                  <div className="h-full rounded-xl border border-white/10 bg-white/[0.025] p-6 transition-colors hover:border-blue-500/30 hover:bg-blue-500/[0.05]">
+                    <h3 className="text-lg font-medium text-white">{skill.title}</h3>
+                    <p className="mt-3 text-sm text-gray-400 font-light leading-relaxed">{skill.body}</p>
+                  </div>
                 </FadeIn>
               ))}
             </div>
+
+            <FadeIn delay={0.25}>
+              <div className="mt-10 flex flex-col gap-5 rounded-xl border border-blue-500/25 bg-blue-500/[0.06] p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+                <div className="max-w-2xl">
+                  <h3 className="text-xl font-medium text-white">Your team needs the result, not another toolchain to maintain.</h3>
+                  <p className="mt-2 text-sm font-light leading-relaxed text-gray-400">
+                    Start with the grid you have and the grid you need. We&apos;ll identify the right transformation path and show what a reliable delivery looks like.
+                  </p>
+                </div>
+                <a
+                  href={CONSULTATION_HREF}
+                  className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-md bg-white px-7 text-sm font-medium text-black transition-colors hover:bg-gray-200"
+                >
+                  Discuss Your Data <ArrowRightIcon className="h-4 w-4" />
+                </a>
+              </div>
+            </FadeIn>
           </div>
         </section>
 
         {/* Real Proof Section */}
-        <section className="py-24 bg-background border-t border-white/5">
+        <section id="results" className="py-24 bg-background border-t border-white/5">
           <div className="mx-auto max-w-5xl px-4 sm:px-6">
             <FadeIn>
               <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Before &amp; After</p>
@@ -326,7 +344,7 @@ export default async function Home() {
                     className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-white px-8 text-sm font-medium text-black hover:bg-gray-200 transition"
                   >
                     <ArrowRightIcon className="h-4 w-4" />
-                    Consultation
+                    Discuss Your Data
                   </a>
                   <a
                     href="/contact"

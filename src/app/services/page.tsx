@@ -16,15 +16,26 @@ const DOC_REFERENCE = "AV-SVC-2026";
 export const metadata = {
   title: `Services | ${SITE.name}`,
   description:
-    "Two co-equal disciplines: Agentic OG, an expert-in-the-loop regridding-as-a-service engine, and scientific software & Earth-data consulting — both deliverable through federal, cleared, and commercial channels.",
+    "Specialized Earth-data transformations and scientific software consulting for teams that need trustworthy results without months of toolchain research and setup.",
 };
 
-const ogWorkflow = [
-  { num: "1", title: "Describe", body: "Tell us the source data, the destination grid, and what the output needs to support — plain language, not a job spec." },
-  { num: "2", title: "Assisted Request", body: "The request is formulated into a typed regrid job — method, projection, and diagnostics selected against the actual data, not guessed." },
-  { num: "3", title: "Expert Review", body: "A human — an AMS Certified Consulting Meteorologist — checks the job before it runs. Every job has a person accountable for it." },
-  { num: "4", title: "Verified Execution", body: "The job runs on the Rust/Julia compute stack. Mass-conservation residual, NaN fraction, and artifact flags are computed alongside the result, not left to the requester to discover." },
-  { num: "5", title: "Delivery", body: "Output and diagnostics ship together, behind a short-lived signed URL — a defensible answer, not a raw file." },
+const transformationCapabilities = [
+  {
+    title: "Coordinate systems & projections",
+    body: "Transform between geographic and projected coordinate systems while preserving the geometry the destination requires.",
+  },
+  {
+    title: "Specialized grid geometries",
+    body: "Handle rectilinear, curvilinear, point-based, HEALPix, and other source or destination layouts across resolutions and extents.",
+  },
+  {
+    title: "Data-aware remapping",
+    body: "Match the method to continuous, categorical, or conservation-sensitive fields instead of applying a one-size-fits-all interpolation.",
+  },
+  {
+    title: "Verification & delivery",
+    body: "Check the result for missing data, artifacts, and conservation errors, then prepare it for the model, analysis, or operational system that needs it.",
+  },
 ];
 
 const consultingAreas = [
@@ -83,38 +94,52 @@ export default function ServicesPage() {
             </FadeIn>
           </header>
 
-          {/* ── 1.0 Agentic OG ── */}
+          {/* ── 1.0 Earth-data transformation ── */}
           <FadeIn delay={0.05}>
             <section className="mb-8" aria-labelledby="sec-og">
               <div className="rounded-2xl border border-blue-500/20 bg-blue-500/[0.04] p-6 sm:p-8 md:p-12">
                 <div className="flex items-start gap-4 border-b border-white/15 pb-3 mb-6 sm:items-baseline">
                   <span className="font-mono text-sm text-blue-400">1.0</span>
                   <h2 id="sec-og" className="text-lg font-semibold text-white tracking-tight uppercase">
-                    Agentic OG — Regridding as a Service
+                    Earth-Data Transformation
                   </h2>
                 </div>
-                <p className="max-w-2xl text-gray-400 font-light leading-relaxed mb-10">
-                  Moving satellite and NWP data onto whatever grid a downstream
-                  system needs — with an expert in the loop at every job, not a
-                  black-box handoff. Every job carries diagnostics, not just output.
+                <p className="max-w-3xl text-gray-400 font-light leading-relaxed mb-10">
+                  Move satellite, model, geospatial, and environmental data from the
+                  form you have to the form your downstream work requires. We select
+                  the right approach, perform the transformation, and verify the
+                  result so your team can use it with confidence.
                 </p>
-                <div className="grid grid-cols-1 gap-6 mb-10 sm:grid-cols-2 xl:grid-cols-5">
-                  {ogWorkflow.map((stage) => (
-                    <div key={stage.num}>
-                      <h3 className="flex items-baseline gap-3 text-white font-medium mb-2">
-                        <span className="font-mono text-xs text-blue-400">{stage.num}</span>
-                        {stage.title}
-                      </h3>
-                      <p className="text-sm text-gray-400 font-light leading-relaxed">{stage.body}</p>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {transformationCapabilities.map((capability) => (
+                    <div key={capability.title} className="rounded-xl border border-white/10 bg-black/20 p-5">
+                      <h3 className="text-white font-medium mb-2">{capability.title}</h3>
+                      <p className="text-sm text-gray-400 font-light leading-relaxed">{capability.body}</p>
                     </div>
                   ))}
                 </div>
-                <a
-                  href="/agentic-og"
-                  className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition"
-                >
-                  Read the full technical brief <ArrowRightIcon className="h-3.5 w-3.5" />
-                </a>
+                <div className="mt-8 flex flex-col gap-5 rounded-xl border border-blue-500/25 bg-blue-500/[0.06] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+                  <div className="max-w-2xl">
+                    <h3 className="text-lg font-medium text-white">Need the data done correctly without spending months assembling the toolchain?</h3>
+                    <p className="mt-2 text-sm font-light leading-relaxed text-gray-400">
+                      Show us the source, the destination, and what the result must support. We&apos;ll take it from there.
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 flex-wrap gap-3">
+                    <a
+                      href="/book"
+                      className="inline-flex h-11 items-center justify-center rounded-md bg-white px-5 text-sm font-medium text-black transition hover:bg-gray-200"
+                    >
+                      Discuss Your Data
+                    </a>
+                    <a
+                      href="/agentic-og"
+                      className="inline-flex h-11 items-center justify-center gap-1 rounded-md border border-white/15 px-5 text-sm text-white transition hover:bg-white/5"
+                    >
+                      See Results <ArrowRightIcon className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
+                </div>
               </div>
             </section>
           </FadeIn>
