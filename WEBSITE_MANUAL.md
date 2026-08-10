@@ -37,7 +37,6 @@ This is the official website for **Aetheris Vision LLC**, a veteran-owned small 
 - Hosts a blog with technical articles
 - Lets visitors book a 30-minute call
 - Lets visitors send a contact message or submit a project intake form
-- Provides an AI chat assistant (powered by Claude) to answer visitor questions 24/7
 - Admin portal for managing clients, projects, expenses, and documents
 - Client portal for client-facing project updates
 
@@ -263,10 +262,6 @@ Navbar.tsx              — The navigation bar at the top of every page. Contain
                           links: Expertise, About, Capabilities, Blog, Contact,
                           and the "Book a Call" button.
 
-ChatWidget.tsx          — The floating AI chat assistant button (bottom-right corner
-                          of every page). Opens a chat panel where visitors can ask
-                          questions about services, pricing, and contracting. Powered
-                          by the Claude API via /api/chat. Requires ANTHROPIC_API_KEY.
 ```
 
 ### `src/lib/` folder — Data and utility functions
@@ -283,11 +278,6 @@ src/lib/portfolio-data.ts — All web development pricing data. Edit this file t
                             Business $4,800 / Enterprise $8,500+.
 
 src/app/portfolio/opengraph-image.tsx — OG image for /portfolio (pricing tiers + tech stack)
-
-src/lib/chat-context.ts — The system prompt for the AI chat assistant. Contains all
-                          company information the chatbot is allowed to reference:
-                          services, pricing, credentials, contact info, and behavioral
-                          rules. Update this file whenever services or prices change.
 
 src/lib/constants.ts    — Core site-wide constants: company name, URL, email, tagline,
                           and description. Changes here propagate across metadata,
@@ -504,7 +494,7 @@ They live in two places:
 ### Complete list
 
 #### ANTHROPIC_API_KEY
-- **What it does:** Authenticates requests to the Claude API that powers the AI chat assistant.
+- **What it does:** Authenticates server-side administrative SOW generation and compliance workflows.
 - **How to get it:** Log into console.anthropic.com → API Keys → Create new key
 - **Format:** Starts with `sk-ant-...`
 - **Where to put it:** Vercel → Settings → Environment Variables → `ANTHROPIC_API_KEY`
@@ -754,16 +744,6 @@ The CSP is the most complex security feature. Here's how it works:
 2. Check Vercel is building: go to vercel.com → your project → **Deployments** tab
 3. If the deployment shows red (failed), click it to see the error log
 4. If it's green but changes aren't visible, hard refresh your browser: `Cmd+Shift+R`
-
-### "The AI chat says 'Sorry, something went wrong'"
-
-1. Check that `ANTHROPIC_API_KEY` is set in Vercel (Settings → Environment Variables). It should start with `sk-ant-...`
-2. Open browser Developer Tools (Cmd+Option+I) → Network tab → send a chat message → click the failed `chat` request:
-   - **Status 400:** The ChatWidget is sending messages in an unexpected format. Check the request Payload — the `messages` array must start with a `user` role. The route strips leading assistant greetings automatically, but if the array contains no user messages at all, it will reject the request.
-   - **Status 429:** Rate limit hit (10 requests per IP per 15 minutes). Wait and retry.
-   - **Status 500:** Server-side error. Check that the model string in `src/app/api/chat/route.ts` is a valid Anthropic model ID (currently `claude-haiku-4-5-20251001`). Model strings include a date suffix — check Anthropic's docs if the model has been updated.
-3. After changing env vars or code, you must redeploy: push to GitHub or Vercel → Deployments → Redeploy
-4. The chat system prompt lives in `src/lib/chat-context.ts` — edit it to change what the assistant knows and how it behaves.
 
 ### "The contact form shows an error"
 

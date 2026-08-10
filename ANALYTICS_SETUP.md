@@ -17,7 +17,7 @@ GOOGLE_DRIVE_CLIENTS_FOLDER_ID=1ABC123xyz_your_main_clients_folder_id
 # Email Notifications (Resend)
 RESEND_API_KEY=re_your_resend_api_key_here
 
-# AI Chat Assistant (Anthropic)
+# Administrative AI generation (Anthropic)
 ANTHROPIC_API_KEY=sk-ant-your_key_here
 
 # Google Analytics (Optional but Recommended)

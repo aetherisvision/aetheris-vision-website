@@ -22,7 +22,6 @@
 
 ## Key Files
 - src/lib/constants.ts — SITE object (legalName, email, tagline, etc.) — always source business facts from here
-- src/lib/chat-context.ts — chat widget context
 - src/lib/posts.ts — blog post helpers
 - src/lib/stripe.ts — Stripe helpers
 

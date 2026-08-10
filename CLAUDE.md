@@ -53,7 +53,6 @@ Value lives in Vercel env / `~/.secrets` — not hardcoded in the repo.
 | Path | Purpose |
 |---|---|
 | `src/lib/constants.ts` | SITE object — legalName, email, tagline, etc. |
-| `src/lib/chat-context.ts` | AI chat context |
 | `src/lib/posts.ts` | Blog post helpers |
 | `src/lib/stripe.ts` | Stripe client |
 | `src/proxy.ts` | Middleware — admin auth + site lock |

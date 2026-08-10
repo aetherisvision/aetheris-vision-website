@@ -70,27 +70,3 @@ test("navigation switches cleanly between desktop and compact layouts", async ({
     await expect(mobileNavigation.getByRole("link", { name: "Consultation" })).toBeVisible();
   }
 });
-
-test("chat remains usable inside a narrow mobile viewport", async ({ page }) => {
-  await page.setViewportSize({ width: 320, height: 700 });
-  await gotoReady(page, "/");
-  // Next.js dev tools occupy the same lower-left corner in development only.
-  const chatButton = page.getByRole("button", { name: "Open chat" });
-  await expect(chatButton).toHaveAttribute("data-chat-ready", "true");
-  await chatButton.focus();
-  await page.keyboard.press("Enter");
-
-  const dialog = page.getByRole("dialog", { name: "Chat" });
-  await expect(dialog).toBeVisible();
-
-  const box = await dialog.boundingBox();
-  expect(box).not.toBeNull();
-  expect(box!.x).toBeGreaterThanOrEqual(0);
-  expect(box!.x + box!.width).toBeLessThanOrEqual(320);
-  expect(box!.height).toBeLessThanOrEqual(700);
-
-  const sendButton = page.getByRole("button", { name: "Send" });
-  const sendBox = await sendButton.boundingBox();
-  expect(sendBox?.width).toBeGreaterThanOrEqual(44);
-  expect(sendBox?.height).toBeGreaterThanOrEqual(44);
-});

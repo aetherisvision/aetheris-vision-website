@@ -25,7 +25,7 @@ for (const slug of SLUGS) {
   await page.goto(`${BASE}/portfolio/${slug}`, { waitUntil: "networkidle", timeout: 60000 });
   await page.waitForTimeout(1500); // let fade-in animations settle
   // Strip page chrome that doesn't belong in card art: the demo banner
-  // (innermost matching div), the chat widget, and the Next.js dev overlay.
+  // (innermost matching div) and the Next.js dev overlay.
   await page.waitForSelector('button[aria-label="Open chat"]', { timeout: 5000 }).catch(() => {});
   await page.evaluate(() => {
     [...document.querySelectorAll("div")]

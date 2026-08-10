@@ -55,12 +55,6 @@ Think of your website like a high-end car dealership. When potential customers w
 - Positioned as enterprise-level professional service
 - Includes security compliance for big companies
 
-**🤖 AI Chat Assistant** (24/7 Visitor Support)
-- Floating chat widget on every page
-- Answers questions about services, pricing, and state/federal contracting instantly
-- Powered by Claude AI; scoped to Aetheris Vision content only
-- Rate-limited to prevent abuse; routes serious inquiries to booking
-
 **🔒 Enterprise Security** (SOC-2 Compliance)
 - Documentation that shows you meet enterprise security standards
 - Required for working with large companies
@@ -100,7 +94,7 @@ Think of your website like a high-end car dealership. When potential customers w
 - **Portfolio page** (`/portfolio`) - See 7 different project types
 - **Capabilities page** (`/capabilities`) - Understand your skills and state/federal contracting credentials
 - **Security page** (`/security`) - Check your professional standards
-- **AI Chat Assistant** (bottom-right button) - Ask questions instantly without filling out a form
+- **Contact and consultation links** - Ask questions or schedule a focused conversation
 
 **What they're thinking:**
 - "Can this person build what I need?"
@@ -770,7 +764,7 @@ Best regards,
 - **Hosting:** Vercel (vercel.com)
 - **Email:** Resend (resend.com)
 - **Code Storage:** GitHub (github.com) — transfer to business org when ready
-- **AI Chat:** Anthropic (console.anthropic.com) — move API key to business account when ready
+- **Administrative AI:** Anthropic (console.anthropic.com) — used for internal SOW and compliance workflows
 - **Domain:** [Your domain registrar]
 
 **Key Account Information:**

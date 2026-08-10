@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
-// jsdom does not implement scrollIntoView (used by ChatWidget, Navbar, ContactForm).
+// jsdom does not implement scrollIntoView (used by Navbar and ContactForm).
 Element.prototype.scrollIntoView = vi.fn();
 
 // framer-motion uses IntersectionObserver which jsdom doesn't support.

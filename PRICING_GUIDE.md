@@ -118,7 +118,6 @@ Cancel anytime. Add to any build package.
 | HIPAA compliance (medical/healthcare) | +$1,800 |
 | Legal case management integration | +$1,200 |
 | IDX integration (real estate listings) | +$1,440 |
-| AI chat assistant (Claude, streaming, scoped Q&A) | +$800 |
 
 ---
 
@@ -168,7 +167,3 @@ Cancel anytime. Add to any build package.
 **Pricing note:** Professional raised to $2,800 (Mar 2026). Agencies charge $5–10k for
 equivalent work — consider further raising to $3,200 once a portfolio of real client
 sites is established.
-
-**AI chat assistant add-on at $800** is benchmarked against the AV site build (~2-3 hrs:
-/api/chat route, ChatWidget component, rate limiter, system prompt). Rate limiting and
-security are always included in the scope — never optional.
