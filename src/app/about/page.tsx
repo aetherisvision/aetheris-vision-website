@@ -2,7 +2,7 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
-import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE, SAM } from "@/lib/constants";
+import { AMS_PROFILE_URL, CAPABILITY_STATEMENT_REQUEST_HREF, SITE, SAM } from "@/lib/constants";
 
 export const metadata = {
   title: `About | ${SITE.name}`,
@@ -177,6 +177,26 @@ export default function AboutPage() {
                       </div>
                     ))}
                   </dl>
+                  <a
+                    href={AMS_PROFILE_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-5 flex items-center gap-4 rounded-xl border border-blue-500/25 bg-blue-500/5 p-4 transition hover:border-blue-400/50 hover:bg-blue-500/10"
+                  >
+                    <Image
+                      src="/images/credentials/ams-profile-qr.png"
+                      alt="QR code for the Aetheris Vision AMS directory profile"
+                      width={88}
+                      height={88}
+                      className="rounded bg-white p-1"
+                    />
+                    <span>
+                      <span className="block text-sm font-medium text-white">Verify our AMS profile</span>
+                      <span className="mt-1 block text-xs font-light leading-relaxed text-gray-400">
+                        View Aetheris Vision&apos;s active listing in the AMS Weather and Climate Directory.
+                      </span>
+                    </span>
+                  </a>
                 </div>
               </aside>
             </FadeIn>

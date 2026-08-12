@@ -17,6 +17,10 @@ export const SITE = {
 export const CAPABILITY_STATEMENT_REQUEST_HREF =
   "/contact?requirement=Capability%20Statement%20Request&topic=Please%20send%20me%20the%20Aetheris%20Vision%20capability%20statement.#contact-form";
 
+/** Public AMS Weather and Climate Directory listing for Aetheris Vision LLC. */
+export const AMS_PROFILE_URL =
+  "https://wcdirectory.ametsoc.org/united-states/mustang/service-provider/aetheris-vision-llc";
+
 /** Federal contracting registration data */
 export const SAM = {
   uei: "ZM8QWJ4ABWZ9",
