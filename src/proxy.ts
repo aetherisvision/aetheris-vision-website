@@ -60,7 +60,8 @@ export async function proxy(request: NextRequest) {
   if (
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/favicon') ||
-    pathname.startsWith('/logo/')
+    pathname.startsWith('/logo/') ||
+    pathname.startsWith('/images/')
   ) {
     return NextResponse.next()
   }
