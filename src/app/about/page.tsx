@@ -143,25 +143,20 @@ export default function AboutPage() {
               </article>
             </FadeIn>
 
-            {/* Sidebar — portrait slot + registrations */}
+            {/* Sidebar — founder portrait + registrations */}
             <FadeIn delay={0.2}>
               <aside className="md:sticky md:top-28 space-y-8">
-                {/*
-                  Portrait slot. No founder photo exists yet — licensed stock
-                  photography (real photograph, not AI-generated) stands in.
-                  Swap src for a real portrait when one is available.
-                */}
-                <figure className="relative rounded-xl border border-white/5 overflow-hidden aspect-[4/5]">
+                <figure className="relative rounded-xl border border-white/5 overflow-hidden aspect-square bg-[#F3F7F9]">
                   <Image
-                    src="https://images.unsplash.com/photo-1705579607707-717fb965145f?fm=jpg&q=80&w=1200&auto=format&fit=crop"
-                    alt="An engineer reviewing data at a workstation"
+                    src="/images/about/marston-ward-headshot.png"
+                    alt="Marston Ward, founder and principal of Aetheris Vision LLC"
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 33vw"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/85 via-transparent to-transparent" />
                   <figcaption className="absolute bottom-3 left-4 right-4 text-xs text-gray-400 font-light">
-                    Engineering discipline applied to atmospheric data, every day.
+                    Marston Ward, PhD, CCM — Founder &amp; Principal
                   </figcaption>
                 </figure>
 
