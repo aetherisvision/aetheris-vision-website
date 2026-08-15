@@ -15,7 +15,7 @@ const badgeStyle = {
   padding: "6px 16px",
 } as const;
 
-const badges = ["Agentic Regridding", "Google Cloud Deployed", "Built by a Career Atmospheric Scientist"];
+const badges = ["Weather & Earth Systems", "Geospatial Data", "Applied AI & Technical Delivery"];
 
 export default function OGImage() {
   return new ImageResponse(
@@ -63,7 +63,7 @@ export default function OGImage() {
             letterSpacing: "-2px",
           }}
         >
-          Agentic Regridding,
+          Scientific insight.
         </h1>
         <h1
           style={{
@@ -77,7 +77,7 @@ export default function OGImage() {
             letterSpacing: "-2px",
           }}
         >
-          For Real Pipelines.
+          Practical delivery.
         </h1>
         <p
           style={{
@@ -88,7 +88,7 @@ export default function OGImage() {
             lineHeight: 1.5,
           }}
         >
-          Cloud-native regridding for Earth-observation and model data — Agentic OG by Aetheris Vision
+          Specialist consulting for weather, Earth-system, geospatial, software, and decision-support projects
         </p>
         <div
           style={{

@@ -2,173 +2,200 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
-import { AMS_PROFILE_URL, CAPABILITY_STATEMENT_REQUEST_HREF, SITE, SAM } from "@/lib/constants";
+import { AMS_PROFILE_URL, SITE, SAM } from "@/lib/constants";
 
 export const metadata = {
   title: `About | ${SITE.name}`,
   description:
-    `Meet the team behind ${SITE.name}: 35 years of operational meteorology, USAF expertise, and AI/ML integration for complex operational systems.`,
+    `${SITE.name} brings operational weather, international research, industry delivery, and applied AI experience to complex consulting engagements.`,
 };
 
-/* Service-history timeline — era labels only where dates are verified. */
 const timeline = [
   {
     era: "1988–1998",
     title: "United States Air Force",
-    desc: "Weather forecaster supporting real-world operations under conditions that left no room for guesswork.",
+    desc: "Operational weather forecasting in environments where timing, clarity, and sound judgment mattered.",
   },
   {
-    era: "Post-service",
-    title: "Research in Sweden",
-    desc: "Atmospheric modeling and environmental science at Stockholm University and Chalmers University of Technology, culminating in a Ph.D. in atmospheric and environmental science.",
+    era: "Sweden",
+    title: "Research & Academic Work",
+    desc: "Atmospheric and environmental science across Stockholm University MISU, Chalmers University of Technology, and the University of Gothenburg.",
   },
   {
-    era: "Applied years",
-    title: "AI & NWP Engineering",
-    desc: "Building AI and numerical weather prediction systems, along with custom software, that turn large, messy datasets into clear, usable answers.",
+    era: "International Industry",
+    title: "Technical Delivery",
+    desc: "Weather work at SMHI, healthcare technology delivery at Findwise, and software experience at Veoneer.",
   },
   {
     era: "Today",
     title: "Aetheris Vision LLC",
-    desc: "A veteran-owned firm in Mustang, Oklahoma, bringing engineering discipline to complex operational systems and practical, well-built software for small businesses.",
+    desc: "Specialist consulting for organizations working with weather, Earth-system, geospatial, data, software, and decision-support challenges.",
   },
 ];
 
-const registrations = [
-  { label: "AMS Certified Consulting Meteorologist (CCM)", detail: "One of ~600 active nationwide (Achieved June 2026)" },
-  { label: "U.S. Government Secret Clearance", detail: "Held" },
-  { label: "SDVOSB / VOSB Eligible", detail: "Service-Disabled Veteran-Owned Small Business" },
-  { label: "SAM.gov Registration", detail: `Active · UEI ${SAM.uei} · CAGE ${SAM.cage}` },
-  { label: "8(a) Eligible", detail: "SBA program · application opens 2027" },
-  { label: "Operational Experience", detail: "35+ years · global atmospheric modeling & forecasting" },
+const credentials = [
+  {
+    label: "AMS Certified Consulting Meteorologist",
+    detail: "CCM credential achieved June 2026",
+  },
+  {
+    label: "Atmospheric & Environmental Science",
+    detail: "PhD with international academic and research experience",
+  },
+  {
+    label: "Applied Artificial Intelligence",
+    detail: "MSc candidate, University of San Diego, expected January 2027",
+  },
+  {
+    label: "U.S. Government Secret Clearance",
+    detail: "Active clearance held by the principal",
+  },
+  {
+    label: "SDVOSB / VOSB",
+    detail: "SBA VetCert application pending",
+  },
+  {
+    label: "HUBZone",
+    detail: "Eligibility confirmed; certification pending",
+  },
+  {
+    label: "SAM.gov Registration",
+    detail: `Active · UEI ${SAM.uei} · CAGE ${SAM.cage}`,
+  },
 ];
 
 const focusAreas = [
   {
-    label: "Operational Meteorology",
-    desc: "35+ years of operational meteorology and global atmospheric modeling.",
+    label: "Weather & Earth-System Advisory",
+    desc: "Operational meteorology, atmospheric modeling, environmental data, and technical interpretation.",
   },
   {
-    label: "AI / ML Integration",
-    desc: "Applied machine learning on large-scale meteorological datasets for operational systems.",
+    label: "Geospatial Data & Analysis",
+    desc: "Data preparation, transformation, validation, and decision support for location-based work.",
   },
   {
-    label: "Academic Collaboration",
-    desc: "Research partnerships with Stockholm University and Chalmers University of Technology.",
+    label: "Applied AI & Technical Delivery",
+    desc: "Practical AI assessment, scientific workflows, custom software, and implementation support.",
   },
   {
-    label: "Cleared Federal Work",
-    desc: "U.S. Government Secret clearance held; VOSB eligible with an active SAM.gov registration.",
+    label: "Web & Digital Delivery",
+    desc: "Maintainable websites, portals, integrations, and supported workflows when the consulting outcome needs a digital home.",
   },
 ];
 
 export default function AboutPage() {
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-[#050505]">
+    <div className="flex min-h-[100dvh] flex-col bg-[#050505]">
       <Navbar />
 
-      <main id="main" className="flex-1 pt-24 sm:pt-28 pb-16 sm:pb-20">
+      <main id="main" className="flex-1 pb-16 pt-24 sm:pb-20 sm:pt-28">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
-
-          {/* Editorial header */}
           <FadeIn>
-            <header className="mb-16 max-w-3xl">
-              <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-4">
-                Our Story
+            <header className="mb-16 max-w-4xl">
+              <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-blue-500">
+                About Aetheris Vision
               </p>
-              <h1 className="font-serif text-4xl md:text-6xl text-white tracking-tight leading-[1.08] mb-6">
-                Thirty-five years of reading the sky,{" "}
-                <em className="text-gray-400">now building the agentic systems that regrid it.</em>
+              <h1 className="mb-6 font-serif text-4xl leading-[1.08] tracking-tight text-white md:text-6xl">
+                Principal-led consulting for difficult environmental and technical work
               </h1>
-              <div className="h-px w-12 bg-blue-500/50" />
+              <p className="max-w-3xl text-lg font-light leading-relaxed text-gray-400">
+                Aetheris Vision combines operational weather judgment, Earth-system and geospatial
+                expertise, applied AI, and practical delivery.
+              </p>
             </header>
           </FadeIn>
 
-          {/* Narrative + sidebar */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-20">
+          <div className="mb-20 grid grid-cols-1 gap-12 md:grid-cols-3">
             <FadeIn delay={0.1} className="md:col-span-2">
               <article>
-                <h2 className="text-xl font-medium text-white mb-1">Founder &amp; Chief Meteorologist</h2>
-                <p className="text-sm text-blue-400 font-semibold tracking-widest uppercase mb-8">
-                  Aetheris Vision LLC
+                <h2 className="mb-1 text-xl font-medium text-white">Marston Ward, PhD, CCM</h2>
+                <p className="mb-8 text-sm font-semibold uppercase tracking-widest text-blue-400">
+                  Founder &amp; Principal Consultant
                 </p>
 
-                {/* Narrative lead — larger serif measure */}
-                <p className="font-serif text-xl md:text-2xl text-gray-200 leading-relaxed mb-8">
-                  Our founder is an AMS Certified Consulting Meteorologist (CCM), holds a Ph.D. in atmospheric and environmental science, and brings more than 35 years of operational meteorology to Aetheris Vision. His career began as a United States Air Force weather forecaster, where he supported real-world operations under conditions that left no room for guesswork.
+                <p className="mb-8 font-serif text-xl leading-relaxed text-gray-200 md:text-2xl">
+                  Marston brings more than 35 years of experience connecting atmospheric science,
+                  operational judgment, international research, and practical technology delivery.
                 </p>
 
-                <div className="space-y-5 text-gray-400 font-light leading-relaxed">
+                <div className="space-y-5 font-light leading-relaxed text-gray-400">
                   <p>
-                    After his military service, he pursued research at <strong className="text-gray-200">Stockholm University</strong> and <strong className="text-gray-200">Chalmers University of Technology</strong>, deepening his work in atmospheric modeling and environmental science alongside academic collaborators in Sweden.
+                    His career began as a United States Air Force weather forecaster supporting
+                    real-world operations. He later worked across Sweden with organizations including
+                    <strong className="text-gray-200"> SMHI</strong>,
+                    <strong className="text-gray-200"> Stockholm University MISU</strong>,
+                    <strong className="text-gray-200"> Chalmers University of Technology</strong>, and
+                    the <strong className="text-gray-200">University of Gothenburg</strong>.
                   </p>
                   <p>
-                    Today his focus is engineering: building AI and numerical weather prediction (NWP) systems, along with custom software, that turn large, messy datasets into clear, usable answers. That work led to <a href="/agentic-og" className="text-blue-400 hover:text-blue-300 underline underline-offset-2">Agentic OG</a> — a regridding engine built by someone who has spent a career depending on the correctness of exactly this kind of data transformation, not guessing at it.
+                    His international industry experience includes technical delivery for healthcare
+                    at <strong className="text-gray-200">Findwise</strong> and software work at
+                    <strong className="text-gray-200"> Veoneer</strong>. He is also completing an MSc in
+                    Applied Artificial Intelligence at the University of San Diego, expected January 2027.
+                  </p>
+                  <p>
+                    Aetheris Vision applies that range as a consultancy. The aim is to understand the
+                    decision, challenge weak assumptions, do the technical work, and deliver a result
+                    the client can use.
+                  </p>
+                  <p>
+                    Organizations named here reflect Marston&apos;s prior experience and education, not
+                    necessarily Aetheris Vision client engagements.
                   </p>
                 </div>
 
-                {/* Pull quote — the throughline */}
                 <figure className="my-10 border-y border-white/10 py-8">
-                  <blockquote className="font-serif text-2xl md:text-3xl text-white leading-snug">
-                    &ldquo;Understand the problem deeply, then build something that holds up in the field.&rdquo;
+                  <blockquote className="font-serif text-2xl leading-snug text-white md:text-3xl">
+                    &ldquo;Understand the problem deeply, then deliver work that holds up in practice.&rdquo;
                   </blockquote>
-                  <figcaption className="mt-3 text-sm text-gray-500 font-light">
-                    The throughline across every stage of a 35-year career.
-                  </figcaption>
                 </figure>
 
-                <div className="space-y-5 text-gray-400 font-light leading-relaxed">
-                  <p>
-                    He founded Aetheris Vision to bring that engineering discipline to two kinds of work: complex operational systems that have to perform under pressure, and practical, well-built websites and software for small businesses. Both deserve the same care and the same honest, plainspoken approach.
-                  </p>
-                </div>
-
-                {/* Service-history timeline */}
-                <h2 className="mt-16 mb-8 font-serif text-2xl md:text-3xl text-white tracking-tight">
-                  Service History
+                <h2 className="mb-8 mt-16 font-serif text-2xl tracking-tight text-white md:text-3xl">
+                  Experience
                 </h2>
-                <ol className="relative border-l border-white/10 pl-8 space-y-10">
-                  {timeline.map((t) => (
-                    <li key={t.title} className="relative">
+                <ol className="relative space-y-10 border-l border-white/10 pl-8">
+                  {timeline.map((item) => (
+                    <li key={item.title} className="relative">
                       <span
                         aria-hidden="true"
                         className="absolute -left-[37px] top-1.5 h-2 w-2 rounded-full bg-blue-500 ring-4 ring-[#050505]"
                       />
-                      <p className="font-mono text-[11px] uppercase tracking-wider text-blue-400 mb-1">{t.era}</p>
-                      <h3 className="text-white font-medium mb-1.5">{t.title}</h3>
-                      <p className="text-sm text-gray-400 font-light leading-relaxed">{t.desc}</p>
+                      <p className="mb-1 font-mono text-[11px] uppercase tracking-wider text-blue-400">
+                        {item.era}
+                      </p>
+                      <h3 className="mb-1.5 font-medium text-white">{item.title}</h3>
+                      <p className="text-sm font-light leading-relaxed text-gray-400">{item.desc}</p>
                     </li>
                   ))}
                 </ol>
               </article>
             </FadeIn>
 
-            {/* Sidebar — founder portrait + registrations */}
             <FadeIn delay={0.2}>
-              <aside className="md:sticky md:top-28 space-y-8">
-                <figure className="relative rounded-xl border border-white/5 overflow-hidden aspect-square bg-[#F3F7F9]">
+              <aside className="space-y-8 md:sticky md:top-28">
+                <figure className="relative aspect-[3/4] overflow-hidden rounded-xl border border-white/5 bg-[#F3F7F9]">
                   <Image
-                    src="/images/about/marston-ward-headshot.png"
-                    alt="Marston Ward, founder and principal of Aetheris Vision LLC"
+                    src="/images/about/marston-ward-ams-ccm.webp"
+                    alt="Marston Ward, founder and principal consultant of Aetheris Vision LLC"
                     fill
-                    className="object-cover"
+                    className="object-cover object-top"
                     sizes="(max-width: 768px) 100vw, 33vw"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/85 via-transparent to-transparent" />
-                  <figcaption className="absolute bottom-3 left-4 right-4 text-xs text-gray-400 font-light">
-                    Marston Ward, PhD, CCM — Founder &amp; Principal
+                  <figcaption className="absolute bottom-3 left-4 right-4 text-xs font-light text-gray-400">
+                    Marston Ward, PhD, CCM
                   </figcaption>
                 </figure>
 
                 <div>
-                  <p className="text-xs font-semibold tracking-widest text-gray-500 uppercase mb-4">
+                  <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-500">
                     Credentials &amp; Registrations
                   </p>
                   <dl className="divide-y divide-white/10 border-y border-white/10">
-                    {registrations.map((r) => (
-                      <div key={r.label} className="py-3">
-                        <dt className="text-sm text-white font-medium">{r.label}</dt>
-                        <dd className="text-xs text-gray-500 mt-0.5 font-light">{r.detail}</dd>
+                    {credentials.map((item) => (
+                      <div key={item.label} className="py-3">
+                        <dt className="text-sm font-medium text-white">{item.label}</dt>
+                        <dd className="mt-0.5 text-xs font-light text-gray-500">{item.detail}</dd>
                       </div>
                     ))}
                   </dl>
@@ -180,15 +207,15 @@ export default function AboutPage() {
                   >
                     <Image
                       src="/images/credentials/ams-profile-qr.png"
-                      alt="QR code for the Aetheris Vision AMS directory profile"
+                      alt="QR code for the AMS CCM Directory"
                       width={88}
                       height={88}
                       className="rounded bg-white p-1"
                     />
                     <span>
-                      <span className="block text-sm font-medium text-white">Verify our AMS profile</span>
+                      <span className="block text-sm font-medium text-white">AMS CCM Directory</span>
                       <span className="mt-1 block text-xs font-light leading-relaxed text-gray-400">
-                        View Aetheris Vision&apos;s active listing in the AMS Weather and Climate Directory.
+                        Scan to explore the active directory listing.
                       </span>
                     </span>
                   </a>
@@ -197,57 +224,52 @@ export default function AboutPage() {
             </FadeIn>
           </div>
 
-          {/* Focus areas — editorial definition list, no cards */}
           <FadeIn>
-            <h2 className="font-serif text-2xl md:text-3xl text-white tracking-tight mb-8">
+            <h2 className="mb-8 font-serif text-2xl tracking-tight text-white md:text-3xl">
               Where We Focus
             </h2>
           </FadeIn>
           <FadeIn delay={0.05}>
-            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-8 mb-20 border-t border-white/10 pt-8">
+            <dl className="mb-20 grid grid-cols-1 gap-x-12 gap-y-8 border-t border-white/10 pt-8 sm:grid-cols-2">
               {focusAreas.map((item) => (
                 <div key={item.label}>
-                  <dt className="text-white font-medium mb-1.5">{item.label}</dt>
-                  <dd className="text-sm text-gray-400 font-light leading-relaxed">{item.desc}</dd>
+                  <dt className="mb-1.5 font-medium text-white">{item.label}</dt>
+                  <dd className="text-sm font-light leading-relaxed text-gray-400">{item.desc}</dd>
                 </div>
               ))}
             </dl>
           </FadeIn>
 
-          {/* Company name — editorial treatment */}
           <FadeIn>
-            <section className="border-t border-white/10 pt-12 max-w-3xl">
-              <p className="text-xs font-semibold tracking-widest text-blue-500 uppercase mb-4">Our Name</p>
-              <h2 className="font-serif text-2xl md:text-3xl text-white tracking-tight mb-5">
+            <section className="max-w-3xl border-t border-white/10 pt-12">
+              <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-blue-500">Our Name</p>
+              <h2 className="mb-5 font-serif text-2xl tracking-tight text-white md:text-3xl">
                 The Meaning Behind <em className="text-gray-400">Aetheris</em>
               </h2>
-              <p className="text-gray-400 font-light leading-relaxed mb-4">
-                Derived from <em className="text-white">aetheris</em>, a form of the Latin <em className="text-white">aether</em>{' '}(from the Greek <em className="text-white">aith&#275;r</em>, the bright upper air of the heavens, the pure air breathed by the gods), our name reflects a commitment to mapping the unknown with clarity and precision.
-              </p>
-              <p className="text-gray-400 font-light leading-relaxed">
-                In ancient philosophy, aether was the fifth element filling the universe above the terrestrial sphere. For us, it represents the convergence of 35 years of deep operational expertise with a vision for the future: bringing structure, clarity, and advanced AI/ML capabilities to the systems that chart the skies, space, and earth.
+              <p className="font-light leading-relaxed text-gray-400">
+                Derived from the Latin <em className="text-white">aether</em>, the bright upper air,
+                the name reflects a commitment to bringing clarity and structure to difficult work
+                involving the atmosphere, Earth systems, data, and technology.
               </p>
             </section>
           </FadeIn>
 
-          {/* CTA */}
           <FadeIn delay={0.1}>
-            <div className="mt-12 flex flex-col sm:flex-row gap-4">
+            <div className="mt-12 flex flex-col gap-4 sm:flex-row">
               <a
-                href="/book"
-                className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-black hover:bg-gray-200 transition"
+                href="/contact#contact-form"
+                className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-black transition hover:bg-gray-200"
               >
-                Consultation
+                Discuss a Project
               </a>
               <a
-                href={CAPABILITY_STATEMENT_REQUEST_HREF}
-                className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 px-8 text-sm font-medium text-white hover:bg-white/5 transition"
+                href="/services"
+                className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 px-8 text-sm font-medium text-white transition hover:bg-white/5"
               >
-                Request Capability Statement
+                Explore Services
               </a>
             </div>
           </FadeIn>
-
         </div>
       </main>
 

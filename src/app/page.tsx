@@ -1,360 +1,298 @@
-import { ArrowRightIcon, GlobeAltIcon, AcademicCapIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
-import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE } from "@/lib/constants";
-import Navbar from "@/components/Navbar";
+import { ArrowRightIcon } from "@heroicons/react/24/outline";
+import type { ReactNode } from "react";
 import Footer from "@/components/Footer";
-import FadeIn from "@/components/FadeIn";
-import HeroVideo from "@/components/HeroVideo";
-import OmniGridderComparison from "@/components/OmniGridderComparison";
+import Navbar from "@/components/Navbar";
+import QuickContactForm from "@/components/QuickContactForm";
 import SatelliteDisplay, { type SatelliteSource } from "@/components/SatelliteDisplay";
+import { AMS_PROFILE_URL, SITE } from "@/lib/constants";
 
 export const revalidate = 3600;
 
-const CONSULTATION_HREF = "/book";
+export const metadata = {
+  title: `${SITE.name} | Consultancy in Applied Meteorology`,
+  description:
+    "Applied AI, geospatial data curation, and coordinate reference system transformation for weather and Earth-system work.",
+};
 
-/** Route an external satellite image URL through our same-origin proxy. */
-function sat(url: string) {
+function satelliteImage(url: string) {
   return `/api/satellite?url=${encodeURIComponent(url)}`;
 }
 
-// Geostationary satellite full disk images
-const STATIC_SOURCES: SatelliteSource[] = [
+const GOES_SOURCES: SatelliteSource[] = [
   {
-    url: sat("https://cdn.star.nesdis.noaa.gov/GOES16/ABI/FD/GEOCOLOR/678x678.jpg"),
-    label: "GOES-16 East",
+    url: satelliteImage("https://cdn.star.nesdis.noaa.gov/GOES16/ABI/FD/GEOCOLOR/678x678.jpg"),
+    label: "GOES East",
     region: "Americas · Atlantic",
   },
   {
-    url: sat("https://cdn.star.nesdis.noaa.gov/GOES18/ABI/FD/GEOCOLOR/678x678.jpg"),
-    label: "GOES-18 West",
+    url: satelliteImage("https://cdn.star.nesdis.noaa.gov/GOES18/ABI/FD/GEOCOLOR/678x678.jpg"),
+    label: "GOES West",
     region: "Americas · Pacific",
   },
 ];
 
-const transformationSkills = [
-  {
-    title: "Projection & CRS expertise",
-    body: "Move between geographic and projected coordinate systems while respecting the geometry your operational workflow requires.",
-  },
-  {
-    title: "Complex grid transformations",
-    body: "Work across rectilinear, curvilinear, point-based, and HEALPix grids, including changes in resolution and extent.",
-  },
-  {
-    title: "Method matched to the data",
-    body: "Select interpolation and remapping methods according to whether the field is continuous, categorical, or must preserve totals.",
-  },
-  {
-    title: "Validated, usable delivery",
-    body: "Receive the requested target grid with quality checks and outputs prepared for the system, model, or analysis that needs them.",
-  },
-];
-
-export const metadata = {
-  title: `${SITE.name} | ${SITE.tagline}`,
-  description:
-    "Agentic OG: a cloud-native regridding engine for satellite and NWP data, built by a career atmospheric scientist. Veteran-owned. SAM registered. Based in Oklahoma.",
-};
-
-export default async function Home() {
-  const sources: SatelliteSource[] = [...STATIC_SOURCES];
+function TextLink({ href, children }: { href: string; children: ReactNode }) {
   return (
-    <div className="flex flex-col min-h-[100dvh]">
+    <a
+      href={href}
+      className="group inline-flex items-center gap-2 border-b border-[#29426c]/35 pb-1 text-sm font-semibold text-[#29426c] transition-colors duration-200 hover:border-[#29426c]"
+    >
+      {children}
+      <ArrowRightIcon className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+    </a>
+  );
+}
+
+export default function Home() {
+  return (
+    <div className="flex min-h-[100dvh] flex-col bg-[#f4f1ea] text-[#17252f]">
       <Navbar />
 
-      {/* Hero Section */}
       <main id="main" className="flex-1">
-        <section className="relative pt-32 pb-20 md:pt-48 md:pb-40 overflow-hidden">
-          <HeroVideo />
-
-          {/* Fallback static image (shows when video file is absent or unsupported) */}
-          {/* Backgrounds are self-hosted — sources documented in public/images/README.md */}
-          <div className="absolute inset-0 -z-[21]">
-            <Image
-              src="/images/home/hero-earth.webp"
-              alt=""
-              aria-hidden="true"
-              fill
-              className="object-cover opacity-50 contrast-125"
-              priority
-              sizes="100vw"
-            />
-          </div>
-
-          <div className="absolute inset-0 bg-gradient-to-b from-[#101820]/40 via-[#101820]/90 to-[#101820] -z-10" />
-
-          <SatelliteDisplay sources={sources} />
-
-          <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6">
-            <FadeIn delay={0.2}>
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-semibold tracking-tighter text-white mb-6 leading-[1.1]">
-                Agentic Regridding, <br className="hidden sm:block" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-av-ice to-av-light">
-                  For Real Pipelines.
-                </span>
-              </h1>
-            </FadeIn>
-
-            <FadeIn delay={0.3}>
-              <p className="max-w-2xl text-lg md:text-xl text-av-ice/75 mb-10 leading-relaxed font-light">
-                Agentic OG moves satellite and NWP data onto whatever grid a downstream system needs — a cloud-native regridding engine, not another team reimplementing interpolation math.
-              </p>
-            </FadeIn>
-
-            <FadeIn delay={0.4}>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <a
-                  href={CONSULTATION_HREF}
-                  className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-black transition-colors hover:bg-gray-200"
-                >
-                  Discuss Your Data
-                </a>
-                <a
-                  href="#results"
-                  className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 bg-black px-8 text-sm font-medium text-white transition-colors hover:bg-white/5"
-                >
-                  See Before &amp; After <ArrowRightIcon className="ml-2 h-4 w-4" />
-                </a>
-              </div>
-            </FadeIn>
-          </div>
-        </section>
-
-        {/* Transformation Expertise Section */}
-        <section id="expertise" className="py-24 bg-[#111014] border-t border-white/5">
-          <div className="mx-auto max-w-5xl px-4 sm:px-6">
-            <FadeIn delay={0}>
-              <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Earth-Data Transformation Expertise</p>
-              <h2 className="max-w-4xl text-3xl md:text-5xl font-semibold text-white tracking-tight mb-5">
-                Get the data right without losing months to the tooling
-              </h2>
-              <p className="max-w-3xl text-gray-400 font-light leading-relaxed">
-                Finding the right library is only the beginning. Installation, dependencies, grid definitions, method selection, validation, and production integration can consume months before the first trustworthy result. Bring us the source data and the required destination; we handle the specialized work between them.
-              </p>
-            </FadeIn>
-
-            <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {transformationSkills.map((skill, i) => (
-                <FadeIn key={skill.title} delay={0.05 + i * 0.05} className="h-full">
-                  <div className="h-full rounded-xl border border-white/10 bg-white/[0.025] p-6 transition-colors hover:border-blue-500/30 hover:bg-blue-500/[0.05]">
-                    <h3 className="text-lg font-medium text-white">{skill.title}</h3>
-                    <p className="mt-3 text-sm text-gray-400 font-light leading-relaxed">{skill.body}</p>
-                  </div>
-                </FadeIn>
-              ))}
-            </div>
-
-            <FadeIn delay={0.25}>
-              <div className="mt-10 flex flex-col gap-5 rounded-xl border border-blue-500/25 bg-blue-500/[0.06] p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
-                <div className="max-w-2xl">
-                  <h3 className="text-xl font-medium text-white">Your team needs the result, not another toolchain to maintain.</h3>
-                  <p className="mt-2 text-sm font-light leading-relaxed text-gray-400">
-                    Start with the grid you have and the grid you need. We&apos;ll identify the right transformation path and show what a reliable delivery looks like.
-                  </p>
-                </div>
-                <a
-                  href={CONSULTATION_HREF}
-                  className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-md bg-white px-7 text-sm font-medium text-black transition-colors hover:bg-gray-200"
-                >
-                  Discuss Your Data <ArrowRightIcon className="h-4 w-4" />
-                </a>
-              </div>
-            </FadeIn>
-          </div>
-        </section>
-
-        {/* Real Proof Section */}
-        <section id="results" className="py-24 bg-background border-t border-white/5">
-          <div className="mx-auto max-w-5xl px-4 sm:px-6">
-            <FadeIn>
-              <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Before &amp; After</p>
-              <h2 className="text-3xl md:text-5xl font-semibold text-white tracking-tight mb-5">
-                See the Geometry Change
-              </h2>
-              <p className="max-w-3xl text-gray-400 font-light leading-relaxed mb-12">
-                One controlled temperature field, shown first on its geographic source grid and then in the projected form used for operational delivery.
-              </p>
-            </FadeIn>
-            <FadeIn delay={0.1}>
-              <OmniGridderComparison />
-              <div className="mt-7 flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
-                <div className="inline-flex max-w-full items-start gap-2 rounded-2xl border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-xs text-blue-300 sm:items-center sm:rounded-full sm:py-1.5">
-                  <ShieldCheckIcon className="h-4 w-4 shrink-0" />
-                  <span>Reviewed by an AMS Certified Consulting Meteorologist (CCM) with an MSc in Applied AI</span>
-                </div>
-                <a href="/agentic-og" className="flex shrink-0 items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition">
-                  Read the full technical brief <ArrowRightIcon className="h-3.5 w-3.5" />
-                </a>
-              </div>
-            </FadeIn>
-          </div>
-        </section>
-
-        {/* People Banner — every job is watched by someone, not just a dashboard */}
-        <section className="relative h-64 md:h-80 border-t border-white/5 overflow-hidden">
-          <Image
-            src="https://images.unsplash.com/photo-1754152365074-b1014729ce37?fm=jpg&q=80&w=1920&auto=format&fit=crop"
-            alt="An engineer monitoring live data on screen"
-            fill
-            className="object-cover"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#101820] via-[#101820]/60 to-[#101820]/20" />
-          <div className="absolute inset-0 flex items-end">
-            <div className="mx-auto w-full max-w-5xl px-4 pb-8 sm:px-6">
-              <FadeIn>
-                <p className="text-white font-light text-lg md:text-xl max-w-xl">
-                  Every job is monitored end to end — submission, queueing, compute, and delivery — with a person accountable for the result.
+        <section className="border-b border-[#17252f]/20 bg-[#f4f1ea] pt-20">
+          <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
+            <div className="grid min-h-[40rem] grid-cols-1 gap-14 py-16 md:py-20 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,0.6fr)] lg:items-center lg:gap-20 lg:py-24">
+              <div>
+                <p className="mb-6 text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">
+                  Aetheris Vision LLC
                 </p>
-              </FadeIn>
-            </div>
-          </div>
-        </section>
-
-        {/* Why Trust This Section */}
-        <section className="py-24 bg-[#111014] border-t border-white/5 relative overflow-hidden">
-          <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6">
-            <FadeIn>
-              <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Why Trust This</p>
-              <h2 className="text-3xl md:text-5xl font-semibold text-white tracking-tight mb-12">
-                Built by Someone Who Depends on It
-              </h2>
-            </FadeIn>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-              <FadeIn delay={0.05} direction="up" className="h-full">
-                <div className="group relative rounded-xl border border-blue-500/20 bg-blue-500/[0.04] p-6 md:p-8 transition hover:bg-blue-500/[0.07] hover:border-blue-500/30 flex flex-col h-full overflow-hidden">
-                  <div className="absolute inset-0 rounded-xl overflow-hidden">
-                    <Image
-                      src="/images/competencies/applied-meteorology.webp"
-                      alt=""
-                      aria-hidden="true"
-                      fill
-                      className="object-cover object-[50%_22%] opacity-[0.65] group-hover:opacity-[0.8] transition-opacity duration-500"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#101820]/20 via-[#101820]/70 to-[#101820]/92" />
-                  </div>
-                  <div className="relative z-10">
-                    <div className="h-12 w-12 rounded-lg bg-gray-900 border border-blue-500/30 flex items-center justify-center mb-6">
-                      <GlobeAltIcon className="h-6 w-6 text-blue-400" />
-                    </div>
-                    <h3 className="text-xl font-medium text-white mb-3">35 Years With This Data</h3>
-                    <p className="text-gray-400 font-light leading-relaxed text-sm">
-                      Global atmospheric modeling and operational forecasting since a career that began as a <strong className="text-gray-200">United States Air Force</strong> weather forecaster — the exact data this engine regrids.
-                    </p>
-                  </div>
-                </div>
-              </FadeIn>
-
-              <FadeIn delay={0.1} direction="up" className="h-full">
-                <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 md:p-8 transition hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full overflow-hidden">
-                  <div className="absolute inset-0 rounded-xl overflow-hidden">
-                    <Image
-                      src="/images/competencies/technical-advisory.webp"
-                      alt=""
-                      aria-hidden="true"
-                      fill
-                      className="object-cover opacity-[0.65] group-hover:opacity-[0.8] transition-opacity duration-500"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#101820]/20 via-[#101820]/70 to-[#101820]/92" />
-                  </div>
-                  <div className="relative z-10">
-                    <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">
-                      <AcademicCapIcon className="h-6 w-6 text-blue-400" />
-                    </div>
-                    <h3 className="text-xl font-medium text-white mb-3">PhD-Level Science</h3>
-                    <p className="text-gray-400 font-light leading-relaxed text-sm">
-                      AMS Certified Consulting Meteorologist, PhD in atmospheric and environmental science — the interpolation math is checked against decades of domain judgment, not just unit tests.
-                    </p>
-                    <a href="/about" className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition mt-4">
-                      Read the founder&apos;s story <ArrowRightIcon className="h-3.5 w-3.5" />
-                    </a>
-                  </div>
-                </div>
-              </FadeIn>
-
-              <FadeIn delay={0.15} direction="up" className="h-full">
-                <div className="group relative rounded-xl border border-white/5 bg-white/[0.02] p-6 md:p-8 transition hover:bg-white/[0.04] hover:border-white/10 flex flex-col h-full overflow-hidden">
-                  <div className="absolute inset-0 rounded-xl overflow-hidden">
-                    <Image
-                      src="/images/competencies/state-federal-contracting.webp"
-                      alt=""
-                      aria-hidden="true"
-                      fill
-                      className="object-cover object-[50%_72%] opacity-[0.8] group-hover:opacity-[0.95] transition-opacity duration-500"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#101820]/10 via-[#101820]/50 to-[#101820]/85" />
-                  </div>
-                  <div className="relative z-10">
-                    <div className="h-12 w-12 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center mb-6">
-                      <ShieldCheckIcon className="h-6 w-6 text-blue-400" />
-                    </div>
-                    <h3 className="text-xl font-medium text-white mb-3">Federal-Ready</h3>
-                    <p className="text-gray-400 font-light leading-relaxed text-sm">
-                      SAM.gov registered, SDVOSB/VOSB eligible, U.S. Government Secret clearance held. Ready to work directly with agencies on specialized weather, AI, and defense system requirements.
-                    </p>
-                    <a href={CAPABILITY_STATEMENT_REQUEST_HREF} className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition mt-4">
-                      Request capability statement <ArrowRightIcon className="h-3.5 w-3.5" />
-                    </a>
-                  </div>
-                </div>
-              </FadeIn>
-            </div>
-          </div>
-        </section>
-
-        {/* Contact CTA Section */}
-        <section className="py-24 bg-[#111014] border-t border-white/5">
-          <div className="mx-auto max-w-5xl px-4 sm:px-6">
-            <FadeIn>
-              <div className="relative flex flex-col justify-between gap-10 overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] p-6 sm:p-10 md:flex-row md:items-center md:p-14">
-                {/* Background — a storm watcher facing an approaching plains storm (see public/images/README.md) */}
-                <div className="absolute inset-0 rounded-2xl overflow-hidden">
-                  <Image
-                    src="/images/home/cta-storm-watch.webp"
-                    alt=""
-                    aria-hidden="true"
-                    fill
-                    className="object-cover object-[50%_45%] opacity-[0.5]"
-                    sizes="(max-width: 1024px) 100vw, 1024px"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#101820]/95 via-[#101820]/75 to-[#101820]/35" />
-                </div>
-                {/* Glow */}
-                <div className="absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-blue-600/10 blur-3xl pointer-events-none" />
-
-                <div className="relative z-10 max-w-xl">
-                  <div className="flex items-center gap-2 text-blue-400 text-sm font-semibold tracking-widest uppercase mb-4">
-                    <span className="h-px w-6 bg-blue-500"></span> Get Started
-                  </div>
-                  <h2 className="text-3xl md:text-4xl font-semibold text-white tracking-tight mb-4">
-                    Ready to regrid something real?
-                  </h2>
-                  <p className="text-gray-400 font-light leading-relaxed">
-                    Tell us about your pipeline and we&apos;ll respond within one business day to arrange a consultation or private demo walkthrough.
-                  </p>
-                </div>
-
-                <div className="relative z-10 flex flex-col gap-4 shrink-0">
+                <h1 className="max-w-5xl font-serif text-[clamp(3.2rem,7.1vw,6.8rem)] leading-[0.94] tracking-[-0.045em] text-[#0a1628]">
+                  Consultancy in Applied Meteorology
+                </h1>
+                <p className="mt-8 max-w-3xl text-base font-semibold uppercase leading-7 tracking-[0.08em] text-[#344852] sm:text-lg">
+                  Applied AI <span aria-hidden="true" className="px-1 text-[#7eabca]">|</span>{" "}
+                  Geospatial Data Curation <span aria-hidden="true" className="px-1 text-[#7eabca]">|</span>{" "}
+                  Coordinate Reference System Transformation
+                </p>
+                <p className="mt-7 max-w-2xl text-lg leading-8 text-[#4b5d64]">
+                  More than 35 years across operational weather, scientific analysis, software delivery, and weather research.
+                </p>
+                <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
                   <a
-                    href={CONSULTATION_HREF}
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-white px-8 text-sm font-medium text-black hover:bg-gray-200 transition"
+                    href="#contact"
+                    className="inline-flex min-h-12 items-center justify-center gap-3 bg-[#0a1628] px-7 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#29426c]"
                   >
-                    <ArrowRightIcon className="h-4 w-4" />
-                    Discuss Your Data
+                    Start a conversation <ArrowRightIcon className="h-4 w-4" />
                   </a>
-                  <a
-                    href="/contact"
-                    className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 bg-transparent px-8 text-sm font-medium text-white hover:bg-white/5 transition"
-                  >
-                    Contact Us
-                  </a>
+                  <TextLink href="#how-we-work">How the work begins</TextLink>
                 </div>
               </div>
-            </FadeIn>
+
+              <aside className="border-l border-[#17252f]/20 pl-6 sm:pl-8 lg:pl-10" aria-label="Principal consultant">
+                <div className="relative mb-7 aspect-[3/4] w-44 overflow-hidden bg-[#e7edf0] sm:w-52">
+                  <Image
+                    src="/images/about/marston-ward-ams-ccm.webp"
+                    alt="Marston Ward, founder and principal consultant of Aetheris Vision"
+                    fill
+                    className="object-cover object-top"
+                    priority
+                    sizes="208px"
+                  />
+                </div>
+                <p className="font-serif text-2xl text-[#0a1628]">Marston Ward, Ph.D., CCM</p>
+                <p className="mt-1 text-sm font-semibold uppercase tracking-[0.12em] text-[#486890]">
+                  Founder &amp; Principal Consultant
+                </p>
+                <p className="mt-5 max-w-sm text-sm leading-6 text-[#4b5d64]">
+                  AMS Certified Consulting Meteorologist. The person who scopes the engagement remains directly involved through delivery.
+                </p>
+                <a
+                  href={AMS_PROFILE_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#29426c] hover:underline"
+                >
+                  View AMS credentials <ArrowRightIcon className="h-4 w-4" />
+                </a>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        <section id="expertise" className="scroll-mt-20 bg-[#fbfaf7] py-20 sm:py-28">
+          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-5 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-24 lg:px-10">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Our Offering</p>
+              <h2 className="mt-5 max-w-xl font-serif text-4xl leading-tight tracking-[-0.025em] text-[#0a1628] sm:text-6xl">
+                Scientific judgment, carried through to delivery
+              </h2>
+            </div>
+            <div className="border-y border-[#17252f]/20 py-8 sm:py-10">
+              <p className="font-serif text-2xl leading-snug text-[#0a1628] sm:text-3xl">
+                Projects often reach us where the science and the delivery meet: data need careful preparation, a forecast or model result needs an independent review, or a proven research process needs to work reliably for a broader team.
+              </p>
+              <p className="mt-7 max-w-3xl text-base leading-8 text-[#42565f]">
+                Aetheris Vision brings meteorological judgment, data engineering, and applied AI together around the result the project needs. One engagement may span analysis, data curation, and software. The scope follows the question—not a preset service package.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-y border-[#17252f]/15 bg-[#e9eff1] py-20 sm:py-28">
+          <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-24">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Project-Ready Data</p>
+                <h2 className="mt-5 max-w-lg font-serif text-4xl leading-tight tracking-[-0.025em] text-[#0a1628] sm:text-5xl">
+                  The hard part is often preparing the data
+                </h2>
+              </div>
+              <div>
+                <p className="font-serif text-2xl leading-snug text-[#0a1628] sm:text-3xl">
+                  Preparing scientific and geospatial data can consume a significant share of a project&apos;s schedule and budget before analysis begins.
+                </p>
+                <p className="mt-6 max-w-3xl text-base leading-8 text-[#42565f]">
+                  Source data may be readily available and still difficult to read correctly. GRIB, BUFR, NetCDF, HDF, and other scientific formats can be handled within one coherent workflow. The real work is preserving meaning as data move between formats, grids, coordinate systems, and resolutions.
+                </p>
+                <p className="mt-5 max-w-3xl text-base leading-8 text-[#42565f]">
+                  Aetheris Vision can acquire and curate the data, perform the transformation, and deliver the result in the format, grid, coordinate reference system, and resolution your project requires. Before full production, you can review a representative sample. Delivery includes documentation of the data sources, transformation steps, assumptions, and any measurable change introduced by regridding or resampling.
+                </p>
+                <div className="mt-7">
+                  <TextLink href="#contact">Describe the data you need</TextLink>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-14 border-t border-[#17252f]/20 pt-10 sm:mt-20 sm:pt-12">
+              <SatelliteDisplay sources={GOES_SOURCES} />
+              <p className="mt-4 max-w-3xl text-xs leading-5 text-[#5b6c72]">
+                Current NOAA GOES full-disk views, shown here as live Earth-system context. These images are not Omni Gridder output.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="how-we-work" className="scroll-mt-20 bg-[#0a1628] py-20 text-white sm:py-24">
+          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-5 sm:px-8 lg:grid-cols-[0.72fr_1.28fr] lg:gap-24 lg:px-10">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7eabca]">How We Work</p>
+              <h2 className="mt-5 max-w-lg font-serif text-4xl leading-tight tracking-[-0.025em] sm:text-5xl">
+                Direct involvement from first question to final delivery
+              </h2>
+            </div>
+            <div className="border-y border-white/25 py-8 sm:py-10">
+              <p className="max-w-3xl font-serif text-2xl leading-snug text-white/95 sm:text-3xl">
+                We begin with the outcome you need, the data and documentation available, and the practical consequences of error.
+              </p>
+              <p className="mt-6 max-w-3xl text-base leading-8 text-white/65">
+                We then define the smallest useful scope: an independent review, a focused analysis, a curated dataset, or a working technical delivery. Responsibilities, timing, and commercial terms are agreed before work begins. Marston Ward leads the engagement and remains directly involved through completion.
+              </p>
+              <p className="mt-5 max-w-3xl text-base leading-8 text-white/65">
+                The workflow developed for each engagement is documented and preserved after delivery, so future reruns do not begin from scratch. Project-specific data acquired for the work and the agreed deliverables belong to the client, subject to source-license terms; at closeout, they are transferred and our working copies are removed under the agreed retention schedule. Longer-term storage, managed reruns, and continuing support can be included in an ongoing service agreement.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="selected-work" className="scroll-mt-20 bg-[#fbfaf7] py-20 sm:py-28">
+          <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:gap-20">
+              <div className="flex flex-col items-start justify-center">
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Selected Example · Omni Gridder</p>
+                <h2 className="mt-5 font-serif text-4xl leading-tight tracking-[-0.025em] text-[#0a1628] sm:text-6xl">
+                  One regridding problem, made visible
+                </h2>
+                <p className="mt-6 max-w-xl text-base leading-8 text-[#42565f]">
+                  Omni Gridder shows how Aetheris Vision approaches one kind of geospatial transformation: moving Earth-system data between grids while preserving scientific meaning. The public demonstration shows selected inputs and outputs; the production methods remain proprietary.
+                </p>
+                <div className="mt-8">
+                  <TextLink href="/omni-gridder">Explore this Omni Gridder example</TextLink>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <figure className="border border-[#17252f]/20 bg-white p-3">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-[#dfe7eb]">
+                    <Image
+                      src="/images/omni-gridder/source-grid-plate-carree.png"
+                      alt="A gridded meteorological field in a geographic coordinate system"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 100vw, 35vw"
+                    />
+                  </div>
+                  <figcaption className="px-1 pb-1 pt-4">
+                    <span className="block text-xs font-bold uppercase tracking-[0.18em] text-[#486890]">Source grid</span>
+                    <span className="mt-1 block font-serif text-xl text-[#0a1628]">Geographic coordinates</span>
+                  </figcaption>
+                </figure>
+                <figure className="border border-[#17252f]/20 bg-white p-3 sm:mt-12">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-[#dfe7eb]">
+                    <Image
+                      src="/images/omni-gridder/target-grid-lambert.png"
+                      alt="The same meteorological field transformed to a Lambert Conformal grid"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 100vw, 35vw"
+                    />
+                  </div>
+                  <figcaption className="px-1 pb-1 pt-4">
+                    <span className="block text-xs font-bold uppercase tracking-[0.18em] text-[#486890]">Transformed grid</span>
+                    <span className="mt-1 block font-serif text-xl text-[#0a1628]">Lambert Conformal</span>
+                  </figcaption>
+                </figure>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-y border-[#17252f]/15 bg-[#e9eff1] py-20 sm:py-24">
+          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-5 sm:px-8 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-20 lg:px-10">
+            <figure>
+              <div className="relative aspect-[16/10] overflow-hidden bg-[#dfe7eb]">
+                <Image
+                  src="/images/home/applied-meteorology-workspace-v1.webp"
+                  alt="Two scientific professionals reviewing meteorological and geospatial data at a multi-monitor workstation"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+              </div>
+              <figcaption className="mt-3 text-xs leading-5 text-[#5b6c72]">
+                Illustrative view of collaborative weather-data analysis. People shown are not Aetheris Vision personnel.
+              </figcaption>
+            </figure>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Applied Meteorology in Practice</p>
+              <blockquote className="mt-5 max-w-xl font-serif text-3xl leading-tight text-[#0a1628] sm:text-4xl">
+                “My job is to make sure the data are read correctly—and that the science survives implementation.”
+              </blockquote>
+              <p className="mt-4 text-sm font-semibold text-[#486890]">— Marston Ward, Ph.D., CCM</p>
+              <p className="mt-7 max-w-xl text-base leading-8 text-[#42565f]">
+                Marston Ward brings more than 35 years across operational weather, scientific analysis, software delivery, and weather research. His work connects meteorology, geospatial data, and software without losing the scientific meaning between them.
+              </p>
+              <div className="mt-8 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+                <a
+                  href="#contact"
+                  className="inline-flex min-h-12 items-center justify-center gap-3 bg-[#0a1628] px-7 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#29426c]"
+                >
+                  Discuss your project <ArrowRightIcon className="h-4 w-4" />
+                </a>
+                <TextLink href="/about">Meet Marston Ward</TextLink>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="contact" className="scroll-mt-20 bg-[#0a1628] py-20 text-white sm:py-28">
+          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-5 sm:px-8 lg:grid-cols-[0.78fr_1.22fr] lg:gap-24 lg:px-10">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7eabca]">Start a Conversation</p>
+              <h2 className="mt-5 max-w-xl font-serif text-4xl leading-tight tracking-[-0.025em] sm:text-6xl">
+                What do you need help deciding or delivering?
+              </h2>
+              <p className="mt-6 max-w-lg text-base leading-8 text-white/65">
+                Share the outcome you need, the data or system involved, and any timing constraints. A few sentences are enough. Marston Ward reviews every inquiry and typically replies within one business day.
+              </p>
+              <p className="mt-7 text-sm text-white/60">
+                Prefer to talk?{" "}
+                <a href="/book" className="font-semibold text-[#9bc3df] underline decoration-[#9bc3df]/40 underline-offset-4 hover:decoration-[#9bc3df]">
+                  Book a consultation.
+                </a>
+              </p>
+            </div>
+            <QuickContactForm />
           </div>
         </section>
       </main>

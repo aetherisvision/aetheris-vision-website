@@ -18,7 +18,7 @@ const newsreader = Newsreader({
 });
 
 export const metadata: Metadata = {
-  title: `${SITE.name} | Custom Web Development & Technical Consulting`,
+  title: `${SITE.name} | ${SITE.tagline}`,
   description: SITE.description,
   metadataBase: new URL(SITE.url),
   robots: { index: false, follow: false },

@@ -6,18 +6,21 @@ import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE, SAM } from "@/lib/constants";
 export const metadata = {
   title: `Capabilities Statement | ${SITE.name}`,
   description:
-    "Aetheris Vision capabilities statement: NAICS codes, contract vehicles, core competencies, and past performance for state and federal procurement.",
+    "Aetheris Vision registration data, contracting codes, core competencies, and differentiators for state and federal procurement.",
 };
 
 const companyData: { label: string; value: ReactNode }[] = [
   { label: "Legal Name", value: SITE.legalName },
-  { label: "Business Type", value: "Veteran-Owned Small Business (SDVOSB / VOSB, certification in process)" },
+  { label: "Business Type", value: "Veteran-owned small business" },
   { label: "UEI", value: <span className="font-mono">{SAM.uei}</span> },
   { label: "CAGE", value: <span className="font-mono">{SAM.cage}</span> },
   { label: "SAM.gov", value: "Active" },
   { label: "Primary NAICS", value: `${SAM.naicsPrimary}: Scientific & Technical Consulting` },
-  { label: "8(a) Status", value: "Eligible, application planned for 2027" },
-  { label: "Security Clearance", value: "U.S. Government Secret (held)" },
+  {
+    label: "Certifications",
+    value: "SDVOSB/VOSB eligible; SBA VetCert pending. HUBZone eligible; certification pending.",
+  },
+  { label: "Security Clearance", value: "Active U.S. Government Secret, held by principal" },
   {
     label: "Primary Contact",
     value: (
@@ -60,47 +63,48 @@ const competencies = [
   {
     title: "Atmospheric Science & Forecasting",
     items: [
-      "AMS Certified Consulting Meteorologist (CCM) — premier credential held by ~600 active nationwide",
-      "AI-hybrid systems built on modern NWP models (GraphCast, Pangu-Weather integration)",
-      "Mesoscale prediction systems for demanding operational environments",
-      "Arctic and complex terrain dynamics, informed by years of field forecasting",
-      "Real-time decision support for time-sensitive, high-consequence operations",
+      "AMS Certified Consulting Meteorologist (CCM) expertise held by the principal",
+      "Forecast and model-output interpretation for operational and planning decisions",
+      "Verification, uncertainty, and quality assessment",
+      "Weather and climate data workflows",
+      "Scientific subject-matter review and decision support",
     ],
   },
   {
     title: "Applied AI & Machine Learning",
     items: [
-      "Deep learning architectures that complement and modernize ensemble forecasting",
-      "Uncertainty quantification pipelines that turn complex data into clear, actionable output",
-      "Large-scale reanalysis processing (ERA5, MERRA-2) tuned for production deployment",
-      "Cloud-native solutions deployed on AWS GovCloud and Azure Government infrastructure",
+      "AI and machine-learning opportunity assessment",
+      "Evaluation of data readiness, validation needs, uncertainty, and workflow fit",
+      "Scientific software and data-pipeline prototypes",
+      "Architecture and integration support scoped to the engagement",
     ],
   },
   {
     title: "Modernization & Transition",
     items: [
-      "Assessment of existing operational frameworks and practical paths to improve them",
-      "AI/ML validation protocols that reduce deployment risk in high-consequence environments",
-      "Workforce enablement: helping meteorologists work effectively alongside AI tools",
-      "Technology transition support, from concept through operational use",
+      "Assessment of existing workflows and practical paths to improve them",
+      "Validation planning for AI, data, and software changes",
+      "Human-in-the-loop workflow and adoption planning",
+      "Technical roadmaps from concept through an agreed delivery stage",
     ],
   },
   {
     title: "Federal Registrations",
     items: [
       `SAM.gov registered: UEI ${SAM.uei}, CAGE ${SAM.cage}`,
-      `${SAM.setAside} eligible, with access to Veterans First Contracting Program set-asides`,
+      "SDVOSB/VOSB eligible; SBA VetCert application pending",
+      "HUBZone eligible; certification pending",
       "Oklahoma Supplier Portal: state-level contracting access (registration in progress)",
-      "U.S. Government Secret clearance (held across military and civilian assignments; facility clearance scalable for classified program support)",
+      "Active U.S. Government Secret clearance held by the principal",
     ],
   },
   {
     title: "Program Leadership",
     items: [
-      "Technical direction for defense and civil agency modernization programs",
-      "Integrated product team (IPT) leadership across multi-agency coordination efforts",
-      "Technology assessment and rapid, responsible deployment",
-      "Workforce development: mentoring junior staff and building team capability",
+      "Technical planning and coordination for multidisciplinary work",
+      "Independent review of assumptions, risks, and delivery options",
+      "Translation between domain experts, technical teams, and decision owners",
+      "Workforce development, mentoring, and team-capability support",
     ],
   },
   {
@@ -117,15 +121,15 @@ const competencies = [
 const differentiators = [
   {
     title: "Focused, Not Generalist",
-    body: "Rather than claiming to do everything, we concentrate on three areas we know deeply: atmospheric physics, applied AI, and defense and government systems. You get specialists, not a catch-all consultancy.",
+    body: "Rather than claiming to do everything, we concentrate on weather and Earth systems, geospatial data, applied AI, and practical technical delivery. You get specialist attention, not a catch-all consultancy.",
   },
   {
-    title: "Decades of Operational Experience",
-    body: "More than 35 years working with the atmosphere, from USAF forecasting in the 1990s to achieving the prestigious AMS Certified Consulting Meteorologist (CCM) credential in 2026. This deep expertise informs every system we deliver.",
+    title: "Operational Weather Depth",
+    body: "The principal brings more than 35 years of experience spanning USAF forecasting, international meteorology, research, industry, and the AMS Certified Consulting Meteorologist credential.",
   },
   {
-    title: "Ready for Federal Work",
-    body: "A U.S. Government Secret clearance held across multiple assignments, VOSB eligibility, and an active SAM.gov registration mean we can engage on government work without long onboarding delays.",
+    title: "Government Contracting Foundation",
+    body: "Aetheris Vision is active in SAM.gov, has an assigned UEI and CAGE code, and is pursuing SDVOSB and HUBZone certification. An active Secret clearance is held by the principal.",
   },
 ];
 
@@ -196,17 +200,22 @@ export default function CapabilitiesPage() {
                   Capabilities Statement
                 </h1>
                 <p className="text-gray-400 font-light leading-relaxed">
-                  Applied meteorology, AI/ML integration, and custom software engineering for
-                  state and federal agencies. This page mirrors our official capabilities
-                  statement; a signed PDF is available on request.
+                  Principal-led weather, Earth-system, geospatial, applied-AI, and technical
+                  delivery support for state and federal agencies. Review our registration data,
+                  NAICS codes, Product Service Codes, competencies, and differentiators below.
+                </p>
+                <p className="mt-4 text-xs font-light leading-relaxed text-gray-500">
+                  Experience described here includes the principal&apos;s prior employment, military
+                  service, and program work; it is not represented as Aetheris Vision prime-contract
+                  past performance.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 shrink-0">
                 <a
-                  href="/agentic-og"
+                  href="#contracting-codes"
                   className="inline-flex h-11 items-center gap-2 rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
                 >
-                  See Agentic OG →
+                  View NAICS &amp; PSC Codes
                 </a>
                 <a
                   href={CAPABILITY_STATEMENT_REQUEST_HREF}
@@ -237,7 +246,7 @@ export default function CapabilitiesPage() {
           </section>
 
           {/* Contracting codes */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-16 mb-14">
+          <div id="contracting-codes" className="grid scroll-mt-28 grid-cols-1 gap-x-16 mb-14 lg:grid-cols-2">
             <section aria-labelledby="sec-naics" className="mb-14 lg:mb-0">
               <SectionHeading id="sec-naics" title="NAICS Codes" />
               <CodeTable caption="NAICS Codes" rows={naicsCodes} />
@@ -271,7 +280,7 @@ export default function CapabilitiesPage() {
 
           {/* Differentiators */}
           <section className="mb-16" aria-labelledby="sec-differentiators">
-            <SectionHeading id="sec-differentiators" title="Why Agencies Work With Us" />
+            <SectionHeading id="sec-differentiators" title="Why Agencies May Choose Aetheris Vision" />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-8">
               {differentiators.map((d) => (
                 <div key={d.title}>
@@ -291,10 +300,10 @@ export default function CapabilitiesPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
-                href="/book"
+                href="/contact#contact-form"
                 className="inline-flex h-11 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
               >
-                Discuss Your Data
+                Discuss a Project
               </a>
               <a
                 href={CAPABILITY_STATEMENT_REQUEST_HREF}

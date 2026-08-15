@@ -15,7 +15,7 @@ const badgeStyle = {
   padding: "6px 16px",
 } as const;
 
-const badges = ["VOSB Eligible", "U.S. Government Secret Clearance", "8(a) Eligible (2027)"];
+const badges = ["SAM.gov Active", "UEI and CAGE Assigned", "SDVOSB / HUBZone Pending"];
 
 export default function OGImage() {
   return new ImageResponse(
@@ -59,7 +59,7 @@ export default function OGImage() {
           Statement.
         </h1>
         <p style={{ fontSize: "22px", color: "#9ca3af", marginTop: "28px", maxWidth: "700px", lineHeight: 1.5 }}>
-          NAICS 541360 · 541690 · 541511 · 541715 · SAM.gov Active · VOSB Eligible
+          Scientific consulting · Geospatial services · Custom software · SAM.gov Active
         </p>
         <div style={{ display: "flex", gap: "16px", marginTop: "auto" }}>
           {badges.map((label) => (

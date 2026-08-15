@@ -15,7 +15,7 @@ const badgeStyle = {
   padding: "6px 16px",
 } as const;
 
-const badges = ["35 Years Operational Meteorology", "USAF Veteran", "VOSB Founder"];
+const badges = ["35+ Years Experience", "International Background", "Veteran-Owned"];
 
 export default function OGImage() {
   return new ImageResponse(
@@ -39,10 +39,10 @@ export default function OGImage() {
           </span>
         </div>
         <p style={{ fontSize: "16px", letterSpacing: "3px", color: "#4b5563", textTransform: "uppercase", fontWeight: 600, margin: "0 0 16px" }}>
-          Founder & Chief Meteorologist
+          Specialist Consulting
         </p>
         <h1 style={{ fontSize: "64px", fontWeight: 700, color: "#ffffff", lineHeight: 1.1, margin: 0, letterSpacing: "-2px" }}>
-          Applied Meteorology
+          Experience Across
         </h1>
         <h1
           style={{
@@ -56,10 +56,10 @@ export default function OGImage() {
             letterSpacing: "-2px",
           }}
         >
-          and AI Intelligence.
+          Science and Delivery.
         </h1>
         <p style={{ fontSize: "22px", color: "#9ca3af", marginTop: "28px", maxWidth: "700px", lineHeight: 1.5 }}>
-          Operational meteorology · AI/ML integration · Secure, resilient systems engineering
+          Weather · Earth systems · Geospatial data · Applied AI · Technical delivery
         </p>
         <div style={{ display: "flex", gap: "16px", marginTop: "auto" }}>
           {badges.map((label) => (

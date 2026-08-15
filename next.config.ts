@@ -20,6 +20,7 @@ const nextConfig: NextConfig = {
   // Security-First Configuration
   poweredByHeader: false, // Hide Next.js signature
   compress: true, // Enable gzip compression
+  devIndicators: false, // Keep local client previews free of the Next.js dev badge
   
   images: {
     remotePatterns: [
@@ -38,16 +39,16 @@ const nextConfig: NextConfig = {
   
   async redirects() {
     return [
-      // /services has no index page — send visitors to the web services page
+      // Retire the former product-style name in favor of the consultancy service.
       {
-        source: "/services",
-        destination: "/services/web",
+        source: "/agentic-og",
+        destination: "/omni-gridder",
         permanent: true,
       },
-      // Agentic OG was promoted from a capabilities sub-page to a top-level route
+      // Preserve the original capability URL while using the consultancy name.
       {
         source: "/capabilities/omni-gridder",
-        destination: "/agentic-og",
+        destination: "/omni-gridder",
         permanent: true,
       },
     ];

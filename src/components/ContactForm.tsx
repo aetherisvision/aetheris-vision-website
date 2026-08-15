@@ -9,14 +9,12 @@ const CONTACT_PHONE = SITE.phone;
 const CONTACT_PHONE_HREF = SITE.phoneHref;
 
 const requirementTypes = [
-  "New Website (Custom Build)",
-  "Website Redesign",
-  "E-commerce / Online Store",
-  "Client or Member Portal",
-  "WordPress Development",
-  "Website Maintenance",
-  "Meteorology / AI Consulting",
-  "Federal Contracting",
+  "Weather & Earth-System Consulting",
+  "Geospatial Data & Analysis",
+  "Applied AI & Technical Delivery",
+  "Scientific Software & Data Pipelines",
+  "Web & Digital Systems",
+  "Ongoing Advisory or Support",
   "Capability Statement Request",
   "Other",
 ];
@@ -159,6 +157,7 @@ export default function ContactForm() {
           organization: fields.organization.trim(),
           requirement: fields.requirement,
           message: fields.message.trim(),
+          _gotcha: fields._gotcha,
         }),
       });
 
@@ -202,9 +201,9 @@ export default function ContactForm() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
           </div>
-          <h3 className="text-white font-semibold text-lg mb-2">Message Received</h3>
+          <h3 className="text-white font-semibold text-lg mb-2">Inquiry received</h3>
           <p className="text-gray-400 font-light text-sm">
-            Thank you for reaching out. We will respond within one business day.
+            Thank you. Marston Ward will review your message and typically reply within one business day.
           </p>
         </div>
       </FadeIn>
@@ -288,7 +287,7 @@ export default function ContactForm() {
         {/* Requirement */}
         <div>
           <label htmlFor="requirement" className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-widest">
-            Requirement Type
+            What do you need help with?
           </label>
           <select
             id="requirement"
@@ -325,7 +324,7 @@ export default function ContactForm() {
             onChange={(e) => update("message", e.target.value)}
             onBlur={() => handleBlur("message")}
             data-error={fieldErrors.message ? true : undefined}
-            placeholder="Describe your requirement, timeline, and any relevant context..."
+            placeholder="Tell us what you are working on, the outcome you need, and any timing or constraints."
             className={`w-full rounded-lg border px-4 py-3 text-sm text-white placeholder:text-gray-600 bg-white/[0.03] focus:outline-none focus:bg-white/[0.05] transition resize-none ${
               fieldErrors.message ? "border-red-500/60" : "border-white/10 focus:border-blue-500/50"
             }`}
@@ -335,14 +334,14 @@ export default function ContactForm() {
 
         {status === "unavailable" && (
           <div role="status" className="rounded-md border border-yellow-500/30 bg-yellow-500/[0.06] p-4 text-sm text-yellow-200">
-            Our message form isn&apos;t accepting submissions right now. Please call or text{" "}
+            Our inquiry form isn&apos;t accepting submissions right now. Please call or text{" "}
             <a href={CONTACT_PHONE_HREF} className="underline font-medium">{CONTACT_PHONE}</a>, or{" "}
             <a href="/book" className="underline font-medium">book a call</a>{" "}and we&apos;ll follow up.
           </div>
         )}
 
         {status === "error" && (
-          <p className="text-sm text-red-400">
+          <p role="alert" className="text-sm text-red-400">
             Something went wrong{errorDetail ? `: ${errorDetail}` : ""}. Please try again, or call/text {CONTACT_PHONE}.
           </p>
         )}
@@ -358,12 +357,20 @@ export default function ContactForm() {
           autoComplete="off"
         />
 
+        <p className="text-xs leading-5 text-gray-500">
+          We use your details only to respond to this inquiry. See our{" "}
+          <a href="/privacy" className="text-gray-400 underline decoration-white/20 underline-offset-4 hover:text-white">
+            Privacy Policy
+          </a>
+          . Do not submit classified information, CUI, credentials, or other sensitive records here.
+        </p>
+
         <button
           type="submit"
           disabled={status === "submitting"}
           className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-black hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {status === "submitting" ? "Sending…" : "Send Message"}
+          {status === "submitting" ? "Sending…" : "Send inquiry"}
         </button>
       </form>
     </FadeIn>

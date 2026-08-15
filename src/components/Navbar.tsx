@@ -7,29 +7,20 @@ import Image from "next/image";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import { BRAND_LOGO } from "@/lib/brand";
-import { CAPABILITY_STATEMENT_REQUEST_HREF } from "@/lib/constants";
 
 const navLinks = [
-  { label: "Agentic OG", href: "/agentic-og" },
-  { label: "About", href: "/about" },
-  { label: "Services", href: "/services" },
-  { label: "Request Statement", href: CAPABILITY_STATEMENT_REQUEST_HREF },
-  { label: "Portfolio", href: "/portfolio" },
-  { label: "Blog", href: "/blog" },
-  { label: "Contact", href: "/contact" },
+  { label: "Expertise", href: "/services" },
+  { label: "How We Work", href: "/#how-we-work" },
+  { label: "Selected Work", href: "/#selected-work" },
+  { label: "Principal", href: "/about" },
+  { label: "Federal", href: "/capabilities" },
+  { label: "Insights", href: "/blog" },
 ];
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const contactHref = pathname === "/" ? "/#contact" : "/contact#contact-form";
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMobileOpen(false), [pathname]);
@@ -46,32 +37,19 @@ export default function Navbar() {
   }, [mobileOpen]);
 
   function isActive(href: string) {
-    if (href === "/agentic-og") return pathname.startsWith("/agentic-og");
     if (href === "/blog") return pathname.startsWith("/blog");
     if (href === "/about") return pathname === "/about";
+    if (href === "/capabilities") return pathname === "/capabilities";
     if (href === "/performance") return pathname === "/performance";
     if (href === "/metrics") return pathname === "/metrics";
-    if (href === "/portfolio") return pathname.startsWith("/portfolio");
     if (href === "/contact") return pathname === "/contact";
     if (href === "/services") return pathname.startsWith("/services");
     return false;
   }
 
   return (
-    <header
-      className={clsx(
-        "fixed top-0 w-full z-50 border-b transition-all duration-300",
-        scrolled
-          ? "border-white/10 bg-background/88 backdrop-blur-md shadow-[0_1px_30px_rgba(0,0,0,0.5)]"
-          : "border-white/5 bg-background/50 backdrop-blur-sm"
-      )}
-    >
-      <div
-        className={clsx(
-          "mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 transition-all duration-300 sm:px-6 lg:px-8",
-          scrolled ? "h-14" : "h-16"
-        )}
-      >
+    <header className="fixed top-0 z-50 w-full border-b border-white/15 bg-[#0a1628]">
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
         {/* Logo */}
         <Link href="/" className="flex shrink-0 items-center gap-3 whitespace-nowrap" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
           <Image
@@ -80,49 +58,48 @@ export default function Navbar() {
             aria-hidden="true"
             width={44}
             height={44}
-            className={clsx(
-              "transition-all duration-300",
-              scrolled ? "h-10 w-10" : "h-11 w-11"
-            )}
+            className="h-10 w-10"
           />
-          <div className="text-xl md:text-2xl font-bold tracking-tight text-white">
-            <span className="font-light text-gray-400">Aetheris</span>Vision
+          <div>
+            <div className="text-xl font-bold tracking-tight text-white md:text-2xl">
+              <span className="font-light text-white/65">Aetheris</span>Vision
+            </div>
+            <p className="hidden text-[9px] font-semibold uppercase tracking-[0.18em] text-[#7eabca] sm:block">
+              Scientific &amp; Technical Consulting
+            </p>
           </div>
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden min-w-0 items-center gap-4 text-sm xl:flex 2xl:gap-6">
-          <nav aria-label="Primary navigation" className="flex min-w-0 gap-4 2xl:gap-6">
+        <div className="hidden min-w-0 items-center gap-5 text-sm lg:flex xl:gap-7">
+          <nav aria-label="Primary navigation" className="flex min-w-0 gap-5 xl:gap-7">
             {navLinks.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
                 aria-current={isActive(link.href) ? "page" : undefined}
                 className={clsx(
-                  "flex flex-col items-center whitespace-nowrap transition-colors",
+                  "border-b py-1 text-xs font-semibold uppercase tracking-[0.08em] transition-colors duration-200 xl:text-[13px]",
                   isActive(link.href)
-                    ? "text-white font-medium"
-                    : "text-gray-400 hover:text-white"
+                    ? "border-[#7eabca] text-white"
+                    : "border-transparent text-white/60 hover:border-white/30 hover:text-white"
                 )}
               >
                 {link.label}
-                {isActive(link.href) && (
-                  <span className="block h-px w-full bg-blue-500 mt-0.5 rounded-full" />
-                )}
               </a>
             ))}
           </nav>
           <a
-            href="/book"
-            className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-md bg-white px-4 text-xs font-medium text-black transition hover:bg-gray-200"
+            href={contactHref}
+            className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap border border-white/40 px-4 text-xs font-semibold text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-[#0a1628]"
           >
-            Consultation
+            Start a conversation
           </a>
         </div>
 
         {/* Mobile Hamburger */}
         <button
-          className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-gray-400 transition hover:bg-white/5 hover:text-white xl:hidden"
+          className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-white/70 transition hover:bg-white/5 hover:text-white lg:hidden"
           onClick={() => setMobileOpen((prev) => !prev)}
           aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
           aria-controls="mobile-navigation"
@@ -138,8 +115,8 @@ export default function Navbar() {
 
       {/* Mobile Menu Panel */}
       {mobileOpen && (
-        <div id="mobile-navigation" className="max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-t border-white/5 bg-background/97 backdrop-blur-md xl:hidden">
-          <nav aria-label="Mobile navigation" className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4 sm:px-6">
+        <div id="mobile-navigation" className="max-h-[calc(100dvh-5rem)] overflow-y-auto border-t border-white/15 bg-[#0a1628] lg:hidden">
+          <nav aria-label="Mobile navigation" className="mx-auto flex max-w-7xl flex-col px-5 py-5 sm:px-8">
             {navLinks.map((link) => (
               <a
                 key={link.label}
@@ -147,21 +124,21 @@ export default function Navbar() {
                 aria-current={isActive(link.href) ? "page" : undefined}
                 onClick={() => setMobileOpen(false)}
                 className={clsx(
-                  "flex min-h-11 items-center border-b border-white/5 px-2 py-3 text-sm transition last:border-0",
+                  "flex min-h-12 items-center border-b border-white/10 py-3 text-sm font-semibold transition last:border-0",
                   isActive(link.href)
-                    ? "text-white font-medium"
-                    : "text-gray-400 hover:text-white"
+                    ? "text-white"
+                    : "text-white/60 hover:text-white"
                 )}
               >
                 {link.label}
               </a>
             ))}
             <a
-              href="/book"
+              href={contactHref}
               onClick={() => setMobileOpen(false)}
-              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-black transition hover:bg-gray-200"
+              className="mt-6 inline-flex min-h-12 items-center justify-center border border-white/40 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-[#0a1628]"
             >
-              Consultation
+              Start a conversation
             </a>
           </nav>
         </div>
