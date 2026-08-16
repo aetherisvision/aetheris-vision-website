@@ -34,6 +34,16 @@ export default function Footer() {
             <p className="mt-5 text-sm leading-6 text-white/55">
               Principal-led scientific consulting for weather, Earth systems, and geospatial data — carried through to delivery.
             </p>
+            {/* Business address for local SEO / Google Business Profile.
+                Deliberately no email or phone — contact routes through the
+                verified inquiry form or Cal.com booking; the anti-scraping
+                policy (tests/features/steps/email-security.steps.test.tsx)
+                bans plaintext addresses and mailto: links. */}
+            <address className="mt-5 text-sm not-italic leading-6 text-white/45">
+              {SITE.address.street}
+              <br />
+              {SITE.address.locality}, {SITE.address.region} {SITE.address.postalCode}
+            </address>
           </div>
 
           <div className="md:text-right">

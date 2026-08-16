@@ -7,6 +7,15 @@ export const SITE = {
   email: "contact@aetherisvision.com",
   phone: "(346) 381-9629",
   phoneHref: "tel:+13463819629",
+  // Business NAP — must stay byte-identical to the Google Business Profile
+  // listing and SAM.gov ("PMB", never "#" or "Suite").
+  address: {
+    street: "210 N Mustang Mall Terrace PMB 29",
+    locality: "Mustang",
+    region: "OK",
+    postalCode: "73064",
+    country: "US",
+  },
   description:
     "Principal-led scientific and technical consulting for organizations making difficult weather, Earth-system, geospatial, and data-informed decisions.",
   ogDescription:
@@ -20,6 +29,9 @@ export const CAPABILITY_STATEMENT_REQUEST_HREF =
 /** Public AMS Weather and Climate Directory listing for Aetheris Vision LLC. */
 export const AMS_PROFILE_URL =
   "https://wcdirectory.ametsoc.org/united-states/mustang/service-provider/aetheris-vision-llc";
+
+/** Public GitHub organization for Aetheris Vision LLC. */
+export const GITHUB_ORG_URL = "https://github.com/aetherisvision";
 
 /** Federal contracting registration data */
 export const SAM = {

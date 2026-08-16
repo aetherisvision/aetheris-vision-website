@@ -8,7 +8,6 @@ import {
   CalendarDaysIcon,
   ClipboardDocumentIcon,
   EnvelopeIcon,
-  PhoneIcon,
 } from "@heroicons/react/24/outline";
 import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE } from "@/lib/constants";
 
@@ -94,16 +93,6 @@ export default function ContactPage() {
                     </div>
                     <a href={`mailto:${SITE.email}`} className="text-sm text-gray-400 transition hover:text-white">
                       {SITE.email}
-                    </a>
-                  </div>
-
-                  <div className="py-5">
-                    <div className="mb-1.5 flex items-center gap-3">
-                      <PhoneIcon className="h-4 w-4 text-blue-400" />
-                      <p className="text-sm font-medium text-white">Call or text</p>
-                    </div>
-                    <a href={SITE.phoneHref} className="text-sm text-gray-400 transition hover:text-white">
-                      {SITE.phone}
                     </a>
                   </div>
 
