@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createReview, getApprovedReviews, ensureReviewsTable } from '@/lib/db/reviews'
 import { rateLimit } from '@/lib/rate-limit'
+import { SITE } from '@/lib/constants'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -89,7 +90,7 @@ export async function POST(req: NextRequest) {
     // Send notification email to admin (non-fatal)
     try {
       const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating)
-      const adminUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://aetherisvision.com'}/admin/reviews`
+      const adminUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? SITE.url}/admin/reviews`
       const clientDetails = [client_role, client_company]
         .filter((value): value is string => value !== null)
         .map(escapeHtml)

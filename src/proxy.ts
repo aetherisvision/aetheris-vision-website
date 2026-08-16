@@ -84,7 +84,9 @@ export async function proxy(request: NextRequest) {
   const isPreviewAccessRoute =
     pathname === '/preview' ||
     pathname === '/api/preview/auth' ||
-    pathname === '/api/auth/gmail/callback'
+    pathname === '/api/auth/gmail/callback' ||
+    pathname === '/api/auth/gmail/start' ||
+    pathname === '/api/auth/gmail/status'
   if (
     process.env.PREVIEW_PASSWORD &&
     !pathname.startsWith('/admin') &&

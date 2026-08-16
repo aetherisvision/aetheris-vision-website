@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     })
     response.cookies.set(GMAIL_OAUTH_STATE_COOKIE, nonce, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 10 * 60,
       path: '/',
