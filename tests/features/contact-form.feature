@@ -56,7 +56,7 @@ Feature: Contact Form
   Scenario: Successful submission shows confirmation
     Given a visitor fills in all required fields correctly
     When the API responds with success
-    Then they should see "Message Received"
+    Then they should see "Inquiry received"
 
   Scenario: API failure shows error message
     Given a visitor fills in all required fields correctly
