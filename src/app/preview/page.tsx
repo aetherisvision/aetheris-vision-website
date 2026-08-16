@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import { sanitizePreviewReturnPath } from '@/lib/preview-auth'
+import { SITE } from '@/lib/constants'
 
 export const metadata: Metadata = {
-  title: 'Private Preview | Aetheris Vision',
+  title: `Coming Soon | ${SITE.name}`,
   robots: { index: false, follow: false },
 }
 
@@ -21,33 +22,42 @@ export default async function PreviewPage({ searchParams }: PreviewPageProps) {
   return (
     <main
       id="main"
-      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#070f1e] px-6 py-12"
+      className="flex min-h-screen flex-col items-center justify-center bg-[#f4f1ea] px-6 py-16 text-[#17252f]"
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-40 left-1/2 h-[28rem] w-[42rem] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse,rgba(30,58,95,0.55)_0%,transparent_70%)]"
-      />
-
-      <div className="relative z-10 w-full max-w-sm">
-        <header className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#29426C] to-[#5BA8D9] text-lg font-extrabold text-white shadow-[0_4px_18px_rgba(91,168,217,0.3)]">
-            AV
-          </div>
-          <h1 className="text-lg font-bold text-slate-100">Aetheris Vision</h1>
-          <p className="mt-1 text-sm text-white/40">Private working preview</p>
+      <div className="w-full max-w-2xl">
+        <header className="text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">
+            Aetheris Vision LLC
+          </p>
+          <h1 className="mt-6 font-serif text-[clamp(3.4rem,9vw,6.4rem)] leading-[0.95] tracking-[-0.04em] text-[#0a1628]">
+            Coming in 2026
+          </h1>
+          <p className="mt-7 text-base font-semibold uppercase leading-7 tracking-[0.08em] text-[#344852]">
+            Consultancy in Applied Meteorology
+          </p>
+          <p className="mx-auto mt-6 max-w-md text-base leading-8 text-[#4b5d64]">
+            Our new site is being finalized. For consulting inquiries in the
+            meantime, write to{' '}
+            <a
+              href={`mailto:${SITE.email}`}
+              className="font-semibold text-[#29426c] underline decoration-[#29426c]/30 underline-offset-4 hover:decoration-[#29426c]"
+            >
+              {SITE.email}
+            </a>
+            .
+          </p>
         </header>
 
-        <section className="rounded-2xl border border-white/[0.08] bg-[#0d1b2e] p-8 shadow-[0_24px_64px_rgba(0,0,0,0.5)]">
-          <h2 className="text-xl font-semibold text-slate-100">Preview access</h2>
-          <p className="mt-2 text-sm leading-6 text-white/50">
-            This site remains private while our new consulting site is prepared for launch.
-          </p>
+        <section className="mx-auto mt-16 w-full max-w-sm border-t border-[#17252f]/15 pt-10">
+          <h2 className="text-center text-xs font-bold uppercase tracking-[0.18em] text-[#486890]">
+            Client &amp; partner preview
+          </h2>
 
           <form action="/api/preview/auth" method="post" className="mt-6">
             <input type="hidden" name="next" value={next} />
             <label
               htmlFor="preview-password"
-              className="mb-2 block text-xs font-bold uppercase tracking-[0.1em] text-white/35"
+              className="mb-2 block text-xs font-bold uppercase tracking-[0.1em] text-[#5b6c72]"
             >
               Preview password
             </label>
@@ -56,22 +66,21 @@ export default async function PreviewPage({ searchParams }: PreviewPageProps) {
               name="password"
               type="password"
               required
-              autoFocus
               autoComplete="current-password"
               aria-invalid={hasError}
               aria-describedby={hasError ? 'preview-error' : undefined}
-              className="block w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3.5 text-[15px] text-slate-100 outline-none transition placeholder:text-white/20 focus:border-[#5BA8D9] focus:ring-4 focus:ring-[#5BA8D9]/15"
+              className="block w-full border border-[#17252f]/25 bg-white px-4 py-3.5 text-[15px] text-[#0a1628] outline-none transition focus:border-[#29426c] focus:ring-4 focus:ring-[#29426c]/10"
             />
 
             {hasError && (
-              <p id="preview-error" role="alert" className="mt-3 text-sm font-medium text-red-400">
+              <p id="preview-error" role="alert" className="mt-3 text-sm font-medium text-[#a03123]">
                 That preview password is not correct.
               </p>
             )}
 
             <button
               type="submit"
-              className="mt-5 w-full rounded-xl bg-gradient-to-br from-[#486890] to-[#5BA8D9] px-4 py-3.5 text-[15px] font-bold text-white shadow-[0_4px_16px_rgba(91,168,217,0.3)] transition hover:brightness-110 focus:outline-none focus:ring-4 focus:ring-[#5BA8D9]/25"
+              className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-3 bg-[#0a1628] px-7 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#29426c]"
             >
               Enter preview →
             </button>
