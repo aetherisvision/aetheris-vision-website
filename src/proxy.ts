@@ -87,10 +87,18 @@ export async function proxy(request: NextRequest) {
     pathname === '/preview' ||
     pathname === '/api/preview/auth' ||
     pathname.startsWith('/api/auth/gmail/')
+  // Crawler meta files bypass only the lock (crawlers must always be able to
+  // read crawl policy) but stay in the matcher so they still get the
+  // CSP/security headers applied below.
+  const isCrawlerMetaRoute =
+    pathname === '/robots.txt' ||
+    pathname === '/sitemap.xml' ||
+    pathname === '/manifest.json'
   if (
     process.env.PREVIEW_PASSWORD &&
     !pathname.startsWith('/admin') &&
     !isPreviewAccessRoute &&
+    !isCrawlerMetaRoute &&
     !(await hasPreviewSession(request))
   ) {
     const loginUrl = new URL('/preview', request.url)
@@ -170,9 +178,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // robots.txt / sitemap.xml / manifest.json stay reachable even while the
-  // site lock is on — crawlers must always be able to read crawl policy.
-  matcher: [
-    '/((?!_next/static|_next/image|favicon\\.ico|robots\\.txt|sitemap\\.xml|manifest\\.json).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon\\.ico).*)'],
 }

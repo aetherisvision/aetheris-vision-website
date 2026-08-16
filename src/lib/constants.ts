@@ -30,6 +30,9 @@ export const CAPABILITY_STATEMENT_REQUEST_HREF =
 export const AMS_PROFILE_URL =
   "https://wcdirectory.ametsoc.org/united-states/mustang/service-provider/aetheris-vision-llc";
 
+/** Public GitHub organization for Aetheris Vision LLC. */
+export const GITHUB_ORG_URL = "https://github.com/aetherisvision";
+
 /** Federal contracting registration data */
 export const SAM = {
   uei: "ZM8QWJ4ABWZ9",

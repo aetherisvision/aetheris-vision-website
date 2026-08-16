@@ -35,8 +35,9 @@ export default function Footer() {
               Principal-led scientific consulting for weather, Earth systems, and geospatial data — carried through to delivery.
             </p>
             {/* NAP for local SEO / Google Business Profile. Deliberately no
-                email here — the email anti-scraping policy (see
-                email-security.steps) bans plaintext addresses and mailto:. */}
+                email here — the email anti-scraping policy (enforced by
+                tests/features/steps/email-security.steps.test.tsx) bans
+                plaintext addresses and mailto: links. */}
             <address className="mt-5 text-sm not-italic leading-6 text-white/45">
               {SITE.address.street}
               <br />

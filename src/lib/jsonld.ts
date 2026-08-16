@@ -1,10 +1,10 @@
-import { AMS_PROFILE_URL, SITE } from "./constants";
+import { AMS_PROFILE_URL, GITHUB_ORG_URL, SITE } from "./constants";
 
 /**
  * Same-entity profiles Google uses to reconcile the site with the Google
  * Business Profile and other listings. Add the GBP/LinkedIn URLs when live.
  */
-const SAME_AS = [AMS_PROFILE_URL, "https://github.com/aetherisvision"];
+const SAME_AS = [AMS_PROFILE_URL, GITHUB_ORG_URL];
 
 /** Full Organization entity — use in layout.tsx root JSON-LD */
 export const organizationJsonLd = {
