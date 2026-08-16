@@ -51,6 +51,12 @@ const nextConfig: NextConfig = {
         destination: "/omni-gridder",
         permanent: true,
       },
+      // /security-status was removed; send old links to the practices page.
+      {
+        source: "/security-status",
+        destination: "/security",
+        permanent: true,
+      },
     ];
   },
 
