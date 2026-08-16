@@ -27,6 +27,9 @@ export const SAM = {
   cage: "20SQ1",
   naicsPrimary: "541690",
   setAside: "SDVOSB/VOSB and HUBZone certifications pending",
+  // Single source of truth for set-aside status badges. Never state a
+  // certification is held until VetCert / HUBZone certification is issued.
+  setAsidePills: ["SDVOSB / VOSB — VetCert pending", "HUBZone Eligible"],
   samUrl: "https://sam.gov",
   federalEmail: SITE.email,
 } as const;

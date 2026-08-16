@@ -182,8 +182,7 @@ export default function ServicesPage() {
                 </p>
                 <div className="flex flex-wrap gap-3 mb-8">
                   {[
-                    "SDVOSB / VOSB — VetCert pending",
-                    "HUBZone Eligible",
+                    ...SAM.setAsidePills,
                     `CAGE ${SAM.cage}`,
                     `UEI ${SAM.uei}`,
                     "U.S. Government Secret Clearance",
