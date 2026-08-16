@@ -53,19 +53,19 @@ const authoredPosts: Omit<Post, "readTime">[] = [
     slug: "zero-trust-security-implementation",
     title: "Zero-Trust Security Architecture: Implementation Deep Dive",
     date: "Mar 26, 2026",
-    category: "Defense Systems", 
+    category: "Engineering",
     featured: true,
     author: {
       name: "Marston Ward",
-      title: "Founder & Chief Meteorologist, Aetheris Vision",
+      title: "Founder & Principal Consultant, Aetheris Vision",
       initials: "MW",
     },
     summary:
-      "Building production-grade security middleware with Content Security Policy, rate limiting, and comprehensive threat detection, demonstrated through live implementation.",
+      "An engineering overview of Content Security Policy, rate limiting, and layered request controls used by this site.",
     content: `
-Security isn't a checklist. It's an architectural philosophy that permeates every layer of your system. After 35 years in environments where security failures have lethal consequences, I've learned that **true security requires assuming breach and designing for containment.**
+Security isn't a checklist. It's an architectural philosophy that permeates every layer of your system. After 35 years working with operational weather data, where errors carry real consequences, I've learned that **true security requires assuming breach and designing for containment.**
 
-This isn't theoretical. The security architecture powering this website demonstrates these principles in production: every request you make is monitored, analyzed, and protected by the systems I'll describe.
+This isn't theoretical. The security architecture powering this website demonstrates these principles in production: requests pass through layered security controls.
 
 ## Philosophy: Assume Breach, Design for Containment
 
@@ -81,16 +81,16 @@ For the full technical implementation details, contact us for a complete securit
     slug: "performance-engineering-core-web-vitals",
     title: "Performance Engineering at Scale: Core Web Vitals Beyond the Metrics",
     date: "Mar 25, 2026",
-    category: "AI / ML Integration",
+    category: "Engineering",
     author: {
       name: "Marston Ward", 
-      title: "Founder & Chief Meteorologist, Aetheris Vision",
+      title: "Founder & Principal Consultant, Aetheris Vision",
       initials: "MW",
     },
     summary:
       "Real-time performance monitoring with live Core Web Vitals analysis, memory profiling, and optimization strategies that deliver measurable user experience improvements.",
     content: `
-Performance isn't just about fast page loads. It's about **predictable, reliable systems that scale under real-world conditions**. After building systems for NASA, NOAA, and defense agencies where performance failures have mission consequences, I've learned that true performance engineering requires understanding what actually affects user experience, not just optimizing for benchmark scores.
+Performance isn't just about fast page loads. It's about **predictable, reliable systems that scale under real-world conditions**. After a career spanning USAF operational weather, European research institutes, and industry software delivery, I've learned that true performance engineering requires understanding what actually affects user experience, not just optimizing for benchmark scores.
 
 This website's performance dashboard demonstrates these principles in production, providing real-time analysis of every metric that matters.
 
@@ -104,50 +104,50 @@ For the complete performance engineering methodology, contact us for detailed co
   {
     id: 3,
     slug: "the-convergence-advantage",
-    title: "The Convergence Advantage: Why Most Consultants Can't Compete",
+    title: "The Convergence Advantage: Meteorology, Data, and Software Together",
     date: "Mar 25, 2026",
     category: "Strategy",
     featured: false,
     author: {
       name: "Marston Ward",
-      title: "Founder & Chief Meteorologist, Aetheris Vision",
+      title: "Founder & Principal Consultant, Aetheris Vision",
       initials: "MW",
     },
     summary:
-      "How 35 years of cross-domain expertise in meteorology, AI, and federal contracting creates competitive advantages that cannot be replicated by assembling teams of specialists.",
+      "How 35 years of cross-domain experience in meteorology, data, software, and federal contracting supports integrated technical work.",
     content: `
-The consulting market is flooded with specialists. Meteorologists who understand atmospheric physics. AI experts who build neural networks. Federal contractors who navigate government procurement. Web developers who build digital solutions.
+Complex technical projects often cross disciplinary boundaries. Meteorology, data engineering, software delivery, and federal procurement each contribute a necessary perspective.
 
-But convergence? That's where the real advantage lies.
+Bringing those perspectives together can make requirements, scientific assumptions, and implementation tradeoffs easier to evaluate as one system.
 
-## The Myth of Replaceable Expertise
+## An Integrated Perspective
 
-Most consulting engagements fail because clients hire specialists to solve multidisciplinary problems. The market assumes these skills are interchangeable, or that you can assemble a team of specialists and get the same result. **This is fundamentally wrong.**
+Multidisciplinary work benefits from clear connections between domain science and implementation. That continuity helps keep technical decisions aligned with the operational problem.
 
-At Aetheris Vision, we deliver revolutionary solutions that define new operational paradigms, not iterations on existing frameworks.
+At Aetheris Vision, we deliver integrated solutions grounded in verifiable science.
 
-Contact us to learn how convergence creates competitive advantage for your organization.
+Contact us to discuss how an integrated perspective can support your organization.
     `.trim(),
   },
   {
     id: 2,
     slug: "8a-vosb-defense-contracts",
-    title: "Navigating 8(a) and VOSB Pathways for Defense Contracts",
+    title: "Navigating SDVOSB and HUBZone Pathways for Federal Contracts",
     date: "Jan 15, 2026",
     category: "Contracting",
     author: {
       name: "Marston Ward",
-      title: "Founder & Chief Meteorologist, Aetheris Vision",
+      title: "Founder & Principal Consultant, Aetheris Vision",
       initials: "MW",
     },
     summary:
-      "A strategic overview of how state and federal agencies can leverage Veteran-Owned Small Business (VOSB) statuses to streamline tech procurement and architecture advisement.",
+      "An overview of how SDVOSB/VOSB and HUBZone eligibility can inform federal procurement while applicable certifications remain pending.",
     content: `
 The federal procurement landscape is vast, and for agencies seeking specialized technical consulting (particularly in niche domains like atmospheric modeling, AI integration, and defense systems), knowing how to structure an acquisition is as important as knowing what to acquire.
 
-## Understanding VOSB and 8(a) Mechanisms
+## Understanding SDVOSB/VOSB and HUBZone Pathways
 
-**Veteran-Owned Small Business (VOSB)** status provides set-aside and sole-source contracting authority under the Veterans First Contracting Program. For agencies with specialized technical requirements, the federal procurement system provides multiple pathways to engage small businesses with domain expertise quickly and efficiently.
+Aetheris Vision is eligible for **Service-Disabled Veteran-Owned Small Business (SDVOSB)** and **Veteran-Owned Small Business (VOSB)** status, with VetCert pending. The firm is also HUBZone eligible. These pathways may support set-aside opportunities after the applicable certification requirements are completed; no certification is represented here as currently held.
 
 Contact Aetheris Vision for acquisition strategy guidance to help agencies structure procurement approaches that optimize for both mission success and administrative efficiency.
     `.trim(),
@@ -161,7 +161,7 @@ Contact Aetheris Vision for acquisition strategy guidance to help agencies struc
     featured: false,
     author: {
       name: "Marston Ward",
-      title: "Founder & Chief Meteorologist, Aetheris Vision",
+      title: "Founder & Principal Consultant, Aetheris Vision",
       initials: "MW",
     },
     summary:
