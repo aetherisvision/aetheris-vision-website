@@ -338,12 +338,6 @@ export default function Home() {
               >
                 Book a Consultation <ArrowRightIcon className="h-4 w-4" />
               </a>
-              <p className="mt-6 text-sm text-white/60">
-                Building a website or web application?{" "}
-                <a href="/services/web" className="font-semibold text-[#9bc3df] underline decoration-[#9bc3df]/40 underline-offset-4 hover:decoration-[#9bc3df]">
-                  See web development services.
-                </a>
-              </p>
             </div>
             <QuickContactForm />
           </div>
