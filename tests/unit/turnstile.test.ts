@@ -57,6 +57,59 @@ describe('Turnstile server verification', () => {
     expect(init.signal).toBeInstanceOf(AbortSignal)
   })
 
+  it('skips action/hostname binding for Cloudflare testing-key results', async () => {
+    // The documented always-pass testing secret: siteverify reports
+    // hostname "example.com", no action echo, and the testing-key tag.
+    vi.stubEnv('TURNSTILE_SECRET_KEY', '1x0000000000000000000000000000000AA')
+    fetchMock.mockResolvedValueOnce(
+      siteverifyResponse({
+        success: true,
+        hostname: 'example.com',
+        metadata: { result_with_testing_key: true },
+      }),
+    )
+
+    await expect(
+      verifyTurnstileToken({
+        token: 'dev-token',
+        expectedAction: 'intake',
+        expectedHostname: 'localhost',
+      }),
+    ).resolves.toEqual({ ok: true })
+  })
+
+  it('keeps binding checks when the tag or testing secret is absent', async () => {
+    // Testing secret but untagged response → bindings still enforced.
+    vi.stubEnv('TURNSTILE_SECRET_KEY', '1x0000000000000000000000000000000AA')
+    fetchMock.mockResolvedValueOnce(
+      siteverifyResponse({ success: true, hostname: 'example.com' }),
+    )
+    await expect(
+      verifyTurnstileToken({
+        token: 'dev-token',
+        expectedAction: 'intake',
+        expectedHostname: 'localhost',
+      }),
+    ).resolves.toEqual({ ok: false, reason: 'action-mismatch' })
+
+    // Real secret with a spoofed testing tag → bindings still enforced.
+    vi.stubEnv('TURNSTILE_SECRET_KEY', SECRET)
+    fetchMock.mockResolvedValueOnce(
+      siteverifyResponse({
+        success: true,
+        hostname: 'evil.example',
+        metadata: { result_with_testing_key: true },
+      }),
+    )
+    await expect(
+      verifyTurnstileToken({
+        token: 'token',
+        expectedAction: 'contact',
+        expectedHostname: 'aetherisvision.com',
+      }),
+    ).resolves.toEqual({ ok: false, reason: 'action-mismatch' })
+  })
+
   it('rejects missing and oversized tokens without making an outbound request', async () => {
     await expect(
       verifyTurnstileToken({

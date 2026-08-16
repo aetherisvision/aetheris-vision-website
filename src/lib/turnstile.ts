@@ -29,9 +29,30 @@ interface SiteverifyResponse {
   success?: unknown
   action?: unknown
   hostname?: unknown
+  metadata?: unknown
 }
 
 const SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
+
+// Cloudflare's documented Turnstile testing secrets (dev/CI only). Siteverify
+// answers for them always report hostname "example.com", omit the action echo,
+// and carry metadata.result_with_testing_key: true, so the action/hostname
+// binding below must be skipped for them or every dev submission 403s. Real
+// secrets never produce that tag; both conditions must hold before relaxing.
+const TESTING_SECRETS = new Set([
+  '1x0000000000000000000000000000000AA',
+  '2x0000000000000000000000000000000AA',
+  '3x0000000000000000000000000000000AA',
+])
+
+function isTestingKeyResult(secret: string, result: SiteverifyResponse): boolean {
+  return (
+    TESTING_SECRETS.has(secret) &&
+    typeof result.metadata === 'object' &&
+    result.metadata !== null &&
+    (result.metadata as { result_with_testing_key?: unknown }).result_with_testing_key === true
+  )
+}
 const MAX_TOKEN_LENGTH = 2048
 const SITEVERIFY_TIMEOUT_MS = 5_000
 
@@ -97,14 +118,16 @@ export async function verifyTurnstileToken(
     }
 
     if (result.success !== true) return { ok: false, reason: 'invalid' }
-    if (result.action !== input.expectedAction) {
-      return { ok: false, reason: 'action-mismatch' }
-    }
-    if (typeof result.hostname !== 'string') {
-      return { ok: false, reason: 'hostname-mismatch' }
-    }
-    if (normalizeHostname(result.hostname) !== expectedHostname) {
-      return { ok: false, reason: 'hostname-mismatch' }
+    if (!isTestingKeyResult(secret, result)) {
+      if (result.action !== input.expectedAction) {
+        return { ok: false, reason: 'action-mismatch' }
+      }
+      if (typeof result.hostname !== 'string') {
+        return { ok: false, reason: 'hostname-mismatch' }
+      }
+      if (normalizeHostname(result.hostname) !== expectedHostname) {
+        return { ok: false, reason: 'hostname-mismatch' }
+      }
     }
 
     return { ok: true }
