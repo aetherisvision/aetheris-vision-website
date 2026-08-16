@@ -14,7 +14,7 @@ import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE, SAM } from "@/lib/constants";
 export const metadata = {
   title: `Services | ${SITE.name}`,
   description:
-    "Specialized Earth-data transformations and scientific software consulting for teams that need trustworthy results without months of toolchain research and setup.",
+    "Scientific consulting in applied meteorology, geospatial data, and applied AI — with specialized Earth-data transformation delivery.",
 };
 
 const transformationCapabilities = [
@@ -72,28 +72,58 @@ export default function ServicesPage() {
             <FadeIn>
               <div className="max-w-3xl">
                 <h1 className="text-4xl md:text-6xl font-semibold text-white tracking-tight mb-6 leading-[1.1]">
-                  Two disciplines. <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">
-                    One standard of verification.
-                  </span>
+                  Scientific consulting, carried through to delivery
                 </h1>
                 <p className="text-lg text-gray-400 font-light leading-relaxed">
-                  {SITE.name} runs on two co-equal disciplines: a regridding
-                  engine that puts an expert in the loop on every job, and a
-                  consulting practice in atmospheric science and applied AI. Both
-                  are available through commercial, federal, and cleared delivery
-                  channels — and neither is a discount version of the other.
+                  Aetheris Vision is a consulting practice in applied meteorology, geospatial data, and applied AI. Analysis, data curation, and software are brought together around the result each engagement needs — supported by tools we build in-house when the problem calls for them.
                 </p>
               </div>
             </FadeIn>
           </header>
 
-          {/* Earth-data transformation */}
+          {/* Scientific software and Earth-data consulting */}
           <FadeIn delay={0.05}>
-            <section className="mb-8" aria-labelledby="sec-og">
+            <section className="mb-8" aria-labelledby="sec-consulting">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8 md:p-12">
+                <div className="border-b border-white/15 pb-3 mb-6">
+                  <h2 id="sec-consulting" className="text-lg font-semibold text-white tracking-tight uppercase">
+                    Scientific Software &amp; Earth-Data Consulting
+                  </h2>
+                </div>
+                <p className="max-w-2xl text-gray-400 font-light leading-relaxed mb-10">
+                  Independent scientific judgment, carried through to working software.
+                  Direct engagement on atmospheric science, AI/ML weather systems,
+                  and the pipeline work that keeps them honest in production.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {consultingAreas.map((area) => (
+                    <div key={area.title} className="flex gap-4">
+                      <div className="h-10 w-10 shrink-0 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center">
+                        <area.icon className="h-5 w-5 text-blue-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-white font-medium mb-1.5">{area.title}</h3>
+                        <p className="text-sm text-gray-400 font-light leading-relaxed">{area.body}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <a
+                  href="/contact?topic=Consulting%20Inquiry"
+                  className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition mt-10"
+                >
+                  Start a conversation <ArrowRightIcon className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            </section>
+          </FadeIn>
+
+          {/* Earth-data transformation */}
+          <FadeIn delay={0.1}>
+            <section className="mb-8" aria-labelledby="sec-transformation">
               <div className="rounded-2xl border border-blue-500/20 bg-blue-500/[0.04] p-6 sm:p-8 md:p-12">
                 <div className="border-b border-white/15 pb-3 mb-6">
-                  <h2 id="sec-og" className="text-lg font-semibold text-white tracking-tight uppercase">
+                  <h2 id="sec-transformation" className="text-lg font-semibold text-white tracking-tight uppercase">
                     Earth-Data Transformation
                   </h2>
                 </div>
@@ -126,50 +156,13 @@ export default function ServicesPage() {
                       Discuss Your Data
                     </a>
                     <a
-                      href="/agentic-og"
+                      href="/omni-gridder"
                       className="inline-flex h-11 items-center justify-center gap-1 rounded-md border border-white/15 px-5 text-sm text-white transition hover:bg-white/5"
                     >
-                      See Results <ArrowRightIcon className="h-3.5 w-3.5" />
+                      See a worked example <ArrowRightIcon className="h-3.5 w-3.5" />
                     </a>
                   </div>
                 </div>
-              </div>
-            </section>
-          </FadeIn>
-
-          {/* Scientific software and Earth-data consulting */}
-          <FadeIn delay={0.1}>
-            <section className="mb-8" aria-labelledby="sec-consulting">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8 md:p-12">
-                <div className="border-b border-white/15 pb-3 mb-6">
-                  <h2 id="sec-consulting" className="text-lg font-semibold text-white tracking-tight uppercase">
-                    Scientific Software &amp; Earth-Data Consulting
-                  </h2>
-                </div>
-                <p className="max-w-2xl text-gray-400 font-light leading-relaxed mb-10">
-                  The consultancy that builds its own verification-gated engine.
-                  Direct engagement on atmospheric science, AI/ML weather systems,
-                  and the pipeline work that keeps them honest in production.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {consultingAreas.map((area) => (
-                    <div key={area.title} className="flex gap-4">
-                      <div className="h-10 w-10 shrink-0 rounded-lg bg-gray-900 border border-white/10 flex items-center justify-center">
-                        <area.icon className="h-5 w-5 text-blue-400" />
-                      </div>
-                      <div>
-                        <h3 className="text-white font-medium mb-1.5">{area.title}</h3>
-                        <p className="text-sm text-gray-400 font-light leading-relaxed">{area.body}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <a
-                  href="/contact?topic=Consulting%20Inquiry"
-                  className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition mt-10"
-                >
-                  Start a conversation <ArrowRightIcon className="h-3.5 w-3.5" />
-                </a>
               </div>
             </section>
           </FadeIn>
@@ -189,8 +182,7 @@ export default function ServicesPage() {
                 </p>
                 <div className="flex flex-wrap gap-3 mb-8">
                   {[
-                    `${SAM.setAside} Eligible`,
-                    "HUBZone Eligible",
+                    ...SAM.setAsidePills,
                     `CAGE ${SAM.cage}`,
                     `UEI ${SAM.uei}`,
                     "U.S. Government Secret Clearance",

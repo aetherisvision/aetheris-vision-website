@@ -39,7 +39,7 @@ const nextConfig: NextConfig = {
   
   async redirects() {
     return [
-      // Retire the former product-style name in favor of the consultancy service.
+      // Retired product-style URL; kept as a permanent redirect for old links.
       {
         source: "/agentic-og",
         destination: "/omni-gridder",
@@ -49,6 +49,12 @@ const nextConfig: NextConfig = {
       {
         source: "/capabilities/omni-gridder",
         destination: "/omni-gridder",
+        permanent: true,
+      },
+      // /security-status was removed; send old links to the practices page.
+      {
+        source: "/security-status",
+        destination: "/security",
         permanent: true,
       },
     ];
