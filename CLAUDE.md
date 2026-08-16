@@ -39,11 +39,14 @@ Uses `getToken()` not `getServerSession()` for App Router compatibility.
 
 ## Site Lock
 
-`src/proxy.ts` gates every route except `/admin/*` (which has its own passphrase gate),
-`/api/webhooks/*`, and `/api/cron/*` behind HTTP Basic Auth when `PREVIEW_PASSWORD` is set.
+`src/proxy.ts` gates every route behind a signed preview cookie (form at `/preview`;
+not browser-native Basic Auth) when `PREVIEW_PASSWORD` is set, except: `/admin/*`
+(its own passphrase gate), `/api/webhooks/*`, `/api/cron/*`, `/preview` +
+`/api/preview/auth` themselves, and `/api/auth/gmail/*` (each handler there enforces
+the admin session itself; Google's OAuth redirect cannot carry the preview cookie).
 Unset `PREVIEW_PASSWORD` = site fully open; this is opt-in, not opt-out.
 
-Re-locked 2026-07-03 while the site is retooled to focus on Agentic OG (omni-gridder).
+Re-locked 2026-07-03 while the site is retooled around the consulting-first launch.
 Value lives in Vercel env / `~/.secrets` — not hardcoded in the repo.
 
 ---

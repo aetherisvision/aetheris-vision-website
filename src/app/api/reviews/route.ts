@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createReview, getApprovedReviews, ensureReviewsTable } from '@/lib/db/reviews'
 import { rateLimit } from '@/lib/rate-limit'
+import { escapeHtml } from '@/lib/escape-html'
 import { SITE } from '@/lib/constants'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -10,16 +11,6 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 // instances when Upstash/Vercel KV is configured, else in-memory (issue #12).
 const RATE_LIMIT = 3
 const WINDOW_MS = 10 * 60 * 1000
-
-/** Escape user-supplied text before interpolating it into the HTML email. */
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
 
 export async function GET() {
   try {

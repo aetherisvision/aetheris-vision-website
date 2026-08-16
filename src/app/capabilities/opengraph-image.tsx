@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { SITE } from "@/lib/constants";
+import { SAM, SITE } from "@/lib/constants";
 import { AV_MARK_DATA_URI } from "../og-mark";
 
 export const runtime = "edge";
@@ -15,7 +15,7 @@ const badgeStyle = {
   padding: "6px 16px",
 } as const;
 
-const badges = ["SAM.gov Active", "UEI and CAGE Assigned", "SDVOSB / HUBZone Pending"];
+const badges = ["SAM.gov Active", "UEI and CAGE Assigned", ...SAM.setAsidePills];
 
 export default function OGImage() {
   return new ImageResponse(

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { SITE } from "@/lib/constants";
 import { rateLimit } from "@/lib/rate-limit";
+import { escapeHtml } from "@/lib/escape-html";
 
 // Contact submissions are delivered by email through Resend — the same
 // provider already used for magic-link sign-in and invoice delivery. This
@@ -26,16 +27,6 @@ function asString(value: unknown): string {
 /** Collapse CR/LF so untrusted values cannot inject email header lines. */
 function singleLine(value: string, max: number): string {
   return value.replace(/[\r\n]+/g, " ").trim().slice(0, max);
-}
-
-/** Escape user-supplied text before interpolating it into the HTML email. */
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 export async function POST(req: NextRequest) {

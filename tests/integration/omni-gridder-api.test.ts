@@ -209,8 +209,8 @@ describe("GET /api/admin/omni-gridder/status/[jobId] — chainPlot gating", () =
     expect(submitJobMock).not.toHaveBeenCalled();
   });
 
-  it("does not chain a Plot job for a still-processing regrid job even with chainPlot=1", async () => {
-    getJobStatusMock.mockResolvedValue({ ...baseStatus, status: "processing", result_uri: null });
+  it("does not chain a Plot job for a still-running regrid job even with chainPlot=1", async () => {
+    getJobStatusMock.mockResolvedValue({ ...baseStatus, status: "running", result_uri: null });
     const { GET } = await importStatusRoute();
 
     const req = new NextRequest(
@@ -333,7 +333,7 @@ describe("GET /api/admin/omni-gridder/download", () => {
     getJobStatusMock.mockResolvedValue({
       job_id: PLOT_JOB_ID,
       processor_type: "plot",
-      status: "processing",
+      status: "running",
       submitted_at: Date.now(),
       result_uri: null,
       error_message: null,
