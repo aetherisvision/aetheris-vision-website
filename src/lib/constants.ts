@@ -7,6 +7,15 @@ export const SITE = {
   email: "contact@aetherisvision.com",
   phone: "(346) 381-9629",
   phoneHref: "tel:+13463819629",
+  // Business NAP — must stay byte-identical to the Google Business Profile
+  // listing and SAM.gov ("PMB", never "#" or "Suite").
+  address: {
+    street: "210 N Mustang Mall Terrace PMB 29",
+    locality: "Mustang",
+    region: "OK",
+    postalCode: "73064",
+    country: "US",
+  },
   description:
     "Principal-led scientific and technical consulting for organizations making difficult weather, Earth-system, geospatial, and data-informed decisions.",
   ogDescription:

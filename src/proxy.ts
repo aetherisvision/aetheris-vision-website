@@ -170,5 +170,9 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon\\.ico).*)'],
+  // robots.txt / sitemap.xml / manifest.json stay reachable even while the
+  // site lock is on — crawlers must always be able to read crawl policy.
+  matcher: [
+    '/((?!_next/static|_next/image|favicon\\.ico|robots\\.txt|sitemap\\.xml|manifest\\.json).*)',
+  ],
 }

@@ -34,6 +34,18 @@ export default function Footer() {
             <p className="mt-5 text-sm leading-6 text-white/55">
               Principal-led scientific consulting for weather, Earth systems, and geospatial data — carried through to delivery.
             </p>
+            {/* NAP for local SEO / Google Business Profile. Deliberately no
+                email here — the email anti-scraping policy (see
+                email-security.steps) bans plaintext addresses and mailto:. */}
+            <address className="mt-5 text-sm not-italic leading-6 text-white/45">
+              {SITE.address.street}
+              <br />
+              {SITE.address.locality}, {SITE.address.region} {SITE.address.postalCode}
+              <br />
+              <a href={SITE.phoneHref} className="transition hover:text-white">
+                {SITE.phone}
+              </a>
+            </address>
           </div>
 
           <div className="md:text-right">
