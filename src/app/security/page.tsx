@@ -11,8 +11,7 @@ import { SITE } from "@/lib/constants";
 
 export const metadata = {
   title: `Security Practices | ${SITE.name}`,
-  description:
-    "Security practices used to protect the Aetheris Vision website, administrative tools, and client portal.",
+  description: `Security practices used to protect the ${SITE.name} website, administrative tools, and client portal.`,
 };
 
 export default function SecurityPage() {

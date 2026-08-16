@@ -130,7 +130,7 @@ function setField(id: string, value: string): void {
 }
 
 function clickSubmit(): void {
-  fireEvent.click(screen.getByRole("button", { name: /send message/i }));
+  fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
 }
 
 Given("a visitor is on the contact page", function () {

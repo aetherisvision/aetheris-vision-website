@@ -46,7 +46,7 @@ describe("ContactForm — unavailable notice", () => {
     ));
     render(<ContactForm />);
     fillValidFields();
-    fireEvent.click(screen.getByRole("button", { name: /send message/i }));
+    fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
 
     const notice = await screen.findByRole("status");
     // Collapse runtime whitespace and assert no words are glued together.
@@ -59,7 +59,7 @@ describe("ContactForm — unavailable notice", () => {
 describe("ContactForm — submit validation", () => {
   it("shows all required field errors when submitted empty", async () => {
     render(<ContactForm />);
-    fireEvent.click(screen.getByRole("button", { name: /send message/i }));
+    fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
     expect(await screen.findByText("Name is required.")).toBeInTheDocument();
     expect(screen.getByText("Email address is required.")).toBeInTheDocument();
     expect(screen.getByText("Message is required.")).toBeInTheDocument();
@@ -68,14 +68,14 @@ describe("ContactForm — submit validation", () => {
   it("shows error for name under 2 characters", async () => {
     render(<ContactForm />);
     setField("name", "A");
-    fireEvent.click(screen.getByRole("button", { name: /send message/i }));
+    fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
     expect(await screen.findByText("Name must be at least 2 characters.")).toBeInTheDocument();
   });
 
   it("shows error for invalid characters in name", async () => {
     render(<ContactForm />);
     setField("name", "Jane123");
-    fireEvent.click(screen.getByRole("button", { name: /send message/i }));
+    fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
     expect(await screen.findByText("Name contains invalid characters.")).toBeInTheDocument();
   });
 
@@ -84,7 +84,7 @@ describe("ContactForm — submit validation", () => {
     setField("name", "Jane Doe");
     setField("email", "not-an-email");
     setField("message", "This is a valid message long enough.");
-    fireEvent.click(screen.getByRole("button", { name: /send message/i }));
+    fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
     expect(await screen.findByText("Enter a valid email address.")).toBeInTheDocument();
   });
 
@@ -93,7 +93,7 @@ describe("ContactForm — submit validation", () => {
     setField("name", "Jane Doe");
     setField("email", "jane@example");
     setField("message", "This is a valid message long enough.");
-    fireEvent.click(screen.getByRole("button", { name: /send message/i }));
+    fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
     expect(await screen.findByText("Enter a valid email address.")).toBeInTheDocument();
   });
 
@@ -102,7 +102,7 @@ describe("ContactForm — submit validation", () => {
     setField("name", "Jane Doe");
     setField("email", "jane@example.com");
     setField("message", "Short");
-    fireEvent.click(screen.getByRole("button", { name: /send message/i }));
+    fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
     expect(await screen.findByText("Message must be at least 10 characters.")).toBeInTheDocument();
   });
 
@@ -111,7 +111,7 @@ describe("ContactForm — submit validation", () => {
     setField("name", "Mary-Jane O'Brien");
     setField("email", "mj@example.com");
     setField("message", "This is a valid message long enough.");
-    fireEvent.click(screen.getByRole("button", { name: /send message/i }));
+    fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
     expect(screen.queryByText(/name is required|name must|name contains/i)).not.toBeInTheDocument();
   });
 });
@@ -218,8 +218,8 @@ describe("ContactForm — submission", () => {
     ));
     render(<ContactForm />);
     fillValidFields();
-    fireEvent.click(screen.getByRole("button", { name: /send message/i }));
-    expect(await screen.findByText("Message Received")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
+    expect(await screen.findByText("Inquiry received")).toBeInTheDocument();
   });
 
   it("shows error message on API failure", async () => {
@@ -232,7 +232,7 @@ describe("ContactForm — submission", () => {
     ));
     render(<ContactForm />);
     fillValidFields();
-    fireEvent.click(screen.getByRole("button", { name: /send message/i }));
+    fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
     expect(await screen.findByText(/Something went wrong/)).toBeInTheDocument();
   });
 
@@ -242,7 +242,7 @@ describe("ContactForm — submission", () => {
     ));
     render(<ContactForm />);
     fillValidFields();
-    fireEvent.click(screen.getByRole("button", { name: /send message/i }));
+    fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
     expect(await screen.findByText(/Too many submissions/)).toBeInTheDocument();
   });
 });
