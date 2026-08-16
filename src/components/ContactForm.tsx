@@ -5,9 +5,6 @@ import { useSearchParams } from "next/navigation";
 import FadeIn from "@/components/FadeIn";
 import { SITE } from "@/lib/constants";
 
-const CONTACT_PHONE = SITE.phone;
-const CONTACT_PHONE_HREF = SITE.phoneHref;
-
 const requirementTypes = [
   "Weather & Earth-System Consulting",
   "Geospatial Data & Analysis",
@@ -334,15 +331,15 @@ export default function ContactForm() {
 
         {status === "unavailable" && (
           <div role="status" className="rounded-md border border-yellow-500/30 bg-yellow-500/[0.06] p-4 text-sm text-yellow-200">
-            Our inquiry form isn&apos;t accepting submissions right now. Please call or text{" "}
-            <a href={CONTACT_PHONE_HREF} className="underline font-medium">{CONTACT_PHONE}</a>, or{" "}
+            Our inquiry form isn&apos;t accepting submissions right now. Please try again later, or{" "}
             <a href="/book" className="underline font-medium">book a call</a>{" "}and we&apos;ll follow up.
           </div>
         )}
 
         {status === "error" && (
           <p role="alert" className="text-sm text-red-400">
-            Something went wrong{errorDetail ? `: ${errorDetail}` : ""}. Please try again, or call/text {CONTACT_PHONE}.
+            Something went wrong{errorDetail ? `: ${errorDetail}` : ""}. Please try again, or{" "}
+            <a href="/book" className="underline font-medium">book a call</a>.
           </p>
         )}
 

@@ -240,15 +240,15 @@ export default function QuickContactForm() {
         <p role="status" className="mt-5 border border-amber-300/30 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">
           The form is temporarily unavailable. Email{" "}
           <a className="font-semibold underline" href={`mailto:${SITE.email}`}>{SITE.email}</a>{" "}
-          or call <a className="font-semibold underline" href={SITE.phoneHref}>{SITE.phone}</a>.
+          or <a className="font-semibold underline" href="/book">book a consultation</a>.
         </p>
       )}
 
       {status === "error" && (
         <p role="alert" className="mt-5 border border-red-300/30 bg-red-300/10 p-4 text-sm leading-6 text-red-100">
           We could not send your inquiry. Please try again, email{" "}
-          <a className="font-semibold underline" href={`mailto:${SITE.email}`}>{SITE.email}</a>, or call{" "}
-          <a className="font-semibold underline" href={SITE.phoneHref}>{SITE.phone}</a>.
+          <a className="font-semibold underline" href={`mailto:${SITE.email}`}>{SITE.email}</a>, or{" "}
+          <a className="font-semibold underline" href="/book">book a consultation</a>.
         </p>
       )}
 

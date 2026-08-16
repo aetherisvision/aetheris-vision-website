@@ -44,7 +44,8 @@ export const localBusinessJsonLd = {
   name: SITE.legalName,
   url: SITE.url,
   email: SITE.email,
-  telephone: SITE.phoneHref.replace("tel:", ""),
+  // Deliberately no telephone: contact routes through the verified inquiry
+  // form or Cal.com booking, and JSON-LD is as scrapable as visible text.
   logo: SITE.logoUrl,
   image: SITE.logoUrl,
   description: SITE.description,
