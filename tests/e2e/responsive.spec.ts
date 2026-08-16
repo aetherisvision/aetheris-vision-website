@@ -14,7 +14,7 @@ async function gotoReady(page: Page, route: string) {
 
 const publicRoutes = [
   "/",
-  "/agentic-og",
+  "/omni-gridder",
   "/about",
   "/services",
   "/services/web",
@@ -43,7 +43,7 @@ for (const route of publicRoutes) {
 }
 
 test("navigation switches cleanly between desktop and compact layouts", async ({ page }) => {
-  await gotoReady(page, "/agentic-og");
+  await gotoReady(page, "/omni-gridder");
   const viewport = page.viewportSize();
   expect(viewport).not.toBeNull();
 

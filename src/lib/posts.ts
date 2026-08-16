@@ -88,11 +88,11 @@ For the full technical implementation details, contact us for a complete securit
       initials: "MW",
     },
     summary:
-      "Real-time performance monitoring with live Core Web Vitals analysis, memory profiling, and optimization strategies that deliver measurable user experience improvements.",
+      "An engineering overview of Core Web Vitals, performance budgets, and the optimization strategies that deliver measurable user experience improvements.",
     content: `
 Performance isn't just about fast page loads. It's about **predictable, reliable systems that scale under real-world conditions**. After a career spanning USAF operational weather, European research institutes, and industry software delivery, I've learned that true performance engineering requires understanding what actually affects user experience, not just optimizing for benchmark scores.
 
-This website's performance dashboard demonstrates these principles in production, providing real-time analysis of every metric that matters.
+This site is built and maintained to these principles, with attention to every metric that affects real user experience.
 
 ## Beyond Synthetic Testing: Real-Time Performance Analysis
 

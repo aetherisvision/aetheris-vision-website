@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 import { sql } from '@/lib/db'
+import { escapeHtml as escHtml } from '@/lib/escape-html'
 import { stripe } from '@/lib/stripe'
 import { Resend } from 'resend'
 
@@ -173,12 +174,3 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   return NextResponse.json({ ok: true, invoice_url: invoiceUrl })
 }
 
-/** Escape HTML special characters to prevent injection in template strings */
-function escHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-}
