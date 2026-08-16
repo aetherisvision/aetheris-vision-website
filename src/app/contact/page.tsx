@@ -120,12 +120,12 @@ export default function ContactPage() {
                   <div className="py-5">
                     <div className="mb-1.5 flex items-center gap-3">
                       <ClipboardDocumentIcon className="h-4 w-4 text-blue-400" />
-                      <p className="text-sm font-medium text-white">Detailed intake</p>
+                      <p className="text-sm font-medium text-white">Web development</p>
                     </div>
                     <p className="text-sm font-light leading-relaxed text-gray-400">
-                      Already have requirements, examples, or a defined digital-delivery scope?{" "}
+                      Building a website or web application?{" "}
                       <a href="/intake" className="text-blue-400 transition hover:text-blue-300">
-                        Use the project intake form →
+                        Start a web project →
                       </a>
                     </p>
                   </div>

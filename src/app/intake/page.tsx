@@ -6,9 +6,9 @@ import FadeIn from "@/components/FadeIn";
 import Link from "next/link";
 
 export const metadata = {
-  title: `Start a Project | ${SITE.name}`,
+  title: `Start a Web Project | ${SITE.name}`,
   description:
-    "Tell us about your project in plain English. Takes 2 minutes. We'll follow up within one business day.",
+    "Tell us about your website or web application project in plain English. Takes 2 minutes. We'll follow up within one business day.",
 };
 
 export default function IntakePage() {
@@ -22,12 +22,12 @@ export default function IntakePage() {
           {/* Header */}
           <FadeIn>
             <div className="mb-10">
-              <p className="text-xs font-semibold tracking-widest text-av-accent uppercase mb-3">Start a Project</p>
+              <p className="text-xs font-semibold tracking-widest text-av-accent uppercase mb-3">Start a Web Project</p>
               <h1 className="text-3xl md:text-4xl font-semibold text-white tracking-tight mb-3">
-                Tell us what you need
+                Tell us what you need built
               </h1>
               <p className="text-gray-400 font-light text-base leading-relaxed">
-                5 quick fields, no jargon required. We&apos;ll review your project and follow up within one business day.
+                For website and web-application projects. 5 quick fields, no jargon required. We&apos;ll review your project and follow up within one business day.
               </p>
               <p className="text-sm text-gray-600 mt-3">
                 Prefer to talk first?{" "}

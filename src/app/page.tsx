@@ -75,7 +75,7 @@ export default function Home() {
                   >
                     Book a consultation <ArrowRightIcon className="h-4 w-4" />
                   </a>
-                  <TextLink href="/intake">Submit a project brief</TextLink>
+                  <TextLink href="#contact">Describe your project</TextLink>
                 </div>
               </div>
 
@@ -330,7 +330,7 @@ export default function Home() {
                 What do you need help deciding or delivering?
               </h2>
               <p className="mt-6 max-w-lg text-base leading-8 text-white/65">
-                Book a time to talk it through directly with Marston Ward, or send a project brief — the outcome you need, the data or system involved, and any timing constraints. Every inquiry is reviewed personally, typically within one business day.
+                Book a time to talk it through directly with Marston Ward, or describe it in your own words — the outcome you need, the data or system involved, and any timing constraints. Every inquiry is reviewed personally, typically within one business day.
               </p>
               <a
                 href="/book"
@@ -339,9 +339,9 @@ export default function Home() {
                 Book a Consultation <ArrowRightIcon className="h-4 w-4" />
               </a>
               <p className="mt-6 text-sm text-white/60">
-                Have a defined project already?{" "}
-                <a href="/intake" className="font-semibold text-[#9bc3df] underline decoration-[#9bc3df]/40 underline-offset-4 hover:decoration-[#9bc3df]">
-                  Complete the project intake.
+                Building a website or web application?{" "}
+                <a href="/services/web" className="font-semibold text-[#9bc3df] underline decoration-[#9bc3df]/40 underline-offset-4 hover:decoration-[#9bc3df]">
+                  See web development services.
                 </a>
               </p>
             </div>
