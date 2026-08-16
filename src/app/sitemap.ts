@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 import { posts } from "@/lib/posts";
+import { demos } from "@/lib/portfolio-data";
 import { SITE } from "@/lib/constants";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -84,81 +85,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  // Portfolio demo pages
-  const demoRoutes: MetadataRoute.Sitemap = [
-    {
-      url: `${SITE.url}/portfolio/analytics-dashboard`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
-      url: `${SITE.url}/portfolio/fitness`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
-      url: `${SITE.url}/portfolio/healthcare`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
-      url: `${SITE.url}/portfolio/international-market`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
-      url: `${SITE.url}/portfolio/law-firm`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
-      url: `${SITE.url}/portfolio/photography-studio`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
-      url: `${SITE.url}/portfolio/portal-pro`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
-      url: `${SITE.url}/portfolio/real-estate`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
-      url: `${SITE.url}/portfolio/restaurant`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
-      url: `${SITE.url}/portfolio/trades-contractor`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
-      url: `${SITE.url}/portfolio/veteran-nonprofit`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
-      url: `${SITE.url}/portfolio/wp-editorial`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-  ];
+  // Portfolio demo pages — derived from the same source of truth as the
+  // /portfolio index listing (src/lib/portfolio-data.ts).
+  const demoRoutes: MetadataRoute.Sitemap = demos.map((demo) => ({
+    url: `${SITE.url}/portfolio/${demo.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly",
+    priority: 0.5,
+  }));
 
   const blogRoutes: MetadataRoute.Sitemap = posts.map((post) => ({
     url: `${SITE.url}/blog/${post.slug}`,
