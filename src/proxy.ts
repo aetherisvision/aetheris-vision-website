@@ -77,12 +77,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Site lock: the public site remains gated while Agentic OG is prepared for
-  // reliable demos and published results. A signed cookie avoids browser-native
+  // Site lock: the public site remains gated while the new consulting site is
+  // prepared for launch. A signed cookie avoids browser-native
   // Basic Auth dialogs, which do not work consistently in embedded browsers.
   // /admin/* retains its separate passphrase gate below.
   const isPreviewAccessRoute =
-    pathname === '/preview' || pathname === '/api/preview/auth'
+    pathname === '/preview' ||
+    pathname === '/api/preview/auth' ||
+    pathname === '/api/auth/gmail/callback' ||
+    pathname === '/api/auth/gmail/start' ||
+    pathname === '/api/auth/gmail/status'
   if (
     process.env.PREVIEW_PASSWORD &&
     !pathname.startsWith('/admin') &&

@@ -1,7 +1,10 @@
 import { sql } from '@/lib/db'
-import { NextResponse } from 'next/server'
+import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  if (!isAdmin(request)) return unauthorizedResponse()
+
   const rows = await sql`SELECT account, email FROM oauth_tokens WHERE account IN ('biz', 'per')`
 
   const map = Object.fromEntries(

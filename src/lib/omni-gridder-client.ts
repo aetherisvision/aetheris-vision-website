@@ -65,11 +65,11 @@ export interface OmniGridderJobDiagnostics {
 export interface OmniGridderJobStatus {
   job_id: string
   processor_type: string
-  status: 'queued' | 'processing' | 'succeeded' | 'failed'
+  status: 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled'
   submitted_at: number
   result_uri: string | null
   error_message: string | null
-  // null for queued/processing/failed/legacy jobs pre-dating diagnostics support.
+  // null for queued/running/failed/cancelled/legacy jobs pre-dating diagnostics support.
   diagnostics: OmniGridderJobDiagnostics | null
 }
 

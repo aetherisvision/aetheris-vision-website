@@ -1,5 +1,6 @@
 import { sql } from './index'
 
+// Invoke explicitly from a setup script; this module must remain side-effect-free on import.
 export async function createTables() {
   await sql`
     CREATE TABLE IF NOT EXISTS expenses (
@@ -123,10 +124,24 @@ export async function createTables() {
       id          SERIAL PRIMARY KEY,
       client_id   INTEGER REFERENCES clients(id) ON DELETE CASCADE,
       project_id  INTEGER REFERENCES projects(id) ON DELETE SET NULL,
-      name        TEXT NOT NULL,
+      title       TEXT NOT NULL,
       content     TEXT,
       type        TEXT,
-      created_at  TIMESTAMPTZ DEFAULT NOW()
+      created_at  TIMESTAMPTZ DEFAULT NOW(),
+      updated_at  TIMESTAMPTZ DEFAULT NOW()
+    )
+  `
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS reviews (
+      id             SERIAL PRIMARY KEY,
+      client_name    TEXT NOT NULL,
+      client_role    TEXT,
+      client_company TEXT,
+      rating         INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+      body           TEXT NOT NULL,
+      approved       BOOLEAN NOT NULL DEFAULT false,
+      created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `
 
@@ -150,5 +165,3 @@ export async function createTables() {
 
   console.log('Tables created successfully')
 }
-
-createTables().catch(console.error)
