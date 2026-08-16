@@ -15,11 +15,6 @@ export const organizationJsonLd = {
   logo: SITE.logoUrl,
   description: SITE.description,
   sameAs: SAME_AS,
-  contactPoint: {
-    "@type": "ContactPoint" as const,
-    email: SITE.email,
-    contactType: "sales",
-  },
 };
 
 /** Minimal publisher reference — use inside BlogPosting, Service, etc. */
@@ -43,9 +38,8 @@ export const localBusinessJsonLd = {
   "@type": "ProfessionalService" as const,
   name: SITE.legalName,
   url: SITE.url,
-  email: SITE.email,
-  // Deliberately no telephone: contact routes through the verified inquiry
-  // form or Cal.com booking, and JSON-LD is as scrapable as visible text.
+  // Deliberately no telephone or email: contact routes through the verified
+  // inquiry form or Cal.com booking, and JSON-LD is as scrapable as text.
   logo: SITE.logoUrl,
   image: SITE.logoUrl,
   description: SITE.description,

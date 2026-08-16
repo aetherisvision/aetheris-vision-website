@@ -38,7 +38,7 @@ Here's what each command does and why you run it:
 
 ```bash
 # Step 1: Tell fnm to use the right version of Node.js
-# WHY: The project was built with Node.js 20. Using a different version could cause errors.
+# WHY: The project requires Node.js 24.15.0. Using a different version could cause errors.
 fnm use
 
 # Step 2: Install all the project's dependencies (libraries it needs)
@@ -360,7 +360,7 @@ python3 scripts/vercel.py resume
 
 **Why automatic deployment?** No human has to remember to "upload the website." Push your code, and within a couple of minutes, the live site is updated. If the build fails (tests don't pass, code has errors), the old version stays live — nothing breaks.
 
-Node.js is pinned to `20.x` in `package.json` (`engines` field) for build compatibility.
+Node.js is pinned to `24.15.0` for local development and CI, with the supported Node 24 line enforced in `package.json`.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 

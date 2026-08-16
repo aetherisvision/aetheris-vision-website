@@ -8,7 +8,7 @@
  *   VERCEL_TEAM_SCOPE — if set, print as-is (skip discovery)
  *   VERCEL_TEAM_SLUG — optional hint (default: prefer slug "aetherisvision")
  */
-import { execSync } from 'node:child_process'
+import { execFileSync } from 'node:child_process'
 
 const token = process.env.VERCEL_TOKEN
 if (!token) {
@@ -23,15 +23,17 @@ if (process.env.VERCEL_TEAM_SCOPE) {
 
 let raw
 try {
-  raw = execSync('vercel teams list -F json', {
+  raw = execFileSync('vercel', ['teams', 'list', '-F', 'json', '--token', token], {
     encoding: 'utf8',
     maxBuffer: 10 * 1024 * 1024,
     stdio: ['pipe', 'pipe', 'pipe'],
-    env: { ...process.env, VERCEL_TOKEN: token },
   })
 } catch (e) {
   const err = e instanceof Error ? e.message : String(e)
-  console.error('vercel-resolve-scope: vercel teams list failed:', err)
+  // execFileSync includes argv in its error message. Never echo the bearer
+  // token into CI logs, terminal transcripts, or agent tool output.
+  const redactedErr = err.replaceAll(token, '[REDACTED]')
+  console.error('vercel-resolve-scope: vercel teams list failed:', redactedErr)
   process.exit(1)
 }
 

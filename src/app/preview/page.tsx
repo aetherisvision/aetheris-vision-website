@@ -36,13 +36,12 @@ export default async function PreviewPage({ searchParams }: PreviewPageProps) {
             Consultancy in Applied Meteorology
           </p>
           <p className="mx-auto mt-6 max-w-md text-base leading-8 text-[#4b5d64]">
-            Our new site is being finalized. For consulting inquiries in the
-            meantime, write to{' '}
+            Our new site is being finalized. For consulting inquiries, use the{' '}
             <a
-              href={`mailto:${SITE.email}`}
+              href="/contact"
               className="font-semibold text-[#29426c] underline decoration-[#29426c]/30 underline-offset-4 hover:decoration-[#29426c]"
             >
-              {SITE.email}
+              project inquiry form
             </a>
             .
           </p>

@@ -1,48 +1,94 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
 import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
-import { sql } from '@/lib/db';
-import { getSubmission, downloadSignedPdf } from '@/lib/docuseal';
+import { markEngagementSigned } from '@/lib/crm'
+import { sql } from '@/lib/db'
+import { downloadSignedPdf, getSubmission } from '@/lib/docuseal'
 
+const MAX_SIGNED_PDF_BYTES = 25 * 1024 * 1024
 
-// Check Docuseal for any sow_sent submissions that were signed, and auto-complete them
+interface PendingSubmissionRow {
+  project_id: number
+  docuseal_submission_id: string
+  has_signed_pdf: boolean
+}
+
+function json(body: unknown, status = 200) {
+  return NextResponse.json(body, {
+    status,
+    headers: { 'Cache-Control': 'no-store' },
+  })
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+async function readJsonObject(request: NextRequest): Promise<Record<string, unknown> | null> {
+  try {
+    const value: unknown = await request.json()
+    return isRecord(value) ? value : null
+  } catch {
+    return null
+  }
+}
+
+// Polling is a recovery path for a missed webhook. The same lifecycle service used
+// by the webhook makes repeated polling safe.
 async function syncSignedSubmissions() {
   const pending = await sql`
-    SELECT i.id AS intake_id, p.id AS project_id, p.docuseal_submission_id
+    SELECT
+      p.id AS project_id,
+      p.docuseal_submission_id,
+      (p.signed_pdf_base64 IS NOT NULL) AS has_signed_pdf
     FROM intake_submissions i
     JOIN projects p ON p.id = i.project_id
     WHERE i.status = 'sow_sent'
+      AND p.status IN ('proposal', 'signed', 'active')
       AND p.docuseal_submission_id IS NOT NULL
-  `;
+  `
 
-  for (const row of pending) {
+  for (const value of pending) {
+    const row = value as PendingSubmissionRow
     try {
-      const sub = await getSubmission(row.docuseal_submission_id);
-      if (sub.status !== 'completed') continue;
+      const submission = await getSubmission(row.docuseal_submission_id)
+      if (submission?.status !== 'completed') continue
 
-      const pdfBuffer = await downloadSignedPdf(row.docuseal_submission_id);
-      const pdfBase64 = pdfBuffer.toString('base64');
+      // Persist the signed artifact first. If the lifecycle transition then fails,
+      // the still-pending intake will safely retry without losing the document.
+      if (!row.has_signed_pdf) {
+        const pdfBuffer = await downloadSignedPdf(row.docuseal_submission_id)
+        if (pdfBuffer.byteLength > MAX_SIGNED_PDF_BYTES) {
+          throw new Error('Signed PDF exceeds storage limit')
+        }
+        const pdfBase64 = pdfBuffer.toString('base64')
+        await sql`
+          UPDATE projects
+          SET signed_pdf_base64 = COALESCE(signed_pdf_base64, ${pdfBase64}),
+              updated_at = NOW()
+          WHERE id = ${row.project_id}
+            AND docuseal_submission_id = ${row.docuseal_submission_id}
+        `
+      }
 
-      await sql`
-        UPDATE projects
-        SET signed_pdf_base64 = ${pdfBase64}, status = 'signed', signed_at = NOW()
-        WHERE id = ${row.project_id}
-      `;
-      await sql`UPDATE intake_submissions SET status = 'won' WHERE id = ${row.intake_id}`;
-      console.log(`✅ Auto-synced signed SOW for project ${row.project_id}`);
-    } catch (e) {
-      console.error(`Failed to sync submission ${row.docuseal_submission_id}:`, e);
+      await markEngagementSigned({
+        projectId: row.project_id,
+        docusealSubmissionId: row.docuseal_submission_id,
+      })
+    } catch (error) {
+      console.error('Failed to synchronize a DocuSeal submission', {
+        error: error instanceof Error ? error.name : 'UnknownError',
+      })
     }
   }
 }
 
 export async function GET(request: NextRequest) {
   if (!isAdmin(request)) {
-    return unauthorizedResponse();
+    return unauthorizedResponse()
   }
 
   try {
-    // Sync any signed-but-not-yet-updated submissions before returning data
-    await syncSignedSubmissions();
+    await syncSignedSubmissions()
 
     const submissions = await sql`
       SELECT
@@ -68,38 +114,74 @@ export async function GET(request: NextRequest) {
         i.submitted_at
       FROM intake_submissions i
       ORDER BY i.submitted_at DESC
-    `;
-    return NextResponse.json({ submissions });
+    `
+    return json({ submissions })
   } catch (error) {
-    console.error('Failed to fetch intake submissions:', error);
-    return NextResponse.json({ error: 'Failed to fetch submissions' }, { status: 500 });
+    console.error('Failed to fetch intake submissions', {
+      error: error instanceof Error ? error.name : 'UnknownError',
+    })
+    return json({ error: 'Failed to fetch submissions' }, 500)
   }
 }
 
 export async function PATCH(request: NextRequest) {
   if (!isAdmin(request)) {
-    return unauthorizedResponse();
+    return unauthorizedResponse()
+  }
+
+  const body = await readJsonObject(request)
+  const id = body?.id
+  if (!Number.isSafeInteger(id) || (id as number) < 1) {
+    return json({ error: 'id must be a positive integer' }, 400)
   }
 
   try {
-    const body = await request.json();
-    const { id } = body;
-
-    if ('pro_bono' in body) {
-      await sql`UPDATE intake_submissions SET pro_bono = ${!!body.pro_bono} WHERE id = ${id}`;
-      return NextResponse.json({ success: true });
+    if (body?.status === 'won') {
+      return json(
+        { error: 'Signed status is set automatically when the agreement is completed' },
+        409,
+      )
     }
 
-    const { status } = body;
-    const validStatuses = ['new', 'in_review', 'sow_sent', 'won', 'lost'];
-    if (!validStatuses.includes(status)) {
-      return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+    if (body && 'pro_bono' in body) {
+      if (typeof body.pro_bono !== 'boolean') {
+        return json({ error: 'pro_bono must be a boolean' }, 400)
+      }
+
+      const updated = await sql`
+        UPDATE intake_submissions
+        SET pro_bono = ${body.pro_bono}, updated_at = NOW()
+        WHERE id = ${id as number}
+        RETURNING id
+      `
+      if (updated.length === 0) {
+        return json({ error: 'Intake not found' }, 404)
+      }
+      return json({ success: true })
     }
 
-    await sql`UPDATE intake_submissions SET status = ${status} WHERE id = ${id}`;
-    return NextResponse.json({ success: true });
+    const status = body?.status
+    const validStatuses = ['new', 'in_review', 'sow_sent', 'lost']
+    if (typeof status !== 'string' || !validStatuses.includes(status)) {
+      return json({ error: 'Invalid status' }, 400)
+    }
+
+    // A signed engagement cannot be reopened by this legacy intake control.
+    const updated = await sql`
+      UPDATE intake_submissions
+      SET status = ${status}, updated_at = NOW()
+      WHERE id = ${id as number}
+        AND status <> 'won'
+      RETURNING id
+    `
+    if (updated.length === 0) {
+      return json({ error: 'Intake not found or status is managed by the signed engagement' }, 409)
+    }
+    return json({ success: true })
   } catch (error) {
-    console.error('Failed to update intake status:', error);
-    return NextResponse.json({ error: 'Failed to update status' }, { status: 500 });
+    console.error('Failed to update intake', {
+      error: error instanceof Error ? error.name : 'UnknownError',
+    })
+    return json({ error: 'Failed to update intake' }, 500)
   }
 }

@@ -110,7 +110,7 @@ export default function WpEditorialPage() {
 
         {/* Featured Story */}
         <section className="mb-12 border-b border-gray-200 pb-12">
-          <div className="grid gap-8 lg:grid-cols-5">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
             {/* Text */}
             <div className="lg:col-span-3">
               <span className="font-sans text-xs font-bold uppercase tracking-widest text-[#b45309]" style={{ fontFamily: "system-ui, sans-serif" }}>
@@ -141,6 +141,7 @@ export default function WpEditorialPage() {
                   size="1920x1080"
                   width={600}
                   height={450}
+                  priority
                   className="w-full h-full object-cover"
                 />
               </div>

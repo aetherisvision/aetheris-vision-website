@@ -30,10 +30,14 @@ import {
 
 const URL_KEY = "UPSTASH_REDIS_REST_URL";
 const TOKEN_KEY = "UPSTASH_REDIS_REST_TOKEN";
+const KV_URL_KEY = "KV_REST_API_URL";
+const KV_TOKEN_KEY = "KV_REST_API_TOKEN";
 
 function clearUpstashEnv() {
   delete process.env[URL_KEY];
   delete process.env[TOKEN_KEY];
+  delete process.env[KV_URL_KEY];
+  delete process.env[KV_TOKEN_KEY];
 }
 
 function setUpstashEnv() {
@@ -81,6 +85,18 @@ describe("rate-limit — in-memory fallback (no Upstash env)", () => {
     ).toBe(true);
   });
 
+  it("fails closed when a distributed backend is required but not configured", async () => {
+    await expect(
+      rateLimit("ip", {
+        limit: 1,
+        windowMs: 60_000,
+        prefix: "required-missing",
+        requireDistributed: true,
+      }),
+    ).rejects.toThrow("not configured");
+    expect(limitMock).not.toHaveBeenCalled();
+  });
+
   it("resets after the window elapses", async () => {
     vi.useFakeTimers();
     try {
@@ -100,6 +116,12 @@ describe("rate-limit — distributed (Upstash env present)", () => {
 
   it("reports distributed when env vars are present", () => {
     setUpstashEnv();
+    expect(isRateLimitDistributed()).toBe(true);
+  });
+
+  it("reports distributed for Vercel Marketplace KV variables", () => {
+    process.env[KV_URL_KEY] = "https://example.upstash.io";
+    process.env[KV_TOKEN_KEY] = "test-token";
     expect(isRateLimitDistributed()).toBe(true);
   });
 
@@ -153,5 +175,19 @@ describe("rate-limit — distributed (Upstash env present)", () => {
     // First request allowed by the in-memory fallback, second blocked.
     expect(r1.success).toBe(true);
     expect(r2.success).toBe(false);
+  });
+
+  it("fails closed when the required distributed backend throws", async () => {
+    setUpstashEnv();
+    limitMock.mockRejectedValue(new Error("redis down"));
+
+    await expect(
+      rateLimit("ip", {
+        limit: 1,
+        windowMs: 60_000,
+        prefix: "required-failure",
+        requireDistributed: true,
+      }),
+    ).rejects.toThrow("unavailable");
   });
 });

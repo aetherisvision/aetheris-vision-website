@@ -5,10 +5,9 @@ export const SITE = {
   url: "https://aetherisvision.com",
   logoUrl: "https://aetherisvision.com/logo/av-logo-horizontal-dark.png",
   email: "contact@aetherisvision.com",
-  phone: "(346) 381-9629",
-  phoneHref: "tel:+13463819629",
   // Business NAP — must stay byte-identical to the Google Business Profile
-  // listing and SAM.gov ("PMB", never "#" or "Suite").
+  // listing and SAM.gov ("PMB", never "#" or "Suite"). Deliberately no phone
+  // constant: nothing public renders one.
   address: {
     street: "210 N Mustang Mall Terrace PMB 29",
     locality: "Mustang",
@@ -43,5 +42,4 @@ export const SAM = {
   // certification is held until VetCert / HUBZone certification is issued.
   setAsidePills: ["SDVOSB / VOSB — VetCert pending", "HUBZone Eligible"],
   samUrl: "https://sam.gov",
-  federalEmail: SITE.email,
 } as const;

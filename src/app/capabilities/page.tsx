@@ -64,10 +64,10 @@ const competencies = [
     title: "Atmospheric Science & Forecasting",
     items: [
       "AMS Certified Consulting Meteorologist (CCM) expertise held by the principal",
-      "Forecast and model-output interpretation for operational and planning decisions",
+      "Forecast and model-output interpretation for operational and planning work",
       "Verification, uncertainty, and quality assessment",
       "Weather and climate data workflows",
-      "Scientific subject-matter review and decision support",
+      "Scientific subject-matter review and project support",
     ],
   },
   {
@@ -101,8 +101,8 @@ const competencies = [
     title: "Program Leadership",
     items: [
       "Technical planning and coordination for multidisciplinary work",
-      "Independent review of assumptions, risks, and delivery options",
-      "Translation between domain experts, technical teams, and decision owners",
+      "Focused review of assumptions, risks, and delivery requirements",
+      "Translation between domain experts, technical teams, and project stakeholders",
       "Workforce development, mentoring, and team-capability support",
     ],
   },
@@ -119,8 +119,8 @@ const competencies = [
 
 const differentiators = [
   {
-    title: "Focused, Not Generalist",
-    body: "Rather than claiming to do everything, we concentrate on weather and Earth systems, geospatial data, applied AI, and practical technical delivery. You get specialist attention, not a catch-all consultancy.",
+    title: "Scope Built Around the Requirement",
+    body: "We shape each engagement around the mission, technical question, and delivery requirement. Clients receive focused specialist attention without forcing the work into a preset service category.",
   },
   {
     title: "Operational Weather Depth",
@@ -199,8 +199,8 @@ export default function CapabilitiesPage() {
                   Capabilities Statement
                 </h1>
                 <p className="text-gray-400 font-light leading-relaxed">
-                  Principal-led weather, Earth-system, geospatial, applied-AI, and technical
-                  delivery support for state and federal agencies. Review our registration data,
+                  Scientific, technical, and program support for state and federal agencies, backed
+                  by operational experience and practical delivery. Review our registration data,
                   NAICS codes, Product Service Codes, competencies, and differentiators below.
                 </p>
                 <p className="mt-4 text-xs font-light leading-relaxed text-gray-500">
@@ -299,10 +299,10 @@ export default function CapabilitiesPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a
-                href="/contact#contact-form"
+                href="/book"
                 className="inline-flex h-11 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
               >
-                Discuss a Project
+                Get in touch
               </a>
               <a
                 href={CAPABILITY_STATEMENT_REQUEST_HREF}

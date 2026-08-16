@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import EmailVerificationStep from "@/components/EmailVerificationStep";
 import FadeIn from "@/components/FadeIn";
-import { SITE } from "@/lib/constants";
+import TurnstileWidget from "@/components/TurnstileWidget";
+import { createSubmissionId } from "@/lib/client-submission-id";
 
 const requirementTypes = [
   "Weather & Earth-System Consulting",
@@ -87,8 +89,7 @@ export default function ContactForm() {
   // The form posts to /api/contact, which delivers the message by email via
   // Resend. Whether delivery is configured depends on the server-only
   // RESEND_API_KEY, so the client cannot know up front; if the API returns 503
-  // we surface a clear "unavailable" notice pointing visitors to the phone /
-  // scheduling alternatives instead of silently failing.
+  // we surface a clear "unavailable" notice with a scheduling alternative.
 
   // Optional prefill from query params so focused calls to action can open a
   // ready-to-send request while still letting the visitor add context.
@@ -107,8 +108,65 @@ export default function ContactForm() {
   );
   const [touched, setTouched] = useState<Partial<Record<keyof FieldErrors, boolean>>>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error" | "unavailable">("idle");
+  const [step, setStep] = useState<"details" | "verification">("details");
   const [errorDetail, setErrorDetail] = useState<string>("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [challengeId, setChallengeId] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
+  const [humanAttestation, setHumanAttestation] = useState(false);
+  const submissionIdRef = useRef<string | null>(null);
+  const formStartedAtRef = useRef(Date.now());
+  const requiresTurnstile = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+
+  function submissionPayload() {
+    return {
+      name: fields.name.trim(),
+      email: fields.email.trim(),
+      organization: fields.organization.trim(),
+      requirement: fields.requirement,
+      message: fields.message.trim(),
+      submissionId: submissionIdRef.current,
+      humanAttestation,
+      interactionDurationMs: Date.now() - formStartedAtRef.current,
+      _gotcha: fields._gotcha,
+    };
+  }
+
+  function resetTurnstile() {
+    setTurnstileToken(null);
+    setTurnstileResetKey((key) => key + 1);
+  }
+
+  function startOver() {
+    setStep("details");
+    setChallengeId("");
+    setVerificationCode("");
+    setErrorDetail("");
+    setStatus("idle");
+    setHumanAttestation(false);
+    submissionIdRef.current = null;
+    formStartedAtRef.current = Date.now();
+    resetTurnstile();
+  }
+
+  function responseError(body: unknown, fallback: string): string {
+    if (!body || typeof body !== "object") return fallback;
+    const record = body as { error?: unknown; errors?: unknown };
+    if (typeof record.error === "string") return record.error;
+    if (Array.isArray(record.errors)) {
+      const messages = record.errors
+        .map((error) =>
+          error && typeof error === "object" && "message" in error
+            ? (error as { message?: unknown }).message
+            : null,
+        )
+        .filter((message): message is string => typeof message === "string");
+      if (messages.length > 0) return messages.join(", ");
+    }
+    return fallback;
+  }
 
   function update(key: keyof Fields, value: string) {
     setFields((f) => ({ ...f, [key]: value }));
@@ -141,6 +199,70 @@ export default function ContactForm() {
     }
     setFieldErrors({});
 
+    if (!humanAttestation) {
+      setErrorDetail("Confirm that you are personally submitting this inquiry.");
+      setStatus("error");
+      return;
+    }
+
+    if (requiresTurnstile && !turnstileToken) {
+      setErrorDetail("Please complete the human verification before submitting.");
+      setStatus("error");
+      return;
+    }
+
+    setStatus("submitting");
+    setErrorDetail("");
+    submissionIdRef.current ??= createSubmissionId();
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...submissionPayload(),
+          turnstileToken,
+        }),
+      });
+      const body = await res.json().catch(() => ({}));
+
+      if (
+        res.ok &&
+        body?.stage === "verification" &&
+        typeof body.challengeId === "string" &&
+        body.challengeId.length > 0
+      ) {
+        setChallengeId(body.challengeId);
+        setVerificationCode("");
+        setStep("verification");
+        setStatus("idle");
+      } else if (res.status === 503) {
+        setStatus("unavailable");
+        resetTurnstile();
+      } else if (res.status === 429) {
+        setErrorDetail("Too many submissions. Please wait a few minutes and try again.");
+        setStatus("error");
+        resetTurnstile();
+      } else {
+        setErrorDetail(responseError(body, res.ok ? "The service returned an unexpected response." : `HTTP ${res.status}`));
+        setStatus("error");
+        resetTurnstile();
+      }
+    } catch (err) {
+      setErrorDetail(err instanceof Error ? err.message : "Network error");
+      setStatus("error");
+      resetTurnstile();
+    }
+  }
+
+  async function handleVerificationSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!/^\d{6}$/.test(verificationCode)) {
+      setErrorDetail("Enter the six-digit confirmation code from your email.");
+      setStatus("error");
+      return;
+    }
+
     setStatus("submitting");
     setErrorDetail("");
 
@@ -149,36 +271,33 @@ export default function ContactForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: fields.name.trim(),
-          email: fields.email.trim(),
-          organization: fields.organization.trim(),
-          requirement: fields.requirement,
-          message: fields.message.trim(),
-          _gotcha: fields._gotcha,
+          ...submissionPayload(),
+          challengeId,
+          verificationCode,
         }),
       });
+      const body = await res.json().catch(() => ({}));
 
-      if (res.ok) {
+      if (res.ok && body?.stage === "submitted") {
         setStatus("success");
         setFields(EMPTY);
         setFieldErrors({});
         setTouched({});
+        setChallengeId("");
+        setVerificationCode("");
+        setHumanAttestation(false);
+        submissionIdRef.current = null;
       } else if (res.status === 503) {
         setStatus("unavailable");
       } else if (res.status === 429) {
-        setErrorDetail("Too many submissions. Please wait a few minutes and try again.");
+        setErrorDetail("Too many attempts. Please wait a few minutes and try again.");
         setStatus("error");
       } else {
-        const body = await res.json().catch(() => ({}));
-        const msg =
-          body?.errors?.map((err: { message: string }) => err.message).join(", ") ||
-          body?.error ||
-          `HTTP ${res.status}`;
-        setErrorDetail(msg);
+        setErrorDetail(responseError(body, res.ok ? "The service returned an unexpected response." : "The confirmation code could not be verified."));
         setStatus("error");
       }
-    } catch (err) {
-      setErrorDetail(err instanceof Error ? err.message : "Network error");
+    } catch {
+      setErrorDetail("Network error. Please check your connection and try again.");
       setStatus("error");
     }
   }
@@ -198,11 +317,35 @@ export default function ContactForm() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
           </div>
-          <h3 className="text-white font-semibold text-lg mb-2">Inquiry received</h3>
+          <h3 className="text-white font-semibold text-lg mb-2">Message received</h3>
           <p className="text-gray-400 font-light text-sm">
-            Thank you. Marston Ward will review your message and typically reply within one business day.
+            Thank you. Aetheris Vision will review your message and typically reply within one business day.
           </p>
         </div>
+      </FadeIn>
+    );
+  }
+
+  if (step === "verification") {
+    return (
+      <FadeIn>
+        <form onSubmit={handleVerificationSubmit} noValidate>
+          <EmailVerificationStep
+            email={fields.email.trim()}
+            code={verificationCode}
+            onCodeChange={(code) => {
+              setVerificationCode(code);
+              if (status === "error") {
+                setStatus("idle");
+                setErrorDetail("");
+              }
+            }}
+            onStartOver={startOver}
+            submitting={status === "submitting"}
+            unavailable={status === "unavailable"}
+            error={status === "error" ? errorDetail : undefined}
+          />
+        </form>
       </FadeIn>
     );
   }
@@ -331,15 +474,15 @@ export default function ContactForm() {
 
         {status === "unavailable" && (
           <div role="status" className="rounded-md border border-yellow-500/30 bg-yellow-500/[0.06] p-4 text-sm text-yellow-200">
-            Our inquiry form isn&apos;t accepting submissions right now. Please try again later, or{" "}
-            <a href="/book" className="underline font-medium">book a call</a>{" "}and we&apos;ll follow up.
+            Our inquiry form isn&apos;t accepting submissions right now. Please try again later or{" "}
+            <a href="/book" className="underline font-medium">book a consultation</a>.
           </div>
         )}
 
         {status === "error" && (
           <p role="alert" className="text-sm text-red-400">
-            Something went wrong{errorDetail ? `: ${errorDetail}` : ""}. Please try again, or{" "}
-            <a href="/book" className="underline font-medium">book a call</a>.
+            Something went wrong{errorDetail ? `: ${errorDetail.replace(/[.!?]+$/, "")}` : ""}. Please try again or{" "}
+            <a href="/book" className="underline font-medium">book a consultation</a>.
           </p>
         )}
 
@@ -362,9 +505,38 @@ export default function ContactForm() {
           . Do not submit classified information, CUI, credentials, or other sensitive records here.
         </p>
 
+        <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-white/10 bg-white/[0.025] p-4 text-sm leading-6 text-gray-300">
+          <input
+            type="checkbox"
+            required
+            checked={humanAttestation}
+            onChange={(event) => {
+              setHumanAttestation(event.target.checked);
+              if (event.target.checked && status === "error") {
+                setStatus("idle");
+                setErrorDetail("");
+              }
+            }}
+            className="mt-1 h-4 w-4 shrink-0 accent-blue-500"
+          />
+          <span>
+            I confirm I am a person submitting this inquiry, not an automated agent or bot.
+          </span>
+        </label>
+
+        <TurnstileWidget
+          action="contact"
+          onTokenChange={setTurnstileToken}
+          resetKey={turnstileResetKey}
+        />
+
         <button
           type="submit"
-          disabled={status === "submitting"}
+          disabled={
+            status === "submitting" ||
+            !humanAttestation ||
+            (requiresTurnstile && !turnstileToken)
+          }
           className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-black hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {status === "submitting" ? "Sending…" : "Send inquiry"}

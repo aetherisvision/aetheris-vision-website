@@ -32,12 +32,12 @@ function buildCsp(nonce: string): string {
   const allowEval = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
   const directives = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}'${allowEval} https://analytics.google.com https://www.googletagmanager.com https://js.stripe.com https://giscus.app https://cal.com https://app.cal.com`,
+    `script-src 'self' 'nonce-${nonce}'${allowEval} https://analytics.google.com https://www.googletagmanager.com https://js.stripe.com https://giscus.app https://cal.com https://app.cal.com https://challenges.cloudflare.com`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://giscus.app",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob: https://avatars.githubusercontent.com https://github.githubassets.com",
-    "connect-src 'self' https://api.stripe.com https://analytics.google.com https://giscus.app https://api.github.com",
-    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://giscus.app https://cal.com https://app.cal.com",
+    "connect-src 'self' https://api.stripe.com https://analytics.google.com https://giscus.app https://api.github.com https://challenges.cloudflare.com",
+    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://giscus.app https://cal.com https://app.cal.com https://challenges.cloudflare.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -155,12 +155,16 @@ export async function proxy(request: NextRequest) {
     }
 
     if (isLoginPage && hasSession) {
-      return NextResponse.redirect(new URL('/admin/clients', request.url))
+      return NextResponse.redirect(new URL('/admin/leads', request.url))
     }
   }
 
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-nonce', nonce)
+  // Next.js reads the nonce from the request CSP while rendering server and
+  // framework scripts. Keep the same policy on the request and response so
+  // Turnstile can load without weakening script-src with unsafe-inline.
+  requestHeaders.set('Content-Security-Policy', csp)
 
   const response = NextResponse.next({ request: { headers: requestHeaders } })
 

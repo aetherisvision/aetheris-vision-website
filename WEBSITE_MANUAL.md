@@ -303,9 +303,11 @@ Open the Terminal app on your Mac. Run these commands one at a time:
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-**Install Node.js version 20** (the JavaScript runtime — required to run the site):
+**Install fnm and Node.js 24.15.0** (the JavaScript runtime — required to run the site):
 ```bash
-brew install node@20
+brew install fnm
+fnm install 24.15.0
+fnm use 24.15.0
 ```
 
 **Install Git** (version control — tracks all changes to your code):
@@ -768,7 +770,7 @@ The CSP is the most complex security feature. Here's how it works:
 
 ### "npm run dev gives an error"
 
-1. Make sure you have Node.js 20: `node --version` (should show v20.x.x)
+1. Make sure you have Node.js 24.15.0: `node --version` (should show v24.15.0)
 2. Make sure you ran `npm install` after cloning
 3. Make sure `.env.local` exists (copy from `.env.example`)
 4. If you see "missing env variable" errors, check Section 8

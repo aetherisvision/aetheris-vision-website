@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
+import TurnstileWidget from '@/components/TurnstileWidget'
 
 function StarSelector({
   value,
@@ -57,6 +58,10 @@ export default function ReviewForm() {
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0)
+  const [website, setWebsite] = useState('')
+  const requiresTurnstile = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
 
   // Pre-fill from query params
   useEffect(() => {
@@ -65,9 +70,9 @@ export default function ReviewForm() {
     const role = searchParams.get('role')
     setForm((f) => ({
       ...f,
-      client_name: name ?? f.client_name,
-      client_company: company ?? f.client_company,
-      client_role: role ?? f.client_role,
+      client_name: name?.slice(0, 200) ?? f.client_name,
+      client_company: company?.slice(0, 200) ?? f.client_company,
+      client_role: role?.slice(0, 200) ?? f.client_role,
     }))
   }, [searchParams])
 
@@ -87,6 +92,10 @@ export default function ReviewForm() {
       setError('Review must be at least 20 characters.')
       return
     }
+    if (requiresTurnstile && !turnstileToken) {
+      setError('Please complete the human verification before submitting.')
+      return
+    }
 
     setSubmitting(true)
     try {
@@ -99,17 +108,23 @@ export default function ReviewForm() {
           client_company: form.client_company.trim() || null,
           rating: form.rating,
           body: form.body.trim(),
+          turnstileToken,
+          _gotcha: website,
         }),
       })
 
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
       if (!res.ok) {
         setError(data.error ?? 'Something went wrong. Please try again.')
+        setTurnstileToken(null)
+        setTurnstileResetKey((key) => key + 1)
         return
       }
       setSuccess(true)
     } catch {
       setError('Network error. Please check your connection and try again.')
+      setTurnstileToken(null)
+      setTurnstileResetKey((key) => key + 1)
     } finally {
       setSubmitting(false)
     }
@@ -145,7 +160,7 @@ export default function ReviewForm() {
     padding: '11px 14px',
     borderRadius: '8px',
     border: '1px solid rgba(255,255,255,0.08)',
-    fontSize: '15px',
+    fontSize: '16px',
     color: '#f1f5f9',
     background: 'rgba(255,255,255,0.04)',
     outline: 'none',
@@ -176,6 +191,7 @@ export default function ReviewForm() {
           placeholder="e.g., Jane Smith"
           value={form.client_name}
           onChange={(e) => setForm((f) => ({ ...f, client_name: e.target.value }))}
+          maxLength={200}
           style={inputStyle}
         />
       </div>
@@ -191,6 +207,7 @@ export default function ReviewForm() {
             placeholder="e.g., Owner, Marketing Director"
             value={form.client_role}
             onChange={(e) => setForm((f) => ({ ...f, client_role: e.target.value }))}
+            maxLength={200}
             style={inputStyle}
           />
         </div>
@@ -203,6 +220,7 @@ export default function ReviewForm() {
             placeholder="e.g., Tropical Hut OKC"
             value={form.client_company}
             onChange={(e) => setForm((f) => ({ ...f, client_company: e.target.value }))}
+            maxLength={200}
             style={inputStyle}
           />
         </div>
@@ -228,12 +246,36 @@ export default function ReviewForm() {
           placeholder="Tell us about your experience working with Aetheris Vision. What did we build for you? What made the difference?"
           value={form.body}
           onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
+          maxLength={5000}
           style={{ ...inputStyle, resize: 'vertical', minHeight: '120px', lineHeight: '1.6' }}
         />
         <p style={{ margin: '5px 0 0', fontSize: '12px', color: 'rgba(255,255,255,0.25)' }}>
           {form.body.trim().length}/5000 characters (minimum 20)
         </p>
       </div>
+
+      {/* Automated form fillers commonly populate this off-screen field. */}
+      <div
+        aria-hidden="true"
+        style={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }}
+      >
+        <label htmlFor="review_website">Website</label>
+        <input
+          id="review_website"
+          name="website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={(event) => setWebsite(event.target.value)}
+        />
+      </div>
+
+      <TurnstileWidget
+        action="review"
+        onTokenChange={setTurnstileToken}
+        resetKey={turnstileResetKey}
+      />
 
       {/* Error message */}
       {error && (
@@ -246,6 +288,8 @@ export default function ReviewForm() {
             color: '#f87171',
             fontSize: '14px',
           }}
+          role="alert"
+          aria-live="assertive"
         >
           {error}
         </div>
@@ -254,19 +298,19 @@ export default function ReviewForm() {
       {/* Submit */}
       <button
         type="submit"
-        disabled={submitting}
+        disabled={submitting || (requiresTurnstile && !turnstileToken)}
         style={{
           padding: '13px 28px',
           borderRadius: '8px',
-          background: submitting
+          background: submitting || (requiresTurnstile && !turnstileToken)
             ? 'rgba(91,168,217,0.4)'
             : 'linear-gradient(135deg, #486890, #5BA8D9)',
           color: '#fff',
           fontWeight: '600',
           fontSize: '15px',
           border: 'none',
-          cursor: submitting ? 'not-allowed' : 'pointer',
-          boxShadow: submitting ? 'none' : '0 4px 14px rgba(91,168,217,0.3)',
+          cursor: submitting || (requiresTurnstile && !turnstileToken) ? 'not-allowed' : 'pointer',
+          boxShadow: submitting || (requiresTurnstile && !turnstileToken) ? 'none' : '0 4px 14px rgba(91,168,217,0.3)',
           transition: 'all 0.15s',
           alignSelf: 'flex-start',
         }}

@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import EmailVerificationStep from "@/components/EmailVerificationStep";
 import LocationAutocomplete from "@/components/LocationAutocomplete";
+import TurnstileWidget from "@/components/TurnstileWidget";
+import { createSubmissionId } from "@/lib/client-submission-id";
 
 interface FormData {
   // Business Information
@@ -126,6 +129,17 @@ export default function ProjectIntakeForm() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [errorDetail, setErrorDetail] = useState("");
+  const [step, setStep] = useState<"details" | "verification">("details");
+  const [challengeId, setChallengeId] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
+  const [humanAttestation, setHumanAttestation] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
+  const submissionIdRef = useRef<string | null>(null);
+  const formStartedAtRef = useRef(Date.now());
+  const requiresTurnstile = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
 
   const handleCheckboxChange = (field: keyof FormData, value: string, checked: boolean) => {
     setFormData(prev => {
@@ -142,52 +156,145 @@ export default function ProjectIntakeForm() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const submissionPayload = () => ({
+    ...formData,
+    submissionId: submissionIdRef.current,
+    humanAttestation,
+    interactionDurationMs: Date.now() - formStartedAtRef.current,
+    _gotcha: honeypot,
+  });
+
+  const responseError = async (response: Response, fallback: string) => {
+    const body = (await response.json().catch(() => null)) as { error?: string } | null;
+    return body?.error || fallback;
+  };
+
+  const resetTurnstile = () => {
+    setTurnstileToken(null);
+    setTurnstileResetKey((key) => key + 1);
+  };
+
+  const startOver = () => {
+    setStep("details");
+    setChallengeId("");
+    setVerificationCode("");
+    setSubmitStatus("idle");
+    setErrorDetail("");
+    setHumanAttestation(false);
+    submissionIdRef.current = null;
+    formStartedAtRef.current = Date.now();
+    resetTurnstile();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!humanAttestation) {
+      setSubmitStatus("error");
+      setErrorDetail("Confirm that you are personally submitting this project request.");
+      return;
+    }
+    if (requiresTurnstile && !turnstileToken) {
+      setSubmitStatus("error");
+      setErrorDetail("Complete the security check before sending your project details.");
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitStatus("idle");
+    setErrorDetail("");
+    submissionIdRef.current ??= createSubmissionId();
 
     try {
-      // Track form submission analytics
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'form_submit', {
-          event_category: 'engagement',
-          event_label: 'project_intake_form',
-          value: 0
-        });
-      }
-
       const response = await fetch('/api/intake', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...formData,
-          submittedAt: new Date().toISOString(),
-          userAgent: navigator.userAgent,
-          referrer: document.referrer,
+          ...submissionPayload(),
+          turnstileToken,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit form');
+        setSubmitStatus("error");
+        setErrorDetail(await responseError(response, "We could not start email verification. Please try again."));
+        resetTurnstile();
+        return;
+      }
+
+      const body = (await response.json().catch(() => null)) as {
+        stage?: string;
+        challengeId?: string;
+      } | null;
+      if (body?.stage !== "verification" || !body.challengeId) {
+        setSubmitStatus("error");
+        setErrorDetail("The verification service returned an unexpected response. Please try again.");
+        resetTurnstile();
+        return;
+      }
+
+      setChallengeId(body.challengeId);
+      setStep("verification");
+
+      if (typeof window !== "undefined" && window.gtag) {
+        window.gtag("event", "form_submit", {
+          event_category: "engagement",
+          event_label: "project_intake_verification_requested",
+          value: 0,
+        });
+      }
+    } catch {
+      setSubmitStatus("error");
+      setErrorDetail("We could not reach the verification service. Check your connection and try again.");
+      resetTurnstile();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerificationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus("idle");
+    setErrorDetail("");
+
+    try {
+      const response = await fetch("/api/intake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...submissionPayload(),
+          challengeId,
+          verificationCode,
+        }),
+      });
+
+      if (!response.ok) {
+        setSubmitStatus("error");
+        setErrorDetail(await responseError(response, "We could not verify that code. Please try again."));
+        return;
+      }
+
+      const body = (await response.json().catch(() => null)) as { stage?: string } | null;
+      if (body?.stage !== "submitted") {
+        setSubmitStatus("error");
+        setErrorDetail("The submission service returned an unexpected response. Please try again.");
+        return;
       }
 
       setSubmitStatus("success");
-      
-      // Track successful submission
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'conversion', {
-          send_to: 'AW-CONVERSION_ID/CONVERSION_LABEL', // You'll need to set this up
-          event_category: 'lead_generation',
-          event_label: 'project_intake_completed'
+      submissionIdRef.current = null;
+
+      if (typeof window !== "undefined" && window.gtag) {
+        window.gtag("event", "conversion", {
+          event_category: "lead_generation",
+          event_label: "project_intake_completed",
         });
       }
-
-    } catch (error) {
-      console.error('Form submission error:', error);
+    } catch {
       setSubmitStatus("error");
+      setErrorDetail("We could not reach the submission service. Check your connection and try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -201,12 +308,12 @@ export default function ProjectIntakeForm() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h3 className="text-2xl font-semibold text-white mb-4">Thank You!</h3>
+        <h3 className="text-2xl font-semibold text-white mb-4">Project details received</h3>
         <p className="text-gray-400 mb-6 max-w-lg mx-auto">
-          Your project intake has been submitted successfully. We&apos;ve created a dedicated folder for your project and will review your requirements within 4 hours.
+          Thank you. Aetheris Vision will review the information you provided and follow up about the next step.
         </p>
         <p className="text-sm text-gray-500">
-          You&apos;ll receive an email confirmation at <span className="text-white">{formData.contactEmail}</span> shortly.
+          Your project details have been saved. We&apos;ll use <span className="text-white">{formData.contactEmail}</span> for any follow-up.
         </p>
         <div className="mt-8">
           <a
@@ -219,10 +326,26 @@ export default function ProjectIntakeForm() {
             href="/book"
             className="inline-flex h-11 items-center justify-center rounded-md border border-white/20 bg-black/50 px-6 text-sm font-medium text-white hover:bg-white/5 transition"
           >
-            Schedule a Call
+            Book a consultation
           </a>
         </div>
       </div>
+    );
+  }
+
+  if (step === "verification") {
+    return (
+      <form onSubmit={handleVerificationSubmit} className="space-y-8">
+        <EmailVerificationStep
+          email={formData.contactEmail}
+          code={verificationCode}
+          onCodeChange={setVerificationCode}
+          onStartOver={startOver}
+          submitting={isSubmitting}
+          error={submitStatus === "error" ? errorDetail : ""}
+          submitLabel="Confirm and send project details"
+        />
+      </form>
     );
   }
 
@@ -712,25 +835,74 @@ export default function ProjectIntakeForm() {
 
       {/* Submit Button */}
       <div className="pt-6">
+        <div className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
+          <label htmlFor="project-intake-company-website">Company website</label>
+          <input
+            id="project-intake-company-website"
+            name="companyWebsite"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            value={honeypot}
+            onChange={(event) => setHoneypot(event.target.value)}
+          />
+        </div>
+
+        <div className="mb-5">
+          <label className="mb-5 flex cursor-pointer items-start gap-3 rounded-md border border-white/10 bg-white/[0.03] p-4 text-sm leading-6 text-gray-300">
+            <input
+              type="checkbox"
+              required
+              checked={humanAttestation}
+              onChange={(event) => {
+                setHumanAttestation(event.target.checked);
+                if (event.target.checked && submitStatus === "error") {
+                  setSubmitStatus("idle");
+                  setErrorDetail("");
+                }
+              }}
+              className="mt-1 h-4 w-4 shrink-0 accent-blue-500"
+            />
+            <span>
+              I confirm I am a person authorized to submit this project request, not an
+              automated agent or bot.
+            </span>
+          </label>
+
+          <TurnstileWidget
+            action="intake"
+            onTokenChange={setTurnstileToken}
+            resetKey={turnstileResetKey}
+          />
+        </div>
+
         {submitStatus === "error" && (
-          <div className="mb-4 rounded-md bg-red-900/20 border border-red-500/20 p-4">
+          <div className="mb-4 rounded-md bg-red-900/20 border border-red-500/20 p-4" role="alert">
             <p className="text-red-400 text-sm">
-              There was an error submitting your form. Please try again or{" "}
-              <a href="/contact" className="underline">contact us</a> directly.
+              {errorDetail || "There was an error submitting your form. Please try again."}{" "}
+              <a href="/contact" className="underline">Contact us</a> if the problem continues.
             </p>
           </div>
         )}
         
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={
+            isSubmitting ||
+            !humanAttestation ||
+            (requiresTurnstile && !turnstileToken)
+          }
           className="w-full inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-black transition-colors hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? "Submitting..." : "Submit Project Intake"}
+          {isSubmitting ? "Sending..." : "Send project details"}
         </button>
         
         <p className="mt-3 text-xs text-gray-500 text-center">
-          By submitting this form, you agree to our privacy policy. We&apos;ll respond within 4 hours during business days.
+          By submitting this form, you agree to our{" "}
+          <a href="/privacy" className="underline underline-offset-2 hover:text-gray-300">
+            privacy policy
+          </a>
+          . We&apos;ll review your information and follow up.
         </p>
       </div>
     </form>

@@ -1,16 +1,15 @@
-import { sql } from '../src/lib/db/index'
+import { runMigrations } from '../src/lib/db/migrations'
 
 async function migrate() {
-  // Add columns to projects that were added to schema.ts but never migrated
-  await sql`
-    ALTER TABLE projects
-      ADD COLUMN IF NOT EXISTS docuseal_submission_id TEXT,
-      ADD COLUMN IF NOT EXISTS signed_pdf_base64      TEXT,
-      ADD COLUMN IF NOT EXISTS signed_at              TIMESTAMPTZ,
-      ADD COLUMN IF NOT EXISTS start_date             DATE,
-      ADD COLUMN IF NOT EXISTS end_date               DATE
-  `
-  console.log('Migration complete')
+  const result = await runMigrations()
+  console.log(
+    `Migration complete: ${result.appliedMigrations.length} migration(s), ` +
+      `${result.verifiedColumns} columns, ${result.verifiedIndexes} indexes, ` +
+      `${result.verifiedConstraints} constraints verified`,
+  )
 }
 
-migrate().catch(console.error)
+migrate().catch((error: unknown) => {
+  console.error(error instanceof Error ? error.message : error)
+  process.exitCode = 1
+})

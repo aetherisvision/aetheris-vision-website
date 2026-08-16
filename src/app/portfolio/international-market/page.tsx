@@ -343,7 +343,7 @@ export default function InternationalMarketDemo() {
                       ].map((item) => (
                         <div key={item.feature} className="flex items-center gap-3">
                           <span className="text-lg">{item.icon}</span>
-                          <span className="text-zinc-700">{item.feature}</span>
+                          <span className="min-w-0 text-zinc-700 [overflow-wrap:anywhere]">{item.feature}</span>
                         </div>
                       ))}
                     </div>

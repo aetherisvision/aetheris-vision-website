@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { BRAND_LOGO } from "@/lib/brand";
 
 // Navbar pulls navigation hooks from next/navigation; stub them so the
@@ -14,10 +14,8 @@ import Footer from "@/components/Footer";
 
 // next/image may rewrite the src through the optimizer; decode before asserting
 // so we match on the underlying asset path regardless of query-param encoding.
-function logoSrc(container?: HTMLElement): string {
-  const img = container
-    ? container.querySelector("img")
-    : screen.getAllByAltText(/Aetheris Vision Logo|Logo$/i)[0];
+function logoSrc(container: HTMLElement): string {
+  const img = container.querySelector("img");
   if (!img) throw new Error("Expected a rendered brand image");
   return decodeURIComponent(img.getAttribute("src") ?? "");
 }
@@ -33,8 +31,12 @@ describe("brand logo", () => {
   });
 
   it("Footer renders the canonical mark from BRAND_LOGO", () => {
-    render(<Footer />);
-    expect(logoSrc()).toContain(BRAND_LOGO.markSvg);
+    const { container } = render(<Footer />);
+    const mark = container.querySelector("img");
+
+    expect(logoSrc(container)).toContain(BRAND_LOGO.markSvg);
+    expect(mark).toHaveAttribute("alt", "");
+    expect(mark).toHaveAttribute("aria-hidden", "true");
   });
 
   it("does not reference the retired off-brand logo asset", () => {

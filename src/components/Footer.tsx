@@ -19,10 +19,11 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:px-10">
         <div className="grid gap-12 md:grid-cols-[1fr_1.2fr] md:gap-16">
           <div className="max-w-md">
-            <Link href="/" className="flex shrink-0 items-center gap-3">
+            <Link href="/" className="flex min-h-11 shrink-0 items-center gap-3">
               <Image
                 src={BRAND_LOGO.markSvg}
-                alt={`${SITE.name} Logo`}
+                alt=""
+                aria-hidden="true"
                 width={36}
                 height={36}
                 className="h-9 w-9"
@@ -31,8 +32,8 @@ export default function Footer() {
                 <span className="font-light text-white/55">Aetheris</span>Vision
               </div>
             </Link>
-            <p className="mt-5 text-sm leading-6 text-white/55">
-              Principal-led scientific consulting for weather, Earth systems, and geospatial data — carried through to delivery.
+            <p className="mt-5 text-sm leading-6 text-white/70">
+              Scientific and technical consulting that helps complex projects move forward efficiently and stay on schedule.
             </p>
             {/* Business address for local SEO / Google Business Profile.
                 Deliberately no email or phone — contact routes through the
@@ -49,22 +50,22 @@ export default function Footer() {
           <div className="md:text-right">
             <nav aria-label="Footer navigation" className="flex max-w-xl flex-wrap gap-x-6 gap-y-3 md:ml-auto md:justify-end">
               {footerLinks.map((link) => (
-                <a key={link.label} href={link.href} className="text-sm text-white/55 transition hover:text-white">
+                <a key={link.label} href={link.href} className="inline-flex min-h-11 items-center text-sm text-white/70 transition hover:text-white">
                   {link.label}
                 </a>
               ))}
             </nav>
             <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 md:justify-end">
-              <a href="/capabilities#contracting-codes" className="text-xs text-white/45 transition hover:text-white">
+              <a href="/capabilities#contracting-codes" className="inline-flex min-h-11 items-center text-xs text-white/65 transition hover:text-white">
                 NAICS &amp; PSC Codes
               </a>
-              <a href={CAPABILITY_STATEMENT_REQUEST_HREF} className="text-xs text-white/45 transition hover:text-white">
+              <a href={CAPABILITY_STATEMENT_REQUEST_HREF} className="inline-flex min-h-11 items-center text-xs text-white/65 transition hover:text-white">
                 Capability Statement
               </a>
-              <a href="/client/login" className="text-xs text-white/45 transition hover:text-white">
+              <a href="/client/login" className="inline-flex min-h-11 items-center text-xs text-white/65 transition hover:text-white">
                 Client Portal
               </a>
-              <a href="/privacy" className="text-xs text-white/45 transition hover:text-white">
+              <a href="/privacy" className="inline-flex min-h-11 items-center text-xs text-white/65 transition hover:text-white">
                 Privacy
               </a>
             </div>
@@ -73,7 +74,7 @@ export default function Footer() {
 
         <div className="my-10 h-px w-full bg-white/10" />
 
-        <div className="flex flex-col items-start justify-between gap-4 text-xs text-white/40 sm:flex-row sm:items-center">
+        <div className="flex flex-col items-start justify-between gap-4 text-xs text-white/60 sm:flex-row sm:items-center">
           <span>&copy; {new Date().getFullYear()} {SITE.legalName}. All rights reserved.</span>
           <span>
             SAM.gov Active&nbsp;&nbsp;•&nbsp;&nbsp;UEI {SAM.uei}&nbsp;&nbsp;•&nbsp;&nbsp;CAGE {SAM.cage}

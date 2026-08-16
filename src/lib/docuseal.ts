@@ -2,6 +2,49 @@ const DOCUSEAL_API_URL = 'https://api.docuseal.com'
 const DOCUSEAL_API_KEY = process.env.DOCUSEAL_API_KEY!
 const MARSTON_EMAIL = 'marston@aetherisvision.com'
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function signedDocumentUrlFrom(payload: unknown): string | null {
+  if (!isRecord(payload) || !Array.isArray(payload.documents)) return null
+
+  // merge=true should return one combined document. Fail closed if the
+  // provider returns an ambiguous response rather than storing the wrong PDF.
+  if (payload.documents.length !== 1 || !isRecord(payload.documents[0])) return null
+
+  const rawUrl = payload.documents[0].url
+  if (typeof rawUrl !== 'string' || rawUrl.length > 8_192) return null
+
+  try {
+    const url = new URL(rawUrl)
+    if (url.protocol !== 'https:' || url.username || url.password) return null
+  } catch {
+    return null
+  }
+
+  return rawUrl
+}
+
+export class DocuSealApiError extends Error {
+  readonly status: number
+  readonly retrySafe: boolean
+
+  constructor(status: number) {
+    super(`DocuSeal request failed with status ${status}`)
+    this.name = 'DocuSealApiError'
+    this.status = status
+    // A normal 4xx response means DocuSeal rejected the request before creating
+    // a submission. Timeouts, early-data responses, and rate limits are kept
+    // ambiguous because the provider may still have accepted the request.
+    this.retrySafe = status >= 400 && status < 500 && ![408, 425, 429].includes(status)
+  }
+}
+
+export function isRetrySafeDocuSealError(error: unknown): boolean {
+  return error instanceof DocuSealApiError && error.retrySafe
+}
+
 // Build the HTML signature block with embedded DocuSeal field tags
 export function buildSignatureBlock(isSelfSign: boolean, signerName: string): string {
   if (isSelfSign) {
@@ -73,8 +116,7 @@ export async function sendForSigning({
   })
 
   if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`Docuseal API error: ${error}`)
+    throw new DocuSealApiError(response.status)
   }
 
   return response.json()
@@ -93,10 +135,35 @@ export async function getSubmission(submissionId: string) {
 // Download the signed PDF as a buffer
 export async function downloadSignedPdf(submissionId: string): Promise<Buffer> {
   const response = await fetch(
-    `${DOCUSEAL_API_URL}/submissions/${submissionId}/download`,
-    { headers: { 'X-Auth-Token': DOCUSEAL_API_KEY } }
+    `${DOCUSEAL_API_URL}/submissions/${encodeURIComponent(submissionId)}/documents?merge=true`,
+    {
+      headers: { 'X-Auth-Token': DOCUSEAL_API_KEY },
+      cache: 'no-store',
+    },
   )
 
-  if (!response.ok) throw new Error(`Failed to download signed PDF for ${submissionId}`)
-  return Buffer.from(await response.arrayBuffer())
+  if (!response.ok) {
+    throw new Error(`Failed to fetch signed PDF metadata for ${submissionId}`)
+  }
+
+  let payload: unknown
+  try {
+    payload = await response.json()
+  } catch {
+    throw new Error(`Invalid signed PDF metadata for ${submissionId}`)
+  }
+
+  const documentUrl = signedDocumentUrlFrom(payload)
+  if (!documentUrl) {
+    throw new Error(`Signed PDF is unavailable for ${submissionId}`)
+  }
+
+  // The temporary URL is already authorized by DocuSeal. Do not forward the
+  // API key to the document host, and do not allow Next.js to cache the file.
+  const documentResponse = await fetch(documentUrl, { cache: 'no-store' })
+  if (!documentResponse.ok) {
+    throw new Error(`Failed to download signed PDF for ${submissionId}`)
+  }
+
+  return Buffer.from(await documentResponse.arrayBuffer())
 }

@@ -23,28 +23,36 @@ import {
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 
-// Simulated real-time data
-const generateMetricsData = () => ({
+function createSeededRandom(seed: number) {
+  return () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+}
+
+// Simulated real-time data. The seeded initial snapshot keeps server and client
+// rendering identical; subsequent refreshes intentionally use live randomness.
+const generateMetricsData = (random: () => number = Math.random) => ({
   users: {
-    current: Math.floor(Math.random() * 500) + 2800,
-    change: (Math.random() - 0.5) * 20,
+    current: Math.floor(random() * 500) + 2800,
+    change: (random() - 0.5) * 20,
     trend: Array.from({ length: 24 }, (_, i) => ({
       hour: i,
-      value: Math.floor(Math.random() * 300) + 100 + Math.sin(i / 4) * 50,
+      value: Math.floor(random() * 300) + 100 + Math.sin(i / 4) * 50,
     })),
   },
   revenue: {
-    current: Math.floor(Math.random() * 10000) + 15000,
-    change: (Math.random() - 0.3) * 15,
+    current: Math.floor(random() * 10000) + 15000,
+    change: (random() - 0.3) * 15,
     trend: Array.from({ length: 7 }, (_, i) => ({
       day: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][i],
-      value: Math.floor(Math.random() * 5000) + 2000,
+      value: Math.floor(random() * 5000) + 2000,
     })),
   },
   performance: {
-    cpu: Math.floor(Math.random() * 30) + 45,
-    memory: Math.floor(Math.random() * 25) + 60,
-    latency: Math.floor(Math.random() * 50) + 120,
+    cpu: Math.floor(random() * 30) + 45,
+    memory: Math.floor(random() * 25) + 60,
+    latency: Math.floor(random() * 50) + 120,
     uptime: 99.97,
   },
   alerts: [
@@ -54,6 +62,8 @@ const generateMetricsData = () => ({
     { id: 4, type: "warning", message: "Unusual traffic spike detected", time: "3 hours ago", resolved: false },
   ],
 });
+
+const INITIAL_METRICS_DATA = generateMetricsData(createSeededRandom(0xa37e15));
 
 interface MetricCardProps {
   title: string;
@@ -189,7 +199,7 @@ const AlertItem: React.FC<{ alert: any; onResolve: (id: number) => void }> = ({ 
 };
 
 export default function AnalyticsDashboardPage() {
-  const [data, setData] = useState(() => generateMetricsData());
+  const [data, setData] = useState(INITIAL_METRICS_DATA);
   const [selectedTimeframe, setSelectedTimeframe] = useState("24h");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [resolvedAlerts, setResolvedAlerts] = useState<number[]>([]);
@@ -251,7 +261,7 @@ export default function AnalyticsDashboardPage() {
 
       {/* Dashboard Header */}
       <div className="border-b border-slate-800/50 bg-slate-900/50 backdrop-blur-sm px-6 py-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white mb-1">DataViz Pro Analytics</h1>
             <p className="text-slate-400">Real-time performance monitoring dashboard</p>
@@ -312,7 +322,7 @@ export default function AnalyticsDashboardPage() {
           />
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
           {/* Charts Section */}
           <div className="xl:col-span-2 space-y-6">
             {/* User Activity Chart */}

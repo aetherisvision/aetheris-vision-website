@@ -10,9 +10,11 @@ import { Redis } from '@upstash/redis'
  *
  * When the Upstash Redis env vars are present (provisioned via the Vercel
  * Marketplace — "Vercel KV" is Upstash Redis under the hood) this uses a
- * distributed fixed-window limiter shared across all instances. When they are
- * absent (local dev / CI) it falls back to the previous in-memory limiter so
- * the app still runs without external infrastructure.
+ * distributed fixed-window limiter shared across all instances. The
+ * Marketplace currently provisions `KV_REST_API_*`, while direct Upstash
+ * setups use `UPSTASH_REDIS_REST_*`; the SDK and this guard support both.
+ * When they are absent (local dev / CI) it falls back to the previous
+ * in-memory limiter so the app still runs without external infrastructure.
  *
  * Works in both the Edge runtime (proxy.ts) and the Node.js runtime (API
  * routes): the Upstash client is REST/fetch-based.
@@ -24,6 +26,12 @@ export interface RateLimitOptions {
   windowMs: number
   /** Namespace so different routes do not share counters. */
   prefix: string
+  /**
+   * Refuse the request when the shared backend is missing or unavailable.
+   * Use this for public mutation endpoints where a per-instance fallback would
+   * materially weaken abuse protection in a serverless deployment.
+   */
+  requireDistributed?: boolean
 }
 
 export interface RateLimitResult {
@@ -36,9 +44,12 @@ export interface RateLimitResult {
 
 /** True when the distributed (Upstash/Vercel KV) backend is configured. */
 export function isRateLimitDistributed(): boolean {
-  return Boolean(
-    process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN,
-  )
+  const url =
+    process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL
+  const token =
+    process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN
+
+  return Boolean(url && token)
 }
 
 // ---- Distributed backend (Upstash Redis) -----------------------------------
@@ -123,13 +134,18 @@ function memoryLimit(identifier: string, opts: RateLimitOptions): RateLimitResul
 /**
  * Check (and consume) one unit of rate-limit budget for `identifier` (usually
  * the client IP). Returns whether the request is allowed plus headroom/retry
- * info. Never throws: a distributed-backend failure degrades to the in-memory
- * limiter so the site stays up.
+ * info. By default, a distributed-backend failure degrades to the in-memory
+ * limiter so the site stays up. Callers may set `requireDistributed` to fail
+ * closed instead.
  */
 export async function rateLimit(
   identifier: string,
   opts: RateLimitOptions,
 ): Promise<RateLimitResult> {
+  if (opts.requireDistributed && !isRateLimitDistributed()) {
+    throw new Error('Distributed rate-limit backend is not configured')
+  }
+
   if (isRateLimitDistributed()) {
     try {
       const { success, remaining, reset } = await getLimiter(opts).limit(identifier)
@@ -142,6 +158,12 @@ export async function rateLimit(
         retryAfterSeconds: success ? retry : Math.max(1, retry),
       }
     } catch (err) {
+      if (opts.requireDistributed) {
+        console.error('rate-limit: required distributed backend unavailable', {
+          error: err instanceof Error ? err.name : 'UnknownError',
+        })
+        throw new Error('Distributed rate-limit backend is unavailable')
+      }
       // A Redis/network failure must not take the site down — fall back to the
       // per-instance limiter for this request.
       console.error('rate-limit: distributed backend error, using in-memory fallback', err)

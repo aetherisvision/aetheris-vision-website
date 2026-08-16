@@ -50,7 +50,7 @@ This is a Next.js **16.1.6** website for **Aetheris Vision LLC**, a Veteran-Owne
 - Basic auth for preview deployments
 
 ## Environment & Deployment
-- **Node.js**: Must use v20 (pinned via `.node-version`). Use `fnm use` to switch.
+- **Node.js**: Must use v24.15.0 (pinned via `.node-version`). Use `fnm use` to switch.
 - **Deployment**: Vercel (auto-deploy on push to `main`)
 - **CI**: GitHub Actions runs lint → test → build on every push/PR
 - **Backups**: `origin` (GitHub) + `backup` (GitLab)

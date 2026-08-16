@@ -46,10 +46,6 @@ export default function SatelliteDisplay({ sources }: { sources: SatelliteSource
                 }}
               />
             )}
-            <span className="absolute left-3 top-3 inline-flex items-center gap-2 bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#9bc3df] backdrop-blur">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#2f8291]" />
-              Current view
-            </span>
           </div>
           <figcaption className="flex items-start justify-between gap-4 border-t border-white/15 px-4 py-3">
             <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#9bc3df]">{source.label}</span>

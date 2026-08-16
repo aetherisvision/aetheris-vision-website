@@ -1,33 +1,7 @@
 Feature: Contact Form
   As a potential client visiting the Aetheris Vision website
   I want to submit a contact form
-  So that I can reach the team about a web project
-
-  # ── API layer ──────────────────────────────────────────────────────────────
-
-  Scenario: Visitor submits a valid contact request
-    Given the contact API is configured with Resend
-    When a visitor submits the form with name "Jane Doe" email "jane@example.com" and message "Need a custom website for my business"
-    Then the submission should be emailed via Resend
-    And the response status should be 200
-
-  Scenario: Bot triggers the honeypot
-    Given the contact API is configured with Resend
-    When a bot submits the form with the honeypot field filled
-    Then the response status should be 200
-    And the submission should not be emailed via Resend
-
-  Scenario: Rate limiting kicks in after too many requests
-    Given the contact API is configured with Resend
-    When 6 submissions come from the same IP address
-    Then the 6th response status should be 429
-
-  Scenario: Form configuration missing
-    Given Resend is not configured
-    When a visitor submits the form with name "Test" email "test@test.com" and message "Hello"
-    Then the response status should be 503
-
-  # ── UI validation layer ────────────────────────────────────────────────────
+  So that I can reach the team about a project
 
   Scenario: Empty form shows inline required field errors
     Given a visitor is on the contact page
@@ -53,10 +27,20 @@ Feature: Contact Form
     And they click submit
     Then they should see "Message must be at least 10 characters."
 
-  Scenario: Successful submission shows confirmation
+  Scenario: Verified submission shows confirmation
     Given a visitor fills in all required fields correctly
-    When the API responds with success
-    Then they should see "Inquiry received"
+    When the API starts email verification
+    Then they should see "Enter the six-digit code"
+    And they should not see "Message received"
+    When they enter confirmation code "123456"
+    And the API confirms the verified submission
+    Then they should see "Message received"
+
+  Scenario: Unexpected successful response fails closed
+    Given a visitor fills in all required fields correctly
+    When the API responds with an unexpected success payload
+    Then they should see "The service returned an unexpected response."
+    And they should not see "Message received"
 
   Scenario: API failure shows error message
     Given a visitor fills in all required fields correctly

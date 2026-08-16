@@ -186,26 +186,44 @@ export default function OmniGridderComparison() {
         </div>
 
         <div className="mt-10 grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <article className="border border-[#17252f]/20 bg-white p-5 sm:p-7">
+          <article className="min-w-0 border border-[#17252f]/20 bg-white p-5 sm:p-7">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#486890]">Conservative remapping</p>
-              <h4 className="mt-2 font-serif text-2xl text-[#0a1628]">Preserve what matters as resolution changes</h4>
+              <h4 id="conservative-heading" className="mt-2 font-serif text-2xl text-[#0a1628]">Preserve what matters as resolution changes</h4>
             </div>
-            <div className="mt-6 border-y border-[#17252f]/15 py-4">
-              <ConservativeSchematic />
+            <div
+              className="mt-6 max-w-full overflow-x-auto overscroll-x-contain border-y border-[#17252f]/15 py-4"
+              role="region"
+              aria-labelledby="conservative-heading"
+              aria-describedby="conservative-scroll-hint"
+              tabIndex={0}
+            >
+              <span id="conservative-scroll-hint" className="sr-only">Scroll horizontally to view the complete diagram on a small screen</span>
+              <div className="min-w-[560px] sm:min-w-0">
+                <ConservativeSchematic />
+              </div>
             </div>
             <p className="pt-5 text-sm leading-6 text-[#52656d]">
               Used where totals or area-weighted quantities must remain consistent between source and target grids.
             </p>
           </article>
 
-          <article className="border border-[#17252f]/20 bg-white p-5 sm:p-7">
+          <article className="min-w-0 border border-[#17252f]/20 bg-white p-5 sm:p-7">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#486890]">Elliptical Weighted Averaging (EWA)</p>
-              <h4 className="mt-2 font-serif text-2xl text-[#0a1628]">Respect the observation geometry</h4>
+              <h4 id="ewa-heading" className="mt-2 font-serif text-2xl text-[#0a1628]">Respect the observation geometry</h4>
             </div>
-            <div className="mt-6 border-y border-[#17252f]/15 py-4">
-              <EwaSchematic />
+            <div
+              className="mt-6 max-w-full overflow-x-auto overscroll-x-contain border-y border-[#17252f]/15 py-4"
+              role="region"
+              aria-labelledby="ewa-heading"
+              aria-describedby="ewa-scroll-hint"
+              tabIndex={0}
+            >
+              <span id="ewa-scroll-hint" className="sr-only">Scroll horizontally to view the complete diagram on a small screen</span>
+              <div className="min-w-[560px] sm:min-w-0">
+                <EwaSchematic />
+              </div>
             </div>
             <p className="pt-5 text-sm leading-6 text-[#52656d]">
               Suited to satellite swaths and other geolocated observations whose footprints do not behave like a conventional source grid.

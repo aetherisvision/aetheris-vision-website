@@ -15,9 +15,8 @@ describe("JSON-LD structured data", () => {
       expect(organizationJsonLd.logo).toBe(SITE.logoUrl);
     });
 
-    it("includes a contactPoint with email", () => {
-      expect(organizationJsonLd.contactPoint).toBeDefined();
-      expect(organizationJsonLd.contactPoint.email).toContain("@");
+    it("does not expose a direct contact address", () => {
+      expect(organizationJsonLd).not.toHaveProperty("contactPoint");
     });
   });
 

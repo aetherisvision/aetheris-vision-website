@@ -1,22 +1,23 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-const NAV = [
-  { href: '/admin/intake',    label: 'Intake' },
-  { href: '/admin/clients',   label: 'Clients' },
-  { href: '/admin/projects',  label: 'Projects' },
+const PRIMARY_NAV = [
+  { href: '/admin/leads', label: 'Leads' },
+  { href: '/admin/intake', label: 'Intake & SOWs' },
+  { href: '/admin/clients', label: 'Clients' },
+  { href: '/admin/projects', label: 'Projects' },
   { href: '/admin/documents', label: 'Documents' },
-  { href: '/admin/invoices',  label: 'Invoices' },
-  { href: '/admin/expenses',  label: 'Expenses' },
-  { href: '/admin/reviews',   label: 'Reviews' },
-  { href: '/admin/gmail',     label: 'Gmail' },
-  { href: '/admin/omni-gridder', label: 'Omni-Gridder' },
 ]
 
 const MORE_NAV = [
+  { href: '/admin/invoices', label: 'Invoices' },
+  { href: '/admin/expenses', label: 'Expenses' },
+  { href: '/admin/reviews', label: 'Reviews' },
+  { href: '/admin/gmail', label: 'Gmail' },
+  { href: '/admin/omni-gridder', label: 'Omni-Gridder' },
   { href: '/performance', label: 'Performance' },
 ]
 
@@ -26,7 +27,6 @@ const dark = {
   border: 'rgba(255,255,255,0.08)',
   text: '#f1f5f9',
   textMuted: 'rgba(255,255,255,0.5)',
-  textDim: 'rgba(255,255,255,0.25)',
   blue: '#5BA8D9',
   activeNav: 'rgba(91,168,217,0.15)',
 }
@@ -42,146 +42,273 @@ function useMoreDropdown() {
   return { open, setOpen }
 }
 
-function useNewIntakeCount() {
-  const [count, setCount] = useState(0)
-  useEffect(() => {
-    fetch('/api/admin/intake')
-      .then(r => r.json())
-      .then(data => {
-        const newCount = (data.submissions ?? []).filter((s: { status: string }) => s.status === 'new').length
-        setCount(newCount)
-      })
-      .catch(() => {})
-  }, [])
-  return count
-}
+function useAdminCounts(enabled: boolean) {
+  const [counts, setCounts] = useState({ leads: 0, intake: 0 })
 
-async function handleLogout() {
-  await fetch('/api/admin/auth', { method: 'DELETE' })
-  window.location.href = '/admin/login'
+  useEffect(() => {
+    if (!enabled) return
+
+    Promise.allSettled([
+      fetch('/api/admin/leads').then(response => response.ok ? response.json() : Promise.reject()),
+      fetch('/api/admin/intake').then(response => response.ok ? response.json() : Promise.reject()),
+    ]).then(([leadsResult, intakeResult]) => {
+      const leads = leadsResult.status === 'fulfilled' ? leadsResult.value.leads ?? [] : []
+      const submissions = intakeResult.status === 'fulfilled' ? intakeResult.value.submissions ?? [] : []
+      setCounts({
+        leads: leads.filter((lead: { stage?: string }) => lead.stage === 'new').length,
+        intake: submissions.filter((submission: { status?: string }) => submission.status === 'new').length,
+      })
+    })
+  }, [enabled])
+
+  return counts
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const router = useRouter()
   const isLoginPage = pathname === '/admin/login'
-  const newIntakeCount = useNewIntakeCount()
+  const counts = useAdminCounts(!isLoginPage)
   const { open: moreOpen, setOpen: setMoreOpen } = useMoreDropdown()
-
-  if (isLoginPage) {
-    return <>{children}</>
+  const moreActive = MORE_NAV.some(item => pathname.startsWith(item.href))
+  const handleLogout = async () => {
+    await fetch('/api/admin/auth', { method: 'DELETE' })
+    router.replace('/admin/login')
+    router.refresh()
   }
+
+  if (isLoginPage) return <>{children}</>
 
   return (
     <div style={{ colorScheme: 'dark', backgroundColor: dark.bg, color: dark.text, minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
-      <header style={{
-        background: dark.surface,
-        borderBottom: `1px solid ${dark.border}`,
-        padding: '0 24px', position: 'sticky', top: 0, zIndex: 50,
-        boxShadow: '0 1px 12px rgba(0,0,0,0.3)',
-      }}>
-        <div style={{
-          maxWidth: '960px', margin: '0 auto',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          height: '56px',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: '8px' }}>
-              <div style={{
-                width: '28px', height: '28px', borderRadius: '7px',
-                background: 'linear-gradient(135deg, #29426C, #5BA8D9)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(91,168,217,0.3)',
-              }}>
-                <span style={{ color: '#fff', fontSize: '11px', fontWeight: '800' }}>AV</span>
-              </div>
-              <span style={{ fontWeight: '700', fontSize: '14px', color: dark.text }}>Admin</span>
-            </div>
-            <nav style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>
-              {NAV.map(n => {
-                const active = pathname.startsWith(n.href)
-                const showBadge = n.href === '/admin/intake' && newIntakeCount > 0
-                return (
-                  <Link key={n.href} href={n.href} style={{
-                    padding: '6px 10px', borderRadius: '6px', fontSize: '13px',
-                    fontWeight: active ? '600' : '500',
-                    color: active ? dark.blue : dark.textMuted,
-                    background: active ? dark.activeNav : 'transparent',
-                    textDecoration: 'none', transition: 'all 0.15s',
-                    display: 'flex', alignItems: 'center', gap: '4px',
-                    whiteSpace: 'nowrap',
-                  }}>
-                    {n.label}
-                    {showBadge && (
-                      <span style={{
-                        background: '#5BA8D9', color: '#fff',
-                        borderRadius: '999px', fontSize: '10px', fontWeight: '800',
-                        minWidth: '16px', height: '16px', display: 'inline-flex',
-                        alignItems: 'center', justifyContent: 'center', padding: '0 4px',
-                      }}>
-                        {newIntakeCount}
-                      </span>
-                    )}
-                  </Link>
-                )
-              })}
+      <header className="admin-header">
+        <div className="admin-header-inner">
+          <Link href="/admin/leads" className="admin-brand" aria-label="Aetheris Vision admin home">
+            <span className="admin-mark">AV</span>
+            <span>Admin</span>
+          </Link>
 
-              {/* More dropdown for utility pages */}
-              <div style={{ position: 'relative' }}>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setMoreOpen(!moreOpen) }}
-                  style={{
-                    padding: '6px 10px', borderRadius: '6px', fontSize: '13px',
-                    fontWeight: '500', color: dark.textMuted, background: 'transparent',
-                    border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px',
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  More
-                  <span style={{ fontSize: '10px', opacity: 0.6 }}>{moreOpen ? '▲' : '▾'}</span>
-                </button>
-                {moreOpen && (
-                  <div style={{
-                    position: 'absolute', top: '100%', left: 0, marginTop: '4px',
-                    background: dark.surface, border: `1px solid ${dark.border}`,
-                    borderRadius: '8px', padding: '4px', zIndex: 100,
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.4)', minWidth: '140px',
-                  }}>
-                    {MORE_NAV.map(n => (
-                      <Link key={n.href} href={n.href} style={{
-                        display: 'block', padding: '8px 12px', borderRadius: '5px',
-                        fontSize: '13px', fontWeight: '500', color: dark.textMuted,
-                        textDecoration: 'none', transition: 'all 0.1s',
-                      }}
-                        onClick={() => setMoreOpen(false)}
-                      >
-                        {n.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </nav>
-          </div>
-          <button
-            onClick={handleLogout}
-            style={{
-              padding: '7px 14px', borderRadius: '7px',
-              border: `1px solid ${dark.border}`,
-              background: 'rgba(255,255,255,0.04)',
-              color: dark.textMuted, fontSize: '13px', fontWeight: '500',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
-              transition: 'all 0.15s',
-            }}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"
-                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <nav className="admin-nav" aria-label="Admin navigation">
+            {PRIMARY_NAV.map(item => {
+              const active = pathname.startsWith(item.href)
+              const count = item.href === '/admin/leads'
+                ? counts.leads
+                : item.href === '/admin/intake'
+                  ? counts.intake
+                  : 0
+
+              return (
+                <Link key={item.href} href={item.href} className={`admin-nav-link${active ? ' active' : ''}`}>
+                  {item.label}
+                  {count > 0 && <span className="admin-count">{count}</span>}
+                </Link>
+              )
+            })}
+
+            <div className="admin-more">
+              <button
+                type="button"
+                className={`admin-nav-link admin-more-button${moreActive ? ' active' : ''}`}
+                onClick={event => {
+                  event.stopPropagation()
+                  setMoreOpen(!moreOpen)
+                }}
+                aria-expanded={moreOpen}
+                aria-haspopup="menu"
+              >
+                More <span aria-hidden="true">{moreOpen ? '▲' : '▾'}</span>
+              </button>
+              {moreOpen && (
+                <div className="admin-more-menu" role="menu">
+                  {MORE_NAV.map(item => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`admin-more-link${pathname.startsWith(item.href) ? ' active' : ''}`}
+                      onClick={() => setMoreOpen(false)}
+                      role="menuitem"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </nav>
+
+          <button type="button" onClick={handleLogout} className="admin-logout">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            Log out
+            <span>Log out</span>
           </button>
         </div>
       </header>
+
       {children}
+
+      <style jsx>{`
+        .admin-header {
+          background: ${dark.surface};
+          border-bottom: 1px solid ${dark.border};
+          box-shadow: 0 1px 12px rgba(0, 0, 0, 0.3);
+          padding: 0 24px;
+          position: sticky;
+          top: 0;
+          z-index: 50;
+        }
+        .admin-header-inner {
+          align-items: center;
+          display: grid;
+          gap: 20px;
+          grid-template-columns: auto minmax(0, 1fr) auto;
+          margin: 0 auto;
+          max-width: 1080px;
+          min-height: 56px;
+        }
+        .admin-brand {
+          align-items: center;
+          color: ${dark.text};
+          display: flex;
+          font-size: 14px;
+          font-weight: 700;
+          gap: 8px;
+          text-decoration: none;
+          white-space: nowrap;
+        }
+        .admin-mark {
+          align-items: center;
+          background: linear-gradient(135deg, #29426c, #5ba8d9);
+          border-radius: 7px;
+          box-shadow: 0 2px 8px rgba(91, 168, 217, 0.3);
+          color: #fff;
+          display: inline-flex;
+          font-size: 11px;
+          font-weight: 800;
+          height: 28px;
+          justify-content: center;
+          width: 28px;
+        }
+        .admin-nav {
+          align-items: center;
+          display: flex;
+          gap: 2px;
+          min-width: 0;
+        }
+        .admin-nav-link {
+          align-items: center;
+          background: transparent;
+          border: 0;
+          border-radius: 6px;
+          color: ${dark.textMuted};
+          display: inline-flex;
+          font: inherit;
+          font-size: 13px;
+          font-weight: 500;
+          gap: 4px;
+          padding: 6px 9px;
+          text-decoration: none;
+          white-space: nowrap;
+        }
+        .admin-nav-link.active {
+          background: ${dark.activeNav};
+          color: ${dark.blue};
+          font-weight: 600;
+        }
+        .admin-count {
+          align-items: center;
+          background: ${dark.blue};
+          border-radius: 999px;
+          color: #fff;
+          display: inline-flex;
+          font-size: 10px;
+          font-weight: 800;
+          height: 16px;
+          justify-content: center;
+          min-width: 16px;
+          padding: 0 4px;
+        }
+        .admin-more {
+          position: relative;
+        }
+        .admin-more-button {
+          cursor: pointer;
+        }
+        .admin-more-button span {
+          font-size: 9px;
+          opacity: 0.6;
+        }
+        .admin-more-menu {
+          background: ${dark.surface};
+          border: 1px solid ${dark.border};
+          border-radius: 8px;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+          left: 0;
+          min-width: 150px;
+          padding: 4px;
+          position: absolute;
+          top: calc(100% + 4px);
+          z-index: 100;
+        }
+        .admin-more-link {
+          border-radius: 5px;
+          color: ${dark.textMuted};
+          display: block;
+          font-size: 13px;
+          font-weight: 500;
+          padding: 8px 12px;
+          text-decoration: none;
+        }
+        .admin-more-link.active {
+          background: ${dark.activeNav};
+          color: ${dark.blue};
+        }
+        .admin-logout {
+          align-items: center;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid ${dark.border};
+          border-radius: 7px;
+          color: ${dark.textMuted};
+          cursor: pointer;
+          display: flex;
+          font-size: 13px;
+          font-weight: 500;
+          gap: 6px;
+          padding: 7px 12px;
+          white-space: nowrap;
+        }
+        @media (max-width: 840px) {
+          .admin-header {
+            padding: 0 14px;
+          }
+          .admin-header-inner {
+            gap: 10px;
+            grid-template-columns: 1fr auto;
+            padding: 8px 0;
+          }
+          .admin-nav {
+            flex-wrap: wrap;
+            grid-column: 1 / -1;
+            grid-row: 2;
+          }
+          .admin-logout span {
+            display: none;
+          }
+          .admin-logout {
+            padding: 8px;
+          }
+        }
+        @media (max-width: 480px) {
+          .admin-nav-link {
+            font-size: 12px;
+            padding: 6px 7px;
+          }
+          .admin-more-menu {
+            left: auto;
+            right: 0;
+          }
+        }
+      `}</style>
     </div>
   )
 }

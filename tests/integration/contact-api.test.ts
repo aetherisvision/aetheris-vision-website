@@ -1,158 +1,453 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// We test the route handler's logic by importing and calling POST directly.
-// The route delivers submissions through Resend, so we mock the SDK and assert
-// against the mocked `emails.send`.
+const mocks = vi.hoisted(() => ({
+  begin: vi.fn(),
+  cancel: vi.fn(),
+  capture: vi.fn(),
+  complete: vi.fn(),
+  rateLimit: vi.fn(),
+  send: vi.fn(),
+  turnstile: vi.fn(),
+  verifyChallenge: vi.fn(),
+}));
 
-const { sendMock } = vi.hoisted(() => ({ sendMock: vi.fn() }));
+vi.mock("@/lib/contact-verification", () => ({
+  beginEmailVerification: mocks.begin,
+  cancelEmailVerification: mocks.cancel,
+  completeEmailChallenge: mocks.complete,
+  verifyEmailChallenge: mocks.verifyChallenge,
+}));
+
+vi.mock("@/lib/crm", () => ({ captureContactLead: mocks.capture }));
+
+vi.mock("@/lib/rate-limit", () => ({
+  isRateLimitDistributed: () => true,
+  rateLimit: mocks.rateLimit,
+}));
+
+vi.mock("@/lib/turnstile", () => ({
+  TURNSTILE_ACTIONS: { contact: "contact", intake: "intake", review: "review" },
+  verifyTurnstileToken: mocks.turnstile,
+}));
 
 vi.mock("resend", () => ({
   Resend: class {
-    emails = { send: sendMock };
+    emails = { send: mocks.send };
   },
 }));
 
-let POST: (req: Request) => Promise<Response>;
+const CHALLENGE_ID = "11111111-1111-4111-8111-111111111111";
+const VERIFIED_AT = "2026-08-16T15:00:00.000Z";
+const SUBMITTED = {
+  ok: true,
+  stage: "submitted",
+  message: "Your inquiry has been received.",
+};
 
-beforeEach(async () => {
-  vi.resetModules();
-  vi.stubEnv("RESEND_API_KEY", "re_test_key");
-  sendMock.mockReset();
-  sendMock.mockResolvedValue({ data: { id: "email_123" }, error: null });
+let POST: (request: Request) => Promise<Response>;
 
-  const mod = await import("@/app/api/contact/route");
-  POST = mod.POST as unknown as (req: Request) => Promise<Response>;
-});
+function validPayload(overrides: Record<string, unknown> = {}) {
+  return {
+    name: "John Carter",
+    email: "JOHN@EXAMPLE.COM",
+    organization: "Northwind Weather",
+    phone: "+1 405 555 0100",
+    location: "Oklahoma City, Oklahoma",
+    requirement: "Geospatial data curation",
+    message: "We need project-ready meteorological data for an operational workflow.",
+    submissionId: "contact-test-0001",
+    turnstileToken: "turnstile-token",
+    humanAttestation: true,
+    interactionDurationMs: 5_000,
+    ...overrides,
+  };
+}
 
-function makeRequest(body: Record<string, string>, ip = "127.0.0.1"): Request {
-  return new Request("http://localhost:3000/api/contact", {
-    method: "POST",
-    body: JSON.stringify(body),
-    headers: {
-      "x-forwarded-for": ip,
-      "Content-Type": "application/json",
-    },
+function confirmedPayload(overrides: Record<string, unknown> = {}) {
+  return validPayload({
+    challengeId: CHALLENGE_ID,
+    verificationCode: "123456",
+    ...overrides,
   });
 }
 
+function requestFor(
+  body: unknown,
+  options: {
+    contentType?: string | null;
+    headers?: Record<string, string>;
+    origin?: string | null;
+    raw?: boolean;
+  } = {},
+): Request {
+  const headers = new Headers({
+    "Sec-Fetch-Site": "same-origin",
+    "User-Agent": "Mozilla/5.0 Chrome/127.0.0.0 Safari/537.36",
+    "x-forwarded-for": "198.51.100.10",
+    ...options.headers,
+  });
+  if (options.contentType !== null) {
+    headers.set("Content-Type", options.contentType ?? "application/json");
+  }
+  if (options.origin !== null) {
+    headers.set("Origin", options.origin ?? "http://localhost:3000");
+  }
+  return new Request("http://localhost:3000/api/contact", {
+    method: "POST",
+    body: options.raw ? String(body) : JSON.stringify(body),
+    headers,
+  });
+}
+
+beforeEach(async () => {
+  vi.resetModules();
+  vi.stubEnv("NODE_ENV", "test");
+  vi.stubEnv("VERCEL", "");
+  vi.stubEnv("CONTACT_VERIFICATION_SECRET", "test-contact-secret-that-is-at-least-32-bytes");
+  vi.stubEnv("RESEND_API_KEY", "re_test_key");
+
+  for (const mock of Object.values(mocks)) mock.mockReset();
+  mocks.begin.mockResolvedValue({
+    challengeId: CHALLENGE_ID,
+    code: "123456",
+    expiresAt: "2026-08-16T15:10:00.000Z",
+  });
+  mocks.cancel.mockResolvedValue(undefined);
+  mocks.capture.mockResolvedValue({ created: true, leadId: 42 });
+  mocks.complete.mockResolvedValue({
+    ok: true,
+    completedAt: VERIFIED_AT,
+    completedNow: true,
+  });
+  mocks.rateLimit.mockResolvedValue({
+    success: true,
+    remaining: 4,
+    retryAfterSeconds: 0,
+  });
+  mocks.send.mockResolvedValue({ data: { id: "email_123" }, error: null });
+  mocks.turnstile.mockResolvedValue({ ok: true });
+  mocks.verifyChallenge.mockResolvedValue({
+    ok: true,
+    verifiedAt: VERIFIED_AT,
+    completed: false,
+  });
+  vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+  const route = await import("@/app/api/contact/route");
+  POST = route.POST as unknown as (request: Request) => Promise<Response>;
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllEnvs();
+});
+
 describe("POST /api/contact", () => {
-  it("returns 503 when RESEND_API_KEY is not set", async () => {
-    vi.stubEnv("RESEND_API_KEY", "");
-    vi.resetModules();
-    const mod = await import("@/app/api/contact/route");
-    const localPOST = mod.POST as unknown as (req: Request) => Promise<Response>;
+  it("starts email verification without creating CRM or notification side effects", async () => {
+    const response = await POST(requestFor(validPayload()));
 
-    const req = makeRequest({ name: "Test", email: "test@test.com", message: "Hi there friend" });
-    const res = await localPOST(req);
-    expect(res.status).toBe(503);
-    expect(sendMock).not.toHaveBeenCalled();
-  });
-
-  it("silently accepts honeypot submissions (returns 200) without sending email", async () => {
-    const req = makeRequest({
-      name: "Bot",
-      email: "bot@bot.com",
-      message: "spam message here",
-      _gotcha: "filled-by-bot",
+    expect(response.status).toBe(202);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(await response.json()).toEqual({
+      ok: true,
+      stage: "verification",
+      challengeId: CHALLENGE_ID,
+      message: "Check your email for a six-digit confirmation code.",
     });
-    const res = await POST(req);
-    expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(body.ok).toBe(true);
-    expect(sendMock).not.toHaveBeenCalled();
-  });
-
-  it("sends valid submissions via Resend", async () => {
-    const req = makeRequest({
-      name: "John",
-      email: "john@agency.gov",
-      organization: "Acme Agency",
-      requirement: "Federal Contracting",
-      message: "Need consulting services for our agency",
+    expect(mocks.turnstile).toHaveBeenCalledWith({
+      token: "turnstile-token",
+      expectedAction: "contact",
+      expectedHostname: "localhost",
     });
-    const res = await POST(req);
-    expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(body.ok).toBe(true);
-
-    expect(sendMock).toHaveBeenCalledTimes(1);
-    const payload = sendMock.mock.calls[0][0];
-    // Replies route back to the submitter
-    expect(payload.replyTo).toBe("john@agency.gov");
-    // Delivered to the canonical contact inbox
-    expect(payload.to).toContain("contact@aetherisvision.com");
-    // From the verified Resend domain
-    expect(payload.from).toMatch(/@aetherisvision\.com/);
-    // Body carries the submission details
-    expect(payload.text).toContain("john@agency.gov");
-    expect(payload.text).toContain("Acme Agency");
-    expect(payload.text).toContain("Federal Contracting");
-    expect(payload.text).toContain("Need consulting services for our agency");
-  });
-
-  it("returns 502 when Resend reports an error", async () => {
-    sendMock.mockResolvedValue({ data: null, error: { message: "domain not verified" } });
-    const req = makeRequest({
-      name: "John",
-      email: "john@agency.gov",
-      message: "Need consulting services for our agency",
+    expect(mocks.begin).toHaveBeenCalledWith({
+      purpose: "contact",
+      email: "john@example.com",
+      submissionId: "contact-test-0001",
     });
-    const res = await POST(req);
-    expect(res.status).toBe(502);
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+    expect(mocks.send.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        to: ["john@example.com"],
+        subject: "Confirm your Aetheris Vision inquiry",
+      }),
+    );
+    expect(mocks.send.mock.calls[0][0]).not.toHaveProperty("replyTo");
+    expect(mocks.send.mock.calls[0][1]).toEqual({
+      idempotencyKey: `contact-verify-${CHALLENGE_ID}`,
+    });
+    expect(mocks.capture).not.toHaveBeenCalled();
+    expect(mocks.verifyChallenge).not.toHaveBeenCalled();
+    expect(mocks.complete).not.toHaveBeenCalled();
   });
 
-  it("rate limits after 5 requests from same IP", async () => {
-    vi.resetModules();
-    vi.stubEnv("RESEND_API_KEY", "re_test_key");
-    const mod = await import("@/app/api/contact/route");
-    const localPOST = mod.POST as unknown as (req: Request) => Promise<Response>;
+  it("uses opaque rate-limit keys rather than raw IP or email", async () => {
+    await POST(requestFor(validPayload()));
 
-    const testIp = `rate-limit-test-${Date.now()}`;
-
-    for (let i = 0; i < 5; i++) {
-      const req = makeRequest({ name: "Test", email: "t@t.com", message: `Message number ${i} with enough length` }, testIp);
-      const res = await localPOST(req);
-      expect(res.status).toBe(200);
+    expect(mocks.rateLimit).toHaveBeenCalledTimes(2);
+    for (const [key] of mocks.rateLimit.mock.calls) {
+      expect(key).toMatch(/^[A-Za-z0-9_-]{43}$/);
+      expect(key).not.toContain("198.51.100.10");
+      expect(key).not.toContain("john@example.com");
     }
-
-    const req = makeRequest({ name: "Test", email: "t@t.com", message: "This message is long enough now" }, testIp);
-    const res = await localPOST(req);
-    expect(res.status).toBe(429);
   });
 
-  it("rejects empty name", async () => {
-    const req = makeRequest({ name: "", email: "a@b.com", message: "Valid message here" });
-    const res = await POST(req);
-    expect(res.status).toBe(400);
-    const body = await res.json();
-    expect(body.error).toMatch(/name/i);
+  it("rejects a failed anti-spam check without side effects", async () => {
+    mocks.turnstile.mockResolvedValueOnce({ ok: false, reason: "invalid" });
+
+    const response = await POST(requestFor(validPayload()));
+
+    expect(response.status).toBe(403);
+    expect(mocks.begin).not.toHaveBeenCalled();
+    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.capture).not.toHaveBeenCalled();
   });
 
-  it("rejects invalid email", async () => {
-    const req = makeRequest({ name: "John", email: "not-an-email", message: "Valid message here" });
-    const res = await POST(req);
-    expect(res.status).toBe(400);
-    const body = await res.json();
-    expect(body.error).toMatch(/email/i);
-  });
+  it.each(["unavailable", "misconfigured", "timeout"])(
+    "returns 503 when Turnstile is %s",
+    async (reason) => {
+      mocks.turnstile.mockResolvedValueOnce({ ok: false, reason });
 
-  it("rejects too-short message", async () => {
-    const req = makeRequest({ name: "John", email: "a@b.com", message: "Hi" });
-    const res = await POST(req);
-    expect(res.status).toBe(400);
-    const body = await res.json();
-    expect(body.error).toMatch(/message/i);
-  });
+      const response = await POST(requestFor(validPayload()));
 
-  it("returns 400 (not 500) for non-string field values", async () => {
-    // Crafted payload with a numeric name — must not throw.
-    const req = new Request("http://localhost:3000/api/contact", {
-      method: "POST",
-      body: JSON.stringify({ name: 123, email: "a@b.com", message: "Valid message here" }),
-      headers: { "x-forwarded-for": "127.0.0.1", "Content-Type": "application/json" },
+      expect(response.status).toBe(503);
+      expect(mocks.begin).not.toHaveBeenCalled();
+    },
+  );
+
+  it("cancels a challenge when the confirmation email cannot be sent", async () => {
+    mocks.send.mockRejectedValueOnce(new Error("provider secret detail"));
+
+    const response = await POST(requestFor(validPayload()));
+
+    expect(response.status).toBe(503);
+    expect(await response.text()).not.toContain("provider secret detail");
+    expect(mocks.cancel).toHaveBeenCalledWith({
+      challengeId: CHALLENGE_ID,
+      purpose: "contact",
+      email: "john@example.com",
+      submissionId: "contact-test-0001",
     });
-    const res = await POST(req);
-    expect(res.status).toBe(400);
-    expect(sendMock).not.toHaveBeenCalled();
+    expect(mocks.capture).not.toHaveBeenCalled();
+    expect(mocks.complete).not.toHaveBeenCalled();
+  });
+
+  it.each(["invalid", "expired", "attempts"])(
+    "rejects a %s confirmation without protected side effects",
+    async (reason) => {
+      mocks.verifyChallenge.mockResolvedValueOnce({ ok: false, reason });
+
+      const response = await POST(requestFor(confirmedPayload()));
+
+      expect(response.status).toBe(400);
+      expect(await response.json()).toEqual({
+        error: "The confirmation code is invalid or expired.",
+      });
+      expect(mocks.capture).not.toHaveBeenCalled();
+      expect(mocks.send).not.toHaveBeenCalled();
+      expect(mocks.complete).not.toHaveBeenCalled();
+      expect(mocks.turnstile).not.toHaveBeenCalled();
+    },
+  );
+
+  it("persists and notifies only after successful email confirmation", async () => {
+    const response = await POST(requestFor(confirmedPayload()));
+
+    expect(response.status).toBe(202);
+    expect(await response.json()).toEqual(SUBMITTED);
+    expect(mocks.verifyChallenge).toHaveBeenCalledWith({
+      challengeId: CHALLENGE_ID,
+      code: "123456",
+      purpose: "contact",
+      email: "john@example.com",
+      submissionId: "contact-test-0001",
+    });
+    expect(mocks.capture).toHaveBeenCalledWith(
+      expect.objectContaining({
+        externalRef: "website-contact:contact-test-0001",
+        email: "john@example.com",
+        coarseLocation: "Oklahoma City, Oklahoma",
+        emailVerifiedAt: VERIFIED_AT,
+      }),
+    );
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+    expect(mocks.send.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        replyTo: "john@example.com",
+        subject: "New verified website inquiry",
+      }),
+    );
+    expect(mocks.send.mock.calls[0][1]).toEqual({
+      idempotencyKey: "contact-notify-contact-test-0001",
+    });
+    expect(mocks.complete).toHaveBeenCalledWith({
+      challengeId: CHALLENGE_ID,
+      purpose: "contact",
+      email: "john@example.com",
+      submissionId: "contact-test-0001",
+    });
+    expect(mocks.capture.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.send.mock.invocationCallOrder[0],
+    );
+  });
+
+  it("does not resend notifications when the idempotent CRM record already exists", async () => {
+    mocks.capture.mockResolvedValueOnce({ created: false, leadId: 42 });
+
+    const response = await POST(requestFor(confirmedPayload()));
+
+    expect(response.status).toBe(202);
+    expect(await response.json()).toEqual(SUBMITTED);
+    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.complete).toHaveBeenCalledOnce();
+  });
+
+  it("returns a generic success for an already completed challenge", async () => {
+    mocks.verifyChallenge.mockResolvedValueOnce({ ok: false, reason: "used" });
+
+    const response = await POST(requestFor(confirmedPayload()));
+
+    expect(response.status).toBe(202);
+    expect(await response.json()).toEqual(SUBMITTED);
+    expect(mocks.capture).not.toHaveBeenCalled();
+    expect(mocks.complete).not.toHaveBeenCalled();
+  });
+
+  it("returns a generic 503 and does not expose or log CRM details", async () => {
+    mocks.capture.mockRejectedValueOnce(new Error("database secret john@example.com"));
+
+    const response = await POST(requestFor(confirmedPayload()));
+    const body = await response.text();
+
+    expect(response.status).toBe(503);
+    expect(body).not.toContain("database secret");
+    expect(body).not.toContain("john@example.com");
+    expect(JSON.stringify(vi.mocked(console.error).mock.calls)).not.toContain(
+      "john@example.com",
+    );
+    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.complete).not.toHaveBeenCalled();
+  });
+
+  it("completes the challenge when the post-persistence notification throws", async () => {
+    mocks.send.mockRejectedValueOnce(new Error("provider timeout"));
+
+    const response = await POST(requestFor(confirmedPayload()));
+
+    expect(response.status).toBe(202);
+    expect(await response.json()).toEqual(SUBMITTED);
+    expect(mocks.complete).toHaveBeenCalledOnce();
+  });
+
+  it("does not claim success when challenge completion fails", async () => {
+    mocks.complete.mockResolvedValueOnce({ ok: false, reason: "expired" });
+
+    const response = await POST(requestFor(confirmedPayload()));
+
+    expect(response.status).toBe(503);
+  });
+
+  it("returns 429 before anti-spam or persistence work", async () => {
+    mocks.rateLimit.mockResolvedValueOnce({
+      success: false,
+      remaining: 0,
+      retryAfterSeconds: 37,
+    });
+
+    const response = await POST(requestFor(validPayload()));
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("retry-after")).toBe("37");
+    expect(mocks.turnstile).not.toHaveBeenCalled();
+    expect(mocks.begin).not.toHaveBeenCalled();
+    expect(mocks.capture).not.toHaveBeenCalled();
+  });
+
+  it("gives honeypot submissions a plausible response and no side effects", async () => {
+    const response = await POST(requestFor({ _gotcha: "filled by bot" }));
+    const body = await response.json();
+
+    expect(response.status).toBe(202);
+    expect(body).toMatchObject({ ok: true, stage: "verification" });
+    expect(body.challengeId).toMatch(CHALLENGE_ID_PATTERN_FOR_TESTS);
+    expect(mocks.rateLimit).not.toHaveBeenCalled();
+    expect(mocks.turnstile).not.toHaveBeenCalled();
+    expect(mocks.begin).not.toHaveBeenCalled();
+    expect(mocks.capture).not.toHaveBeenCalled();
+  });
+
+  it("rejects a missing human attestation before any protected work", async () => {
+    const response = await POST(
+      requestFor(validPayload({ humanAttestation: undefined })),
+    );
+
+    expect(response.status).toBe(400);
+    expect(mocks.rateLimit).not.toHaveBeenCalled();
+    expect(mocks.turnstile).not.toHaveBeenCalled();
+    expect(mocks.begin).not.toHaveBeenCalled();
+    expect(mocks.capture).not.toHaveBeenCalled();
+  });
+
+  it("rejects an implausibly fast submission before any protected work", async () => {
+    const response = await POST(
+      requestFor(validPayload({ interactionDurationMs: 250 })),
+    );
+
+    expect(response.status).toBe(400);
+    expect(mocks.rateLimit).not.toHaveBeenCalled();
+    expect(mocks.turnstile).not.toHaveBeenCalled();
+    expect(mocks.begin).not.toHaveBeenCalled();
+    expect(mocks.capture).not.toHaveBeenCalled();
+  });
+
+  it("gives known automated agents a plausible response without side effects", async () => {
+    const response = await POST(
+      requestFor(validPayload(), {
+        headers: { "User-Agent": "ClaudeBot/1.0" },
+      }),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(202);
+    expect(body).toMatchObject({ ok: true, stage: "verification" });
+    expect(body.challengeId).toMatch(CHALLENGE_ID_PATTERN_FOR_TESTS);
+    expect(mocks.rateLimit).not.toHaveBeenCalled();
+    expect(mocks.turnstile).not.toHaveBeenCalled();
+    expect(mocks.begin).not.toHaveBeenCalled();
+    expect(mocks.capture).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["malformed JSON", () => requestFor("{bad-json", { raw: true }), 400],
+    ["wrong content type", () => requestFor(validPayload(), { contentType: "text/plain" }), 415],
+    ["missing origin", () => requestFor(validPayload(), { origin: null }), 403],
+    ["cross-site origin", () => requestFor(validPayload(), { origin: "https://attacker.example" }), 403],
+    ["unsupported field", () => requestFor(validPayload({ internalRole: "admin" })), 400],
+    ["oversized body", () => requestFor(validPayload({ message: "x".repeat(17_000) })), 413],
+  ])("rejects %s at the request boundary", async (_label, makeRequest, status) => {
+    const response = await POST(makeRequest());
+
+    expect(response.status).toBe(status);
+    expect(mocks.begin).not.toHaveBeenCalled();
+    expect(mocks.capture).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["missing submission ID", { submissionId: undefined }],
+    ["invalid email", { email: "not-an-email" }],
+    ["short message", { message: "too short" }],
+    ["non-string name", { name: 42 }],
+    ["missing Turnstile token", { turnstileToken: undefined }],
+    ["partial confirmation", { challengeId: CHALLENGE_ID }],
+    ["invalid challenge ID", { challengeId: "not-a-uuid", verificationCode: "123456" }],
+    ["invalid code", { challengeId: CHALLENGE_ID, verificationCode: "12345a" }],
+    ["oversized location", { location: "x".repeat(161) }],
+  ])("rejects %s", async (_label, overrides) => {
+    const response = await POST(requestFor(validPayload(overrides)));
+
+    expect(response.status).toBe(400);
+    expect(mocks.capture).not.toHaveBeenCalled();
   });
 });
+
+const CHALLENGE_ID_PATTERN_FOR_TESTS =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

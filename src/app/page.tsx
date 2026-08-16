@@ -73,9 +73,9 @@ export default function Home() {
                     href="/book"
                     className="inline-flex min-h-12 items-center justify-center gap-3 bg-[#0a1628] px-7 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#29426c]"
                   >
-                    Book a consultation <ArrowRightIcon className="h-4 w-4" />
+                    Get in touch <ArrowRightIcon className="h-4 w-4" />
                   </a>
-                  <TextLink href="#contact">Describe your project</TextLink>
+                  <TextLink href="#how-we-work">How we work</TextLink>
                 </div>
               </div>
 
@@ -116,15 +116,15 @@ export default function Home() {
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Our Offering</p>
                 <h2 className="mt-5 max-w-xl font-serif text-4xl leading-tight tracking-[-0.025em] text-[#0a1628] sm:text-6xl">
-                  Scientific judgment, carried through to delivery
+                  Scientific expertise carried through to delivery
                 </h2>
               </div>
               <div className="border-y border-[#17252f]/20 py-8 sm:py-10">
                 <p className="font-serif text-2xl leading-snug text-[#0a1628] sm:text-3xl">
-                  Projects often reach us where the science and the delivery meet: data need careful preparation, a forecast or model result needs an independent review, or a proven research process needs to work reliably for a broader team.
+                  Projects often reach us where science and delivery meet: data require careful preparation, a model result needs expert scrutiny, or a research process needs to work reliably for a broader team.
                 </p>
                 <p className="mt-7 max-w-3xl text-base leading-8 text-[#42565f]">
-                  Aetheris Vision brings meteorological judgment, data engineering, and applied AI together around the result the project needs. One engagement may span analysis, data curation, and software. The scope follows the question—not a preset service package.
+                  Aetheris Vision brings scientific, technical, and delivery expertise together around the result your project needs. An engagement may span analysis, data curation, software, or another focused technical need. The scope follows the project, not a preset service package.
                 </p>
               </div>
             </div>
@@ -166,7 +166,7 @@ export default function Home() {
                   Aetheris Vision can acquire and curate the data, perform the transformation, and deliver the result in the format, grid, coordinate reference system, and resolution your project requires. Before full production, you can review a representative sample. Delivery includes documentation of the data sources, transformation steps, assumptions, and any measurable change introduced by regridding or resampling.
                 </p>
                 <div className="mt-7">
-                  <TextLink href="#contact">Describe the data you need</TextLink>
+                  <TextLink href="/book">Get in touch</TextLink>
                 </div>
               </div>
             </div>
@@ -199,18 +199,18 @@ export default function Home() {
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7eabca]">How We Work</p>
                 <h2 className="mt-5 max-w-lg font-serif text-4xl leading-tight tracking-[-0.025em] sm:text-5xl">
-                  Direct involvement from first question to final delivery
+                  Focused support from scope through delivery
                 </h2>
               </div>
               <div className="border-y border-white/25 py-8 sm:py-10">
                 <p className="max-w-3xl font-serif text-2xl leading-snug text-white/95 sm:text-3xl">
-                  We begin with the outcome you need, the data and documentation available, and the practical consequences of error.
+                  We begin with what your project needs and where focused support can make the greatest difference
                 </p>
                 <p className="mt-6 max-w-3xl text-base leading-8 text-white/65">
-                  We then define the smallest useful scope: an independent review, a focused analysis, a curated dataset, or a working technical delivery. Responsibilities, timing, and commercial terms are agreed before work begins. Marston Ward leads the engagement and remains directly involved through completion.
+                  Scope, responsibilities, timing, commercial terms, and data handling are agreed before work begins. Aetheris Vision stays directly involved through delivery, keeping the work focused, timely, and documented for future use.
                 </p>
                 <p className="mt-5 max-w-3xl text-base leading-8 text-white/65">
-                  The workflow developed for each engagement is documented and preserved after delivery, so future reruns do not begin from scratch. Project-specific data acquired for the work and the agreed deliverables belong to the client, subject to source-license terms; at closeout, they are transferred and our working copies are removed under the agreed retention schedule. Longer-term storage, managed reruns, and continuing support can be included in an ongoing service agreement.
+                  Project workflows are documented and preserved for future reruns. Subject to source-license terms, acquired data and agreed deliverables are transferred to the client; our working copies are removed on the agreed schedule. Managed reruns, longer-term storage, and continuing support can be included in a service agreement.
                 </p>
               </div>
             </div>
@@ -238,7 +238,7 @@ export default function Home() {
               <div className="flex flex-col items-start justify-center">
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Selected Example · Omni Gridder</p>
                 <h2 className="mt-5 font-serif text-4xl leading-tight tracking-[-0.025em] text-[#0a1628] sm:text-6xl">
-                  One regridding problem, made visible
+                  Regridding made simpler
                 </h2>
                 <p className="mt-6 max-w-xl text-base leading-8 text-[#42565f]">
                   Omni Gridder shows how Aetheris Vision approaches one kind of geospatial transformation: moving Earth-system data between grids while preserving scientific meaning. The public demonstration shows selected inputs and outputs; the production methods remain proprietary.
@@ -248,15 +248,15 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <figure className="border border-[#17252f]/20 bg-white p-3">
-                  <div className="relative aspect-[4/3] overflow-hidden bg-[#dfe7eb]">
+              <div className="grid grid-cols-1 self-center gap-5 sm:grid-cols-2">
+                <figure className="flex flex-col border border-[#17252f]/20 bg-white p-3">
+                  <div className="relative aspect-[16/10] overflow-hidden bg-[#dfe7eb]">
                     <Image
                       src="/images/omni-gridder/source-grid-plate-carree.png"
                       alt="A gridded meteorological field in a geographic coordinate system"
                       fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 100vw, 35vw"
+                      className="object-cover object-[50%_68%]"
+                      sizes="(max-width: 640px) calc(100vw - 40px), (max-width: 1024px) 45vw, 32vw"
                     />
                   </div>
                   <figcaption className="px-1 pb-1 pt-4">
@@ -264,14 +264,14 @@ export default function Home() {
                     <span className="mt-1 block font-serif text-xl text-[#0a1628]">Geographic coordinates</span>
                   </figcaption>
                 </figure>
-                <figure className="border border-[#17252f]/20 bg-white p-3 sm:mt-12">
-                  <div className="relative aspect-[4/3] overflow-hidden bg-[#dfe7eb]">
+                <figure className="flex flex-col border border-[#17252f]/20 bg-white p-3">
+                  <div className="relative aspect-[16/10] overflow-hidden bg-[#dfe7eb]">
                     <Image
                       src="/images/omni-gridder/target-grid-lambert.png"
                       alt="The same meteorological field transformed to a Lambert Conformal grid"
                       fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 100vw, 35vw"
+                      className="object-cover object-[50%_64%]"
+                      sizes="(max-width: 640px) calc(100vw - 40px), (max-width: 1024px) 45vw, 32vw"
                     />
                   </div>
                   <figcaption className="px-1 pb-1 pt-4">
@@ -301,43 +301,42 @@ export default function Home() {
               </figcaption>
             </figure>
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Applied Meteorology in Practice</p>
-              <blockquote className="mt-5 max-w-xl font-serif text-3xl leading-tight text-[#0a1628] sm:text-4xl">
-                “My job is to make sure the data are read correctly—and that the science survives implementation.”
-              </blockquote>
-              <p className="mt-4 text-sm font-semibold text-[#486890]">— Marston Ward, Ph.D., CCM</p>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Your Project</p>
+              <h2 className="mt-5 max-w-xl font-serif text-3xl leading-tight text-[#0a1628] sm:text-4xl">
+                How can Aetheris Vision help your project succeed?
+              </h2>
               <p className="mt-7 max-w-xl text-base leading-8 text-[#42565f]">
-                Marston Ward brings more than 35 years across operational weather, scientific analysis, software delivery, and weather research. His work connects meteorology, geospatial data, and software without losing the scientific meaning between them.
+                Tell us where specialist support would make the greatest difference. Aetheris Vision takes on focused scientific and technical work to help your project move forward efficiently and on schedule.
               </p>
               <div className="mt-8 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
                 <a
                   href="/book"
                   className="inline-flex min-h-12 items-center justify-center gap-3 bg-[#0a1628] px-7 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#29426c]"
                 >
-                  Book a consultation <ArrowRightIcon className="h-4 w-4" />
+                  Get in touch <ArrowRightIcon className="h-4 w-4" />
                 </a>
-                <TextLink href="/about">Meet Marston Ward</TextLink>
+                <TextLink href="/about">About Aetheris Vision</TextLink>
               </div>
             </div>
           </div>
         </section>
 
-        <section id="contact" className="scroll-mt-20 bg-[#0a1628] py-20 text-white sm:py-28">
-          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-5 sm:px-8 lg:grid-cols-[0.78fr_1.22fr] lg:gap-24 lg:px-10">
+        <section id="contact" className="scroll-mt-20 bg-[#0a1628] py-14 text-white sm:py-16">
+          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-5 sm:px-8 lg:grid-cols-2 lg:items-start lg:gap-16 lg:px-10">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7eabca]">Get Started</p>
-              <h2 className="mt-5 max-w-xl font-serif text-4xl leading-tight tracking-[-0.025em] sm:text-6xl">
-                What do you need help deciding or delivering?
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7eabca]">General Contact</p>
+              <h2 className="mt-5 max-w-xl font-serif text-4xl leading-tight tracking-[-0.025em]">
+                Comments and general questions
               </h2>
               <p className="mt-6 max-w-lg text-base leading-8 text-white/65">
-                Book a time to talk it through directly with Marston Ward, or describe it in your own words — the outcome you need, the data or system involved, and any timing constraints. Every inquiry is reviewed personally, typically within one business day.
+                Use this form for comments, general questions, or website matters. Aetheris Vision typically replies within one business day.
               </p>
-              <a
-                href="/book"
-                className="mt-8 inline-flex min-h-12 items-center justify-center gap-3 bg-[#f4f1ea] px-7 text-sm font-semibold text-[#0a1628] transition-colors duration-200 hover:bg-white"
-              >
-                Book a Consultation <ArrowRightIcon className="h-4 w-4" />
-              </a>
+              <p className="mt-7 text-sm text-white/60">
+                Planning a project?{" "}
+                <a href="/book" className="inline-flex min-h-11 items-center font-semibold text-[#9bc3df] underline decoration-[#9bc3df]/40 underline-offset-4 hover:decoration-[#9bc3df]">
+                  Get in touch
+                </a>
+              </p>
             </div>
             <QuickContactForm />
           </div>

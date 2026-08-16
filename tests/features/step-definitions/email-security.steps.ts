@@ -38,6 +38,13 @@ Then("the rendered HTML should not contain {string}", function (needle: string) 
   );
 });
 
+Then("the rendered HTML should contain {string}", function (needle: string) {
+  assert.ok(
+    container().innerHTML.includes(needle),
+    `Rendered HTML did not contain "${needle}"`,
+  );
+});
+
 Then("a link to {string} should be present", function (href: string) {
   const anchors = Array.from(container().querySelectorAll("a"));
   assert.ok(

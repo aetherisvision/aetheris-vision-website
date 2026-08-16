@@ -16,9 +16,17 @@ export default function BackToTop() {
 
   return (
     <button
-      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      onClick={() =>
+        window.scrollTo({
+          top: 0,
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+            ? "auto"
+            : "smooth",
+        })
+      }
       aria-label="Back to top"
-      className="fixed bottom-6 right-4 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/80 text-gray-400 shadow-lg backdrop-blur-sm transition-all hover:border-white/30 hover:bg-black hover:text-white sm:bottom-8 sm:right-8"
+      className="fixed right-4 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/80 text-gray-400 shadow-lg backdrop-blur-sm transition-all hover:border-white/30 hover:bg-black hover:text-white motion-reduce:transition-none sm:right-8"
+      style={{ bottom: "max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 0.75rem))" }}
     >
       <ArrowUpIcon className="h-4 w-4" />
     </button>

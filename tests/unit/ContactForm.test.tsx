@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // Mock next/navigation's useSearchParams so the client component can read
@@ -30,6 +30,16 @@ function fillValidFields() {
   setField("name", "Jane Doe");
   setField("email", "jane@example.com");
   setField("message", "This is a valid message long enough.");
+  confirmHumanSubmission();
+}
+
+function confirmHumanSubmission() {
+  const checkbox = screen.getByRole("checkbox", {
+    name: /not an automated agent or bot/i,
+  });
+  if (!(checkbox as HTMLInputElement).checked) {
+    fireEvent.click(checkbox);
+  }
 }
 
 describe("ContactForm — unavailable notice", () => {
@@ -40,7 +50,7 @@ describe("ContactForm — unavailable notice", () => {
     vi.unstubAllGlobals();
   });
 
-  it("renders the notice with correct spacing around the links after a 503", async () => {
+  it("offers a consultation without exposing direct contact details after a 503", async () => {
     vi.stubGlobal("fetch", vi.fn(() =>
       Promise.resolve({ ok: false, status: 503, json: () => Promise.resolve({ error: "Form not configured" }) })
     ));
@@ -49,16 +59,18 @@ describe("ContactForm — unavailable notice", () => {
     fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
 
     const notice = await screen.findByRole("status");
-    // Collapse runtime whitespace and assert no words are glued together.
     const text = notice.textContent?.replace(/\s+/g, " ").trim();
-    expect(text).toContain("or book a call and we'll follow up.");
-    expect(text).not.toMatch(/book a calland/);
+    expect(text).toContain("try again later or book a consultation.");
+    expect(notice.querySelector('a[href="/book"]')).not.toBeNull();
+    expect(notice.innerHTML).not.toContain("mailto:");
+    expect(notice.innerHTML).not.toContain("tel:");
   });
 });
 
 describe("ContactForm — submit validation", () => {
   it("shows all required field errors when submitted empty", async () => {
     render(<ContactForm />);
+    confirmHumanSubmission();
     fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
     expect(await screen.findByText("Name is required.")).toBeInTheDocument();
     expect(screen.getByText("Email address is required.")).toBeInTheDocument();
@@ -68,6 +80,7 @@ describe("ContactForm — submit validation", () => {
   it("shows error for name under 2 characters", async () => {
     render(<ContactForm />);
     setField("name", "A");
+    confirmHumanSubmission();
     fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
     expect(await screen.findByText("Name must be at least 2 characters.")).toBeInTheDocument();
   });
@@ -75,6 +88,7 @@ describe("ContactForm — submit validation", () => {
   it("shows error for invalid characters in name", async () => {
     render(<ContactForm />);
     setField("name", "Jane123");
+    confirmHumanSubmission();
     fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
     expect(await screen.findByText("Name contains invalid characters.")).toBeInTheDocument();
   });
@@ -84,6 +98,7 @@ describe("ContactForm — submit validation", () => {
     setField("name", "Jane Doe");
     setField("email", "not-an-email");
     setField("message", "This is a valid message long enough.");
+    confirmHumanSubmission();
     fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
     expect(await screen.findByText("Enter a valid email address.")).toBeInTheDocument();
   });
@@ -93,6 +108,7 @@ describe("ContactForm — submit validation", () => {
     setField("name", "Jane Doe");
     setField("email", "jane@example");
     setField("message", "This is a valid message long enough.");
+    confirmHumanSubmission();
     fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
     expect(await screen.findByText("Enter a valid email address.")).toBeInTheDocument();
   });
@@ -102,6 +118,7 @@ describe("ContactForm — submit validation", () => {
     setField("name", "Jane Doe");
     setField("email", "jane@example.com");
     setField("message", "Short");
+    confirmHumanSubmission();
     fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
     expect(await screen.findByText("Message must be at least 10 characters.")).toBeInTheDocument();
   });
@@ -111,6 +128,7 @@ describe("ContactForm — submit validation", () => {
     setField("name", "Mary-Jane O'Brien");
     setField("email", "mj@example.com");
     setField("message", "This is a valid message long enough.");
+    confirmHumanSubmission();
     fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
     expect(screen.queryByText(/name is required|name must|name contains/i)).not.toBeInTheDocument();
   });
@@ -212,14 +230,84 @@ describe("ContactForm — submission", () => {
     vi.unstubAllGlobals();
   });
 
-  it("shows success state after successful submission", async () => {
-    vi.stubGlobal("fetch", vi.fn(() =>
-      Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ ok: true }) })
-    ));
+  it("requires email confirmation before showing the success state", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 202,
+        json: () =>
+          Promise.resolve({
+            ok: true,
+            stage: "verification",
+            challengeId: "11111111-1111-4111-8111-111111111111",
+          }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 202,
+        json: () => Promise.resolve({ ok: true, stage: "submitted" }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
     render(<ContactForm />);
     fillValidFields();
     fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
-    expect(await screen.findByText("Inquiry received")).toBeInTheDocument();
+
+    expect(await screen.findByText("Enter the six-digit code")).toBeInTheDocument();
+    expect(screen.queryByText("Message received")).not.toBeInTheDocument();
+
+    const firstBody = JSON.parse(fetchMock.mock.calls[0][1]?.body as string);
+    expect(firstBody).toEqual(
+      expect.objectContaining({
+        name: "Jane Doe",
+        email: "jane@example.com",
+        message: "This is a valid message long enough.",
+        humanAttestation: true,
+      }),
+    );
+    expect(firstBody.interactionDurationMs).toEqual(expect.any(Number));
+    expect(firstBody.submissionId).toMatch(/^[A-Za-z0-9_-]{8,128}$/);
+    expect(firstBody).not.toHaveProperty("challengeId");
+
+    fireEvent.change(screen.getByLabelText(/confirmation code/i), {
+      target: { value: "123456" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /confirm and submit/i }));
+
+    expect(await screen.findByText("Message received")).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    const secondBody = JSON.parse(fetchMock.mock.calls[1][1]?.body as string);
+    expect(secondBody).toEqual(
+      expect.objectContaining({
+        submissionId: firstBody.submissionId,
+        challengeId: "11111111-1111-4111-8111-111111111111",
+        verificationCode: "123456",
+      }),
+    );
+  });
+
+  it("fails closed when the API returns an unexpected successful response", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve({ ok: true }),
+        }),
+      ),
+    );
+
+    render(<ContactForm />);
+    fillValidFields();
+    fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "The service returned an unexpected response.",
+    );
+    expect(screen.queryByText("Message received")).not.toBeInTheDocument();
   });
 
   it("shows error message on API failure", async () => {
@@ -233,7 +321,11 @@ describe("ContactForm — submission", () => {
     render(<ContactForm />);
     fillValidFields();
     fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
-    expect(await screen.findByText(/Something went wrong/)).toBeInTheDocument();
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(/Something went wrong/);
+    expect(alert.querySelector('a[href="/book"]')).toHaveTextContent("book a consultation");
+    expect(alert.querySelector('a[href^="mailto:"]')).not.toBeInTheDocument();
+    expect(alert.querySelector('a[href^="tel:"]')).not.toBeInTheDocument();
   });
 
   it("shows rate limit message on 429", async () => {
