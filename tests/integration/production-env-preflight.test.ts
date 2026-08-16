@@ -23,6 +23,8 @@ const checkedKeys = [
   "DOCUSEAL_WEBHOOK_SECRET",
   "UPSTASH_REDIS_REST_URL",
   "UPSTASH_REDIS_REST_TOKEN",
+  "KV_REST_API_URL",
+  "KV_REST_API_TOKEN",
   "NEXT_PUBLIC_BLOG_SUBSCRIBE_URL",
   "NEXT_PUBLIC_GISCUS_REPO",
   "NEXT_PUBLIC_GISCUS_REPO_ID",
@@ -117,6 +119,21 @@ describe("production environment preflight", () => {
     expect(result.status).toBe(0);
     expect(`${result.stdout}${result.stderr}`).not.toContain(
       "sentinel-auth-alternative-value"
+    );
+  });
+
+  it("accepts Vercel Marketplace KV variables for rate limiting", () => {
+    const result = runPreflight(["--production"], {
+      ...productionValues,
+      UPSTASH_REDIS_REST_URL: "",
+      UPSTASH_REDIS_REST_TOKEN: "",
+      KV_REST_API_URL: "https://sentinel-kv.example.test",
+      KV_REST_API_TOKEN: "sentinel-kv-token",
+    });
+
+    expect(result.status).toBe(0);
+    expect(`${result.stdout}${result.stderr}`).not.toContain(
+      "sentinel-kv-token"
     );
   });
 

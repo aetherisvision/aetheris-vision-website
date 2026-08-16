@@ -10,9 +10,11 @@ import { Redis } from '@upstash/redis'
  *
  * When the Upstash Redis env vars are present (provisioned via the Vercel
  * Marketplace — "Vercel KV" is Upstash Redis under the hood) this uses a
- * distributed fixed-window limiter shared across all instances. When they are
- * absent (local dev / CI) it falls back to the previous in-memory limiter so
- * the app still runs without external infrastructure.
+ * distributed fixed-window limiter shared across all instances. The
+ * Marketplace currently provisions `KV_REST_API_*`, while direct Upstash
+ * setups use `UPSTASH_REDIS_REST_*`; the SDK and this guard support both.
+ * When they are absent (local dev / CI) it falls back to the previous
+ * in-memory limiter so the app still runs without external infrastructure.
  *
  * Works in both the Edge runtime (proxy.ts) and the Node.js runtime (API
  * routes): the Upstash client is REST/fetch-based.
@@ -42,9 +44,12 @@ export interface RateLimitResult {
 
 /** True when the distributed (Upstash/Vercel KV) backend is configured. */
 export function isRateLimitDistributed(): boolean {
-  return Boolean(
-    process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN,
-  )
+  const url =
+    process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL
+  const token =
+    process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN
+
+  return Boolean(url && token)
 }
 
 // ---- Distributed backend (Upstash Redis) -----------------------------------

@@ -34,8 +34,12 @@ const productionRequirements = [
     ],
   },
   {
-    label: "Distributed public-form rate limiting",
-    allOf: ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"],
+    label: "Distributed public-form rate-limiting URL",
+    anyOf: ["UPSTASH_REDIS_REST_URL", "KV_REST_API_URL"],
+  },
+  {
+    label: "Distributed public-form rate-limiting token",
+    anyOf: ["UPSTASH_REDIS_REST_TOKEN", "KV_REST_API_TOKEN"],
   },
   {
     label: "DocuSeal contract lifecycle",
