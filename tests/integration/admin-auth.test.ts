@@ -145,7 +145,7 @@ describe('POST /api/admin/auth', () => {
     expect(setCookie).not.toContain('authenticated')
   })
 
-  it('redirects to /admin/clients by default', async () => {
+  it('redirects to the leads pipeline by default', async () => {
     const { POST } = await import('@/app/api/admin/auth/route')
     const req = new NextRequest('http://localhost/api/admin/auth', {
       method: 'POST',
@@ -154,7 +154,7 @@ describe('POST /api/admin/auth', () => {
     })
     const res = await POST(req)
     const body = await res.json()
-    expect(body.redirectTo).toBe('/admin/clients')
+    expect(body.redirectTo).toBe('/admin/leads')
   })
 
   it('respects a safe `next` redirect within /admin', async () => {

@@ -59,5 +59,12 @@ describe("Feature: Email Anti-Scraping Security", () => {
       const { container } = render(<PrivacyPage />);
       expect(hasLinkTo(container, "/contact")).toBe(true);
     });
+
+    it("explains submission storage and AI processing", () => {
+      const { container } = render(<PrivacyPage />);
+      expect(container.innerHTML).toContain("customer relationship management (CRM)");
+      expect(container.innerHTML).toContain("Anthropic");
+      expect(container.innerHTML).toContain("business, contact, and project details");
+    });
   });
 });

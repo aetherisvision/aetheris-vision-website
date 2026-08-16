@@ -5,8 +5,6 @@ export const SITE = {
   url: "https://aetherisvision.com",
   logoUrl: "https://aetherisvision.com/logo/av-logo-horizontal-dark.png",
   email: "contact@aetherisvision.com",
-  phone: "(346) 381-9629",
-  phoneHref: "tel:+13463819629",
   description:
     "Principal-led scientific and technical consulting for organizations making difficult weather, Earth-system, geospatial, and data-informed decisions.",
   ogDescription:
@@ -31,5 +29,4 @@ export const SAM = {
   // certification is held until VetCert / HUBZone certification is issued.
   setAsidePills: ["SDVOSB / VOSB — VetCert pending", "HUBZone Eligible"],
   samUrl: "https://sam.gov",
-  federalEmail: SITE.email,
 } as const;

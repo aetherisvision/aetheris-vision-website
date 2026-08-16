@@ -56,6 +56,17 @@ function fmtDate(iso: string | null) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+async function responseBody(response: Response): Promise<Record<string, unknown>> {
+  try {
+    const value: unknown = await response.json()
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : {}
+  } catch {
+    return {}
+  }
+}
+
 export default function AdminInvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [clients, setClients] = useState<Client[]>([])
@@ -83,64 +94,126 @@ export default function AdminInvoicesPage() {
   }
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/admin/invoices').then(r => r.json()),
-      fetch('/api/admin/clients').then(r => r.json()),
-      fetch('/api/admin/projects').then(r => r.json()),
-    ]).then(([invData, clientData, projData]) => {
-      setInvoices(invData.invoices ?? [])
-      setClients(clientData.clients ?? [])
-      setProjects(projData.projects ?? [])
-      setLoading(false)
-    })
+    let cancelled = false
+
+    async function load() {
+      try {
+        const responses = await Promise.all([
+          fetch('/api/admin/invoices', { cache: 'no-store' }),
+          fetch('/api/admin/clients', { cache: 'no-store' }),
+          fetch('/api/admin/projects', { cache: 'no-store' }),
+        ])
+        const [invData, clientData, projData] = await Promise.all(
+          responses.map(responseBody),
+        )
+        if (responses.some(response => !response.ok)) {
+          throw new Error('Unable to load invoice data')
+        }
+        if (cancelled) return
+
+        setInvoices(Array.isArray(invData.invoices) ? invData.invoices as Invoice[] : [])
+        setClients(Array.isArray(clientData.clients) ? clientData.clients as Client[] : [])
+        setProjects(Array.isArray(projData.projects) ? projData.projects as Project[] : [])
+      } catch {
+        if (!cancelled) setToast('Unable to load invoices')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    void load()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   async function handleCreate() {
     if (!form.client_id || !form.description || !form.amount) return
     setCreating(true)
-    const amount_cents = Math.round(parseFloat(form.amount) * 100)
-    const res = await fetch('/api/admin/invoices', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        client_id: Number(form.client_id),
-        project_id: form.project_id ? Number(form.project_id) : null,
-        description: form.description,
-        amount_cents,
-        due_date: form.due_date || null,
-      }),
-    })
-    const data = await res.json()
-    if (data.invoice) {
-      // Re-fetch to get joined client_name etc.
-      const fresh = await fetch('/api/admin/invoices').then(r => r.json())
-      setInvoices(fresh.invoices ?? [])
+    try {
+      const amount_cents = Math.round(Number(form.amount) * 100)
+      if (!Number.isSafeInteger(amount_cents) || amount_cents < 1) {
+        showToast('Enter an amount of at least $0.01')
+        return
+      }
+
+      const res = await fetch('/api/admin/invoices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id: Number(form.client_id),
+          project_id: form.project_id ? Number(form.project_id) : null,
+          description: form.description,
+          amount_cents,
+          due_date: form.due_date || null,
+        }),
+      })
+      const data = await responseBody(res)
+      if (!res.ok) {
+        showToast(typeof data.error === 'string' ? data.error : 'Unable to create invoice')
+        return
+      }
+
       setForm({ client_id: '', project_id: '', description: '', amount: '', due_date: '' })
       setShowNew(false)
-      showToast('Invoice created')
+
+      try {
+        const freshResponse = await fetch('/api/admin/invoices', { cache: 'no-store' })
+        const fresh = await responseBody(freshResponse)
+        if (!freshResponse.ok) throw new Error('Unable to refresh invoices')
+
+        setInvoices(Array.isArray(fresh.invoices) ? (fresh.invoices as Invoice[]) : [])
+        showToast('Invoice created')
+      } catch {
+        showToast('Invoice created; refresh to view it')
+      }
+    } catch {
+      showToast('Unable to create invoice')
+    } finally {
+      setCreating(false)
     }
-    setCreating(false)
   }
 
   async function handleSend(id: number) {
     setSending(id)
-    const res = await fetch(`/api/admin/invoices/${id}/send`, { method: 'POST' })
-    const data = await res.json()
-    if (data.ok) {
-      setInvoices(inv => inv.map(i => i.id === id ? { ...i, status: 'sent', stripe_invoice_url: data.invoice_url ?? i.stripe_invoice_url } : i))
-      showToast('Invoice sent to client')
-    } else {
-      showToast(data.error ?? 'Failed to send')
+    try {
+      const res = await fetch(`/api/admin/invoices/${id}/send`, { method: 'POST' })
+      const data = await responseBody(res)
+      if (res.ok && data.ok === true) {
+        const invoiceUrl = typeof data.invoice_url === 'string' ? data.invoice_url : null
+        setInvoices(inv => inv.map(i => i.id === id
+          ? { ...i, status: 'sent', stripe_invoice_url: invoiceUrl ?? i.stripe_invoice_url }
+          : i))
+        showToast(data.notification_sent === true
+          ? 'Invoice sent to client'
+          : 'Invoice is ready; email delivery needs to be retried')
+      } else {
+        showToast(typeof data.error === 'string' ? data.error : 'Unable to deliver invoice')
+      }
+    } catch {
+      showToast('Unable to deliver invoice')
+    } finally {
+      setSending(null)
     }
-    setSending(null)
   }
 
   async function handleDelete(id: number) {
     setDeleting(id)
-    await fetch(`/api/admin/invoices/${id}`, { method: 'DELETE' })
-    setInvoices(inv => inv.filter(i => i.id !== id))
-    setDeleting(null)
-    setConfirmDelete(null)
+    try {
+      const res = await fetch(`/api/admin/invoices/${id}`, { method: 'DELETE' })
+      const data = await responseBody(res)
+      if (!res.ok) {
+        showToast(typeof data.error === 'string' ? data.error : 'Unable to delete invoice')
+        return
+      }
+      setInvoices(inv => inv.filter(i => i.id !== id))
+      setConfirmDelete(null)
+      showToast('Draft invoice deleted')
+    } catch {
+      showToast('Unable to delete invoice')
+    } finally {
+      setDeleting(null)
+    }
   }
 
   const inputStyle: React.CSSProperties = {
@@ -202,7 +275,7 @@ export default function AdminInvoicesPage() {
             </div>
             <div>
               <label style={labelStyle}>Amount (USD) *</label>
-              <input type="number" min="0" step="0.01" placeholder="0.00" style={inputStyle} value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
+              <input type="number" min="0.01" step="0.01" placeholder="0.00" style={inputStyle} value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
             </div>
             <div>
               <label style={labelStyle}>Due Date</label>
@@ -265,17 +338,17 @@ export default function AdminInvoicesPage() {
                     </a>
                   )}
 
-                  {inv.status !== 'paid' && (
+                  {(inv.status === 'draft' || inv.status === 'sent') && (
                     <button
                       onClick={() => handleSend(inv.id)}
                       disabled={sending === inv.id}
                       style={{ padding: '7px 14px', borderRadius: '7px', fontSize: '13px', fontWeight: '600', background: sending === inv.id ? 'rgba(91,168,217,0.3)' : 'linear-gradient(135deg, #486890, #5BA8D9)', color: '#fff', border: 'none', cursor: 'pointer' }}
                     >
-                      {sending === inv.id ? 'Sending…' : inv.status === 'draft' ? 'Send to Client' : 'Resend'}
+                      {sending === inv.id ? 'Sending…' : inv.status === 'draft' ? 'Send to Client' : 'Retry Delivery'}
                     </button>
                   )}
 
-                  {confirmDelete === inv.id ? (
+                  {inv.status === 'draft' && (confirmDelete === inv.id ? (
                     <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
                       <span style={{ fontSize: '12px', color: dark.dangerText }}>Delete?</span>
                       <button onClick={() => handleDelete(inv.id)} disabled={deleting === inv.id}
@@ -292,7 +365,7 @@ export default function AdminInvoicesPage() {
                       style={{ padding: '7px 12px', borderRadius: '7px', fontSize: '13px', background: dark.danger, color: dark.dangerText, border: `1px solid ${dark.dangerBorder}`, cursor: 'pointer', fontWeight: '500' }}>
                       Delete
                     </button>
-                  )}
+                  ))}
                 </div>
               </div>
             )

@@ -25,3 +25,9 @@ Feature: Email Anti-Scraping Security
   Scenario: Privacy page routes contact through the /contact page
     Given the privacy page content is rendered
     Then a link to "/contact" should be present
+
+  Scenario: Privacy page explains submission storage and AI processing
+    Given the privacy page content is rendered
+    Then the rendered HTML should contain "customer relationship management (CRM)"
+    And the rendered HTML should contain "Anthropic"
+    And the rendered HTML should contain "business, contact, and project details"

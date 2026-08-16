@@ -17,7 +17,7 @@ const dark = {
 
 function LoginForm() {
   const params = useSearchParams()
-  const next = params.get('next') ?? '/admin/clients'
+  const next = params.get('next') ?? '/admin/leads'
   const [passphrase, setPassphrase] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState('')

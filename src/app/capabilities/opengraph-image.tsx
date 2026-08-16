@@ -56,7 +56,7 @@ export default function OGImage() {
             letterSpacing: "-2px",
           }}
         >
-          Statement.
+          Statement
         </h1>
         <p style={{ fontSize: "22px", color: "#9ca3af", marginTop: "28px", maxWidth: "700px", lineHeight: 1.5 }}>
           Scientific consulting · Geospatial services · Custom software · SAM.gov Active

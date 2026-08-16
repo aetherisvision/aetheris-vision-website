@@ -81,6 +81,18 @@ describe("rate-limit — in-memory fallback (no Upstash env)", () => {
     ).toBe(true);
   });
 
+  it("fails closed when a distributed backend is required but not configured", async () => {
+    await expect(
+      rateLimit("ip", {
+        limit: 1,
+        windowMs: 60_000,
+        prefix: "required-missing",
+        requireDistributed: true,
+      }),
+    ).rejects.toThrow("not configured");
+    expect(limitMock).not.toHaveBeenCalled();
+  });
+
   it("resets after the window elapses", async () => {
     vi.useFakeTimers();
     try {
@@ -153,5 +165,19 @@ describe("rate-limit — distributed (Upstash env present)", () => {
     // First request allowed by the in-memory fallback, second blocked.
     expect(r1.success).toBe(true);
     expect(r2.success).toBe(false);
+  });
+
+  it("fails closed when the required distributed backend throws", async () => {
+    setUpstashEnv();
+    limitMock.mockRejectedValue(new Error("redis down"));
+
+    await expect(
+      rateLimit("ip", {
+        limit: 1,
+        windowMs: 60_000,
+        prefix: "required-failure",
+        requireDistributed: true,
+      }),
+    ).rejects.toThrow("unavailable");
   });
 });

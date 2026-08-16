@@ -2,6 +2,8 @@ import { createHmac } from "node:crypto";
 import { defineConfig, devices } from "@playwright/test";
 
 const previewPassword = process.env.PREVIEW_PASSWORD;
+const chromiumChannel =
+  process.env.PLAYWRIGHT_USE_SYSTEM_CHROME === "1" ? "chrome" : "chromium";
 const previewCookies = previewPassword
   ? [
       {
@@ -27,12 +29,12 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:3000",
     storageState: { cookies: previewCookies, origins: [] },
-    trace: "on-first-retry",
+    trace: "retain-on-failure",
   },
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"], channel: "chromium" },
+      use: { ...devices["Desktop Chrome"], channel: chromiumChannel },
     },
     {
       name: "firefox",
@@ -44,11 +46,31 @@ export default defineConfig({
     },
     {
       name: "mobile-chrome",
-      use: { ...devices["Pixel 7"], channel: "chromium" },
+      use: { ...devices["Pixel 7"], channel: chromiumChannel },
     },
     {
       name: "mobile-safari",
       use: { ...devices["iPhone 13"] },
+    },
+    {
+      name: "compact-phone",
+      use: {
+        ...devices["Desktop Chrome"],
+        channel: chromiumChannel,
+        viewport: { width: 320, height: 568 },
+        isMobile: true,
+        hasTouch: true,
+      },
+    },
+    {
+      name: "tablet",
+      use: {
+        ...devices["Desktop Chrome"],
+        channel: chromiumChannel,
+        viewport: { width: 768, height: 1024 },
+        isMobile: true,
+        hasTouch: true,
+      },
     },
   ],
   webServer: {

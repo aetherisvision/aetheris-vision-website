@@ -31,17 +31,17 @@ const PLATFORM_LABELS: Record<string, string> = {
   'nextjs': 'Next.js (Custom)',
   'headless-wp': 'Headless WordPress',
   'managed-wp': 'Managed WordPress',
-  'decide': 'Help me decide',
+  'decide': 'Recommend a suitable platform',
 }
 
-const STATUS_OPTIONS = ['new', 'in_review', 'sow_sent', 'won', 'lost'] as const
-type Status = typeof STATUS_OPTIONS[number]
+type Status = 'new' | 'in_review' | 'sow_sent' | 'won' | 'lost'
+const MANUAL_STATUS_OPTIONS: Exclude<Status, 'won'>[] = ['new', 'in_review', 'sow_sent', 'lost']
 
 const STATUS_LABELS: Record<Status, string> = {
   new: 'New',
   in_review: 'In Review',
   sow_sent: 'SOW Sent',
-  won: 'Won',
+  won: 'Signed',
   lost: 'Lost',
 }
 
@@ -69,8 +69,9 @@ interface Submission {
   objectives: string[] | null
   special_requirements: string | null
   questions_for_us: string | null
-  client_id: number | null
-  project_id: number | null
+  lead_id?: number | null
+  client_id?: number | null
+  project_id?: number | null
   pro_bono: boolean
   platform_preference: string | null
   submitted_at: string
@@ -245,11 +246,11 @@ export default function AdminIntakePage() {
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto', padding: '40px 24px' }}>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', marginBottom: '32px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
             <h1 style={{ fontSize: '22px', fontWeight: '700', color: dark.text, margin: 0 }}>
-              Project Intakes
+              Intake &amp; SOWs
             </h1>
             {newCount > 0 && (
               <span style={{
@@ -262,7 +263,7 @@ export default function AdminIntakePage() {
             )}
           </div>
           <p style={{ color: dark.textMuted, fontSize: '14px', margin: 0 }}>
-            All project intake submissions — newest first.
+            Review project details, prepare SOWs, and track signatures.
           </p>
         </div>
         <a
@@ -275,7 +276,7 @@ export default function AdminIntakePage() {
             textDecoration: 'none', boxShadow: '0 4px 12px rgba(91,168,217,0.3)',
           }}
         >
-          View intake form ↗
+          Open intake form
         </a>
       </div>
 
@@ -286,7 +287,7 @@ export default function AdminIntakePage() {
           background: dark.surface, borderRadius: '12px', border: `1px solid ${dark.border}`,
           padding: '48px', textAlign: 'center',
         }}>
-          <p style={{ color: dark.textDim, fontSize: '15px', margin: 0 }}>No intake submissions yet.</p>
+          <p style={{ color: dark.textDim, fontSize: '15px', margin: 0 }}>No intake or SOW records yet</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -294,9 +295,9 @@ export default function AdminIntakePage() {
             const sc = STATUS_COLORS[sub.status] ?? STATUS_COLORS.new
             const isOpen = expanded === sub.id
             return (
-              <div key={sub.id} style={{
+              <div id={`intake-${sub.id}`} key={sub.id} style={{
                 background: dark.surface, borderRadius: '12px',
-                border: `1px solid ${dark.border}`, overflow: 'hidden',
+                border: `1px solid ${dark.border}`, overflow: 'hidden', scrollMarginTop: '96px',
               }}>
                 {/* Card header */}
                 <div
@@ -339,13 +340,13 @@ export default function AdminIntakePage() {
                 {/* Expanded detail */}
                 {isOpen && (
                   <div style={{ borderTop: `1px solid ${dark.borderLight}`, padding: '20px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '20px' }}>
                       {[
                         { label: 'Location', value: sub.location },
                         { label: 'Revenue', value: sub.revenue },
                         { label: 'Timeline', value: sub.timeline },
                         { label: 'Budget', value: sub.budget_range },
-                        { label: 'Stack Preference', value: sub.platform_preference ? (PLATFORM_LABELS[sub.platform_preference] ?? sub.platform_preference) : null },
+                        { label: 'Platform preference', value: sub.platform_preference ? (PLATFORM_LABELS[sub.platform_preference] ?? sub.platform_preference) : null },
                       ].map(({ label, value }) => value ? (
                         <div key={label}>
                           <p style={{ fontSize: '11px', fontWeight: '700', color: dark.textDim, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 3px' }}>{label}</p>
@@ -474,31 +475,37 @@ export default function AdminIntakePage() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                       {/* Status selector */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '12px', color: dark.textDim, fontWeight: '600' }}>Status:</span>
-                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                          {STATUS_OPTIONS.map(s => {
-                            const c = STATUS_COLORS[s]
-                            const active = sub.status === s
-                            return (
-                              <button
-                                key={s}
-                                onClick={() => updateStatus(sub.id, s)}
-                                disabled={updating === sub.id}
-                                style={{
-                                  padding: '5px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '600',
-                                  border: `1px solid ${active ? c.border : dark.borderLight}`,
-                                  background: active ? c.bg : 'transparent',
-                                  color: active ? c.color : dark.textDim,
-                                  cursor: updating === sub.id ? 'not-allowed' : 'pointer',
-                                  opacity: updating === sub.id ? 0.5 : 1,
-                                  transition: 'all 0.15s',
-                                }}
-                              >
-                                {STATUS_LABELS[s]}
-                              </button>
-                            )
-                          })}
-                        </div>
+                        <span style={{ fontSize: '12px', color: dark.textDim, fontWeight: '600' }}>Status</span>
+                        {sub.status === 'won' ? (
+                          <span style={{ fontSize: '12px', color: STATUS_COLORS.won.color }}>
+                            Signed SOW received · updated automatically
+                          </span>
+                        ) : (
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                            {MANUAL_STATUS_OPTIONS.map(s => {
+                              const c = STATUS_COLORS[s]
+                              const active = sub.status === s
+                              return (
+                                <button
+                                  key={s}
+                                  onClick={() => updateStatus(sub.id, s)}
+                                  disabled={updating === sub.id}
+                                  style={{
+                                    padding: '5px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '600',
+                                    border: `1px solid ${active ? c.border : dark.borderLight}`,
+                                    background: active ? c.bg : 'transparent',
+                                    color: active ? c.color : dark.textDim,
+                                    cursor: updating === sub.id ? 'not-allowed' : 'pointer',
+                                    opacity: updating === sub.id ? 0.5 : 1,
+                                    transition: 'all 0.15s',
+                                  }}
+                                >
+                                  {STATUS_LABELS[s]}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
                       </div>
 
                       {/* Links */}
@@ -533,7 +540,7 @@ export default function AdminIntakePage() {
                               <span style={{ display: 'inline-block', width: '10px', height: '10px', border: '2px solid rgba(196,181,253,0.3)', borderTopColor: '#c4b5fd', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
                               Drafting SOW…
                             </>
-                          ) : sowDrafts[sub.id] ? '↻ Regenerate SOW' : '✦ Generate SOW Draft'}
+                          ) : sowDrafts[sub.id] ? 'Regenerate SOW' : 'Generate SOW'}
                         </button>
                         {sowDrafts[sub.id] && !signatureSent[sub.id] && (
                           <button
@@ -553,7 +560,7 @@ export default function AdminIntakePage() {
                                 <span style={{ display: 'inline-block', width: '10px', height: '10px', border: '2px solid rgba(110,231,183,0.3)', borderTopColor: '#6ee7b7', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
                                 Sending…
                               </>
-                            ) : '✉ Send for Signature'}
+                            ) : 'Send for signature'}
                           </button>
                         )}
                         {signatureSent[sub.id] && (
@@ -561,22 +568,31 @@ export default function AdminIntakePage() {
                             ✓ Sent to client
                           </span>
                         )}
-                        {sub.client_id && (
-                          <Link href="/admin/clients" style={{
+                        {sub.lead_id && (
+                          <Link href={`/admin/leads#lead-${sub.lead_id}`} style={{
                             padding: '7px 13px', borderRadius: '7px', fontSize: '13px', fontWeight: '500',
                             border: `1px solid ${dark.border}`, background: 'rgba(255,255,255,0.04)',
                             color: dark.textMuted, textDecoration: 'none',
                           }}>
-                            View Client
+                            Lead record
+                          </Link>
+                        )}
+                        {sub.client_id && (
+                          <Link href={`/admin/clients#client-${sub.client_id}`} style={{
+                            padding: '7px 13px', borderRadius: '7px', fontSize: '13px', fontWeight: '500',
+                            border: `1px solid ${dark.border}`, background: 'rgba(255,255,255,0.04)',
+                            color: dark.textMuted, textDecoration: 'none',
+                          }}>
+                            Client record
                           </Link>
                         )}
                         {sub.project_id && (
-                          <Link href="/admin/projects" style={{
+                          <Link href={`/admin/projects#project-${sub.project_id}`} style={{
                             padding: '7px 13px', borderRadius: '7px', fontSize: '13px', fontWeight: '500',
                             border: `1px solid ${dark.border}`, background: 'rgba(255,255,255,0.04)',
                             color: dark.textMuted, textDecoration: 'none',
                           }}>
-                            View Project
+                            Project record
                           </Link>
                         )}
                         <a

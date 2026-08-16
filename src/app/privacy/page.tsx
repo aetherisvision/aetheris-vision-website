@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: "How Aetheris Vision LLC collects, uses, and protects your personal information.",
 };
 
-const EFFECTIVE_DATE = "June 8, 2026";
+const EFFECTIVE_DATE = "August 16, 2026";
 
 // NOTE (internal): This policy is intentionally minimal and describes what the
 // site actually does (analytics, the processors listed below, and the client
@@ -47,9 +47,18 @@ export default function PrivacyPage() {
             <ul className="ml-4 space-y-2 list-disc list-outside">
               <li>
                 <strong className="text-gray-300">Contact form</strong> &mdash; when you submit
-                the form at <code className="text-gray-300">/contact</code>, we collect your
-                name, email, and message so we can respond to your inquiry. Submissions are
-                delivered to us by email through Resend.
+                the form at <code className="text-gray-300">/contact</code>, we collect the
+                contact and message details you provide. We store the submission in our customer
+                relationship management (CRM) system so we can respond and manage follow-up.
+                Resend may deliver a notification to us.
+              </li>
+              <li>
+                <strong className="text-gray-300">Project intake</strong> &mdash; when you submit
+                project details at <code className="text-gray-300">/intake</code>, we collect the
+                business, contact, goals, requirements, timing, budget, and other information you
+                provide. We store the submission in our CRM and project records to assess the
+                request, prepare a proposed engagement, and manage the work if it proceeds. Resend
+                may deliver notifications and confirmations.
               </li>
               <li>
                 <strong className="text-gray-300">Analytics</strong> &mdash; Vercel Analytics
@@ -70,19 +79,25 @@ export default function PrivacyPage() {
           {/* 3 */}
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">3. Service Providers</h2>
-            <p>We rely on a small set of trusted providers, each handling data only for the purpose shown:</p>
+            <p>We use a small set of service providers to operate the site and manage engagements:</p>
             <ul className="mt-3 ml-4 space-y-2 list-disc list-outside">
               <li><strong className="text-gray-300">Vercel</strong> &mdash; website hosting and CDN (processes request logs and IP addresses).</li>
               <li><strong className="text-gray-300">Vercel Analytics</strong> &mdash; cookieless, aggregate website analytics.</li>
               <li><strong className="text-gray-300">Google Analytics</strong> &mdash; site usage analytics, loaded only when a measurement ID is configured.</li>
-              <li><strong className="text-gray-300">Neon</strong> &mdash; database for client-portal accounts and records.</li>
+              <li><strong className="text-gray-300">Neon</strong> &mdash; database hosting for contact, project-intake, CRM, client-portal, project, document, and invoice records.</li>
+              <li>
+                <strong className="text-gray-300">Anthropic</strong> &mdash; AI-assisted preparation
+                of internal compliance-scoping briefs and draft statements of work. When these
+                features are used, relevant business, contact, and project details from an intake
+                submission are sent to Anthropic for processing.
+              </li>
               <li><strong className="text-gray-300">Stripe</strong> &mdash; invoicing and payment processing.</li>
               <li><strong className="text-gray-300">Docuseal</strong> &mdash; document e-signature.</li>
-              <li><strong className="text-gray-300">Resend</strong> &mdash; transactional email (sign-in links, invoices, and contact form delivery).</li>
+              <li><strong className="text-gray-300">Resend</strong> &mdash; transactional email (sign-in links, invoices, form notifications, and confirmations).</li>
             </ul>
             <p className="mt-3 text-sm text-gray-500">
-              Each provider processes data under its own terms and privacy policy. We share only
-              what the service requires.
+              Each provider processes information under its own terms and privacy policy. The
+              information involved depends on which service is used.
             </p>
           </section>
 

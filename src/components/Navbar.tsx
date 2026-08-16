@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -20,8 +20,9 @@ const navLinks = [
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const mobileTriggerRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
-  const contactHref = "/book";
+  const consultationHref = "/book";
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMobileOpen(false), [pathname]);
@@ -29,12 +30,30 @@ export default function Navbar() {
   useEffect(() => {
     if (!mobileOpen) return;
 
+    const previousOverflow = document.body.style.overflow;
+    const previousOverscrollBehavior = document.body.style.overscrollBehavior;
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
+
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMobileOpen(false);
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setMobileOpen(false);
+        mobileTriggerRef.current?.focus();
+      }
+    };
+    const onResize = () => {
+      if (window.innerWidth >= 1024) setMobileOpen(false);
     };
 
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("resize", onResize);
+      document.body.style.overflow = previousOverflow;
+      document.body.style.overscrollBehavior = previousOverscrollBehavior;
+    };
   }, [mobileOpen]);
 
   function isActive(href: string) {
@@ -50,10 +69,24 @@ export default function Navbar() {
   }
 
   return (
-    <header className="fixed top-0 z-50 w-full border-b border-white/15 bg-[#0a1628]">
+    <header
+      className="fixed top-0 z-50 w-full border-b border-white/15 bg-[#0a1628]"
+      style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+    >
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
         {/* Logo */}
-        <Link href="/" className="flex shrink-0 items-center gap-3 whitespace-nowrap" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+        <Link
+          href="/"
+          className="flex shrink-0 items-center gap-3 whitespace-nowrap"
+          onClick={() =>
+            window.scrollTo({
+              top: 0,
+              behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                ? "auto"
+                : "smooth",
+            })
+          }
+        >
           <Image
             src={BRAND_LOGO.markSvg}
             alt=""
@@ -81,7 +114,7 @@ export default function Navbar() {
                 href={link.href}
                 aria-current={isActive(link.href) ? "page" : undefined}
                 className={clsx(
-                  "whitespace-nowrap border-b py-1 text-xs font-semibold uppercase tracking-[0.08em] transition-colors duration-200 xl:text-[13px]",
+                  "inline-flex h-11 items-center whitespace-nowrap border-b text-xs font-semibold uppercase tracking-[0.08em] transition-colors duration-200 xl:text-[13px]",
                   isActive(link.href)
                     ? "border-[#7eabca] text-white"
                     : "border-transparent text-white/60 hover:border-white/30 hover:text-white"
@@ -92,15 +125,16 @@ export default function Navbar() {
             ))}
           </nav>
           <a
-            href={contactHref}
+            href={consultationHref}
             className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap border border-white/40 px-4 text-xs font-semibold text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-[#0a1628]"
           >
-            Book a Consultation
+            Get in touch
           </a>
         </div>
 
         {/* Mobile Hamburger */}
         <button
+          ref={mobileTriggerRef}
           className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-white/70 transition hover:bg-white/5 hover:text-white lg:hidden"
           onClick={() => setMobileOpen((prev) => !prev)}
           aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
@@ -117,8 +151,16 @@ export default function Navbar() {
 
       {/* Mobile Menu Panel */}
       {mobileOpen && (
-        <div id="mobile-navigation" className="max-h-[calc(100dvh-5rem)] overflow-y-auto border-t border-white/15 bg-[#0a1628] lg:hidden">
-          <nav aria-label="Mobile navigation" className="mx-auto flex max-w-7xl flex-col px-5 py-5 sm:px-8">
+        <div
+          id="mobile-navigation"
+          className="overflow-y-auto overscroll-contain border-t border-white/15 bg-[#0a1628] lg:hidden"
+          style={{ maxHeight: "calc(100dvh - 5rem - env(safe-area-inset-top, 0px))" }}
+        >
+          <nav
+            aria-label="Mobile navigation"
+            className="mx-auto flex max-w-7xl flex-col px-5 pt-5 sm:px-8"
+            style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom, 0px))" }}
+          >
             {navLinks.map((link) => (
               <a
                 key={link.label}
@@ -136,11 +178,11 @@ export default function Navbar() {
               </a>
             ))}
             <a
-              href={contactHref}
+              href={consultationHref}
               onClick={() => setMobileOpen(false)}
               className="mt-6 inline-flex min-h-12 items-center justify-center border border-white/40 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-[#0a1628]"
             >
-              Book a Consultation
+              Get in touch
             </a>
           </nav>
         </div>

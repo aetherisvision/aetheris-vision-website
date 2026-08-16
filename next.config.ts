@@ -21,6 +21,10 @@ const nextConfig: NextConfig = {
   poweredByHeader: false, // Hide Next.js signature
   compress: true, // Enable gzip compression
   devIndicators: false, // Keep local client previews free of the Next.js dev badge
+
+  // Keep JSDOM's runtime assets beside the package instead of relocating them
+  // into individual server bundles. The PDF route still sanitizes with DOMPurify.
+  serverExternalPackages: ["isomorphic-dompurify"],
   
   images: {
     remotePatterns: [

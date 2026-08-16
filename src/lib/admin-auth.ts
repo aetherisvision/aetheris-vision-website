@@ -49,5 +49,8 @@ export function isAdmin(request: NextRequest): boolean {
 
 /** Standard 401 response for unauthenticated admin requests. */
 export function unauthorizedResponse(): NextResponse {
-  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return NextResponse.json(
+    { error: 'Unauthorized' },
+    { status: 401, headers: { 'Cache-Control': 'no-store' } },
+  )
 }

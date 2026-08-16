@@ -8,11 +8,6 @@ export const organizationJsonLd = {
   url: SITE.url,
   logo: SITE.logoUrl,
   description: SITE.description,
-  contactPoint: {
-    "@type": "ContactPoint" as const,
-    email: SITE.email,
-    contactType: "sales",
-  },
 };
 
 /** Minimal publisher reference — use inside BlogPosting, Service, etc. */
@@ -34,8 +29,6 @@ export const localBusinessJsonLd = {
   "@type": "LocalBusiness" as const,
   name: SITE.legalName,
   url: SITE.url,
-  email: SITE.email,
-  telephone: SITE.phoneHref.replace("tel:", ""),
   logo: SITE.logoUrl,
   description: SITE.description,
   address: {

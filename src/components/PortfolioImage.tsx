@@ -38,7 +38,7 @@ export default function PortfolioImage({
     return (
       <div 
         className={`bg-gray-200 flex items-center justify-center ${className}`}
-        style={{ width, height }}
+        style={{ width: '100%', height: '100%' }}
         aria-label={fallbackAlt}
       >
         <div className="text-gray-400 text-center p-4">
@@ -50,7 +50,10 @@ export default function PortfolioImage({
   }
 
   return (
-    <div className={`relative overflow-hidden ${className}`} style={{ width, height }}>
+    <div
+      className={`relative overflow-hidden ${className}`}
+      style={{ width: '100%', height: '100%' }}
+    >
       {/* Loading placeholder */}
       {isLoading && (
         <div 
@@ -70,8 +73,8 @@ export default function PortfolioImage({
           width={width}
           height={height}
           priority={priority}
-          className={`transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
-          style={{ objectFit: 'cover' }}
+          className={`h-full w-full transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+          style={{ objectFit: 'cover', width: '100%', height: '100%' }}
           onLoad={() => setIsLoading(false)}
           onError={() => {
             setIsLoading(false);
