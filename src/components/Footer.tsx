@@ -35,6 +35,16 @@ export default function Footer() {
             <p className="mt-5 text-sm leading-6 text-white/70">
               Scientific and technical consulting that helps complex projects move forward efficiently and stay on schedule.
             </p>
+            {/* Business address for local SEO / Google Business Profile.
+                Deliberately no email or phone — contact routes through the
+                verified inquiry form or Cal.com booking; the anti-scraping
+                policy (tests/features/steps/email-security.steps.test.tsx)
+                bans plaintext addresses and mailto: links. */}
+            <address className="mt-5 text-sm not-italic leading-6 text-white/45">
+              {SITE.address.street}
+              <br />
+              {SITE.address.locality}, {SITE.address.region} {SITE.address.postalCode}
+            </address>
           </div>
 
           <div className="md:text-right">

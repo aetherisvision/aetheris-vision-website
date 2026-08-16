@@ -21,8 +21,13 @@ export const metadata: Metadata = {
   title: `${SITE.name} | ${SITE.tagline}`,
   description: SITE.description,
   metadataBase: new URL(SITE.url),
-  robots: { index: false, follow: false },
+  // Site lock: every page carries noindex only while PREVIEW_PASSWORD gates
+  // the site. Launch (unsetting the var) flips this and robots.ts together.
+  ...(process.env.PREVIEW_PASSWORD
+    ? { robots: { index: false, follow: false } }
+    : {}),
   alternates: {
+    canonical: "./",
     types: {
       "application/rss+xml": `${SITE.url}/feed.xml`,
     },

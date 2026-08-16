@@ -1,4 +1,10 @@
-import { SITE } from "./constants";
+import { AMS_PROFILE_URL, GITHUB_ORG_URL, SITE } from "./constants";
+
+/**
+ * Same-entity profiles Google uses to reconcile the site with the Google
+ * Business Profile and other listings. Add the GBP/LinkedIn URLs when live.
+ */
+const SAME_AS = [AMS_PROFILE_URL, GITHUB_ORG_URL];
 
 /** Full Organization entity — use in layout.tsx root JSON-LD */
 export const organizationJsonLd = {
@@ -8,6 +14,7 @@ export const organizationJsonLd = {
   url: SITE.url,
   logo: SITE.logoUrl,
   description: SITE.description,
+  sameAs: SAME_AS,
 };
 
 /** Minimal publisher reference — use inside BlogPosting, Service, etc. */
@@ -26,18 +33,24 @@ export const websiteJsonLd = {
 
 export const localBusinessJsonLd = {
   "@context": "https://schema.org" as const,
-  "@type": "LocalBusiness" as const,
+  // ProfessionalService is a LocalBusiness subtype — the specific type for a
+  // consulting practice with a Google Business Profile.
+  "@type": "ProfessionalService" as const,
   name: SITE.legalName,
   url: SITE.url,
+  // Deliberately no telephone or email: contact routes through the verified
+  // inquiry form or Cal.com booking, and JSON-LD is as scrapable as text.
   logo: SITE.logoUrl,
+  image: SITE.logoUrl,
   description: SITE.description,
+  sameAs: SAME_AS,
   address: {
     "@type": "PostalAddress" as const,
-    streetAddress: "210 N Mustang Mall Terrace PMB 29",
-    addressLocality: "Mustang",
-    addressRegion: "OK",
-    postalCode: "73064",
-    addressCountry: "US",
+    streetAddress: SITE.address.street,
+    addressLocality: SITE.address.locality,
+    addressRegion: SITE.address.region,
+    postalCode: SITE.address.postalCode,
+    addressCountry: SITE.address.country,
   },
   areaServed: "US",
   priceRange: "$$",
