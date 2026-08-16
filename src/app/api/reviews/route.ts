@@ -10,6 +10,16 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 const RATE_LIMIT = 3
 const WINDOW_MS = 10 * 60 * 1000
 
+/** Escape user-supplied text before interpolating it into the HTML email. */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 export async function GET() {
   try {
     await ensureReviewsTable()
@@ -80,6 +90,10 @@ export async function POST(req: NextRequest) {
     try {
       const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating)
       const adminUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://aetherisvision.com'}/admin/reviews`
+      const clientDetails = [client_role, client_company]
+        .filter((value): value is string => value !== null)
+        .map(escapeHtml)
+        .join(' · ')
       await resend.emails.send({
         from: 'system@aetherisvision.com',
         to: ['contact@aetherisvision.com'],
@@ -90,10 +104,10 @@ export async function POST(req: NextRequest) {
             <p style="color:#64748b;font-size:13px;margin-bottom:24px;">Pending your approval before it goes live.</p>
 
             <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px 24px;margin-bottom:24px;">
-              <p style="margin:0 0 4px;color:#0f172a;font-size:16px;font-weight:600;">${client_name}</p>
-              ${client_role || client_company ? `<p style="margin:0 0 12px;color:#64748b;font-size:13px;">${[client_role, client_company].filter(Boolean).join(' · ')}</p>` : ''}
+              <p style="margin:0 0 4px;color:#0f172a;font-size:16px;font-weight:600;">${escapeHtml(client_name)}</p>
+              ${clientDetails ? `<p style="margin:0 0 12px;color:#64748b;font-size:13px;">${clientDetails}</p>` : ''}
               <p style="margin:0 0 12px;color:#f59e0b;font-size:18px;letter-spacing:2px;">${stars}</p>
-              <p style="margin:0;color:#334155;font-size:15px;line-height:1.6;">${reviewBody.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+              <p style="margin:0;color:#334155;font-size:15px;line-height:1.6;">${escapeHtml(reviewBody)}</p>
             </div>
 
             <a href="${adminUrl}"

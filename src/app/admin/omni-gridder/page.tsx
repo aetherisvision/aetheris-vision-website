@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { OmniGridderJobStatus } from '@/lib/omni-gridder-client'
 
 type RegridMethod = 'nearest' | 'bilinear' | 'conservative' | 'ewa'
 // No local list of "all methods": the compatibility matrix renders whatever the
@@ -55,7 +56,7 @@ interface DatasetView {
  */
 type Provenance = 'live' | 'verified'
 
-type RowStatus = 'idle' | 'submitting' | 'queued' | 'processing' | 'plotting' | 'succeeded' | 'failed'
+type RowStatus = 'idle' | 'submitting' | 'queued' | 'running' | 'plotting' | 'succeeded' | 'failed' | 'cancelled'
 
 interface JobDiagnostics {
   interpolation_method: string | null
@@ -68,14 +69,7 @@ interface JobDiagnostics {
   notes: string[] | null
 }
 
-interface JobStatusResponse {
-  job_id: string
-  processor_type: string
-  status: 'queued' | 'processing' | 'succeeded' | 'failed'
-  submitted_at: number
-  result_uri: string | null
-  error_message: string | null
-  diagnostics: JobDiagnostics | null
+interface JobStatusResponse extends OmniGridderJobStatus {
   nextJobId?: string
 }
 
@@ -140,6 +134,7 @@ function formatDuration(ms: number): string {
 }
 
 const POLL_INTERVAL_MS = 3000
+const MAX_POLL_ATTEMPTS = 200
 
 function idleRow(method: RegridMethod): MethodRow {
   return {
@@ -429,7 +424,8 @@ export default function OmniGridderDemoPage() {
     method: RegridMethod,
     chainPlot: boolean,
     isPlotJob: boolean,
-    lastStatus: string | null,
+    lastStatus: OmniGridderJobStatus['status'] | null,
+    attempt = 1,
   ): Promise<void> {
     let res: Response
     try {
@@ -442,10 +438,19 @@ export default function OmniGridderDemoPage() {
         : ''
       res = await fetch(`/api/admin/omni-gridder/status/${jobId}${qs}`)
     } catch {
+      if (attempt >= MAX_POLL_ATTEMPTS) {
+        const message = `Job polling timed out after ${MAX_POLL_ATTEMPTS} attempts`
+        log(message)
+        updateRow(method, { status: 'failed', errorMessage: message, completedAt: Date.now() })
+        return
+      }
       log(`Network error polling ${jobId} — retrying`)
       pollTimers.current.set(
         jobId,
-        setTimeout(() => pollJob(jobId, method, chainPlot, isPlotJob, lastStatus), POLL_INTERVAL_MS),
+        setTimeout(
+          () => pollJob(jobId, method, chainPlot, isPlotJob, lastStatus, attempt + 1),
+          POLL_INTERVAL_MS,
+        ),
       )
       return
     }
@@ -488,6 +493,18 @@ export default function OmniGridderDemoPage() {
           diagnostics: data.diagnostics,
         })
       }
+      return
+    }
+
+    if (data.status === 'cancelled') {
+      const message = data.error_message ?? 'Job was cancelled'
+      if (isPlotJob) setGlobalError(message)
+      updateRow(method, {
+        status: 'cancelled',
+        errorMessage: message,
+        completedAt: Date.now(),
+        diagnostics: data.diagnostics,
+      })
       return
     }
 
@@ -539,11 +556,20 @@ export default function OmniGridderDemoPage() {
     }
 
     if (!isPlotJob) {
-      updateRow(method, { status: data.status === 'processing' ? 'processing' : 'queued' })
+      updateRow(method, { status: data.status })
+    }
+    if (attempt >= MAX_POLL_ATTEMPTS) {
+      const message = `Job polling timed out after ${MAX_POLL_ATTEMPTS} attempts`
+      log(message)
+      updateRow(method, { status: 'failed', errorMessage: message, completedAt: Date.now() })
+      return
     }
     pollTimers.current.set(
       jobId,
-      setTimeout(() => pollJob(jobId, method, chainPlot, isPlotJob, data.status), POLL_INTERVAL_MS),
+      setTimeout(
+        () => pollJob(jobId, method, chainPlot, isPlotJob, data.status, attempt + 1),
+        POLL_INTERVAL_MS,
+      ),
     )
   }
 
@@ -657,7 +683,7 @@ export default function OmniGridderDemoPage() {
 
   const isRunning = activeMethods.some((m) => {
     const s = rows[m].status
-    return s === 'submitting' || s === 'queued' || s === 'processing' || s === 'plotting'
+    return s === 'submitting' || s === 'queued' || s === 'running' || s === 'plotting'
   })
 
   return (
@@ -864,14 +890,18 @@ export default function OmniGridderDemoPage() {
                       <td className="border-b border-white/5 py-2 pr-4">
                         <span
                           className={
-                            row.status === 'failed'
+                            row.status === 'failed' || row.status === 'cancelled'
                               ? 'text-red-400'
                               : row.status === 'succeeded'
                                 ? 'text-green-400'
                                 : 'text-gray-300'
                           }
                         >
-                          {row.status}
+                          {row.status === 'running'
+                            ? 'Running'
+                            : row.status === 'cancelled'
+                              ? 'Cancelled'
+                              : row.status}
                         </span>
                         {row.errorMessage && (
                           <div className="text-xs text-red-400 mt-1">{row.errorMessage}</div>

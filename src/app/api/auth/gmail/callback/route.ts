@@ -1,22 +1,46 @@
 import { sql } from '@/lib/db'
+import { isAdmin, safeEqual, unauthorizedResponse } from '@/lib/admin-auth'
 import { NextRequest, NextResponse } from 'next/server'
 
+const GMAIL_OAUTH_STATE_COOKIE = 'av-gmail-oauth-state'
+
+function clearStateCookie(response: NextResponse): NextResponse {
+  response.cookies.delete(GMAIL_OAUTH_STATE_COOKIE)
+  return response
+}
+
 export async function GET(request: NextRequest) {
+  if (!isAdmin(request)) return unauthorizedResponse()
+
   const { searchParams } = request.nextUrl
   const code = searchParams.get('code')
-  const account = searchParams.get('state') // 'biz' or 'per'
+  const stateParts = (searchParams.get('state') ?? '').split(':')
+  const [account, nonce] = stateParts
   const error = searchParams.get('error')
+  const storedNonce = request.cookies.get(GMAIL_OAUTH_STATE_COOKIE)?.value
 
   const origin = request.nextUrl.origin
 
-  if (error || !code || (account !== 'biz' && account !== 'per')) {
-    return NextResponse.redirect(
-      `${origin}/admin/gmail?error=${error ?? 'invalid'}`
+  if (
+    stateParts.length !== 2 ||
+    (account !== 'biz' && account !== 'per') ||
+    !safeEqual(nonce, storedNonce)
+  ) {
+    return clearStateCookie(
+      NextResponse.json({ error: 'Invalid OAuth state' }, { status: 403 })
+    )
+  }
+
+  if (error || !code) {
+    return clearStateCookie(
+      NextResponse.redirect(`${origin}/admin/gmail?error=${error ?? 'invalid'}`)
     )
   }
 
   if (!process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_CLIENT_SECRET) {
-    return NextResponse.redirect(`${origin}/admin/gmail?error=missing_gmail_client_config`)
+    return clearStateCookie(
+      NextResponse.redirect(`${origin}/admin/gmail?error=missing_gmail_client_config`)
+    )
   }
 
   const redirectUri = `${origin}/api/auth/gmail/callback`
@@ -35,8 +59,8 @@ export async function GET(request: NextRequest) {
   const tokens = await tokenRes.json()
 
   if (!tokens.refresh_token) {
-    return NextResponse.redirect(
-      `${origin}/admin/gmail?error=no_refresh_token`
+    return clearStateCookie(
+      NextResponse.redirect(`${origin}/admin/gmail?error=no_refresh_token`)
     )
   }
 
@@ -59,7 +83,7 @@ export async function GET(request: NextRequest) {
           updated_at   = NOW()
   `
 
-  return NextResponse.redirect(
-    `${origin}/admin/gmail?connected=${account}`
+  return clearStateCookie(
+    NextResponse.redirect(`${origin}/admin/gmail?connected=${account}`)
   )
 }
