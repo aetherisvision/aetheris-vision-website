@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import QuickContactForm from "@/components/QuickContactForm";
-import SatelliteDisplay, { type SatelliteSource } from "@/components/SatelliteDisplay";
 import { AMS_PROFILE_URL, SITE } from "@/lib/constants";
 
 export const revalidate = 3600;
@@ -14,23 +13,6 @@ export const metadata = {
   description:
     "Applied AI, geospatial data curation, and coordinate reference system transformation for weather and Earth-system work.",
 };
-
-function satelliteImage(url: string) {
-  return `/api/satellite?url=${encodeURIComponent(url)}`;
-}
-
-const GOES_SOURCES: SatelliteSource[] = [
-  {
-    url: satelliteImage("https://cdn.star.nesdis.noaa.gov/GOES16/ABI/FD/GEOCOLOR/678x678.jpg"),
-    label: "GOES East",
-    region: "Americas · Atlantic",
-  },
-  {
-    url: satelliteImage("https://cdn.star.nesdis.noaa.gov/GOES18/ABI/FD/GEOCOLOR/678x678.jpg"),
-    label: "GOES West",
-    region: "Americas · Pacific",
-  },
-];
 
 function TextLink({ href, children }: { href: string; children: ReactNode }) {
   return (
@@ -154,12 +136,6 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="mt-14 border-t border-[#17252f]/20 pt-10 sm:mt-20 sm:pt-12">
-              <SatelliteDisplay sources={GOES_SOURCES} />
-              <p className="mt-4 max-w-3xl text-xs leading-5 text-[#5b6c72]">
-                Current NOAA GOES full-disk views, shown here as live Earth-system context. These images are not Omni Gridder output.
-              </p>
-            </div>
           </div>
         </section>
 

@@ -32,7 +32,7 @@ export default function Footer() {
               </div>
             </Link>
             <p className="mt-5 text-sm leading-6 text-white/55">
-              Principal-led scientific and technical consulting for weather, Earth systems, geospatial data, applied AI, and practical delivery.
+              Principal-led scientific consulting for weather, Earth systems, and geospatial data — carried through to delivery.
             </p>
           </div>
 
@@ -50,9 +50,6 @@ export default function Footer() {
               </a>
               <a href={CAPABILITY_STATEMENT_REQUEST_HREF} className="text-xs text-white/45 transition hover:text-white">
                 Capability Statement
-              </a>
-              <a href="/omni-gridder" className="text-xs text-white/45 transition hover:text-white">
-                Omni Gridder
               </a>
               <a href="/client/login" className="text-xs text-white/45 transition hover:text-white">
                 Client Portal

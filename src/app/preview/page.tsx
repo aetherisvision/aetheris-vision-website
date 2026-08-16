@@ -40,7 +40,7 @@ export default async function PreviewPage({ searchParams }: PreviewPageProps) {
         <section className="rounded-2xl border border-white/[0.08] bg-[#0d1b2e] p-8 shadow-[0_24px_64px_rgba(0,0,0,0.5)]">
           <h2 className="text-xl font-semibold text-slate-100">Preview access</h2>
           <p className="mt-2 text-sm leading-6 text-white/50">
-            This site remains private while Agentic OG is being prepared for reliable demonstrations and published results.
+            This site remains private while our new consulting site is prepared for launch.
           </p>
 
           <form action="/api/preview/auth" method="post" className="mt-6">

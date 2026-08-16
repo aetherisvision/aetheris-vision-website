@@ -402,7 +402,7 @@ export async function getRegridJobStatus(
       output_uri: `gs://${GCS_STAGING_BUCKET}/demo/regrid/${jobId}/plot.png`,
       params: {
         variable: 'HGT',
-        title: 'Agentic OG — Method Comparison Demo',
+        title: 'Omni Gridder — Method Comparison Demo',
         colormap: 'RdYlBu_r',
         ...(compareUri ? { compare_uri: compareUri } : {}),
         ...(panelUris ? { panel_uris: panelUris } : {}),
