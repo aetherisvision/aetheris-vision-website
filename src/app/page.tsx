@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import QuickContactForm from "@/components/QuickContactForm";
+import SatelliteDisplay, { type SatelliteSource } from "@/components/SatelliteDisplay";
 import { AMS_PROFILE_URL, SITE } from "@/lib/constants";
 
 export const revalidate = 3600;
@@ -13,6 +14,23 @@ export const metadata = {
   description:
     "Applied AI, geospatial data curation, and coordinate reference system transformation for weather and Earth-system work.",
 };
+
+function satelliteImage(url: string) {
+  return `/api/satellite?url=${encodeURIComponent(url)}`;
+}
+
+const GOES_SOURCES: SatelliteSource[] = [
+  {
+    url: satelliteImage("https://cdn.star.nesdis.noaa.gov/GOES16/ABI/FD/GEOCOLOR/678x678.jpg"),
+    label: "GOES East",
+    region: "Americas · Atlantic",
+  },
+  {
+    url: satelliteImage("https://cdn.star.nesdis.noaa.gov/GOES18/ABI/FD/GEOCOLOR/678x678.jpg"),
+    label: "GOES West",
+    region: "Americas · Pacific",
+  },
+];
 
 function TextLink({ href, children }: { href: string; children: ReactNode }) {
   return (
@@ -93,21 +111,38 @@ export default function Home() {
         </section>
 
         <section id="expertise" className="scroll-mt-20 bg-[#fbfaf7] py-20 sm:py-28">
-          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-5 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-24 lg:px-10">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Our Offering</p>
-              <h2 className="mt-5 max-w-xl font-serif text-4xl leading-tight tracking-[-0.025em] text-[#0a1628] sm:text-6xl">
-                Scientific judgment, carried through to delivery
-              </h2>
+          <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-24">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Our Offering</p>
+                <h2 className="mt-5 max-w-xl font-serif text-4xl leading-tight tracking-[-0.025em] text-[#0a1628] sm:text-6xl">
+                  Scientific judgment, carried through to delivery
+                </h2>
+              </div>
+              <div className="border-y border-[#17252f]/20 py-8 sm:py-10">
+                <p className="font-serif text-2xl leading-snug text-[#0a1628] sm:text-3xl">
+                  Projects often reach us where the science and the delivery meet: data need careful preparation, a forecast or model result needs an independent review, or a proven research process needs to work reliably for a broader team.
+                </p>
+                <p className="mt-7 max-w-3xl text-base leading-8 text-[#42565f]">
+                  Aetheris Vision brings meteorological judgment, data engineering, and applied AI together around the result the project needs. One engagement may span analysis, data curation, and software. The scope follows the question—not a preset service package.
+                </p>
+              </div>
             </div>
-            <div className="border-y border-[#17252f]/20 py-8 sm:py-10">
-              <p className="font-serif text-2xl leading-snug text-[#0a1628] sm:text-3xl">
-                Projects often reach us where the science and the delivery meet: data need careful preparation, a forecast or model result needs an independent review, or a proven research process needs to work reliably for a broader team.
-              </p>
-              <p className="mt-7 max-w-3xl text-base leading-8 text-[#42565f]">
-                Aetheris Vision brings meteorological judgment, data engineering, and applied AI together around the result the project needs. One engagement may span analysis, data curation, and software. The scope follows the question—not a preset service package.
-              </p>
-            </div>
+
+            <figure className="mt-14 sm:mt-20">
+              <div className="relative aspect-[21/9] overflow-hidden bg-[#dfe7eb]">
+                <Image
+                  src="/images/home/cta-storm-watch.webp"
+                  alt="Field observation of a Great Plains supercell"
+                  fill
+                  className="object-cover object-center"
+                  sizes="(max-width: 1280px) 100vw, 1216px"
+                />
+              </div>
+              <figcaption className="mt-3 text-xs leading-5 text-[#5b6c72]">
+                Field observation of a Great Plains supercell. Illustrative; not Aetheris Vision personnel.
+              </figcaption>
+            </figure>
           </div>
         </section>
 
@@ -135,29 +170,65 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
 
+        <section className="bg-[#0a1628] py-20 text-white sm:py-24">
+          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-5 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-24 lg:px-10">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7eabca]">Live from Orbit</p>
+              <h2 className="mt-5 max-w-lg font-serif text-4xl leading-tight tracking-[-0.025em] sm:text-5xl">
+                The atmosphere, as it is right now
+              </h2>
+              <p className="mt-6 max-w-lg text-base leading-8 text-white/65">
+                Weather does not wait, and neither does the data. These NOAA GOES views refresh throughout the hour — the same class of live Earth-system data that Aetheris Vision&apos;s consulting, data curation, and applied AI work runs on every day.
+              </p>
+            </div>
+            <div>
+              <SatelliteDisplay sources={GOES_SOURCES} />
+              <p className="mt-4 text-xs leading-5 text-white/45">
+                Live NOAA GOES-East and GOES-West GEOCOLOR full-disk imagery, courtesy NOAA/NESDIS. Refreshes automatically. Not Omni Gridder output.
+              </p>
+            </div>
           </div>
         </section>
 
         <section id="how-we-work" className="scroll-mt-20 bg-[#0a1628] py-20 text-white sm:py-24">
-          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-5 sm:px-8 lg:grid-cols-[0.72fr_1.28fr] lg:gap-24 lg:px-10">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7eabca]">How We Work</p>
-              <h2 className="mt-5 max-w-lg font-serif text-4xl leading-tight tracking-[-0.025em] sm:text-5xl">
-                Direct involvement from first question to final delivery
-              </h2>
+          <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:gap-24">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7eabca]">How We Work</p>
+                <h2 className="mt-5 max-w-lg font-serif text-4xl leading-tight tracking-[-0.025em] sm:text-5xl">
+                  Direct involvement from first question to final delivery
+                </h2>
+              </div>
+              <div className="border-y border-white/25 py-8 sm:py-10">
+                <p className="max-w-3xl font-serif text-2xl leading-snug text-white/95 sm:text-3xl">
+                  We begin with the outcome you need, the data and documentation available, and the practical consequences of error.
+                </p>
+                <p className="mt-6 max-w-3xl text-base leading-8 text-white/65">
+                  We then define the smallest useful scope: an independent review, a focused analysis, a curated dataset, or a working technical delivery. Responsibilities, timing, and commercial terms are agreed before work begins. Marston Ward leads the engagement and remains directly involved through completion.
+                </p>
+                <p className="mt-5 max-w-3xl text-base leading-8 text-white/65">
+                  The workflow developed for each engagement is documented and preserved after delivery, so future reruns do not begin from scratch. Project-specific data acquired for the work and the agreed deliverables belong to the client, subject to source-license terms; at closeout, they are transferred and our working copies are removed under the agreed retention schedule. Longer-term storage, managed reruns, and continuing support can be included in an ongoing service agreement.
+                </p>
+              </div>
             </div>
-            <div className="border-y border-white/25 py-8 sm:py-10">
-              <p className="max-w-3xl font-serif text-2xl leading-snug text-white/95 sm:text-3xl">
-                We begin with the outcome you need, the data and documentation available, and the practical consequences of error.
-              </p>
-              <p className="mt-6 max-w-3xl text-base leading-8 text-white/65">
-                We then define the smallest useful scope: an independent review, a focused analysis, a curated dataset, or a working technical delivery. Responsibilities, timing, and commercial terms are agreed before work begins. Marston Ward leads the engagement and remains directly involved through completion.
-              </p>
-              <p className="mt-5 max-w-3xl text-base leading-8 text-white/65">
-                The workflow developed for each engagement is documented and preserved after delivery, so future reruns do not begin from scratch. Project-specific data acquired for the work and the agreed deliverables belong to the client, subject to source-license terms; at closeout, they are transferred and our working copies are removed under the agreed retention schedule. Longer-term storage, managed reruns, and continuing support can be included in an ongoing service agreement.
-              </p>
-            </div>
+
+            <figure className="mt-12 max-w-3xl sm:mt-16 lg:ml-auto">
+              <div className="relative aspect-[3/2] overflow-hidden bg-[#071425]">
+                <Image
+                  src="/images/about/field-research-balloon.webp"
+                  alt="A radiosonde balloon launch in polar twilight"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 768px"
+                />
+              </div>
+              <figcaption className="mt-3 text-xs leading-5 text-white/45">
+                Upper-air sounding: a radiosonde balloon launch in polar twilight. Illustrative; not Aetheris Vision personnel.
+              </figcaption>
+            </figure>
           </div>
         </section>
 
