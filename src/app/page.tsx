@@ -70,12 +70,12 @@ export default function Home() {
                 </p>
                 <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
                   <a
-                    href="#contact"
+                    href="/book"
                     className="inline-flex min-h-12 items-center justify-center gap-3 bg-[#0a1628] px-7 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#29426c]"
                   >
-                    Start a conversation <ArrowRightIcon className="h-4 w-4" />
+                    Book a consultation <ArrowRightIcon className="h-4 w-4" />
                   </a>
-                  <TextLink href="#how-we-work">How the work begins</TextLink>
+                  <TextLink href="/intake">Submit a project brief</TextLink>
                 </div>
               </div>
 
@@ -311,10 +311,10 @@ export default function Home() {
               </p>
               <div className="mt-8 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
                 <a
-                  href="#contact"
+                  href="/book"
                   className="inline-flex min-h-12 items-center justify-center gap-3 bg-[#0a1628] px-7 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#29426c]"
                 >
-                  Discuss your project <ArrowRightIcon className="h-4 w-4" />
+                  Book a consultation <ArrowRightIcon className="h-4 w-4" />
                 </a>
                 <TextLink href="/about">Meet Marston Ward</TextLink>
               </div>
@@ -325,17 +325,23 @@ export default function Home() {
         <section id="contact" className="scroll-mt-20 bg-[#0a1628] py-20 text-white sm:py-28">
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-5 sm:px-8 lg:grid-cols-[0.78fr_1.22fr] lg:gap-24 lg:px-10">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7eabca]">Start a Conversation</p>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7eabca]">Get Started</p>
               <h2 className="mt-5 max-w-xl font-serif text-4xl leading-tight tracking-[-0.025em] sm:text-6xl">
                 What do you need help deciding or delivering?
               </h2>
               <p className="mt-6 max-w-lg text-base leading-8 text-white/65">
-                Share the outcome you need, the data or system involved, and any timing constraints. A few sentences are enough. Marston Ward reviews every inquiry and typically replies within one business day.
+                Book a time to talk it through directly with Marston Ward, or send a project brief — the outcome you need, the data or system involved, and any timing constraints. Every inquiry is reviewed personally, typically within one business day.
               </p>
-              <p className="mt-7 text-sm text-white/60">
-                Prefer to talk?{" "}
-                <a href="/book" className="font-semibold text-[#9bc3df] underline decoration-[#9bc3df]/40 underline-offset-4 hover:decoration-[#9bc3df]">
-                  Book a consultation.
+              <a
+                href="/book"
+                className="mt-8 inline-flex min-h-12 items-center justify-center gap-3 bg-[#f4f1ea] px-7 text-sm font-semibold text-[#0a1628] transition-colors duration-200 hover:bg-white"
+              >
+                Book a Consultation <ArrowRightIcon className="h-4 w-4" />
+              </a>
+              <p className="mt-6 text-sm text-white/60">
+                Have a defined project already?{" "}
+                <a href="/intake" className="font-semibold text-[#9bc3df] underline decoration-[#9bc3df]/40 underline-offset-4 hover:decoration-[#9bc3df]">
+                  Complete the project intake.
                 </a>
               </p>
             </div>

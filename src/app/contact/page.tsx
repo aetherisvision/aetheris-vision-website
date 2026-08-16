@@ -45,7 +45,7 @@ export default function ContactPage() {
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <FadeIn>
             <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-blue-500">
-              Start a Conversation
+              Project Inquiries
             </p>
             <h1 className="mb-4 max-w-3xl text-3xl font-semibold tracking-tight text-white md:text-5xl">
               Tell us what you&apos;re working on

@@ -109,10 +109,10 @@ export default function ServicesPage() {
                   ))}
                 </div>
                 <a
-                  href="/contact?topic=Consulting%20Inquiry"
+                  href="/book"
                   className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition mt-10"
                 >
-                  Start a conversation <ArrowRightIcon className="h-3.5 w-3.5" />
+                  Book a consultation <ArrowRightIcon className="h-3.5 w-3.5" />
                 </a>
               </div>
             </section>

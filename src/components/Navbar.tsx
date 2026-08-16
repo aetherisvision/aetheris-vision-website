@@ -21,7 +21,7 @@ const navLinks = [
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
-  const contactHref = pathname === "/" ? "/#contact" : "/contact#contact-form";
+  const contactHref = "/book";
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMobileOpen(false), [pathname]);
@@ -95,7 +95,7 @@ export default function Navbar() {
             href={contactHref}
             className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap border border-white/40 px-4 text-xs font-semibold text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-[#0a1628]"
           >
-            Start a conversation
+            Book a Consultation
           </a>
         </div>
 
@@ -140,7 +140,7 @@ export default function Navbar() {
               onClick={() => setMobileOpen(false)}
               className="mt-6 inline-flex min-h-12 items-center justify-center border border-white/40 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-[#0a1628]"
             >
-              Start a conversation
+              Book a Consultation
             </a>
           </nav>
         </div>
