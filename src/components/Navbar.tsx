@@ -9,6 +9,7 @@ import clsx from "clsx";
 import { BRAND_LOGO } from "@/lib/brand";
 
 const navLinks = [
+  { label: "Home", href: "/" },
   { label: "Expertise", href: "/services" },
   { label: "How We Work", href: "/#how-we-work" },
   { label: "Selected Work", href: "/#selected-work" },
@@ -37,6 +38,7 @@ export default function Navbar() {
   }, [mobileOpen]);
 
   function isActive(href: string) {
+    if (href === "/") return pathname === "/";
     if (href === "/blog") return pathname.startsWith("/blog");
     if (href === "/about") return pathname === "/about";
     if (href === "/capabilities") return pathname === "/capabilities";
@@ -79,7 +81,7 @@ export default function Navbar() {
                 href={link.href}
                 aria-current={isActive(link.href) ? "page" : undefined}
                 className={clsx(
-                  "border-b py-1 text-xs font-semibold uppercase tracking-[0.08em] transition-colors duration-200 xl:text-[13px]",
+                  "whitespace-nowrap border-b py-1 text-xs font-semibold uppercase tracking-[0.08em] transition-colors duration-200 xl:text-[13px]",
                   isActive(link.href)
                     ? "border-[#7eabca] text-white"
                     : "border-transparent text-white/60 hover:border-white/30 hover:text-white"

@@ -28,7 +28,7 @@ export default function SatelliteDisplay({ sources }: { sources: SatelliteSource
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-label="Current GOES satellite imagery">
       {sources.map((source, index) => (
-        <figure key={source.url} className="overflow-hidden border border-[#17252f]/20 bg-white">
+        <figure key={source.url} className="overflow-hidden border border-white/20 bg-transparent">
           <div className="relative aspect-square overflow-hidden bg-[#071425]">
             {failed.has(index) ? (
               <div className="flex h-full items-center justify-center px-8 text-center text-sm leading-6 text-[#9bb9ca]">
@@ -46,14 +46,14 @@ export default function SatelliteDisplay({ sources }: { sources: SatelliteSource
                 }}
               />
             )}
-            <span className="absolute left-3 top-3 inline-flex items-center gap-2 bg-[#f4f1ea]/95 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#29426c] shadow-sm">
+            <span className="absolute left-3 top-3 inline-flex items-center gap-2 bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#9bc3df] backdrop-blur">
               <span className="h-1.5 w-1.5 rounded-full bg-[#2f8291]" />
               Current view
             </span>
           </div>
-          <figcaption className="flex items-start justify-between gap-4 border-t border-[#17252f]/15 px-4 py-3">
-            <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#29426c]">{source.label}</span>
-            <span className="text-right text-xs text-[#66777d]">{source.region}</span>
+          <figcaption className="flex items-start justify-between gap-4 border-t border-white/15 px-4 py-3">
+            <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#9bc3df]">{source.label}</span>
+            <span className="text-right text-xs text-white/45">{source.region}</span>
           </figcaption>
         </figure>
       ))}
