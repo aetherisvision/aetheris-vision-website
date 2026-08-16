@@ -215,8 +215,8 @@ Then("they should see an error message with contact instructions", async functio
     );
   });
   assert.ok(
-    form?.container.textContent?.includes("call/text"),
-    "Expected the error message to include a phone contact instruction",
+    form?.container.textContent?.includes("book a call"),
+    "Expected the error message to include a booking instruction",
   );
 });
 
