@@ -419,6 +419,24 @@ export default function OmniGridderDemoPage() {
   //
   // isPlotJob=true means this poll loop is tracking the chained Plot job,
   // not the regrid job — its result renders the map, not a row update.
+  //
+  // Shared give-up path for both timeout sites in pollJob. Honors the same
+  // invariant as the failed/cancelled branches: a chained plot job's fate must
+  // never mark the already-succeeded regrid row as failed.
+  function failPollTimeout(method: RegridMethod, isPlotJob: boolean): void {
+    const message = `Job polling timed out after ${MAX_POLL_ATTEMPTS} attempts`
+    log(message)
+    if (isPlotJob) {
+      setGlobalError(message)
+      updateRow(method, {
+        errorMessage: 'Plot rendering timed out (regrid itself succeeded)',
+        status: 'succeeded',
+      })
+    } else {
+      updateRow(method, { status: 'failed', errorMessage: message, completedAt: Date.now() })
+    }
+  }
+
   async function pollJob(
     jobId: string,
     method: RegridMethod,
@@ -439,9 +457,7 @@ export default function OmniGridderDemoPage() {
       res = await fetch(`/api/admin/omni-gridder/status/${jobId}${qs}`)
     } catch {
       if (attempt >= MAX_POLL_ATTEMPTS) {
-        const message = `Job polling timed out after ${MAX_POLL_ATTEMPTS} attempts`
-        log(message)
-        updateRow(method, { status: 'failed', errorMessage: message, completedAt: Date.now() })
+        failPollTimeout(method, isPlotJob)
         return
       }
       log(`Network error polling ${jobId} — retrying`)
@@ -498,13 +514,23 @@ export default function OmniGridderDemoPage() {
 
     if (data.status === 'cancelled') {
       const message = data.error_message ?? 'Job was cancelled'
-      if (isPlotJob) setGlobalError(message)
-      updateRow(method, {
-        status: 'cancelled',
-        errorMessage: message,
-        completedAt: Date.now(),
-        diagnostics: data.diagnostics,
-      })
+      if (isPlotJob) {
+        // Same invariant as the failed branch above: the regrid already
+        // succeeded, so a cancelled plot job must not overwrite the row's
+        // status, completedAt, or diagnostics.
+        setGlobalError(message)
+        updateRow(method, {
+          errorMessage: 'Plot job was cancelled (regrid itself succeeded)',
+          status: 'succeeded',
+        })
+      } else {
+        updateRow(method, {
+          status: 'cancelled',
+          errorMessage: message,
+          completedAt: Date.now(),
+          diagnostics: data.diagnostics,
+        })
+      }
       return
     }
 
@@ -555,14 +581,16 @@ export default function OmniGridderDemoPage() {
       return
     }
 
-    if (!isPlotJob) {
-      updateRow(method, { status: data.status })
-    }
     if (attempt >= MAX_POLL_ATTEMPTS) {
-      const message = `Job polling timed out after ${MAX_POLL_ATTEMPTS} attempts`
-      log(message)
-      updateRow(method, { status: 'failed', errorMessage: message, completedAt: Date.now() })
+      failPollTimeout(method, isPlotJob)
       return
+    }
+    if (!isPlotJob) {
+      // Clamp to the known non-terminal statuses: a version-skewed backend
+      // emitting anything else (e.g. the retired 'processing') would leave the
+      // row on an unknown status, flip isRunning false mid-poll, and re-enable
+      // the Run buttons while this loop is still going.
+      updateRow(method, { status: data.status === 'running' ? 'running' : 'queued' })
     }
     pollTimers.current.set(
       jobId,

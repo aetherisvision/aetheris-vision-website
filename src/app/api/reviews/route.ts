@@ -13,6 +13,7 @@ import {
   RequestSecurityError,
 } from '@/lib/request-security'
 import { TURNSTILE_ACTIONS, verifyTurnstileToken } from '@/lib/turnstile'
+import { escapeHtml } from '@/lib/escape-html'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -31,15 +32,6 @@ const ALLOWED_BODY_KEYS = new Set([
   'turnstileToken',
   '_gotcha',
 ])
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
 
 function noStoreJson(body: unknown, init?: ResponseInit) {
   const response = NextResponse.json(body, init)

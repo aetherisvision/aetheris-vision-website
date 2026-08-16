@@ -1,45 +1,47 @@
 import { sql } from '@/lib/db'
 import { isAdmin, safeEqual, unauthorizedResponse } from '@/lib/admin-auth'
+import { clearStateCookie, stateCookieName } from '@/lib/gmail-oauth'
 import { NextRequest, NextResponse } from 'next/server'
-
-const GMAIL_OAUTH_STATE_COOKIE = 'av-gmail-oauth-state'
-
-function clearStateCookie(response: NextResponse): NextResponse {
-  response.cookies.delete(GMAIL_OAUTH_STATE_COOKIE)
-  return response
-}
 
 export async function GET(request: NextRequest) {
   if (!isAdmin(request)) return unauthorizedResponse()
 
   const { searchParams } = request.nextUrl
   const code = searchParams.get('code')
+  const error = searchParams.get('error')
   const stateParts = (searchParams.get('state') ?? '').split(':')
   const [account, nonce] = stateParts
-  const error = searchParams.get('error')
-  const storedNonce = request.cookies.get(GMAIL_OAUTH_STATE_COOKIE)?.value
 
   const origin = request.nextUrl.origin
 
-  if (
-    stateParts.length !== 2 ||
-    (account !== 'biz' && account !== 'per') ||
-    !safeEqual(nonce, storedNonce)
-  ) {
+  if (account !== 'biz' && account !== 'per') {
+    return NextResponse.redirect(`${origin}/admin/gmail?error=invalid_state`)
+  }
+
+  // Google reports user-denied consent (and similar) with no code. No token
+  // exchange happens on this path, so surface it before the nonce check — an
+  // expired state cookie must not turn a plain "Cancel" into a dead end.
+  if (error || !code) {
     return clearStateCookie(
-      NextResponse.json({ error: 'Invalid OAuth state' }, { status: 403 })
+      NextResponse.redirect(
+        `${origin}/admin/gmail?error=${encodeURIComponent(error ?? 'invalid')}`
+      ),
+      account
     )
   }
 
-  if (error || !code) {
+  const storedNonce = request.cookies.get(stateCookieName(account))?.value
+  if (stateParts.length !== 2 || !safeEqual(nonce, storedNonce)) {
     return clearStateCookie(
-      NextResponse.redirect(`${origin}/admin/gmail?error=${error ?? 'invalid'}`)
+      NextResponse.redirect(`${origin}/admin/gmail?error=invalid_state`),
+      account
     )
   }
 
   if (!process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_CLIENT_SECRET) {
     return clearStateCookie(
-      NextResponse.redirect(`${origin}/admin/gmail?error=missing_gmail_client_config`)
+      NextResponse.redirect(`${origin}/admin/gmail?error=missing_gmail_client_config`),
+      account
     )
   }
 
@@ -60,7 +62,8 @@ export async function GET(request: NextRequest) {
 
   if (!tokens.refresh_token) {
     return clearStateCookie(
-      NextResponse.redirect(`${origin}/admin/gmail?error=no_refresh_token`)
+      NextResponse.redirect(`${origin}/admin/gmail?error=no_refresh_token`),
+      account
     )
   }
 
@@ -84,6 +87,7 @@ export async function GET(request: NextRequest) {
   `
 
   return clearStateCookie(
-    NextResponse.redirect(`${origin}/admin/gmail?connected=${account}`)
+    NextResponse.redirect(`${origin}/admin/gmail?connected=${account}`),
+    account
   )
 }

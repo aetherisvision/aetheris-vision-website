@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 import { sql } from '@/lib/db'
+import { escapeHtml as escHtml } from '@/lib/escape-html'
 import { marked } from 'marked'
 import DOMPurify from 'isomorphic-dompurify'
 
@@ -203,12 +204,3 @@ export async function GET(
   })
 }
 
-/** Escape HTML special characters to prevent XSS in string interpolation */
-function escHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-}

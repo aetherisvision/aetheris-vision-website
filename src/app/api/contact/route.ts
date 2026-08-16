@@ -24,6 +24,7 @@ import {
   PublicSubmissionGuardError,
 } from "@/lib/public-submission-guard";
 import { TURNSTILE_ACTIONS, verifyTurnstileToken } from "@/lib/turnstile";
+import { escapeHtml } from "@/lib/escape-html";
 
 const FROM_ADDRESS = `${SITE.name} <system@aetherisvision.com>`;
 const MAX_BODY_BYTES = 16 * 1024;
@@ -172,15 +173,6 @@ function validateBody(parsed: unknown): ContactSubmission {
     verificationCode,
     honeypot,
   };
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 function publicSecurityError(error: RequestSecurityError) {

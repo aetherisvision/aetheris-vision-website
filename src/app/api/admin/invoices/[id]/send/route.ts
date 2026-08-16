@@ -9,6 +9,7 @@ import {
 } from '@/lib/crm'
 import { sql } from '@/lib/db'
 import { stripe } from '@/lib/stripe'
+import { escapeHtml } from '@/lib/escape-html'
 
 export const dynamic = 'force-dynamic'
 
@@ -106,15 +107,6 @@ function validatedInvoiceUrl(value: string | null | undefined): string {
     throw new DeliveryError(502, 'Stripe returned an invalid hosted invoice URL')
   }
   return parsed.toString()
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
 }
 
 function emailHtml(inv: InvoiceDeliveryRow, amount: string, invoiceUrl: string): string {

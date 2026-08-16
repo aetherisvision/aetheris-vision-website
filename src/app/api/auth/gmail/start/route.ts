@@ -1,9 +1,9 @@
 import crypto from 'crypto'
 import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
+import { setStateCookie } from '@/lib/gmail-oauth'
 import { NextRequest, NextResponse } from 'next/server'
 
 const SCOPE = 'https://www.googleapis.com/auth/gmail.readonly openid email'
-const GMAIL_OAUTH_STATE_COOKIE = 'av-gmail-oauth-state'
 
 export async function GET(request: NextRequest) {
   if (!isAdmin(request)) return unauthorizedResponse()
@@ -44,23 +44,8 @@ export async function GET(request: NextRequest) {
       authUrl,
       hint: 'Ensure redirectUri is listed under Google Cloud → APIs & Services → Credentials → OAuth 2.0 Client IDs → Authorized redirect URIs.',
     })
-    response.cookies.set(GMAIL_OAUTH_STATE_COOKIE, nonce, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 10 * 60,
-      path: '/',
-    })
-    return response
+    return setStateCookie(response, request, account, nonce)
   }
 
-  const response = NextResponse.redirect(authUrl)
-  response.cookies.set(GMAIL_OAUTH_STATE_COOKIE, nonce, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'lax',
-    maxAge: 10 * 60,
-    path: '/',
-  })
-  return response
+  return setStateCookie(NextResponse.redirect(authUrl), request, account, nonce)
 }

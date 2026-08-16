@@ -81,12 +81,12 @@ export async function proxy(request: NextRequest) {
   // prepared for launch. A signed cookie avoids browser-native
   // Basic Auth dialogs, which do not work consistently in embedded browsers.
   // /admin/* retains its separate passphrase gate below.
+  // Every handler under /api/auth/gmail/ enforces isAdmin itself, so the whole
+  // prefix bypasses the site lock — new routes there must keep that guarantee.
   const isPreviewAccessRoute =
     pathname === '/preview' ||
     pathname === '/api/preview/auth' ||
-    pathname === '/api/auth/gmail/callback' ||
-    pathname === '/api/auth/gmail/start' ||
-    pathname === '/api/auth/gmail/status'
+    pathname.startsWith('/api/auth/gmail/')
   if (
     process.env.PREVIEW_PASSWORD &&
     !pathname.startsWith('/admin') &&

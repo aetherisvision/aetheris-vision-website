@@ -18,7 +18,7 @@ const companyData: { label: string; value: ReactNode }[] = [
   { label: "Primary NAICS", value: `${SAM.naicsPrimary}: Scientific & Technical Consulting` },
   {
     label: "Certifications",
-    value: "SDVOSB/VOSB eligible; SBA VetCert pending. HUBZone eligible; certification pending.",
+    value: SAM.setAsidePills.join(". "),
   },
   { label: "Security Clearance", value: "Active U.S. Government Secret, held by principal" },
   {
@@ -92,8 +92,7 @@ const competencies = [
     title: "Federal Registrations",
     items: [
       `SAM.gov registered: UEI ${SAM.uei}, CAGE ${SAM.cage}`,
-      "SDVOSB/VOSB eligible; SBA VetCert application pending",
-      "HUBZone eligible; certification pending",
+      ...SAM.setAsidePills,
       "Oklahoma Supplier Portal: state-level contracting access (registration in progress)",
       "Active U.S. Government Secret clearance held by the principal",
     ],
