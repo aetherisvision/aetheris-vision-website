@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRightIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import Footer from "@/components/Footer";
@@ -101,6 +102,19 @@ export default function WeatherAiPage() {
                 </span>
               ))}
             </div>
+            <figure className="mt-12 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+              <Image
+                src="/images/weather-ai/ai-weather-analysis-gemini-1024x559.png"
+                alt="Concept illustration of a robotic AI system analyzing hurricane forecast data in a meteorology operations center"
+                width={1024}
+                height={559}
+                sizes="(min-width: 1152px) 1088px, calc(100vw - 40px)"
+                className="h-auto w-full object-cover"
+              />
+              <figcaption className="border-t border-white/10 px-5 py-3 text-xs leading-5 text-gray-500">
+                Concept illustration of AI-assisted weather analysis. Image source: AI-generated with Google Gemini.
+              </figcaption>
+            </figure>
           </div>
         </header>
 

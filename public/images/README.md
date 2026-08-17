@@ -123,6 +123,12 @@ imgix params (`fm=webp&q=55–75`), then served through `next/image`.
 
 These assets are generated custom high-fidelity `.webp` images to ensure professional, realistic, and cohesive visuals across Aetheris Vision and its demo sites.
 
+### weather-ai/ — Weather AI service page
+
+| File | Shows | Source |
+|---|---|---|
+| `ai-weather-analysis-gemini-1024x559.png` | Concept illustration of a robotic AI system analyzing hurricane forecast data | AI-generated with Google Gemini; supplied by Aetheris Vision |
+
 ### home/ & competencies/ — Homepage backgrounds
 - `hero-earth.webp` - Cinematic view of Earth at night with glowing satellite tracks.
 - `philosophy-atmosphere.webp` - Atmospheric limb sunrise from space.
@@ -148,4 +154,3 @@ These assets are generated custom high-fidelity `.webp` images to ensure profess
 - `contractor/contractor_hero_construction_1920x1080.webp/.jpg` - Beautiful luxury home under construction.
 - `healthcare/healthcare_hero_clinic_1920x1080.webp/.jpg` - Modern reception lobby.
 - `healthcare/healthcare_team_portrait_800x600.webp/.jpg` - Professional portrait of Dr. Sarah Okonkwo.
-
