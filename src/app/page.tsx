@@ -59,7 +59,7 @@ export default function Home() {
                   Aetheris Vision LLC
                 </p>
                 <h1 className="max-w-5xl font-serif text-[clamp(2.5rem,5.4vw,5rem)] leading-[0.98] tracking-[-0.04em] text-[#0a1628]">
-                  Applied Meteorology, Weather AI &amp; Geospatial Systems
+                  Weather AI &amp; Geospatial Systems
                 </h1>
                 <p className="mt-8 max-w-3xl text-base font-semibold uppercase leading-7 tracking-[0.08em] text-[#344852] sm:text-lg">
                   AI Weather Forecasting <span aria-hidden="true" className="px-1 text-[#7eabca]">|</span>{" "}
@@ -117,7 +117,7 @@ export default function Home() {
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Our Offering</p>
                 <h2 className="mt-5 max-w-xl font-serif text-4xl leading-tight tracking-[-0.025em] text-[#0a1628] sm:text-6xl">
-                  Scientific expertise carried through to delivery
+                  Science to Delivery
                 </h2>
               </div>
               <div className="border-y border-[#17252f]/20 py-8 sm:py-10">
@@ -157,7 +157,7 @@ export default function Home() {
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Project-Ready Data</p>
                 <h2 className="mt-5 max-w-lg font-serif text-4xl leading-tight tracking-[-0.025em] text-[#0a1628] sm:text-5xl">
-                  GIS and geospatial regridding for difficult Earth data
+                  Geospatial Data, Ready for Use
                 </h2>
               </div>
               <div>
@@ -184,7 +184,7 @@ export default function Home() {
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7eabca]">Live from Orbit</p>
               <h2 className="mt-5 max-w-lg font-serif text-4xl leading-tight tracking-[-0.025em] sm:text-5xl">
-                The atmosphere, as it is right now
+                The Atmosphere, Now
               </h2>
               <p className="mt-6 max-w-lg text-base leading-8 text-white/65">
                 Weather does not wait, and neither does the data. These NOAA GOES views refresh throughout the hour — the same class of live Earth-system data that Aetheris Vision&apos;s consulting, data curation, and applied AI work runs on every day.
@@ -205,7 +205,7 @@ export default function Home() {
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7eabca]">How We Work</p>
                 <h2 className="mt-5 max-w-lg font-serif text-4xl leading-tight tracking-[-0.025em] sm:text-5xl">
-                  Focused support from scope through delivery
+                  From Scope to Delivery
                 </h2>
               </div>
               <div className="border-y border-white/25 py-8 sm:py-10">
@@ -309,7 +309,7 @@ export default function Home() {
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Your Project</p>
               <h2 className="mt-5 max-w-xl font-serif text-3xl leading-tight text-[#0a1628] sm:text-4xl">
-                How can Aetheris Vision help your project succeed?
+                Need Specialist Support?
               </h2>
               <p className="mt-7 max-w-xl text-base leading-8 text-[#42565f]">
                 Tell us where specialist support would make the greatest difference. Aetheris Vision takes on focused scientific and technical work to help your project move forward efficiently and on schedule.
@@ -332,7 +332,7 @@ export default function Home() {
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7eabca]">General Contact</p>
               <h2 className="mt-5 max-w-xl font-serif text-4xl leading-tight tracking-[-0.025em]">
-                Comments and general questions
+                General Questions
               </h2>
               <p className="mt-6 max-w-lg text-base leading-8 text-white/65">
                 Use this form for comments, general questions, or website matters. Aetheris Vision typically replies within one business day.

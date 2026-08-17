@@ -48,9 +48,9 @@ export default function PortfolioPage() {
 
           <FadeIn delay={0.15}>
             <h1 className="text-4xl md:text-6xl font-semibold tracking-tighter text-white mb-6 leading-[1.1]">
-              A Professional Website,<br />
+              Professional Websites,<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">
-                Delivered in Weeks, Not Months.
+                Delivered Fast.
               </span>
             </h1>
           </FadeIn>
@@ -103,7 +103,7 @@ export default function PortfolioPage() {
           {/* ── Pricing ── */}
           <FadeIn>
             <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Pricing</p>
-            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">Simple, Flat-Rate Packages</h2>
+            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">Simple Packages</h2>
             <p className="text-gray-400 mb-12 max-w-xl">No hourly billing surprises. You know the price before work begins.</p>
           </FadeIn>
 
@@ -170,7 +170,7 @@ export default function PortfolioPage() {
           {/* ── SLA ── */}
           <FadeIn>
             <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Service Commitments</p>
-            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">What You Can Count On</h2>
+            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">What You Get</h2>
             <p className="text-gray-400 mb-10 max-w-xl">These are commitments, not estimates.</p>
           </FadeIn>
 
@@ -188,7 +188,7 @@ export default function PortfolioPage() {
           {/* ── Security & Backup ── */}
           <FadeIn>
             <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Security &amp; Backup</p>
-            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">Your Site Stays Up, Guaranteed</h2>
+            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">Built to Stay Online</h2>
             <p className="text-gray-400 mb-12 max-w-xl">
               Every build includes production-grade security, automated backups, and a recovery plan. If your site goes down, turnaround is measured in hours, not weeks.
             </p>
@@ -221,7 +221,7 @@ export default function PortfolioPage() {
           {/* ── Every Site Includes ── */}
           <FadeIn>
             <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Included With Every Site</p>
-            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">More Than Just a Pretty Page</h2>
+            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">More Than a Website</h2>
             <p className="text-gray-400 mb-12 max-w-xl">
               Every build comes loaded with features that agencies charge extra for. Performance, legal compliance, SEO markup, and social media polish, all included.
             </p>
@@ -243,7 +243,7 @@ export default function PortfolioPage() {
           <div id="demos">
             <FadeIn>
               <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Client Work</p>
-              <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">In Production for a Real Client</h2>
+              <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">Live Client Work</h2>
             </FadeIn>
           </div>
 
@@ -288,7 +288,7 @@ export default function PortfolioPage() {
           <div>
             <FadeIn>
               <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Example Builds</p>
-              <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">Demo Sites We Built to Show Range</h2>
+              <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">Designs Across Industries</h2>
               <p className="text-gray-400 mb-12 max-w-xl">
                 These are demo sites we built ourselves to show range across industries and styles, not client work or case studies. The businesses shown are illustrative examples, not real clients. Each demo is a fully functional page; click through and explore the craft.
               </p>
@@ -337,7 +337,7 @@ export default function PortfolioPage() {
           {/* ── WordPress Services ── */}
           <FadeIn>
             <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">WordPress Services</p>
-            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">We Handle WordPress Clients Too</h2>
+            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">WordPress, Too</h2>
             <p className="text-gray-400 mb-12 max-w-xl">
               Already on WordPress, or need to be? Two service paths: a fast, modern headless stack or a fully managed hands-off setup.
             </p>
@@ -383,7 +383,7 @@ export default function PortfolioPage() {
           {/* ── Maintenance Plans ── */}
           <FadeIn>
             <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Ongoing Support</p>
-            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">Keep Your Site Running Smoothly</h2>
+            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">Ongoing Site Support</h2>
             <p className="text-gray-400 mb-12 max-w-xl">
               Optional monthly retainers for businesses that want ongoing updates, monitoring, and peace of mind. Cancel anytime.
             </p>

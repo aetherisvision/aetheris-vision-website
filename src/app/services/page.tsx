@@ -73,7 +73,7 @@ export default function ServicesPage() {
             <FadeIn>
               <div className="max-w-3xl">
                 <h1 className="text-4xl md:text-6xl font-semibold text-white tracking-tight mb-6 leading-[1.1]">
-                  Weather AI, GIS, and geospatial consulting
+                  Weather AI &amp; Geospatial Consulting
                 </h1>
                 <p className="text-lg text-gray-400 font-light leading-relaxed">
                   Aetheris Vision brings applied meteorology, AI weather forecasting, GIS, geospatial regridding, and scientific software together around the result each engagement needs—supported by tools we build in-house when the problem calls for them.
@@ -88,7 +88,7 @@ export default function ServicesPage() {
               <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8 md:p-12">
                 <div className="border-b border-white/15 pb-3 mb-6">
                   <h2 id="sec-consulting" className="text-lg font-semibold text-white tracking-tight uppercase">
-                    Scientific Software &amp; Earth-Data Consulting
+                    Scientific &amp; Earth-Data Systems
                   </h2>
                 </div>
                 <p className="max-w-2xl text-gray-400 font-light leading-relaxed mb-10">

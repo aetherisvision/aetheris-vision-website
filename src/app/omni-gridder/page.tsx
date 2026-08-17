@@ -24,7 +24,7 @@ export default function OmniGridderPage() {
                 Aetheris Vision Consulting
               </Link>
               <p className="mt-8 text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Featured Example</p>
-              <h1 className="mt-4 font-serif text-[clamp(3.4rem,8vw,7rem)] leading-[0.92] tracking-[-0.05em] text-[#0a1628]">Geospatial Regridding with Omni Gridder</h1>
+              <h1 className="mt-4 font-serif text-[clamp(3.4rem,8vw,7rem)] leading-[0.92] tracking-[-0.05em] text-[#0a1628]">Omni Gridder</h1>
               <p className="mt-8 max-w-3xl text-xl leading-9 text-[#344852]">
                 A preview of a more disciplined GIS workflow for transforming weather and Earth-system data across mismatched grids, coordinate reference systems, resolutions, and observation geometries.
               </p>
@@ -73,7 +73,7 @@ export default function OmniGridderPage() {
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Before Omni Gridder</p>
               <h2 id="legacy-workflow-heading" className="mt-5 font-serif text-4xl tracking-[-0.025em] text-[#0a1628] sm:text-6xl">
-                Too much of the work happened between the tools
+                Where Regridding Breaks
               </h2>
             </div>
             <div className="lg:pt-12">
@@ -92,7 +92,7 @@ export default function OmniGridderPage() {
             <div className="grid grid-cols-1 gap-7 border-b border-[#17252f]/20 pb-9 lg:grid-cols-[0.75fr_1.25fr] lg:items-end">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Coordinate Geometry</p>
-                <h2 id="comparison-heading" className="mt-5 font-serif text-4xl tracking-[-0.025em] text-[#0a1628] sm:text-6xl">Preserving meaning as the geometry changes</h2>
+                <h2 id="comparison-heading" className="mt-5 font-serif text-4xl tracking-[-0.025em] text-[#0a1628] sm:text-6xl">Preserve Meaning Across Grids</h2>
               </div>
               <p className="max-w-2xl text-base leading-7 text-[#4b5d64] lg:justify-self-end">
                 This controlled geospatial regridding example holds the synthetic field constant while its geometry changes. It reveals the challenge Omni Gridder is designed to solve—not the production logic behind the result.
@@ -108,7 +108,7 @@ export default function OmniGridderPage() {
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-5 sm:px-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end lg:px-10">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#7eabca]">Aetheris Vision</p>
-              <h2 className="mt-5 max-w-4xl font-serif text-4xl leading-tight tracking-[-0.03em] sm:text-6xl">Bring us a different scientific data problem</h2>
+              <h2 className="mt-5 max-w-4xl font-serif text-4xl leading-tight tracking-[-0.03em] sm:text-6xl">Have a Different Data Problem?</h2>
               <p className="mt-6 max-w-2xl text-base leading-7 text-white/65">
                 Omni Gridder is one example. If data preparation, model interpretation, or a fragile scientific workflow is slowing your project, tell us what the finished result needs to do. Project workflows are documented for future reruns, while client data are transferred or removed under the agreed retention terms.
               </p>

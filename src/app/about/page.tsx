@@ -96,7 +96,7 @@ export default function AboutPage() {
                 About Aetheris Vision
               </p>
               <h1 className="mb-6 font-serif text-4xl leading-[1.08] tracking-tight text-white md:text-6xl">
-                Principal-led consulting for difficult environmental and technical work
+                Principal-Led Technical Consulting
               </h1>
               <p className="max-w-3xl text-lg font-light leading-relaxed text-gray-400">
                 Aetheris Vision combines operational weather judgment, Earth-system and geospatial
@@ -244,7 +244,7 @@ export default function AboutPage() {
             <section className="max-w-3xl border-t border-white/10 pt-12">
               <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-blue-500">Our Name</p>
               <h2 className="mb-5 font-serif text-2xl tracking-tight text-white md:text-3xl">
-                The Meaning Behind <em className="text-gray-400">Aetheris</em>
+                Why <em className="text-gray-400">Aetheris</em>?
               </h2>
               <p className="font-light leading-relaxed text-gray-400">
                 Derived from the Latin <em className="text-white">aether</em>, the bright upper air,

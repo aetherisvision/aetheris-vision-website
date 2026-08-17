@@ -89,7 +89,7 @@ export default function GeospatialRegriddingPage() {
               GIS &amp; Earth-Data Transformation
             </p>
             <h1 className="mt-5 max-w-5xl font-serif text-4xl leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl">
-              GIS and geospatial regridding services
+              Geospatial Regridding
             </h1>
             <p className="mt-7 max-w-3xl text-lg font-light leading-8 text-gray-400 sm:text-xl">
               Transform weather, climate, satellite, and environmental data across coordinate systems, grids, resolutions, and scientific formats—without losing the physical meaning that makes the data useful.
@@ -109,7 +109,7 @@ export default function GeospatialRegriddingPage() {
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-400">Capabilities</p>
               <h2 id="capabilities-heading" className="mt-4 font-serif text-3xl leading-tight text-white sm:text-5xl">
-                From source grid to analysis-ready data
+                Analysis-Ready Data
               </h2>
               <p className="mt-6 text-base font-light leading-7 text-gray-400">
                 The correct GIS operation depends on the variable, geometry, intended use, and acceptable error. Every engagement begins with those constraints.
@@ -131,7 +131,7 @@ export default function GeospatialRegriddingPage() {
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#7eabca]">Where it applies</p>
               <h2 className="mt-4 font-serif text-3xl leading-tight text-white sm:text-5xl">
-                GIS work built for weather and Earth-system science
+                GIS for Earth Science
               </h2>
               <p className="mt-6 max-w-xl font-light leading-7 text-white/65">
                 Generic GIS tools can move pixels and coordinates. Scientific regridding also has to respect units, masks, categories, conservation, time, vertical coordinates, and the assumptions behind the source field.
@@ -152,7 +152,7 @@ export default function GeospatialRegriddingPage() {
           <div className="grid gap-8 rounded-2xl border border-blue-500/20 bg-blue-500/[0.05] p-7 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-400">See the approach</p>
-              <h2 className="mt-4 font-serif text-3xl text-white sm:text-4xl">A geospatial regridding problem, made visible</h2>
+              <h2 className="mt-4 font-serif text-3xl text-white sm:text-4xl">See Regridding in Action</h2>
               <p className="mt-4 max-w-2xl font-light leading-7 text-gray-400">
                 Omni Gridder demonstrates how the same synthetic meteorological field changes geometry while its scientific meaning is preserved.
               </p>

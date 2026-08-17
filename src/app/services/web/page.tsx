@@ -104,7 +104,7 @@ export default function WebServicesPage() {
             <h1 className="text-4xl md:text-6xl font-semibold text-white tracking-tight mb-6 leading-[1.1]">
               Custom Websites<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-500">
-                Built for Your Business.
+                For Your Business.
               </span>
             </h1>
             <p className="max-w-2xl text-lg text-gray-400 font-light leading-relaxed mb-10">
@@ -201,7 +201,7 @@ export default function WebServicesPage() {
               <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-6 sm:p-8 md:p-12">
                 <p className="text-xs font-semibold tracking-widest text-blue-500 uppercase mb-4">Who builds your site</p>
                 <h2 className="text-2xl md:text-3xl font-semibold text-white mb-4">
-                  You work directly with the founder, not a junior dev or an overseas team.
+                  Work Directly with the Founder
                 </h2>
                 <p className="text-gray-400 font-light leading-relaxed max-w-2xl mb-6">
                   The founder and lead engineer of Aetheris Vision writes and ships the code himself, drawing on a PhD in atmospheric and environmental science, service as a USAF veteran, and a U.S. Government Secret clearance held across military and civilian assignments — a background built on systems that have to work under pressure. When you hire us, you get one experienced engineer from start to finish.

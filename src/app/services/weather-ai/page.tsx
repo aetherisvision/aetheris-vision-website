@@ -90,7 +90,7 @@ export default function WeatherAiPage() {
               Applied Meteorology &amp; AI/ML
             </p>
             <h1 className="mt-5 max-w-5xl font-serif text-4xl leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl">
-              AI weather forecasting and meteorology consulting
+              Weather AI &amp; Meteorology
             </h1>
             <p className="mt-7 max-w-3xl text-lg font-light leading-8 text-gray-400 sm:text-xl">
               Scientific guidance and working technical delivery for organizations evaluating, building, or operating AI/ML weather systems—from data and baselines through verification, uncertainty, and production use.
@@ -123,7 +123,7 @@ export default function WeatherAiPage() {
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-400">Capabilities</p>
               <h2 id="weather-ai-capabilities" className="mt-4 font-serif text-3xl leading-tight text-white sm:text-5xl">
-                Weather science carried through the AI lifecycle
+                Weather Science for AI
               </h2>
               <p className="mt-6 text-base font-light leading-7 text-gray-400">
                 A model can score well and still fail the forecast situation, geography, lead time, or operational decision that matters. Domain judgment stays connected to the engineering.
@@ -145,7 +145,7 @@ export default function WeatherAiPage() {
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#7eabca]">How we evaluate weather AI</p>
               <h2 className="mt-4 font-serif text-3xl leading-tight text-white sm:text-5xl">
-                Useful forecasts require more than a headline accuracy score
+                Beyond Forecast Accuracy
               </h2>
               <p className="mt-6 max-w-xl font-light leading-7 text-white/65">
                 Modern AI weather forecasting can be powerful, but it still depends on the training data, reference analysis, grid, loss function, verification design, and conditions outside the model&apos;s strongest regime.
@@ -166,7 +166,7 @@ export default function WeatherAiPage() {
           <div className="grid gap-8 rounded-2xl border border-blue-500/20 bg-blue-500/[0.05] p-7 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-400">The geospatial connection</p>
-              <h2 className="mt-4 font-serif text-3xl text-white sm:text-4xl">Weather AI begins with correctly aligned data</h2>
+              <h2 className="mt-4 font-serif text-3xl text-white sm:text-4xl">Aligned Data First</h2>
               <p className="mt-4 max-w-2xl font-light leading-7 text-gray-400">
                 Training, inference, and verification often require regridding model fields, observations, and targets across different coordinate systems and resolutions.
               </p>
