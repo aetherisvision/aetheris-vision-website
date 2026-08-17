@@ -58,7 +58,7 @@ export default function Home() {
                 <p className="mb-6 text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">
                   Aetheris Vision LLC
                 </p>
-                <h1 className="max-w-5xl font-serif text-[clamp(3.2rem,7.1vw,6.8rem)] leading-[0.94] tracking-[-0.045em] text-[#0a1628]">
+                <h1 className="max-w-5xl font-serif text-[clamp(2.5rem,5.4vw,5rem)] leading-[0.98] tracking-[-0.04em] text-[#0a1628]">
                   Applied Meteorology, Weather AI &amp; Geospatial Systems
                 </h1>
                 <p className="mt-8 max-w-3xl text-base font-semibold uppercase leading-7 tracking-[0.08em] text-[#344852] sm:text-lg">
