@@ -135,17 +135,27 @@ export default function Home() {
             </div>
 
             <figure className="mt-14 sm:mt-20">
-              <div className="relative aspect-[21/9] overflow-hidden bg-[#dfe7eb]">
-                <Image
-                  src="/images/home/cta-storm-watch.webp"
-                  alt="Field observation of a Great Plains supercell"
-                  fill
-                  className="object-cover object-center"
-                  sizes="(max-width: 1280px) 100vw, 1216px"
-                />
-              </div>
+              <a
+                href="/services/weather-ai"
+                aria-label="Explore Weather AI and meteorology services"
+                className="group block overflow-hidden bg-[#dfe7eb]"
+              >
+                <div className="relative aspect-[1024/559] overflow-hidden">
+                  <Image
+                    src="/images/weather-ai/ai-weather-analysis-gemini-1024x559.png"
+                    alt="Concept illustration of a robotic AI system analyzing hurricane forecast data in a meteorology operations center"
+                    fill
+                    className="object-cover object-center transition duration-500 group-hover:scale-[1.015]"
+                    sizes="(max-width: 1280px) 100vw, 1216px"
+                  />
+                </div>
+              </a>
               <figcaption className="mt-3 text-xs leading-5 text-[#5b6c72]">
-                Field observation of a Great Plains supercell. Illustrative; not Aetheris Vision personnel.
+                Concept illustration of AI-assisted weather analysis. AI-generated with Google Gemini.{" "}
+                <a href="/services/weather-ai" className="font-semibold text-[#29426c] hover:underline">
+                  Explore Weather AI services
+                </a>
+                .
               </figcaption>
             </figure>
           </div>
