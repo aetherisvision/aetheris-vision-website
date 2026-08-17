@@ -40,6 +40,26 @@ describe("Regression: sitemap completeness", () => {
     const urls = sitemap().map((e) => e.url);
     expect(urls).toContain(`${SITE.url}/blog`);
   });
+
+  it("sitemap includes focused weather AI and geospatial service pages", async () => {
+    const { default: sitemap } = await import("@/app/sitemap");
+    const urls = sitemap().map((e) => e.url);
+    expect(urls).toContain(`${SITE.url}/services/weather-ai`);
+    expect(urls).toContain(`${SITE.url}/services/geospatial-regridding`);
+  });
+});
+
+describe("Regression: structured service topics", () => {
+  it("describes the core weather AI, GIS, and regridding expertise", async () => {
+    const { organizationJsonLd } = await import("@/lib/jsonld");
+    expect(organizationJsonLd.knowsAbout).toEqual(
+      expect.arrayContaining([
+        "AI weather forecasting",
+        "Geographic information systems (GIS)",
+        "Geospatial regridding",
+      ]),
+    );
+  });
 });
 
 describe("Regression: robots.txt", () => {

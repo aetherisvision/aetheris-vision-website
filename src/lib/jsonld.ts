@@ -15,6 +15,46 @@ export const organizationJsonLd = {
   logo: SITE.logoUrl,
   description: SITE.description,
   sameAs: SAME_AS,
+  knowsAbout: [
+    "Applied meteorology",
+    "AI weather forecasting",
+    "Numerical weather prediction",
+    "Geographic information systems (GIS)",
+    "Geospatial regridding",
+    "Coordinate reference system transformation",
+    "Earth-system data",
+    "Scientific data pipelines",
+  ],
+  hasOfferCatalog: {
+    "@type": "OfferCatalog" as const,
+    name: "Scientific and technical consulting services",
+    itemListElement: [
+      {
+        "@type": "Offer" as const,
+        itemOffered: {
+          "@type": "Service" as const,
+          name: "AI weather forecasting and applied meteorology consulting",
+          url: `${SITE.url}/services/weather-ai`,
+        },
+      },
+      {
+        "@type": "Offer" as const,
+        itemOffered: {
+          "@type": "Service" as const,
+          name: "GIS and geospatial regridding services",
+          url: `${SITE.url}/services/geospatial-regridding`,
+        },
+      },
+      {
+        "@type": "Offer" as const,
+        itemOffered: {
+          "@type": "Service" as const,
+          name: "Scientific software and Earth-data pipelines",
+          url: `${SITE.url}/services`,
+        },
+      },
+    ],
+  },
 };
 
 /** Minimal publisher reference — use inside BlogPosting, Service, etc. */

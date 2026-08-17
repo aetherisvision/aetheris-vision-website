@@ -1,7 +1,7 @@
 export const SITE = {
   name: "Aetheris Vision",
   legalName: "Aetheris Vision LLC",
-  tagline: "Scientific consulting for weather, Earth-system, and geospatial decisions",
+  tagline: "Applied meteorology, weather AI, GIS, and geospatial data",
   url: "https://aetherisvision.com",
   logoUrl: "https://aetherisvision.com/logo/av-logo-horizontal-dark.png",
   email: "contact@aetherisvision.com",
@@ -16,9 +16,9 @@ export const SITE = {
     country: "US",
   },
   description:
-    "Principal-led scientific and technical consulting for organizations making difficult weather, Earth-system, geospatial, and data-informed decisions.",
+    "Principal-led scientific consulting in applied meteorology, AI weather forecasting, GIS, geospatial regridding, Earth-system data, and scientific software.",
   ogDescription:
-    "Principal-led consulting for weather, Earth-system, geospatial, applied-AI, and technical-delivery decisions. Veteran-owned and based in Oklahoma.",
+    "Applied meteorology, AI weather forecasting, GIS, geospatial regridding, and Earth-system data consulting. Veteran-owned and based in Oklahoma.",
 } as const;
 
 /** Public request flow for the current capability statement PDF. */

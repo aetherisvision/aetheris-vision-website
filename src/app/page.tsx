@@ -10,9 +10,10 @@ import { AMS_PROFILE_URL, SITE } from "@/lib/constants";
 export const revalidate = 3600;
 
 export const metadata = {
-  title: `${SITE.name} | Consultancy in Applied Meteorology`,
+  title: `Weather AI, GIS & Geospatial Regridding | ${SITE.name}`,
   description:
-    "Applied AI, geospatial data curation, and coordinate reference system transformation for weather and Earth-system work.",
+    "Scientific consulting in applied meteorology, AI weather forecasting, GIS data transformation, geospatial regridding, and Earth-system data pipelines.",
+  alternates: { canonical: "/" },
 };
 
 function satelliteImage(url: string) {
@@ -58,15 +59,15 @@ export default function Home() {
                   Aetheris Vision LLC
                 </p>
                 <h1 className="max-w-5xl font-serif text-[clamp(3.2rem,7.1vw,6.8rem)] leading-[0.94] tracking-[-0.045em] text-[#0a1628]">
-                  Consultancy in Applied Meteorology
+                  Applied Meteorology, Weather AI &amp; Geospatial Systems
                 </h1>
                 <p className="mt-8 max-w-3xl text-base font-semibold uppercase leading-7 tracking-[0.08em] text-[#344852] sm:text-lg">
-                  Applied AI <span aria-hidden="true" className="px-1 text-[#7eabca]">|</span>{" "}
-                  Geospatial Data Curation <span aria-hidden="true" className="px-1 text-[#7eabca]">|</span>{" "}
-                  Coordinate Reference System Transformation
+                  AI Weather Forecasting <span aria-hidden="true" className="px-1 text-[#7eabca]">|</span>{" "}
+                  GIS &amp; Geospatial Regridding <span aria-hidden="true" className="px-1 text-[#7eabca]">|</span>{" "}
+                  Earth-System Data Pipelines
                 </p>
                 <p className="mt-7 max-w-2xl text-lg leading-8 text-[#4b5d64]">
-                  More than 35 years across operational weather, scientific analysis, software delivery, and weather research.
+                  Principal-led consulting for weather forecasting, AI/ML systems, GIS, and Earth-data transformation—grounded in more than 35 years across operational weather, scientific analysis, software delivery, and research.
                 </p>
                 <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
                   <a
@@ -126,6 +127,10 @@ export default function Home() {
                 <p className="mt-7 max-w-3xl text-base leading-8 text-[#42565f]">
                   Aetheris Vision brings scientific, technical, and delivery expertise together around the result your project needs. An engagement may span analysis, data curation, software, or another focused technical need. The scope follows the project, not a preset service package.
                 </p>
+                <div className="mt-7 flex flex-col items-start gap-3 sm:flex-row sm:gap-8">
+                  <TextLink href="/services/weather-ai">Explore weather AI services</TextLink>
+                  <TextLink href="/services/geospatial-regridding">Explore GIS and regridding services</TextLink>
+                </div>
               </div>
             </div>
 
@@ -152,20 +157,21 @@ export default function Home() {
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Project-Ready Data</p>
                 <h2 className="mt-5 max-w-lg font-serif text-4xl leading-tight tracking-[-0.025em] text-[#0a1628] sm:text-5xl">
-                  The hard part is often preparing the data
+                  GIS and geospatial regridding for difficult Earth data
                 </h2>
               </div>
               <div>
                 <p className="font-serif text-2xl leading-snug text-[#0a1628] sm:text-3xl">
-                  Preparing scientific and geospatial data can consume a significant share of a project&apos;s schedule and budget before analysis begins.
+                  GIS and geospatial data preparation can consume a significant share of a project&apos;s schedule and budget before analysis begins.
                 </p>
                 <p className="mt-6 max-w-3xl text-base leading-8 text-[#42565f]">
-                  Source data may be readily available and still difficult to read correctly. GRIB, BUFR, NetCDF, HDF, and other scientific formats can be handled within one coherent workflow. The real work is preserving meaning as data move between formats, grids, coordinate systems, and resolutions.
+                  Source data may be readily available and still difficult to read correctly. GRIB, BUFR, NetCDF, HDF, and other scientific formats can be handled within one coherent workflow. The real work is preserving meaning through GIS reprojection, spatial interpolation, resampling, and movement between grids, coordinate systems, and resolutions.
                 </p>
                 <p className="mt-5 max-w-3xl text-base leading-8 text-[#42565f]">
                   Aetheris Vision can acquire and curate the data, perform the transformation, and deliver the result in the format, grid, coordinate reference system, and resolution your project requires. Before full production, you can review a representative sample. Delivery includes documentation of the data sources, transformation steps, assumptions, and any measurable change introduced by regridding or resampling.
                 </p>
-                <div className="mt-7">
+                <div className="mt-7 flex flex-col items-start gap-3 sm:flex-row sm:gap-8">
+                  <TextLink href="/services/geospatial-regridding">Explore GIS and regridding services</TextLink>
                   <TextLink href="/book">Get in touch</TextLink>
                 </div>
               </div>
@@ -241,7 +247,7 @@ export default function Home() {
                   Regridding made simpler
                 </h2>
                 <p className="mt-6 max-w-xl text-base leading-8 text-[#42565f]">
-                  Omni Gridder shows how Aetheris Vision approaches one kind of geospatial transformation: moving Earth-system data between grids while preserving scientific meaning. The public demonstration shows selected inputs and outputs; the production methods remain proprietary.
+                  Omni Gridder shows how Aetheris Vision approaches geospatial regridding: moving weather and Earth-system data between GIS grids while preserving scientific meaning. The public demonstration shows selected inputs and outputs; the production methods remain proprietary.
                 </p>
                 <div className="mt-8">
                   <TextLink href="/omni-gridder">Explore this Omni Gridder example</TextLink>

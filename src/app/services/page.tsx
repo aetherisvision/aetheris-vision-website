@@ -12,9 +12,10 @@ import FadeIn from "@/components/FadeIn";
 import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE, SAM } from "@/lib/constants";
 
 export const metadata = {
-  title: `Services | ${SITE.name}`,
+  title: `Weather AI, GIS & Geospatial Services | ${SITE.name}`,
   description:
-    "Scientific consulting in applied meteorology, geospatial data, and applied AI — with specialized Earth-data transformation delivery.",
+    "Applied meteorology, AI weather forecasting, GIS, geospatial regridding, CRS transformation, and scientific data-pipeline consulting.",
+  alternates: { canonical: "/services" },
 };
 
 const transformationCapabilities = [
@@ -44,8 +45,8 @@ const consultingAreas = [
   },
   {
     icon: CpuChipIcon,
-    title: "AI/ML Weather Systems",
-    body: "AI-hybrid systems built on modern NWP foundations (GraphCast, Pangu-Weather), uncertainty quantification, and large-scale reanalysis (ERA5, MERRA-2) tuned for production.",
+    title: "AI Weather Forecasting & ML Systems",
+    body: "Design, evaluation, and integration of AI weather forecasting and hybrid NWP/ML systems, including GraphCast and Pangu-Weather workflows, uncertainty quantification, and reanalysis data such as ERA5 and MERRA-2.",
   },
   {
     icon: ArrowPathIcon,
@@ -72,10 +73,10 @@ export default function ServicesPage() {
             <FadeIn>
               <div className="max-w-3xl">
                 <h1 className="text-4xl md:text-6xl font-semibold text-white tracking-tight mb-6 leading-[1.1]">
-                  Scientific consulting, carried through to delivery
+                  Weather AI, GIS, and geospatial consulting
                 </h1>
                 <p className="text-lg text-gray-400 font-light leading-relaxed">
-                  Aetheris Vision is a consulting practice in applied meteorology, geospatial data, and applied AI. Analysis, data curation, and software are brought together around the result each engagement needs — supported by tools we build in-house when the problem calls for them.
+                  Aetheris Vision brings applied meteorology, AI weather forecasting, GIS, geospatial regridding, and scientific software together around the result each engagement needs—supported by tools we build in-house when the problem calls for them.
                 </p>
               </div>
             </FadeIn>
@@ -124,14 +125,14 @@ export default function ServicesPage() {
               <div className="rounded-2xl border border-blue-500/20 bg-blue-500/[0.04] p-6 sm:p-8 md:p-12">
                 <div className="border-b border-white/15 pb-3 mb-6">
                   <h2 id="sec-transformation" className="text-lg font-semibold text-white tracking-tight uppercase">
-                    Earth-Data Transformation
+                    GIS &amp; Geospatial Regridding
                   </h2>
                 </div>
                 <p className="max-w-3xl text-gray-400 font-light leading-relaxed mb-10">
-                  Move satellite, model, geospatial, and environmental data from the
-                  form you have to the form your downstream work requires. We select
-                  the right approach, perform the transformation, and verify the
-                  result so your team can use it with confidence.
+                  Move weather, climate, satellite, GIS, and environmental data from the
+                  form you have to the form your downstream work requires. Services include
+                  CRS transformation, reprojection, spatial interpolation, resampling, and
+                  data-aware remapping across raster, point, and specialized grid geometries.
                 </p>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {transformationCapabilities.map((capability) => (
@@ -162,6 +163,14 @@ export default function ServicesPage() {
                       See a worked example <ArrowRightIcon className="h-3.5 w-3.5" />
                     </a>
                   </div>
+                </div>
+                <div className="mt-6 flex flex-wrap gap-x-6 gap-y-3 text-sm">
+                  <a href="/services/geospatial-regridding" className="text-blue-400 transition hover:text-blue-300">
+                    Explore GIS and geospatial regridding services <ArrowRightIcon className="ml-1 inline h-3.5 w-3.5" />
+                  </a>
+                  <a href="/services/weather-ai" className="text-blue-400 transition hover:text-blue-300">
+                    Explore AI weather forecasting services <ArrowRightIcon className="ml-1 inline h-3.5 w-3.5" />
+                  </a>
                 </div>
               </div>
             </section>

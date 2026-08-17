@@ -3,12 +3,12 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import OmniGridderComparison from "@/components/OmniGridderComparison";
-import { SITE } from "@/lib/constants";
 
 export const metadata = {
-  title: `Omni Gridder | Earth-Data Regridding | ${SITE.name}`,
+  title: `Geospatial Regridding & GIS Transformation | Omni Gridder`,
   description:
-    "A preview of Omni Gridder, Aetheris Vision’s approach to trustworthy Earth-data transformation across difficult grid and observation geometries.",
+    "GIS and geospatial regridding for weather, climate, and Earth-system data across difficult grids, projections, resolutions, and observation geometries.",
+  alternates: { canonical: "/omni-gridder" },
 };
 
 export default function OmniGridderPage() {
@@ -24,9 +24,9 @@ export default function OmniGridderPage() {
                 Aetheris Vision Consulting
               </Link>
               <p className="mt-8 text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Featured Example</p>
-              <h1 className="mt-4 font-serif text-[clamp(4rem,9vw,8rem)] leading-[0.9] tracking-[-0.05em] text-[#0a1628]">Omni Gridder</h1>
+              <h1 className="mt-4 font-serif text-[clamp(3.4rem,8vw,7rem)] leading-[0.92] tracking-[-0.05em] text-[#0a1628]">Geospatial Regridding with Omni Gridder</h1>
               <p className="mt-8 max-w-3xl text-xl leading-9 text-[#344852]">
-                A preview of a more disciplined way to transform Earth data across mismatched grids, projections, and observation geometries.
+                A preview of a more disciplined GIS workflow for transforming weather and Earth-system data across mismatched grids, coordinate reference systems, resolutions, and observation geometries.
               </p>
             </div>
 
@@ -78,7 +78,7 @@ export default function OmniGridderPage() {
             </div>
             <div className="lg:pt-12">
               <p className="font-serif text-2xl leading-9 text-[#253c47] sm:text-3xl sm:leading-10">
-                Moving a single Earth-system field between grids could require repairing coordinates, reconciling metadata, and passing intermediate files through several applications before the result could be checked.
+                Moving a single weather or Earth-system field between GIS grids could require repairing coordinates, reconciling metadata, and passing intermediate files through several applications before the result could be checked.
               </p>
               <p className="mt-7 max-w-2xl text-base leading-7 text-[#52656d]">
                 Those tools remain useful. The difficult part is managing the handoffs: hidden defaults, inconsistent geometry, and quality checks performed only at the end. Omni Gridder is being built to bring that work into a controlled, documented, and repeatable workflow.
@@ -95,7 +95,7 @@ export default function OmniGridderPage() {
                 <h2 id="comparison-heading" className="mt-5 font-serif text-4xl tracking-[-0.025em] text-[#0a1628] sm:text-6xl">Preserving meaning as the geometry changes</h2>
               </div>
               <p className="max-w-2xl text-base leading-7 text-[#4b5d64] lg:justify-self-end">
-                This controlled view holds the synthetic field constant while its geometry changes. It reveals the challenge Omni Gridder is designed to solve—not the production logic behind the result.
+                This controlled geospatial regridding example holds the synthetic field constant while its geometry changes. It reveals the challenge Omni Gridder is designed to solve—not the production logic behind the result.
               </p>
             </div>
             <div className="mt-10">
