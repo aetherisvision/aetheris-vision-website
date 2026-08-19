@@ -475,14 +475,14 @@ export default function ContactForm() {
         {status === "unavailable" && (
           <div role="status" className="rounded-md border border-yellow-500/30 bg-yellow-500/[0.06] p-4 text-sm text-yellow-200">
             Our inquiry form isn&apos;t accepting submissions right now. Please try again later or{" "}
-            <a href="/book" className="underline font-medium">book a consultation</a>.
+            <a href="/book#consultation" className="underline font-medium">book a consultation</a>.
           </div>
         )}
 
         {status === "error" && (
           <p role="alert" className="text-sm text-red-400">
             Something went wrong{errorDetail ? `: ${errorDetail.replace(/[.!?]+$/, "")}` : ""}. Please try again or{" "}
-            <a href="/book" className="underline font-medium">book a consultation</a>.
+            <a href="/book#consultation" className="underline font-medium">book a consultation</a>.
           </p>
         )}
 

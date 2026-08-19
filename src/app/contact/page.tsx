@@ -90,7 +90,7 @@ export default function ContactPage() {
                       <CalendarDaysIcon className="h-4 w-4 text-blue-400" />
                       <p className="text-sm font-medium text-white">Prefer to talk?</p>
                     </div>
-                    <a href="/book" className="text-sm text-blue-400 transition hover:text-blue-300">
+                    <a href="/book#consultation" className="text-sm text-blue-400 transition hover:text-blue-300">
                       Book a 30-minute consultation →
                     </a>
                   </div>

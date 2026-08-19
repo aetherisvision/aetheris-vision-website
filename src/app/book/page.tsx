@@ -1,13 +1,15 @@
 import Image from "next/image";
+import { ArrowRightIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CalBooking from "@/components/CalBooking";
+import QuickContactForm from "@/components/QuickContactForm";
 import { SITE } from "@/lib/constants";
 
 export const metadata = {
-  title: `Book a Consultation | ${SITE.name}`,
+  title: `Get in Touch | ${SITE.name}`,
   description:
-    `Book a consultation with ${SITE.name} to discuss your project and the focused support it needs to move forward efficiently.`,
+    `Ask a question, tell ${SITE.name} about your project, or schedule a free consultation to discuss the focused support your work needs.`,
 };
 
 export default function BookPage() {
@@ -23,37 +25,88 @@ export default function BookPage() {
             alt=""
             fill
             className="object-cover object-[50%_45%] opacity-[0.55]"
-            priority
+            preload
             sizes="100vw"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/55 via-[#050505]/65 to-[#050505]" />
         </div>
 
-        <div className="mx-auto max-w-5xl px-4 sm:px-6">
-          {/* Header — single action, centered and brief */}
-          <div className="mb-10 text-center mx-auto max-w-xl">
-            <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">
-              Consultation
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="mx-auto mb-12 max-w-2xl text-center">
+            <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-blue-500">
+              Get in Touch
             </p>
-            <h1 className="text-3xl md:text-5xl font-semibold text-white tracking-tight mb-4">
-              Tell us about your project
+            <h1 className="mb-4 text-3xl font-semibold tracking-tight text-white md:text-5xl">
+              How can we help?
             </h1>
-            <p className="text-gray-400 font-light leading-relaxed">
-              Book a consultation at a time that works for you. Tell us what your project
-              needs and where focused support could help it move forward.
+            <p className="font-light leading-relaxed text-gray-400">
+              Ask a question, tell us about your project, or schedule a free consultation.
+              Aetheris Vision typically replies within one business day.
             </p>
           </div>
 
-          {/* Cal.com Embed */}
-          <div className="rounded-xl border border-white/5 bg-white/[0.02]">
-            <CalBooking />
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:gap-14">
+            <section aria-labelledby="ask-a-question">
+              <h2 id="ask-a-question" className="text-xl font-semibold text-white">
+                Ask a question.
+              </h2>
+              <p className="mt-2 text-sm font-light leading-relaxed text-gray-400">
+                Comments, general questions, or website matters — a few sentences are enough.
+              </p>
+              <div className="mt-6">
+                <QuickContactForm />
+              </div>
+            </section>
+
+            <aside className="space-y-8">
+              <section aria-labelledby="project-inquiry" className="border border-white/10 bg-white/[0.02] p-6">
+                <h2 id="project-inquiry" className="text-xl font-semibold text-white">
+                  Tell us about your project.
+                </h2>
+                <p className="mt-2 text-sm font-light leading-relaxed text-gray-400">
+                  Planning weather, Earth-system, geospatial, or applied-AI work? Share the
+                  problem, the outcome you need, and any constraints through the project
+                  inquiry form.
+                </p>
+                <a
+                  href="/contact"
+                  className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-blue-400 transition hover:text-blue-300"
+                >
+                  Start a project inquiry <ArrowRightIcon className="h-4 w-4" />
+                </a>
+              </section>
+
+              <section aria-labelledby="email-contact" className="border border-white/10 bg-white/[0.02] p-6">
+                <h2 id="email-contact" className="text-xl font-semibold text-white">
+                  Prefer email?
+                </h2>
+                <p className="mt-2 text-sm font-light leading-relaxed text-gray-400">
+                  Contact us via email for more information.
+                </p>
+                <a
+                  href={`mailto:${SITE.email}`}
+                  className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-blue-400 transition hover:text-blue-300"
+                >
+                  <EnvelopeIcon className="h-4 w-4" /> {SITE.email}
+                </a>
+              </section>
+            </aside>
           </div>
 
-          {/* Fallback */}
-          <p className="mt-6 text-sm text-gray-400 text-center">
-            For comments or general questions, {" "}
-            <a href="/contact" className="inline-flex min-h-11 items-center text-gray-200 hover:text-white transition underline underline-offset-2">send us a message</a>
-          </p>
+          <section id="consultation" aria-labelledby="consultation-heading" className="mt-16 scroll-mt-28 sm:mt-20">
+            <div className="mx-auto mb-8 max-w-xl text-center">
+              <h2 id="consultation-heading" className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
+                Schedule a free consultation.
+              </h2>
+              <p className="mt-3 text-sm font-light leading-relaxed text-gray-400">
+                Book a time that works for you. We&apos;ll talk through what your project needs
+                and where focused support could help it move forward.
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/5 bg-white/[0.02]">
+              <CalBooking />
+            </div>
+          </section>
         </div>
       </main>
 
