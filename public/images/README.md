@@ -90,7 +90,8 @@ imgix params (`fm=webp&q=55–75`), then served through `next/image`.
 
 | File | Shows | Source | Photographer |
 |---|---|---|---|
-| `hero-earth.webp` | Earth at night from orbit (hero video fallback) | https://unsplash.com/photos/Q1p7bh3SHj8 (`photo-1451187580459-43490279c0fa`) | NASA |
+| `hero-earth.webp` | Earth at night from orbit (former hero fallback; currently unused) | https://unsplash.com/photos/Q1p7bh3SHj8 (`photo-1451187580459-43490279c0fa`) | NASA |
+| `hero-earth-weather.jpg` | Earth from orbit with active cloud cover — still frame extracted from `/hero-1.mp4` (hero video fallback for mobile/reduced-motion) | Derived from `public/hero-1.mp4` | — |
 | `philosophy-atmosphere.webp` | Earth's clouds and atmosphere from the ISS | https://unsplash.com/photos/yZygONrUBe8 (`photo-1446776811953-b23d57bd21aa`) | NASA |
 | `cta-storm-watch.webp` | Storm observer standing on a plains dirt road as lightning strikes ("Ready to build something?" CTA card) | https://unsplash.com/photos/Kug730pBflE (`photo-1658590094012-4e6f34fcf3a2`) | Nikolas Noonan |
 
@@ -131,6 +132,7 @@ These assets are generated custom high-fidelity `.webp` images to ensure profess
 
 ### home/ & competencies/ — Homepage backgrounds
 - `hero-earth.webp` - Cinematic view of Earth at night with glowing satellite tracks.
+- `hero-earth-weather.jpg` - Earth from orbit with cloud cover; still frame of `hero-1.mp4` (current hero fallback).
 - `philosophy-atmosphere.webp` - Atmospheric limb sunrise from space.
 - `cta-storm-watch.webp` - Meteorologist facing a supercell storm on a plains road.
 - `applied-meteorology.webp` - Supercell storm cloud structure over plains.

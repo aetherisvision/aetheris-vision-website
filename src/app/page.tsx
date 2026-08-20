@@ -2,6 +2,7 @@ import Image from "next/image";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import type { ReactNode } from "react";
 import Footer from "@/components/Footer";
+import HeroVideo from "@/components/HeroVideo";
 import Navbar from "@/components/Navbar";
 import SatelliteDisplay, { type SatelliteSource } from "@/components/SatelliteDisplay";
 import { posts } from "@/lib/posts";
@@ -59,14 +60,17 @@ export default function Home() {
       <main id="main" className="flex-1">
         <section className="relative border-b border-white/15 bg-[#0a1628] pt-20 text-white">
           <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
+            {/* Static weather view (a frame of hero-1.mp4) for mobile, reduced-motion,
+                and data-saver clients; on desktop the video fades in over it. */}
             <Image
-              src="/images/home/hero-earth.webp"
+              src="/images/home/hero-earth-weather.jpg"
               alt=""
               fill
               preload
-              className="object-cover object-[50%_30%] opacity-50"
+              className="object-cover object-[22%_50%] opacity-40"
               sizes="100vw"
             />
+            <HeroVideo />
             <div className="absolute inset-0 bg-gradient-to-b from-[#0a1628]/40 via-[#0a1628]/70 to-[#0a1628]" />
           </div>
 
@@ -222,7 +226,26 @@ export default function Home() {
                 <p className="max-w-3xl font-serif text-2xl leading-snug text-white/95 sm:text-3xl">
                   We begin with what your project needs and where focused support can make the greatest difference
                 </p>
-                <p className="mt-6 max-w-3xl text-base leading-8 text-white/65">
+              </div>
+            </div>
+
+            <div className="mt-12 grid grid-cols-1 items-start gap-12 sm:mt-16 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
+              <figure>
+                <div className="relative aspect-[3/2] overflow-hidden bg-[#071425]">
+                  <Image
+                    src="/images/about/field-research-balloon.webp"
+                    alt="A radiosonde balloon launch in polar twilight"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 45vw"
+                  />
+                </div>
+                <figcaption className="mt-3 text-xs leading-5 text-white/45">
+                  Upper-air sounding: a radiosonde balloon launch in polar twilight. Illustrative; not Aetheris Vision personnel.
+                </figcaption>
+              </figure>
+              <div>
+                <p className="max-w-3xl text-base leading-8 text-white/65">
                   Scope, responsibilities, timing, commercial terms, and data handling are agreed before work begins. Aetheris Vision stays directly involved through delivery, keeping the work focused, timely, and documented for future use.
                 </p>
                 <p className="mt-5 max-w-3xl text-base leading-8 text-white/65">
@@ -230,21 +253,6 @@ export default function Home() {
                 </p>
               </div>
             </div>
-
-            <figure className="mt-12 max-w-3xl sm:mt-16 lg:ml-auto">
-              <div className="relative aspect-[3/2] overflow-hidden bg-[#071425]">
-                <Image
-                  src="/images/about/field-research-balloon.webp"
-                  alt="A radiosonde balloon launch in polar twilight"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 768px"
-                />
-              </div>
-              <figcaption className="mt-3 text-xs leading-5 text-white/45">
-                Upper-air sounding: a radiosonde balloon launch in polar twilight. Illustrative; not Aetheris Vision personnel.
-              </figcaption>
-            </figure>
           </div>
         </section>
 

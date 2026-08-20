@@ -2,13 +2,17 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const VIDEOS = ["/hero-1.mp4", "/hero-2.mp4"];
+// hero-1: Earth from orbit with active cloud cover — the weather view.
+// hero-2 (abstract data waves) is intentionally out of rotation; it reads
+// generic-tech rather than meteorology.
+const VIDEOS = ["/hero-1.mp4"];
 
 export default function HeroVideo() {
   // Keep the first render deterministic so the server and client hydrate with
   // the same source. Subsequent clips still rotate when playback completes.
   const [index, setIndex] = useState(0);
   const [canPlay, setCanPlay] = useState(false);
+  const [playing, setPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -19,9 +23,11 @@ export default function HeroVideo() {
     }).connection;
 
     const syncPlayback = () => {
-      // Avoid downloading 41 MB of decorative video on compact, reduced-motion,
+      // Avoid downloading 19 MB of decorative video on compact, reduced-motion,
       // or data-saver clients. The static hero image remains visible underneath.
-      setCanPlay(desktop.matches && !reducedMotion.matches && !connection?.saveData);
+      const next = desktop.matches && !reducedMotion.matches && !connection?.saveData;
+      setCanPlay(next);
+      if (!next) setPlaying(false);
     };
 
     syncPlayback();
@@ -63,11 +69,19 @@ export default function HeroVideo() {
       key={index}
       autoPlay
       muted
+      loop={VIDEOS.length === 1}
       playsInline
       preload="metadata"
-      onEnded={advance}
+      onEnded={VIDEOS.length > 1 ? advance : undefined}
+      onPlaying={() => setPlaying(true)}
       aria-hidden="true"
-      className="absolute inset-0 -z-20 h-full w-full object-cover opacity-30 motion-reduce:hidden"
+      // Stacking comes from DOM order inside the hero's background wrapper:
+      // static fallback image below, this video above it, gradient on top.
+      // Fade in only once frames are actually rendering, so the handoff from
+      // the static image reads as intentional rather than a brightness pop.
+      className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 motion-reduce:hidden ${
+        playing ? "opacity-40" : "opacity-0"
+      }`}
     >
       <source src={VIDEOS[index]} type="video/mp4" />
     </video>
