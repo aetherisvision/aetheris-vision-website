@@ -95,7 +95,7 @@ export default function AboutPage() {
               <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-blue-500">
                 About Aetheris Vision
               </p>
-              <h1 className="mb-6 font-serif text-4xl leading-[1.08] tracking-tight text-white md:text-6xl">
+              <h1 className="mb-6 font-serif text-4xl leading-[1.08] tracking-tight text-white md:text-5xl">
                 <span className="whitespace-nowrap">Principal-Led</span> Technical Consulting
               </h1>
               <p className="max-w-3xl text-lg font-light leading-relaxed text-gray-400">

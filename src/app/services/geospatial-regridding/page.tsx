@@ -108,7 +108,7 @@ export default function GeospatialRegriddingPage() {
           <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr] lg:gap-20">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-400">Capabilities</p>
-              <h2 id="capabilities-heading" className="mt-4 font-serif text-3xl leading-tight text-white sm:text-5xl">
+              <h2 id="capabilities-heading" className="mt-4 font-serif text-3xl leading-tight text-white sm:text-4xl">
                 <span className="whitespace-nowrap">Analysis-Ready</span> Data
               </h2>
               <p className="mt-6 text-base font-light leading-7 text-gray-400">

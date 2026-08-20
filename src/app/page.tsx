@@ -85,10 +85,12 @@ export default function Home() {
                   <br />
                   Weather Systems
                 </h1>
-                <p className="mt-8 max-w-3xl text-base font-semibold uppercase leading-7 tracking-[0.08em] text-[#bcd4e4] sm:text-lg">
-                  AI Weather Forecasting <span aria-hidden="true" className="px-1 text-[#7eabca]">|</span>{" "}
-                  GIS &amp; Geospatial Regridding <span aria-hidden="true" className="px-1 text-[#7eabca]">|</span>{" "}
-                  <span className="whitespace-nowrap">Earth-System</span> Data Pipelines
+                <p className="mt-8 text-xs font-semibold uppercase leading-7 tracking-[0.06em] text-[#bcd4e4] sm:text-sm">
+                  <span className="whitespace-nowrap">AI Weather Forecasting</span>{" "}
+                  <span aria-hidden="true" className="px-1 text-[#7eabca]">|</span>{" "}
+                  <span className="whitespace-nowrap">GIS &amp; Geospatial Regridding</span>{" "}
+                  <span aria-hidden="true" className="px-1 text-[#7eabca]">|</span>{" "}
+                  <span className="whitespace-nowrap">Earth-System Data Pipelines</span>
                 </p>
                 <p className="mt-7 max-w-2xl text-lg font-medium leading-8 text-white/90">
                   For research teams, government programs, and companies that depend on weather and Earth-system data.
@@ -144,7 +146,7 @@ export default function Home() {
             <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-24">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Our Offering</p>
-                <h2 className="mt-5 max-w-xl font-serif text-4xl leading-tight tracking-[-0.025em] text-[#0a1628] sm:text-6xl">
+                <h2 className="mt-5 max-w-xl font-serif text-4xl leading-tight tracking-[-0.025em] text-[#0a1628] sm:text-5xl">
                   Science to Delivery
                 </h2>
               </div>
