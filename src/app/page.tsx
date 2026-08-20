@@ -88,7 +88,7 @@ export default function Home() {
                 <p className="mt-8 max-w-3xl text-base font-semibold uppercase leading-7 tracking-[0.08em] text-[#bcd4e4] sm:text-lg">
                   AI Weather Forecasting <span aria-hidden="true" className="px-1 text-[#7eabca]">|</span>{" "}
                   GIS &amp; Geospatial Regridding <span aria-hidden="true" className="px-1 text-[#7eabca]">|</span>{" "}
-                  Earth-System Data Pipelines
+                  <span className="whitespace-nowrap">Earth-System</span> Data Pipelines
                 </p>
                 <p className="mt-7 max-w-2xl text-lg font-medium leading-8 text-white/90">
                   For research teams, government programs, and companies that depend on weather and Earth-system data.
@@ -200,7 +200,7 @@ export default function Home() {
                 </div>
                 <div className="py-7">
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#486890]">Delivery</p>
-                  <h3 className="mt-2 font-serif text-2xl text-[#0a1628]">On-Time Project Management &amp; Delivery</h3>
+                  <h3 className="mt-2 font-serif text-2xl text-[#0a1628]"><span className="whitespace-nowrap">On-Time</span> Project Management &amp; Delivery</h3>
                   <p className="mt-3 max-w-xl text-base leading-7 text-[#42565f]">
                     Scope, schedule, and terms agreed before work begins — and the person who scopes the engagement stays directly involved through delivery.
                   </p>
@@ -260,7 +260,7 @@ export default function Home() {
           <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
             <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-24">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Project-Ready Data</p>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]"><span className="whitespace-nowrap">Project-Ready</span> Data</p>
                 <h2 className="mt-5 max-w-lg font-serif text-4xl leading-tight tracking-[-0.025em] text-[#0a1628] sm:text-5xl">
                   Geospatial Data, Ready for Use
                 </h2>

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowRightIcon, EnvelopeIcon } from "@heroicons/react/24/outline";
+import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CalBooking from "@/components/CalBooking";
@@ -76,20 +76,6 @@ export default function BookPage() {
                 </a>
               </section>
 
-              <section aria-labelledby="email-contact" className="border border-white/10 bg-white/[0.02] p-6">
-                <h2 id="email-contact" className="text-xl font-semibold text-white">
-                  Prefer email?
-                </h2>
-                <p className="mt-2 text-sm font-light leading-relaxed text-gray-400">
-                  Contact us via email for more information.
-                </p>
-                <a
-                  href={`mailto:${SITE.email}`}
-                  className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-blue-400 transition hover:text-blue-300"
-                >
-                  <EnvelopeIcon className="h-4 w-4" /> {SITE.email}
-                </a>
-              </section>
             </aside>
           </div>
 

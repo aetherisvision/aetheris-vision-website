@@ -31,7 +31,7 @@ const services = [
   },
   {
     icon: LockClosedIcon,
-    title: "Security-First Architecture",
+    title: "Security‑First Architecture",
     description:
       "Magic-link authentication, role-based access control, and solid session management built into the foundation, not bolted on later with plugins. Security is part of the design from day one.",
   },
@@ -57,7 +57,7 @@ const techStack = [
   { name: "Neon / Postgres", role: "Database" },
   { name: "Vercel", role: "Hosting" },
   { name: "Resend", role: "Email" },
-  { name: "Docuseal", role: "E-Signing" },
+  { name: "Docuseal", role: "E‑Signing" },
 ];
 
 const process = [

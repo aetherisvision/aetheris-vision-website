@@ -86,7 +86,7 @@ export default function GeospatialRegriddingPage() {
         <header className="border-b border-white/10">
           <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-400">
-              GIS &amp; Earth-Data Transformation
+              GIS &amp; <span className="whitespace-nowrap">Earth-Data</span> Transformation
             </p>
             <h1 className="mt-5 max-w-5xl font-serif text-4xl leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl">
               Geospatial Regridding
@@ -109,7 +109,7 @@ export default function GeospatialRegriddingPage() {
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-400">Capabilities</p>
               <h2 id="capabilities-heading" className="mt-4 font-serif text-3xl leading-tight text-white sm:text-5xl">
-                Analysis-Ready Data
+                <span className="whitespace-nowrap">Analysis-Ready</span> Data
               </h2>
               <p className="mt-6 text-base font-light leading-7 text-gray-400">
                 The correct GIS operation depends on the variable, geometry, intended use, and acceptable error. Every engagement begins with those constraints.

@@ -40,7 +40,7 @@ const transformationCapabilities = [
 const consultingAreas = [
   {
     icon: BeakerIcon,
-    title: "Atmospheric-Science SME",
+    title: "Atmospheric‑Science SME",
     body: "AMS Certified Consulting Meteorologist judgment applied to model output, grid interpolation, and forecast verification — the domain expertise that makes an automated pipeline trustworthy.",
   },
   {
@@ -50,7 +50,7 @@ const consultingAreas = [
   },
   {
     icon: ArrowPathIcon,
-    title: "Data-Pipeline Modernization",
+    title: "Data‑Pipeline Modernization",
     body: "Assessment of existing operational frameworks and a practical path off them — legacy interpolation code, brittle ingest jobs, and undocumented grid assumptions replaced with something verifiable.",
   },
   {
@@ -88,7 +88,7 @@ export default function ServicesPage() {
               <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8 md:p-12">
                 <div className="border-b border-white/15 pb-3 mb-6">
                   <h2 id="sec-consulting" className="text-lg font-semibold text-white tracking-tight uppercase">
-                    Scientific &amp; Earth-Data Systems
+                    Scientific &amp; <span className="whitespace-nowrap">Earth-Data</span> Systems
                   </h2>
                 </div>
                 <p className="max-w-2xl text-gray-400 font-light leading-relaxed mb-10">

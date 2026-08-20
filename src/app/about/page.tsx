@@ -66,7 +66,7 @@ const credentials = [
 
 const focusAreas = [
   {
-    label: "Weather & Earth-System Advisory",
+    label: "Weather & Earth‑System Advisory",
     desc: "Operational meteorology, atmospheric modeling, environmental data, and technical interpretation.",
   },
   {
@@ -96,7 +96,7 @@ export default function AboutPage() {
                 About Aetheris Vision
               </p>
               <h1 className="mb-6 font-serif text-4xl leading-[1.08] tracking-tight text-white md:text-6xl">
-                Principal-Led Technical Consulting
+                <span className="whitespace-nowrap">Principal-Led</span> Technical Consulting
               </h1>
               <p className="max-w-3xl text-lg font-light leading-relaxed text-gray-400">
                 Aetheris Vision combines operational weather judgment, Earth-system and geospatial
