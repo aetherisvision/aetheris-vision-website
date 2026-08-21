@@ -14,7 +14,7 @@ import type { Group, MeshBasicMaterial, Texture } from "three";
 const DAY_PREVIEW_TEXTURE = "/earth-textures/day-2k.webp";
 const DAY_DETAIL_TEXTURE = "/earth-textures/day-8k.webp";
 const NIGHT_TEXTURE = "/earth-textures/night-2k.webp";
-const CLOUD_PREVIEW_TEXTURE = "/earth-textures/storm-clouds-4k.webp";
+const CLOUD_PREVIEW_TEXTURE = "/earth-textures/storm-clouds-2k.webp";
 const CLOUD_DETAIL_TEXTURE = "/earth-textures/storm-clouds-8k.webp";
 const EARTH_RADIUS = 1.3;
 // Keep transparent detail layers nearly flush with the surface so their
@@ -27,6 +27,11 @@ const CAMERA_ZOOM = 182;
 // a circular hole through its near surface.
 const CAMERA_DISTANCE = 50;
 const LIGHT_DIRECTION = new Vector3(5, 3, 4).normalize();
+
+type IdleCapableWindow = Window & {
+  requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+  cancelIdleCallback?: (handle: number) => void;
+};
 
 const NIGHT_VERTEX_SHADER = /* glsl */ `
   varying vec2 vUv;
@@ -114,10 +119,12 @@ function NightLayer({ anisotropy }: { anisotropy: number }) {
 
 function CloudLayer({
   anisotropy,
+  loadDetail,
   materialRef,
   onDetailLoaded,
 }: {
   anisotropy: number;
+  loadDetail: boolean;
   materialRef: RefObject<MeshBasicMaterial | null>;
   onDetailLoaded: (texture: Texture) => void;
 }) {
@@ -140,13 +147,15 @@ function CloudLayer({
         depthWrite={false}
         toneMapped={false}
       />
-      <Suspense fallback={null}>
-        <TextureUpgrade
-          source={CLOUD_DETAIL_TEXTURE}
-          anisotropy={anisotropy}
-          onLoaded={onDetailLoaded}
-        />
-      </Suspense>
+      {loadDetail ? (
+        <Suspense fallback={null}>
+          <TextureUpgrade
+            source={CLOUD_DETAIL_TEXTURE}
+            anisotropy={anisotropy}
+            onLoaded={onDetailLoaded}
+          />
+        </Suspense>
+      ) : null}
     </mesh>
   );
 }
@@ -157,6 +166,7 @@ function EarthMesh({ animate, onReady }: { animate: boolean; onReady?: () => voi
   const dayMaterialRef = useRef<MeshBasicMaterial>(null);
   const cloudMaterialRef = useRef<MeshBasicMaterial>(null);
   const readyNotifiedRef = useRef(false);
+  const [loadDetails, setLoadDetails] = useState(false);
   const { gl } = useThree();
   const dayTexture = useTexture(DAY_PREVIEW_TEXTURE);
   const anisotropy = Math.min(16, gl.capabilities.getMaxAnisotropy());
@@ -164,14 +174,36 @@ function EarthMesh({ animate, onReady }: { animate: boolean; onReady?: () => voi
   useEffect(() => {
     configureTexture(dayTexture, anisotropy);
 
+    let idleHandle: number | undefined;
+    let timeoutHandle: number | undefined;
+    let cancelled = false;
+
     const frame = requestAnimationFrame(() => {
       if (!readyNotifiedRef.current) {
         readyNotifiedRef.current = true;
         onReady?.();
       }
+
+      const startDetailLoads = () => {
+        if (!cancelled) setLoadDetails(true);
+      };
+      const idleWindow = window as IdleCapableWindow;
+
+      if (idleWindow.requestIdleCallback) {
+        idleHandle = idleWindow.requestIdleCallback(startDetailLoads, { timeout: 1500 });
+      } else {
+        timeoutHandle = window.setTimeout(startDetailLoads, 500);
+      }
     });
 
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+      if (idleHandle !== undefined) {
+        (window as IdleCapableWindow).cancelIdleCallback?.(idleHandle);
+      }
+      if (timeoutHandle !== undefined) window.clearTimeout(timeoutHandle);
+    };
   }, [anisotropy, dayTexture, onReady]);
 
   const applyDayDetail = useCallback((detailDay: Texture) => {
@@ -213,15 +245,22 @@ function EarthMesh({ animate, onReady }: { animate: boolean; onReady?: () => voi
         <Suspense fallback={null}>
           <CloudLayer
             anisotropy={anisotropy}
+            loadDetail={loadDetails}
             materialRef={cloudMaterialRef}
             onDetailLoaded={applyCloudDetail}
           />
         </Suspense>
       </group>
 
-      <Suspense fallback={null}>
-        <TextureUpgrade source={DAY_DETAIL_TEXTURE} anisotropy={anisotropy} onLoaded={applyDayDetail} />
-      </Suspense>
+      {loadDetails ? (
+        <Suspense fallback={null}>
+          <TextureUpgrade
+            source={DAY_DETAIL_TEXTURE}
+            anisotropy={anisotropy}
+            onLoaded={applyDayDetail}
+          />
+        </Suspense>
+      ) : null}
     </group>
   );
 }

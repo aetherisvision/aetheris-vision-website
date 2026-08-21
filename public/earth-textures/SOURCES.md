@@ -7,6 +7,7 @@ These optimized WebP textures are derived from the public-domain Natural Earth I
 - `day-8k.webp`: [Earth without clouds](https://www.shadedrelief.com/natural3/pages/textures.html), optimized at the original 8,192 × 4,096 resolution for the large hero horizon.
 - `night-2k.webp`: [Earth at night](https://www.shadedrelief.com/natural3/pages/textures.html), resized from the 8,192 × 4,096 source to 2,048 × 1,024.
 - `clouds-4k.webp`: [Fair-weather cloud map](https://www.shadedrelief.com/natural3/pages/clouds.html), resized from the 8,192 × 4,096 source to 4,096 × 2,048 with restrained output sharpening.
+- `storm-clouds-2k.webp`: Fast first-frame derivative of `storm-clouds-4k.webp`, resized to 2,048 × 1,024 before the 8K cloud layer replaces it.
 - `storm-clouds-4k.webp`: [Storm cloud map](https://www.shadedrelief.com/natural3/pages/clouds.html), resized from the 8,192 × 4,096 source to 4,096 × 2,048 for the globe's fast first render.
 - `storm-clouds-8k.webp`: [Storm cloud map](https://www.shadedrelief.com/natural3/pages/clouds.html), optimized at the original 8,192 × 4,096 resolution. The source includes a cyclone, a typhoon, and two hurricanes.
 

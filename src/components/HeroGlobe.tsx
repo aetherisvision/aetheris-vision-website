@@ -1,8 +1,7 @@
 "use client";
 
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
-
-const RotatingEarth = lazy(() => import("@/components/RotatingEarth"));
+import { useCallback, useEffect, useState } from "react";
+import RotatingEarth from "@/components/RotatingEarth";
 
 type NavigatorWithConnection = Navigator & {
   connection?: { saveData?: boolean };
@@ -39,11 +38,9 @@ export default function HeroGlobe() {
   return (
     <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
       <div
-        className={`absolute inset-0 transition-opacity duration-300 ${ready ? "opacity-100" : "opacity-0"}`}
+        className={`absolute inset-0 transition-opacity duration-100 ${ready ? "opacity-100" : "opacity-0"}`}
       >
-        <Suspense fallback={null}>
-          <RotatingEarth onReady={handleReady} />
-        </Suspense>
+        <RotatingEarth onReady={handleReady} />
       </div>
     </div>
   );

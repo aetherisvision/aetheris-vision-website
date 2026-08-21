@@ -63,6 +63,14 @@ export default function Home() {
         media="(min-width: 1024px) and (prefers-reduced-motion: no-preference)"
         fetchPriority="high"
       />
+      <link
+        rel="preload"
+        href="/earth-textures/storm-clouds-2k.webp"
+        as="image"
+        type="image/webp"
+        media="(min-width: 1024px) and (prefers-reduced-motion: no-preference)"
+        fetchPriority="low"
+      />
       <Navbar />
 
       <main id="main" className="flex-1">
