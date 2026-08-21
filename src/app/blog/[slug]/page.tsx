@@ -88,7 +88,7 @@ export default async function BlogPost({ params }: Props) {
               <span className="text-white/10">·</span>
               <span className="text-gray-500">{post.date}</span>
               <span className="text-white/10">·</span>
-              <span className="text-gray-600">{post.readTime}</span>
+              <span className="text-gray-500">{post.readTime}</span>
             </div>
             <h1 className="text-3xl md:text-5xl font-semibold tracking-tight text-white mb-6 leading-[1.15]">
               {post.title}
@@ -124,7 +124,7 @@ export default async function BlogPost({ params }: Props) {
                   href={`/blog/${prev.slug}`}
                   className="group flex flex-col rounded-xl border border-white/5 bg-white/[0.02] p-5 hover:bg-white/[0.04] hover:border-white/10 transition"
                 >
-                  <span className="text-xs text-gray-600 mb-2 flex items-center gap-1">
+                  <span className="text-xs text-gray-500 mb-2 flex items-center gap-1">
                     <ArrowLeftIcon className="h-3 w-3" /> Previous
                   </span>
                   <span className="text-sm font-medium text-gray-300 group-hover:text-white transition leading-snug">
@@ -139,7 +139,7 @@ export default async function BlogPost({ params }: Props) {
                   href={`/blog/${next.slug}`}
                   className="group flex flex-col rounded-xl border border-white/5 bg-white/[0.02] p-5 hover:bg-white/[0.04] hover:border-white/10 transition text-right"
                 >
-                  <span className="text-xs text-gray-600 mb-2 flex items-center justify-end gap-1">
+                  <span className="text-xs text-gray-500 mb-2 flex items-center justify-end gap-1">
                     Next <ArrowRightIcon className="h-3 w-3" />
                   </span>
                   <span className="text-sm font-medium text-gray-300 group-hover:text-white transition leading-snug">
@@ -165,7 +165,7 @@ export default async function BlogPost({ params }: Props) {
                 href={CAPABILITY_STATEMENT_REQUEST_HREF}
                 className="inline-flex h-10 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
               >
-                Request Capability Statement
+                Get the capability statement
               </a>
               <a
                 href="/contact"

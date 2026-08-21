@@ -79,7 +79,7 @@ const components: Components = {
         className="rounded-xl border border-white/5 w-full object-cover"
       />
       {alt && (
-        <span className="block text-center text-xs text-gray-600 mt-2 italic">{alt}</span>
+        <span className="block text-center text-xs text-gray-500 mt-2 italic">{alt}</span>
       )}
     </span>
   ),

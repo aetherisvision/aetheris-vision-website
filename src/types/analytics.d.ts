@@ -1,7 +1,7 @@
 // Global gtag function for Google Analytics
 declare global {
   interface Window {
-    gtag: (
+    gtag?: (
       command: 'config' | 'event' | 'js',
       targetId: string | Date,
       config?: {

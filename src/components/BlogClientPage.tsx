@@ -98,7 +98,7 @@ export default function BlogClientPage({
       {/* Post list — plain hairline-separated reading rows */}
       <div className="divide-y divide-white/[0.08] mb-20">
         {filtered.length === 0 && (
-          <p className="text-gray-600 font-light py-8">No posts in this category yet.</p>
+          <p className="text-gray-500 font-light py-8">No posts in this category yet.</p>
         )}
         {filtered.map((post) => (
           <a

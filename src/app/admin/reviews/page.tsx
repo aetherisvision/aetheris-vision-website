@@ -65,8 +65,8 @@ export default function AdminReviewsPage() {
     setLoading(false)
   }
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
-  useEffect(() => { fetchReviews() }, [])
+  // Load once on mount; fetchReviews is stable for this page's lifetime.
+  useEffect(() => { void fetchReviews() }, [])
 
   function showToast(msg: string) {
     setToast(msg)

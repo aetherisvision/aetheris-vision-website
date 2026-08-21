@@ -25,7 +25,7 @@ function satelliteImage(url: string) {
 
 const GOES_SOURCES: SatelliteSource[] = [
   {
-    url: satelliteImage("https://cdn.star.nesdis.noaa.gov/GOES16/ABI/FD/GEOCOLOR/678x678.jpg"),
+    url: satelliteImage("https://cdn.star.nesdis.noaa.gov/GOES19/ABI/FD/GEOCOLOR/678x678.jpg"),
     label: "GOES East",
     region: "Americas · Atlantic",
   },
@@ -251,7 +251,7 @@ export default function Home() {
                     sizes="(max-width: 1024px) 100vw, 45vw"
                   />
                 </div>
-                <figcaption className="mt-3 text-xs leading-5 text-white/45">
+                <figcaption className="mt-3 text-xs leading-5 text-white/55">
                   Upper-air sounding: a radiosonde balloon launch in polar twilight. Illustrative; not Aetheris Vision personnel.
                 </figcaption>
               </figure>
@@ -360,7 +360,7 @@ export default function Home() {
             </div>
             <div>
               <SatelliteDisplay sources={GOES_SOURCES} />
-              <p className="mt-4 text-xs leading-5 text-white/45">
+              <p className="mt-4 text-xs leading-5 text-white/55">
                 Live NOAA GOES-East and GOES-West GEOCOLOR full-disk imagery, courtesy NOAA/NESDIS. Refreshes automatically. Not Omni Gridder output.
               </p>
             </div>

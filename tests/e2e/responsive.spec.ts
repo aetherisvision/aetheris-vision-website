@@ -14,7 +14,6 @@ const publicRoutes = [
   "/services",
   "/services/web",
   "/capabilities",
-  "/portfolio",
   "/blog",
   "/contact",
   "/book",
@@ -22,10 +21,6 @@ const publicRoutes = [
   "/review",
   "/privacy",
   "/security",
-  "/portfolio/analytics-dashboard",
-  "/portfolio/wp-editorial",
-  "/portfolio/portal-pro",
-  "/portfolio/international-market",
 ];
 
 test("public routes have no horizontal overflow", async ({ page }) => {

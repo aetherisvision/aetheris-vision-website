@@ -54,7 +54,7 @@ export default function EmailVerificationStep({
           value={code}
           onChange={(event) => onCodeChange(event.target.value.replace(/\D/g, "").slice(0, 6))}
           aria-describedby="email-verification-help"
-          className="min-h-12 w-full rounded-md border border-white/20 bg-[#0a1628] px-4 text-lg tracking-[0.35em] text-white outline-none transition placeholder:text-white/25 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/25"
+          className="min-h-12 w-full rounded-md border border-white/20 bg-[#0a1628] px-4 text-lg tracking-[0.35em] text-white outline-none transition placeholder:text-white/55 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/25"
           placeholder="000000"
         />
         <p id="email-verification-help" className="mt-2 text-xs leading-5 text-gray-500">

@@ -1,65 +1,23 @@
-# Stock Photo Archive System
+# Image Archive
 
-## Directory Structure
 ```
 website/public/images/
-├── home/          # Homepage hero/section backgrounds (see below)
-├── blog/          # Blog page backgrounds (see below)
-├── law/           # Legal imagery (courthouse, books, scales of justice)
-├── restaurant/    # Food, dining, kitchen, chef photos
-├── contractor/    # Construction, tools, homes, workers
-├── healthcare/    # Medical, clinic, professional healthcare
-├── general/       # Business people, offices, handshakes
-├── nonprofit/     # Community, helping, volunteers
-├── analytics/     # Data, charts, dashboards, tech
-├── international/ # Global, cultural, diverse foods
-└── tech/          # Software, coding, modern office
+├── about/        # About page imagery
+├── blog/         # Blog page backgrounds
+├── book/         # Book a Consultation page
+├── contact/      # Contact page
+├── credentials/  # Credential and registration marks
+├── home/         # Homepage section backgrounds
+├── insights/     # Article schematics (generated in-house)
+├── omni-gridder/ # Omni Gridder page figures
+├── portfolio/    # Screenshots of delivered client work
+└── weather-ai/   # Weather AI service page
 ```
 
-## Image Naming Convention
-```
-{category}_{type}_{description}_{size}.{ext}
-Examples:
-- law_hero_courthouse_1920x1080.jpg
-- restaurant_interior_dining_1200x800.jpg  
-- contractor_team_professional_800x600.jpg
-```
-
-## Usage in Components
-```typescript
-import { getImageUrl } from '@/lib/images';
-
-// Professional hero image
-<Image 
-  src={getImageUrl('law', 'hero', 'courthouse')} 
-  alt="Professional courthouse exterior"
-  width={1920} 
-  height={1080}
-/>
-```
-
-## Stock Photo Sources
-- **Adobe Stock** (paid) - Premium professional photos
-- **Unsplash** (free) - High quality, attribution required  
-- **Pexels** (free) - Good business imagery
-- **Shutterstock** (paid) - Extensive selection
-
-## MCP Integration
-- Use `unsplash` MCP server to search and download
-- Use `filesystem` MCP server to organize and manage
-- Automatic optimization with Next.js Image component
-
-## Image Sizes
-- **Hero:** 1920x1080 (16:9)
-- **Card:** 400x300 (4:3)  
-- **Portrait:** 300x400 (3:4)
-- **Banner:** 1200x400 (3:1)
-
-## Optimization
-- WebP format for modern browsers
-- Progressive JPEG fallback
-- Lazy loading with Next.js Image
-- Responsive srcset for different screen sizes
+The demo-site catalogue and all of its stock photography (`law/`, `restaurant/`,
+`contractor/`, `healthcare/`, `photography/`, `real-estate/`, `wp-editorial/`) were
+removed in August 2026 when the demo pages were retired. Everything under
+`portfolio/` is now a screenshot of real, delivered client work.
 
 ---
 
@@ -120,7 +78,7 @@ Traditional NWP + Forecasting Craft series: `richardsons-dream`, `inside-a-weath
 
 ## Custom Premium Generated Imagery
 
-These assets are generated custom high-fidelity `.webp` images to ensure professional, realistic, and cohesive visuals across Aetheris Vision and its demo sites.
+These assets are generated custom high-fidelity `.webp` images to ensure professional, realistic, and cohesive visuals for Aetheris Vision.
 
 ### weather-ai/ — Weather AI service page
 
@@ -131,9 +89,3 @@ These assets are generated custom high-fidelity `.webp` images to ensure profess
 ### home/ — Homepage backgrounds
 - `applied-meteorology-workspace-v1.webp` - Forecaster's workspace with charts and displays (How We Work section).
 
-### Demos (restaurant/, contractor/, healthcare/) — Photography-forward Demo upgrades
-- `restaurant/restaurant_hero_dining_1920x1080.webp/.jpg` - Cozy dining room during evening service.
-- `restaurant/restaurant_hero_chef_1920x1080.webp/.jpg` - Chef plating a gourmet dish.
-- `contractor/contractor_hero_construction_1920x1080.webp/.jpg` - Beautiful luxury home under construction.
-- `healthcare/healthcare_hero_clinic_1920x1080.webp/.jpg` - Modern reception lobby.
-- `healthcare/healthcare_team_portrait_800x600.webp/.jpg` - Professional portrait of Dr. Sarah Okonkwo.

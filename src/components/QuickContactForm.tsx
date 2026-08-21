@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { CONVERSIONS, trackConversion } from "@/lib/analytics";
 import EmailVerificationStep from "@/components/EmailVerificationStep";
 import TurnstileWidget from "@/components/TurnstileWidget";
 import { createSubmissionId } from "@/lib/client-submission-id";
@@ -239,6 +240,7 @@ export default function QuickContactForm() {
         setHumanAttestation(false);
         submissionIdRef.current = null;
         setStatus("success");
+        trackConversion(CONVERSIONS.contactSubmitted, "book_page_quick_form");
       } else if (response.status === 503) {
         setStatus("unavailable");
       } else if (response.status === 429) {
@@ -312,7 +314,7 @@ export default function QuickContactForm() {
             onBlur={() => blur("name")}
             aria-invalid={Boolean(errors.name)}
             aria-describedby={errors.name ? "quick-contact-name-error" : undefined}
-            className="min-h-12 w-full border border-white/20 bg-[#0a1628] px-4 text-base text-white outline-none transition placeholder:text-white/30 focus:border-[#9bc3df] focus:ring-2 focus:ring-[#9bc3df]/25"
+            className="min-h-12 w-full border border-white/20 bg-[#0a1628] px-4 text-base text-white outline-none transition placeholder:text-white/55 focus:border-[#9bc3df] focus:ring-2 focus:ring-[#9bc3df]/25"
           />
           {errors.name && <p id="quick-contact-name-error" role="alert" className="mt-2 text-sm text-red-300">{errors.name}</p>}
         </div>
@@ -333,7 +335,7 @@ export default function QuickContactForm() {
             onBlur={() => blur("email")}
             aria-invalid={Boolean(errors.email)}
             aria-describedby={errors.email ? "quick-contact-email-error" : undefined}
-            className="min-h-12 w-full border border-white/20 bg-[#0a1628] px-4 text-base text-white outline-none transition placeholder:text-white/30 focus:border-[#9bc3df] focus:ring-2 focus:ring-[#9bc3df]/25"
+            className="min-h-12 w-full border border-white/20 bg-[#0a1628] px-4 text-base text-white outline-none transition placeholder:text-white/55 focus:border-[#9bc3df] focus:ring-2 focus:ring-[#9bc3df]/25"
           />
           {errors.email && <p id="quick-contact-email-error" role="alert" className="mt-2 text-sm text-red-300">{errors.email}</p>}
         </div>
@@ -356,9 +358,9 @@ export default function QuickContactForm() {
           aria-invalid={Boolean(errors.message)}
           aria-describedby={errors.message ? "quick-contact-message-error" : "quick-contact-guidance"}
           placeholder="The outcome you need, the data or system involved, and any timing constraints."
-          className="w-full resize-y border border-white/20 bg-[#0a1628] px-4 py-3 text-base leading-7 text-white outline-none transition placeholder:text-white/30 focus:border-[#9bc3df] focus:ring-2 focus:ring-[#9bc3df]/25"
+          className="w-full resize-y border border-white/20 bg-[#0a1628] px-4 py-3 text-base leading-7 text-white outline-none transition placeholder:text-white/55 focus:border-[#9bc3df] focus:ring-2 focus:ring-[#9bc3df]/25"
         />
-        <p id="quick-contact-guidance" className="mt-2 text-xs leading-5 text-white/45">A few sentences are enough.</p>
+        <p id="quick-contact-guidance" className="mt-2 text-xs leading-5 text-white/55">A few sentences are enough.</p>
         {errors.message && <p id="quick-contact-message-error" role="alert" className="mt-2 text-sm text-red-300">{errors.message}</p>}
       </div>
 
@@ -389,7 +391,7 @@ export default function QuickContactForm() {
         </p>
       )}
 
-      <p className="mt-5 text-xs leading-5 text-white/45">
+      <p className="mt-5 text-xs leading-5 text-white/55">
         We use the information you provide to respond and manage your inquiry. See our{" "}
         <a href="/privacy" className="text-white/75 underline underline-offset-2 hover:text-white">Privacy Policy</a>. Do not submit classified information, CUI, credentials, or other sensitive records here.
       </p>

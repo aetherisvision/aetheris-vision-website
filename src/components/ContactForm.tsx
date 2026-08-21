@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { CONVERSIONS, trackConversion } from "@/lib/analytics";
 import { useSearchParams } from "next/navigation";
 import EmailVerificationStep from "@/components/EmailVerificationStep";
 import FadeIn from "@/components/FadeIn";
@@ -280,6 +281,7 @@ export default function ContactForm() {
 
       if (res.ok && body?.stage === "submitted") {
         setStatus("success");
+        trackConversion(CONVERSIONS.contactSubmitted, "contact_page");
         setFields(EMPTY);
         setFieldErrors({});
         setTouched({});
@@ -306,7 +308,7 @@ export default function ContactForm() {
   const messageLenColor =
     messageLen > MESSAGE_MAX ? "text-red-400" :
     messageLen > MESSAGE_MAX * 0.9 ? "text-yellow-400" :
-    "text-gray-600";
+    "text-gray-500";
 
   if (status === "success") {
     return (
@@ -371,7 +373,7 @@ export default function ContactForm() {
               onBlur={() => handleBlur("name")}
               data-error={fieldErrors.name ? true : undefined}
               placeholder="Your full name"
-              className={`w-full rounded-lg border px-4 py-3 text-sm text-white placeholder:text-gray-600 bg-white/[0.03] focus:outline-none focus:bg-white/[0.05] transition ${
+              className={`w-full rounded-lg border px-4 py-3 text-sm text-white placeholder:text-gray-500 bg-white/[0.03] focus:outline-none focus:bg-white/[0.05] transition ${
                 fieldErrors.name ? "border-red-500/60" : "border-white/10 focus:border-blue-500/50"
               }`}
             />
@@ -393,7 +395,7 @@ export default function ContactForm() {
               onBlur={() => handleBlur("email")}
               data-error={fieldErrors.email ? true : undefined}
               placeholder="you@example.com"
-              className={`w-full rounded-lg border px-4 py-3 text-sm text-white placeholder:text-gray-600 bg-white/[0.03] focus:outline-none focus:bg-white/[0.05] transition ${
+              className={`w-full rounded-lg border px-4 py-3 text-sm text-white placeholder:text-gray-500 bg-white/[0.03] focus:outline-none focus:bg-white/[0.05] transition ${
                 fieldErrors.email ? "border-red-500/60" : "border-white/10 focus:border-blue-500/50"
               }`}
             />
@@ -417,7 +419,7 @@ export default function ContactForm() {
             onBlur={() => handleBlur("organization")}
             data-error={fieldErrors.organization ? true : undefined}
             placeholder="Agency, department, or company"
-            className={`w-full rounded-lg border px-4 py-3 text-sm text-white placeholder:text-gray-600 bg-white/[0.03] focus:outline-none focus:bg-white/[0.05] transition ${
+            className={`w-full rounded-lg border px-4 py-3 text-sm text-white placeholder:text-gray-500 bg-white/[0.03] focus:outline-none focus:bg-white/[0.05] transition ${
               fieldErrors.organization ? "border-red-500/60" : "border-white/10 focus:border-blue-500/50"
             }`}
           />
@@ -465,7 +467,7 @@ export default function ContactForm() {
             onBlur={() => handleBlur("message")}
             data-error={fieldErrors.message ? true : undefined}
             placeholder="Tell us what you are working on, the outcome you need, and any timing or constraints."
-            className={`w-full rounded-lg border px-4 py-3 text-sm text-white placeholder:text-gray-600 bg-white/[0.03] focus:outline-none focus:bg-white/[0.05] transition resize-none ${
+            className={`w-full rounded-lg border px-4 py-3 text-sm text-white placeholder:text-gray-500 bg-white/[0.03] focus:outline-none focus:bg-white/[0.05] transition resize-none ${
               fieldErrors.message ? "border-red-500/60" : "border-white/10 focus:border-blue-500/50"
             }`}
           />

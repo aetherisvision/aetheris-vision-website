@@ -49,7 +49,7 @@ export default function SatelliteDisplay({ sources }: { sources: SatelliteSource
           </div>
           <figcaption className="flex items-start justify-between gap-4 border-t border-white/15 px-4 py-3">
             <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#9bc3df]">{source.label}</span>
-            <span className="text-right text-xs text-white/45">{source.region}</span>
+            <span className="text-right text-xs text-white/55">{source.region}</span>
           </figcaption>
         </figure>
       ))}

@@ -40,7 +40,7 @@ export default function Footer() {
                 verified inquiry form or Cal.com booking; the anti-scraping
                 policy (tests/features/steps/email-security.steps.test.tsx)
                 bans plaintext addresses and mailto: links. */}
-            <address className="mt-5 text-sm not-italic leading-6 text-white/45">
+            <address className="mt-5 text-sm not-italic leading-6 text-white/55">
               {SITE.address.street}
               <br />
               {SITE.address.locality}, {SITE.address.region} {SITE.address.postalCode}

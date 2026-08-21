@@ -20,12 +20,26 @@ function noStoreJson(body: Record<string, unknown>, init?: ResponseInit) {
 
 export async function POST(request: NextRequest) {
   const ip = getTrustedClientIp(request) ?? 'unknown'
-  const limit = await rateLimit(ip, {
-    limit: LOGIN_LIMIT,
-    windowMs: LOGIN_WINDOW_MS,
-    prefix: 'admin-login',
-    requireDistributed: process.env.NODE_ENV === 'production',
-  })
+  let limit: Awaited<ReturnType<typeof rateLimit>>
+  try {
+    limit = await rateLimit(ip, {
+      limit: LOGIN_LIMIT,
+      windowMs: LOGIN_WINDOW_MS,
+      prefix: 'admin-login',
+      requireDistributed: process.env.NODE_ENV === 'production',
+    })
+  } catch (error) {
+    // The shared limiter is required in production so instance spread cannot
+    // multiply the attempt budget. If it is unreachable, refuse cleanly rather
+    // than surfacing a 500 — an existing admin session keeps working.
+    console.error('Admin login rate limiter unavailable', {
+      error: error instanceof Error ? error.name : 'UnknownError',
+    })
+    return noStoreJson(
+      { error: 'Sign-in is briefly unavailable. Please try again shortly.' },
+      { status: 503, headers: { 'Retry-After': '30' } },
+    )
+  }
 
   if (!limit.success) {
     return noStoreJson(

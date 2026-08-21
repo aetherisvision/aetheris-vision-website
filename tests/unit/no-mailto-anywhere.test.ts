@@ -26,7 +26,7 @@ const files = [
   ...walk(join(ROOT, "app")),
   ...walk(join(ROOT, "components")),
   ...walk(join(ROOT, "lib", "insights")),
-  join(ROOT, "lib", "portfolio-data.ts"),
+  join(ROOT, "lib", "client-work.ts"),
 ].filter((f) => !EXEMPT.some((e) => f.includes(e)));
 
 describe("no scrapeable email on the public site", () => {

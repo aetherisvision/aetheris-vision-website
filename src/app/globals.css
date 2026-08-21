@@ -34,6 +34,15 @@ html {
   --color-av-light: var(--av-light);
   --color-av-cyan: var(--av-cyan);
   --color-av-ice: var(--av-ice);
+
+  /* Tailwind's stock gray-500 measures 4.21:1 against this site's near-black
+     background — just under the WCAG AA 4.5:1 floor for body text, and it is
+     used for captions, metadata, and placeholders throughout. Lightness 60%
+     clears the floor on every surface it actually lands on — 5.14:1 on the
+     #050505 page wrapper and 4.51:1 on the lighter --background (#101820),
+     which /privacy uses directly — while staying visually indistinguishable
+     from the stock tone. gray-600 (2.7:1) is not used for text at all. */
+  --color-gray-500: oklch(60% 0.027 264.364);
 }
 
 body {

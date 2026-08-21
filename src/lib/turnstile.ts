@@ -2,6 +2,7 @@ export const TURNSTILE_ACTIONS = {
   contact: 'contact',
   intake: 'intake',
   review: 'review',
+  capabilityStatement: 'capability-statement',
 } as const
 
 export type TurnstileAction = (typeof TURNSTILE_ACTIONS)[keyof typeof TURNSTILE_ACTIONS]

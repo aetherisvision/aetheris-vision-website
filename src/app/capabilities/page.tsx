@@ -1,7 +1,13 @@
 import type { ReactNode } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE, SAM } from "@/lib/constants";
+import CapabilityStatementForm from "@/components/CapabilityStatementForm";
+import {
+  CAPABILITY_STATEMENT_REQUEST_HREF,
+  CAPABILITY_STATEMENT_REVISION,
+  SITE,
+  SAM,
+} from "@/lib/constants";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata = createPageMetadata({
@@ -224,7 +230,7 @@ export default function CapabilitiesPage() {
                   href={CAPABILITY_STATEMENT_REQUEST_HREF}
                   className="inline-flex h-11 items-center gap-2 rounded-md border border-white/20 px-6 text-sm font-medium text-white hover:bg-white/10 transition"
                 >
-                  Request Statement (PDF)
+                  Get the Statement (PDF)
                 </a>
               </div>
             </div>
@@ -296,6 +302,35 @@ export default function CapabilitiesPage() {
             </div>
           </section>
 
+          {/* Capability statement delivery */}
+          <section
+            id="capability-statement"
+            className="mb-14 scroll-mt-24 border-t border-white/15 pt-10"
+            aria-labelledby="sec-capability-statement"
+          >
+            <div className="grid gap-8 md:grid-cols-2 md:gap-12">
+              <div>
+                <h2
+                  id="sec-capability-statement"
+                  className="mb-3 text-2xl font-semibold tracking-tight text-white"
+                >
+                  Get the capability statement
+                </h2>
+                <p className="font-light leading-relaxed text-gray-400">
+                  Enter an address and the current one-page statement arrives as a PDF
+                  attachment, ready to file or forward. It carries our UEI, CAGE code,
+                  NAICS and PSC codes, core competencies, and points of contact.
+                </p>
+                <p className="mt-4 text-xs font-light leading-relaxed text-gray-500">
+                  Updated {CAPABILITY_STATEMENT_REVISION}.
+                </p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.02] p-6">
+                <CapabilityStatementForm />
+              </div>
+            </div>
+          </section>
+
           {/* Footer CTA */}
           <footer className="border-t border-white/15 pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <p className="font-mono text-[11px] uppercase tracking-wider text-gray-500">
@@ -312,7 +347,7 @@ export default function CapabilitiesPage() {
                 href={CAPABILITY_STATEMENT_REQUEST_HREF}
                 className="inline-flex h-11 items-center justify-center text-sm text-gray-300 hover:text-white transition underline underline-offset-4 decoration-white/30"
               >
-                Request Capability Statement (PDF)
+                Get the capability statement (PDF)
               </a>
             </div>
           </footer>

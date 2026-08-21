@@ -210,7 +210,7 @@ export default function ServicesPage() {
                   href={CAPABILITY_STATEMENT_REQUEST_HREF}
                   className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition"
                 >
-                  Request the capability statement <ArrowRightIcon className="h-3.5 w-3.5" />
+                  Get the capability statement <ArrowRightIcon className="h-3.5 w-3.5" />
                 </a>
               </div>
             </section>

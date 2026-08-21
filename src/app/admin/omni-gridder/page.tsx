@@ -787,7 +787,7 @@ export default function OmniGridderDemoPage() {
                 </div>
               ))}
             </div>
-            <div className="mt-3 text-xs text-gray-600">
+            <div className="mt-3 text-xs text-gray-500">
               Target CRS: {selectedDataset.targetCrsLabel}
             </div>
           </div>
@@ -984,7 +984,7 @@ export default function OmniGridderDemoPage() {
               <ol className="space-y-2 border-l border-white/10 pl-5">
                 {timeline.map((entry, i) => (
                   <li key={i} className="text-sm text-gray-300 font-mono">
-                    <span className="text-gray-600">
+                    <span className="text-gray-500">
                       {new Date(entry.at).toLocaleTimeString()}
                     </span>{' '}
                     {entry.label}

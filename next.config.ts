@@ -27,6 +27,13 @@ const nextConfig: NextConfig = {
   // Keep JSDOM's runtime assets beside the package instead of relocating them
   // into individual server bundles. The PDF route still sanitizes with DOMPurify.
   serverExternalPackages: ["isomorphic-dompurify"],
+
+  // The capability statement is deliberately stored outside public/ so it is
+  // never directly fetchable — it is delivered by email from the API route.
+  // Tracing has to be told about it because nothing imports the file.
+  outputFileTracingIncludes: {
+    "/api/capability-statement": ["./private/capability-statement.pdf"],
+  },
   
   images: {
     remotePatterns: [
@@ -45,6 +52,25 @@ const nextConfig: NextConfig = {
   
   async redirects() {
     return [
+      // The demo-site catalogue was retired in August 2026. Invented reference
+      // work does not belong under a scientific consultancy's name; the one real
+      // engagement now lives on the web services page.
+      {
+        source: "/portfolio",
+        destination: "/services/web",
+        permanent: true,
+      },
+      {
+        source: "/portfolio/:slug*",
+        destination: "/services/web",
+        permanent: true,
+      },
+      // Retired dashboard route; it was a redirect-only page component.
+      {
+        source: "/metrics",
+        destination: "/omni-gridder",
+        permanent: true,
+      },
       // Retired product-style URL; kept as a permanent redirect for old links.
       {
         source: "/agentic-og",

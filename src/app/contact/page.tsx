@@ -114,7 +114,7 @@ export default function ContactPage() {
                 <p className="text-xs font-light leading-relaxed text-gray-500">
                   Procurement team?{" "}
                   <a href={CAPABILITY_STATEMENT_REQUEST_HREF} className="text-gray-300 transition hover:text-white">
-                    Request the capability statement
+                    Get the capability statement
                   </a>
                   .
                 </p>

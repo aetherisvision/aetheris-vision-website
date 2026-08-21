@@ -16,12 +16,25 @@ export async function POST(request: NextRequest) {
   // Keyed on the platform-trusted IP (spoofable X-Forwarded-For is ignored);
   // production requires the distributed store so instance spread cannot
   // multiply the budget.
-  const limit = await rateLimit(getTrustedClientIp(request) ?? 'unknown', {
-    limit: ATTEMPT_LIMIT,
-    windowMs: ATTEMPT_WINDOW_MS,
-    prefix: 'preview-login',
-    requireDistributed: process.env.NODE_ENV === 'production',
-  })
+  let limit: Awaited<ReturnType<typeof rateLimit>>
+  try {
+    limit = await rateLimit(getTrustedClientIp(request) ?? 'unknown', {
+      limit: ATTEMPT_LIMIT,
+      windowMs: ATTEMPT_WINDOW_MS,
+      prefix: 'preview-login',
+      requireDistributed: process.env.NODE_ENV === 'production',
+    })
+  } catch (error) {
+    // Same reasoning as the admin gate: fail closed, but say so plainly.
+    // Visitors already holding the preview cookie are unaffected.
+    console.error('Preview login rate limiter unavailable', {
+      error: error instanceof Error ? error.name : 'UnknownError',
+    })
+    return new NextResponse('Preview sign-in is briefly unavailable. Please try again shortly.', {
+      status: 503,
+      headers: { 'Retry-After': '30', 'Cache-Control': 'no-store' },
+    })
+  }
   if (!limit.success) {
     return new NextResponse('Too many attempts. Please wait before trying again.', {
       status: 429,

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import DatePicker from '../components/DatePicker'
+import { SITE } from '@/lib/constants'
 
 const dark = {
   surface: '#0d1b2e',
@@ -64,6 +65,12 @@ async function uploadReceipt(file: File): Promise<string> {
 
 const currentYear = new Date().getFullYear()
 const TAX_YEARS = [currentYear, currentYear - 1, currentYear - 2]
+
+/** Site-relative receipt references become absolute when they leave the app. */
+function absoluteReceiptUrl(receiptUrl?: string | null): string {
+  if (!receiptUrl) return ''
+  return receiptUrl.startsWith('/') ? `${SITE.url}${receiptUrl}` : receiptUrl
+}
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<Expense[]>([])
@@ -171,7 +178,9 @@ export default function ExpensesPage() {
         description: e.description,
         category: e.category,
         amount: parseFloat(e.amount),
-        receipt: e.receipt_url ?? '',
+        // Private receipts are stored as a site-relative viewer path; a
+        // spreadsheet leaving this app needs an absolute one to be usable.
+        receipt: absoluteReceiptUrl(e.receipt_url),
       }),
     )
 

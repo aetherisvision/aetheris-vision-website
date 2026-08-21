@@ -1,5 +1,5 @@
-import { put } from '@vercel/blob'
 import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
+import { putReceipt } from '@/lib/receipt-blob'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
   const filename = `receipts/${crypto.randomUUID()}.${ext}`
 
-  const blob = await put(filename, file, { access: 'public' })
+  const stored = await putReceipt(filename, file, file.type)
 
-  return NextResponse.json({ url: blob.url })
+  return NextResponse.json({ url: stored.reference })
 }

@@ -25,6 +25,8 @@ export function ogCard(title: string, subtitle: string): ImageResponse {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
+          {/* satori renders this card to a PNG; next/image has no role in that runtime. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={AV_MARK_DATA_URI} width={64} height={64} alt="" />
           <span style={{ fontSize: "18px", letterSpacing: "4px", color: "#5BA8D9", textTransform: "uppercase", fontWeight: 600 }}>
             {SITE.name}

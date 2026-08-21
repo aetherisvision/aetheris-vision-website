@@ -21,11 +21,11 @@
  */
 
 import { sql } from '@/lib/db'
-import { put } from '@vercel/blob'
 import { NextRequest, NextResponse } from 'next/server'
 import { timingSafeEqual } from 'node:crypto'
 import { isAdmin } from '@/lib/admin-auth'
 import { decryptToken } from '@/lib/token-crypto'
+import { putReceipt } from '@/lib/receipt-blob'
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const GMAIL_API = 'https://gmail.googleapis.com/gmail/v1'
@@ -218,13 +218,15 @@ async function processAccount(
         try {
           const att = await gmailGetAttachment(token, 'me', msgId, part.body.attachmentId)
           const bytes = Buffer.from(att.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64')
-          const blob = await put(
-            `receipts/gmail/${Date.now()}-${vendorName.toLowerCase()}.pdf`,
+          // Stored private where the blob store allows it, so possession of a
+          // URL is not authorization; putReceipt falls back to an unguessable
+          // public name when private writes are unavailable.
+          const stored = await putReceipt(
+            `receipts/gmail/${Date.now()}-${crypto.randomUUID()}.pdf`,
             bytes,
-            // Random suffix: the URL must not be enumerable from the cron schedule.
-            { access: 'public', contentType: 'application/pdf', addRandomSuffix: true }
+            'application/pdf',
           )
-          receiptUrl = blob.url
+          receiptUrl = stored.reference
         } catch { /* attachment upload optional — proceed without */ }
         break
       }

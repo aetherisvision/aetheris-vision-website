@@ -32,7 +32,7 @@ export default function IntakePage() {
               <p className="text-gray-400 font-light text-base leading-relaxed">
                 For website and web-application projects. Allow about ten minutes; answer what you can and leave the rest blank. We&apos;ll review your project and follow up within one business day.
               </p>
-              <p className="text-sm text-gray-600 mt-3">
+              <p className="text-sm text-gray-500 mt-3">
                 Prefer to talk first?{" "}
                 <Link href="/book" className="text-av-light hover:text-blue-300 transition">
                   Book a free 30-minute consultation →

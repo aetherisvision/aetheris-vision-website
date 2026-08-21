@@ -13,6 +13,9 @@ const ALLOWED_HOSTS = new Set([
 // Full-disk GOES frames run 1–3 MB; anything larger is not a satellite image.
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
+// Enough for a retired-satellite redirect chain, few enough to bound the work.
+const MAX_REDIRECTS = 3;
+
 export async function GET(req: NextRequest) {
   const raw = req.nextUrl.searchParams.get("url");
   if (!raw) {
@@ -31,16 +34,48 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const upstream = await fetch(raw, {
-      headers: {
-        // Present a neutral browser-like User-Agent
-        "User-Agent": "Mozilla/5.0 (compatible; AetherisBot/1.0)",
-      },
-      // An open redirect on an allowlisted host must not become an SSRF pivot.
-      redirect: "error",
-      // 10-second timeout
-      signal: AbortSignal.timeout(10_000),
-    });
+    // Redirects are followed by hand so that every hop is re-checked against
+    // the allowlist: an open redirect on a trusted host must not become an
+    // SSRF pivot, but refusing redirects outright breaks legitimate ones.
+    // NOAA permanently redirects retired satellites to their replacements
+    // (GOES16 -> GOES19 in 2026), so refusing them silently kills the imagery.
+    let target = raw;
+    let upstream: Response | null = null;
+
+    for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+      upstream = await fetch(target, {
+        headers: {
+          // Present a neutral browser-like User-Agent
+          "User-Agent": "Mozilla/5.0 (compatible; AetherisBot/1.0)",
+        },
+        redirect: "manual",
+        // 10-second timeout
+        signal: AbortSignal.timeout(10_000),
+      });
+
+      if (![301, 302, 303, 307, 308].includes(upstream.status)) break;
+
+      const location = upstream.headers.get("location");
+      if (!location) {
+        return new NextResponse("Upstream redirect without a target", { status: 502 });
+      }
+
+      let next: URL;
+      try {
+        next = new URL(location, target);
+      } catch {
+        return new NextResponse("Upstream redirect is not a valid URL", { status: 502 });
+      }
+      if (next.protocol !== "https:" || !ALLOWED_HOSTS.has(next.hostname)) {
+        return new NextResponse("Redirect target not allowed", { status: 403 });
+      }
+      target = next.toString();
+      upstream = null;
+    }
+
+    if (!upstream) {
+      return new NextResponse("Too many upstream redirects", { status: 502 });
+    }
 
     if (!upstream.ok) {
       return new NextResponse(`Upstream ${upstream.status}`, {

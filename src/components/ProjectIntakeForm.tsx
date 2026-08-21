@@ -317,10 +317,10 @@ export default function ProjectIntakeForm() {
         </p>
         <div className="mt-8">
           <a
-            href="/portfolio"
+            href="/services/web"
             className="inline-flex h-11 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition mr-4"
           >
-            View Our Portfolio
+            See what we build
           </a>
           <a
             href="/book"
