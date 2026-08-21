@@ -43,7 +43,7 @@ export default function Navbar() {
       }
     };
     const onResize = () => {
-      if (window.innerWidth >= 1024) setMobileOpen(false);
+      if (window.innerWidth >= 1280) setMobileOpen(false);
     };
 
     window.addEventListener("keydown", onKeyDown);
@@ -105,16 +105,18 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* Desktop Nav */}
-        <div className="hidden min-w-0 items-center gap-5 text-sm lg:flex xl:gap-7">
-          <nav aria-label="Primary navigation" className="flex min-w-0 gap-5 xl:gap-7">
+        {/* Desktop Nav — seven labels plus the CTA need ~1,190px beside the
+            logo, so the full row only appears from xl (1280px); the hamburger
+            covers 1024–1279px, where the last links would slide under the CTA. */}
+        <div className="hidden min-w-0 items-center gap-7 text-sm xl:flex">
+          <nav aria-label="Primary navigation" className="flex min-w-0 gap-7">
             {navLinks.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
                 aria-current={isActive(link.href) ? "page" : undefined}
                 className={clsx(
-                  "inline-flex h-11 items-center whitespace-nowrap border-b text-xs font-semibold uppercase tracking-[0.08em] transition-colors duration-200 xl:text-[13px]",
+                  "inline-flex h-11 items-center whitespace-nowrap border-b text-[13px] font-semibold uppercase tracking-[0.08em] transition-colors duration-200",
                   isActive(link.href)
                     ? "border-[#7eabca] text-white"
                     : "border-transparent text-white/60 hover:border-white/30 hover:text-white"
@@ -135,7 +137,7 @@ export default function Navbar() {
         {/* Mobile Hamburger */}
         <button
           ref={mobileTriggerRef}
-          className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-white/70 transition hover:bg-white/5 hover:text-white lg:hidden"
+          className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-white/70 transition hover:bg-white/5 hover:text-white xl:hidden"
           onClick={() => setMobileOpen((prev) => !prev)}
           aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
           aria-controls="mobile-navigation"
@@ -153,7 +155,7 @@ export default function Navbar() {
       {mobileOpen && (
         <div
           id="mobile-navigation"
-          className="overflow-y-auto overscroll-contain border-t border-white/15 bg-[#0a1628] lg:hidden"
+          className="overflow-y-auto overscroll-contain border-t border-white/15 bg-[#0a1628] xl:hidden"
           style={{ maxHeight: "calc(100dvh - 5rem - env(safe-area-inset-top, 0px))" }}
         >
           <nav
