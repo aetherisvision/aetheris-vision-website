@@ -1,4 +1,4 @@
-import { createHmac } from 'crypto'
+import { mintAdminSessionToken } from '../helpers/admin-session'
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -18,9 +18,7 @@ const TEST_PASSPHRASE = 'admin-leads-contract-test'
 const MANUAL_STAGES = ['new', 'contacted', 'qualified', 'proposal', 'lost'] as const
 
 function adminCookie(): string {
-  const token = createHmac('sha256', TEST_PASSPHRASE)
-    .update('admin-session')
-    .digest('hex')
+  const token = mintAdminSessionToken(TEST_PASSPHRASE)
   return `av-admin-session=${token}`
 }
 

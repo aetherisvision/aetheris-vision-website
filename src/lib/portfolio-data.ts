@@ -38,9 +38,9 @@ export const tiers: Tier[] = [
       "Mobile-first responsive design with accessibility standards",
       "Advanced contact forms with validation & CRM integration",
       "SEO optimization + structured data for rich results",
-      "Lighthouse 90+ performance guarantee",
+      "Lighthouse 90+ performance target",
       "SSL A+ with security headers & CSP implementation",
-      "Privacy Policy + Terms of Service (legally compliant)",
+      "Privacy Policy + Terms of Service templates",
       "Vercel Pro deployment with custom domain",
       "2 rounds of professional revisions",
       "15-day delivery with comprehensive testing",
@@ -143,9 +143,9 @@ export const sla = [
   { label: "Interactive prototype delivery", value: "5-7 business days" },
   { label: "Staging environment access", value: "10-14 business days" },
   { label: "Production deployment", value: "15-21 business days" },
-  { label: "Quality assurance period", value: "30 days comprehensive warranty" },
-  { label: "Priority support response", value: "4 hours on business days / 8 hours on weekends" },
-  { label: "Performance guarantee", value: "Lighthouse 90+ on every build" },
+  { label: "Post-launch support window", value: "30 days of fixes included" },
+  { label: "Support response", value: "Within one business day" },
+  { label: "Performance target", value: "Lighthouse 90+ measured on every build" },
 ];
 
 /* ── Security Features ── */
@@ -161,7 +161,7 @@ export const securityFeatures: IconFeature[] = [
   {
     icon: LockClosedIcon,
     title: "SSL & HTTPS by Default, A+ Rated",
-    desc: "Every site ships with automatic SSL certificates and enforced HTTPS, verified with an A+ rating from Qualys SSL Labs (ssllabs.com/ssltest). No extra cost, no configuration needed.",
+    desc: "Every site ships with automatic SSL certificates and enforced HTTPS, checked against Qualys SSL Labs (ssllabs.com/ssltest). No extra cost, no configuration needed.",
     link: "https://www.ssllabs.com/ssltest/",
   },
   {
@@ -171,7 +171,7 @@ export const securityFeatures: IconFeature[] = [
   },
   {
     icon: ServerStackIcon,
-    title: "99.9% Uptime on Vercel Edge",
+    title: "Hosted on Vercel's Global Edge",
     desc: "Sites are deployed to Vercel's global edge network with automatic failover, DDoS protection, and CDN-cached assets worldwide.",
   },
   {

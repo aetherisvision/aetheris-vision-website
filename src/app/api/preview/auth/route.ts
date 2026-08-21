@@ -5,10 +5,30 @@ import {
   safePreviewEqual,
   sanitizePreviewReturnPath,
 } from '@/lib/preview-auth'
+import { rateLimit } from '@/lib/rate-limit'
+import { getTrustedClientIp } from '@/lib/request-security'
 
 const SESSION_MAX_AGE = 30 * 24 * 60 * 60
+const ATTEMPT_LIMIT = 5
+const ATTEMPT_WINDOW_MS = 15 * 60 * 1000
 
 export async function POST(request: NextRequest) {
+  // Keyed on the platform-trusted IP (spoofable X-Forwarded-For is ignored);
+  // production requires the distributed store so instance spread cannot
+  // multiply the budget.
+  const limit = await rateLimit(getTrustedClientIp(request) ?? 'unknown', {
+    limit: ATTEMPT_LIMIT,
+    windowMs: ATTEMPT_WINDOW_MS,
+    prefix: 'preview-login',
+    requireDistributed: process.env.NODE_ENV === 'production',
+  })
+  if (!limit.success) {
+    return new NextResponse('Too many attempts. Please wait before trying again.', {
+      status: 429,
+      headers: { 'Retry-After': limit.retryAfterSeconds.toString(), 'Cache-Control': 'no-store' },
+    })
+  }
+
   const form = await request.formData()
   const password = form.get('password')
   const next = sanitizePreviewReturnPath(form.get('next'))

@@ -44,11 +44,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${SITE.url}/portfolio`,
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
-    {
       url: `${SITE.url}/blog`,
       changeFrequency: "weekly",
       priority: 0.7,
@@ -59,14 +54,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     {
-      url: `${SITE.url}/intake`,
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
-    {
       url: `${SITE.url}/services/web`,
-      changeFrequency: "monthly",
-      priority: 0.9,
+      changeFrequency: "yearly",
+      priority: 0.4,
     },
     {
       url: `${SITE.url}/contact`,

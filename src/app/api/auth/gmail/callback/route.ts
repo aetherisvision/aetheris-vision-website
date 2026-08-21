@@ -1,4 +1,5 @@
 import { sql } from '@/lib/db'
+import { encryptToken } from '@/lib/token-crypto'
 import { isAdmin, safeEqual, unauthorizedResponse } from '@/lib/admin-auth'
 import { clearStateCookie, stateCookieName } from '@/lib/gmail-oauth'
 import { NextRequest, NextResponse } from 'next/server'
@@ -79,7 +80,7 @@ export async function GET(request: NextRequest) {
 
   await sql`
     INSERT INTO oauth_tokens (account, refresh_token, email, updated_at)
-    VALUES (${account}, ${tokens.refresh_token}, ${email}, NOW())
+    VALUES (${account}, ${encryptToken(tokens.refresh_token)}, ${email}, NOW())
     ON CONFLICT (account) DO UPDATE
       SET refresh_token = EXCLUDED.refresh_token,
           email        = EXCLUDED.email,

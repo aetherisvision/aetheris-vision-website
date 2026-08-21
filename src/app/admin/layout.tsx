@@ -18,7 +18,6 @@ const MORE_NAV = [
   { href: '/admin/reviews', label: 'Reviews' },
   { href: '/admin/gmail', label: 'Gmail' },
   { href: '/admin/omni-gridder', label: 'Omni-Gridder' },
-  { href: '/performance', label: 'Performance' },
 ]
 
 const dark = {

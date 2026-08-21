@@ -3,7 +3,6 @@
 ## Directory Structure
 ```
 website/public/images/
-├── competencies/  # Homepage Core Competencies card backgrounds (see below)
 ├── home/          # Homepage hero/section backgrounds (see below)
 ├── blog/          # Blog page backgrounds (see below)
 ├── law/           # Legal imagery (courthouse, books, scales of justice)
@@ -64,7 +63,7 @@ import { getImageUrl } from '@/lib/images';
 
 ---
 
-# Self-hosted site backgrounds (`competencies/`, `home/`, `blog/`)
+# Self-hosted site backgrounds (`home/`, `blog/`, page folders)
 
 These were previously hotlinked from `images.unsplash.com`; three of those hotlinks
 went 404 in production (deleted from Unsplash), so all decorative backgrounds are now
@@ -74,17 +73,6 @@ All photos are from Unsplash and used under the [Unsplash License](https://unspl
 (free for commercial use, no attribution required). Sources recorded below for provenance.
 Files were downloaded pre-sized (≤1920px wide) and pre-compressed as WebP via Unsplash's
 imgix params (`fm=webp&q=55–75`), then served through `next/image`.
-
-## competencies/ — homepage Core Competencies card backgrounds
-
-| File | Shows | Source | Photographer |
-|---|---|---|---|
-| `applied-meteorology.webp` | Supercell storm structure with rain shafts over plains | https://unsplash.com/photos/drQtGkdBz8E (`photo-1618604943672-faaf34b4c3b2`) | Raychel Sanner |
-| `ai-ml-integration.webp` | Teal neural-mesh / point-cloud network visualization | https://unsplash.com/photos/11KDtiUWRq4 (`photo-1590859808308-3d2d9c515b1a`) | Uriel SC |
-| `web-digital-solutions.webp` | Dark laptop screen with source code | https://unsplash.com/photos/f77Bh3inUpE (`photo-1555066931-4365d14bab8c`) | Arnold Francisca |
-| `technical-advisory.webp` | Blue-lit geometric stair structure on dark | https://unsplash.com/photos/mufeb7CMUxo (`photo-1550602883-4c2d2c705db2`) | Dawid Sokołowski |
-| `technical-leadership.webp` | Chess pieces mid-game, dark monochrome | https://unsplash.com/photos/nAjil1z3eLk (`photo-1528819622765-d6bcf132f793`) | Felix Mittermeier |
-| `state-federal-contracting.webp` | U.S. Capitol dome at night, monochrome (brightness lifted via imgix `bri=22&gam=15` for card visibility) | https://unsplash.com/photos/vZkZH6K5mCo (`photo-1635255752782-febbe92c2da6`) | MIKE STOLL |
 
 ## insights/ — article diagrams
 
@@ -103,10 +91,7 @@ Traditional NWP + Forecasting Craft series: `richardsons-dream`, `inside-a-weath
 
 | File | Shows | Source | Photographer |
 |---|---|---|---|
-| `hero-earth.webp` | Earth at night from orbit (former hero fallback; currently unused) | https://unsplash.com/photos/Q1p7bh3SHj8 (`photo-1451187580459-43490279c0fa`) | NASA |
-| `hero-earth-weather.jpg` | Earth from orbit with active cloud cover — static fallback for mobile, reduced-motion, data-saver, and no-WebGL clients | Derived from the previous hero footage (preserved in Git history) | — |
-| `philosophy-atmosphere.webp` | Earth's clouds and atmosphere from the ISS | https://unsplash.com/photos/yZygONrUBe8 (`photo-1446776811953-b23d57bd21aa`) | NASA |
-| `cta-storm-watch.webp` | Storm observer standing on a plains dirt road as lightning strikes ("Ready to build something?" CTA card) | https://unsplash.com/photos/Kug730pBflE (`photo-1658590094012-4e6f34fcf3a2`) | Nikolas Noonan |
+| `applied-meteorology-workspace-v1.webp` | Forecaster's workspace (How We Work section) | Custom generated imagery (see below) | — |
 
 ## about/ — About page imagery
 
@@ -143,25 +128,8 @@ These assets are generated custom high-fidelity `.webp` images to ensure profess
 |---|---|---|
 | `ai-weather-analysis-gemini-1024x559.png` | Concept illustration of a robotic AI system analyzing hurricane forecast data | AI-generated with Google Gemini; supplied by Aetheris Vision |
 
-### home/ & competencies/ — Homepage backgrounds
-- `hero-earth.webp` - Cinematic view of Earth at night with glowing satellite tracks.
-- `hero-earth-weather.jpg` - Earth from orbit with cloud cover; static fallback for clients that do not load the WebGL globe.
-- `philosophy-atmosphere.webp` - Atmospheric limb sunrise from space.
-- `cta-storm-watch.webp` - Meteorologist facing a supercell storm on a plains road.
-- `applied-meteorology.webp` - Supercell storm cloud structure over plains.
-- `ai-ml-integration.webp` - Abstract glowing teal neural network point-cloud mesh.
-- `web-digital-solutions.webp` - Developer desk with colorful code on a laptop.
-- `technical-advisory.webp` - Architectural skyscraper facade with blueprint overlay.
-- `technical-leadership.webp` - Dramatic photo of a hand moving a dark glass chess piece.
-- `state-federal-contracting.webp` - Illuminated United States Capitol dome at night.
-
-### clients/ — Potential Client Showcase
-- `client_law.webp` - Modern conference room meeting with lawyers.
-- `client_healthcare.webp` - Professional female physician in a clinic.
-- `client_restaurant.webp` - Upscale dining room and chef plating in the background.
-- `client_contractor.webp` - Contractor and client reviewing blueprints at a home framing site.
-- `client_tech.webp` - Sleek dark mode SaaS analytics dashboard UI.
-- `client_government.webp` - EOC operations center weather briefing for officials.
+### home/ — Homepage backgrounds
+- `applied-meteorology-workspace-v1.webp` - Forecaster's workspace with charts and displays (How We Work section).
 
 ### Demos (restaurant/, contractor/, healthcare/) — Photography-forward Demo upgrades
 - `restaurant/restaurant_hero_dining_1920x1080.webp/.jpg` - Cozy dining room during evening service.

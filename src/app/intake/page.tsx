@@ -7,6 +7,7 @@ import Link from "next/link";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata = createPageMetadata({
+  noIndex: true,
   title: `Start a Web Project | ${SITE.name}`,
   description:
     "Tell us about your website or web application project in plain English. We'll follow up within one business day.",

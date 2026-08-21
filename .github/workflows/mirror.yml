@@ -52,8 +52,10 @@ jobs:
             exit 1
           fi
 
-          git remote add gitlab \
-            "https://oauth2:${GITLAB_MIRROR_TOKEN}@${GITLAB_REPO#https://}"
-          git push gitlab --force --prune \
+          # Credentials travel in a header, not the remote URL, so git's own
+          # error output and `git remote -v` never echo the token.
+          AUTH_HEADER="AUTHORIZATION: basic $(printf 'oauth2:%s' "$GITLAB_MIRROR_TOKEN" | base64 | tr -d '\n')"
+          git -c "http.${GITLAB_REPO}.extraheader=${AUTH_HEADER}" \
+            push "$GITLAB_REPO" --force --prune \
             'refs/mirror/heads/*:refs/heads/*' \
             'refs/tags/*:refs/tags/*'

@@ -1,4 +1,4 @@
-import { createHmac } from "crypto";
+import { mintAdminSessionToken } from '../helpers/admin-session'
 import { NextRequest } from "next/server";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
@@ -27,7 +27,7 @@ const TEST_BUCKET = "test-staging-bucket";
 const TEST_INPUT_URI = "gs://aetherisvision-og-demo/inputs/gfs/hgt500_2026070706_f006.nc";
 
 function hmacToken(passphrase: string): string {
-  return createHmac("sha256", passphrase).update("admin-session").digest("hex");
+  return mintAdminSessionToken(passphrase);
 }
 
 function adminHeaders(ip: string): Record<string, string> {

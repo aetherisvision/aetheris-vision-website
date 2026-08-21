@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'File must be under 10 MB' }, { status: 400 })
   }
 
-  const filename = `receipts/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+  const filename = `receipts/${crypto.randomUUID()}.${ext}`
 
   const blob = await put(filename, file, { access: 'public' })
 

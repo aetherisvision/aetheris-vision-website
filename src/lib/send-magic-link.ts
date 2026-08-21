@@ -15,10 +15,11 @@ export async function sendMagicLink(email: string): Promise<void> {
   // persisted, so a DB read cannot recover a usable login token.
   const token = crypto.randomBytes(32).toString('hex')
   const tokenHash = hashMagicLinkToken(token)
-  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+  const expires = new Date(Date.now() + 30 * 60 * 1000) // 30 minutes
 
-  // One active token per email at a time
-  await sql`DELETE FROM verification_tokens WHERE identifier = ${email}`
+  // Purge only expired tokens: a fresh request must not invalidate a live link
+  // the client is about to click (each token is single-use regardless).
+  await sql`DELETE FROM verification_tokens WHERE identifier = ${email} AND expires < NOW()`
 
   await sql`
     INSERT INTO verification_tokens (identifier, token, expires)
@@ -37,7 +38,7 @@ export async function sendMagicLink(email: string): Promise<void> {
         <h2 style="color:#0f172a;margin-bottom:8px;">Aetheris Vision LLC</h2>
         <p style="color:#334155;font-size:16px;margin-bottom:24px;">
           Click the button below to log in to your client portal.
-          This link expires in 24 hours and can only be used once.
+          This link expires in 30 minutes and can only be used once.
         </p>
         <a href="${confirmUrl}"
            style="display:inline-block;background:#29426C;color:#fff;text-decoration:none;

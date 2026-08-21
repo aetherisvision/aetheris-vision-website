@@ -104,8 +104,8 @@ export default function ContactPage() {
                     </div>
                     <p className="text-sm font-light leading-relaxed text-gray-400">
                       Building a website or web application?{" "}
-                      <a href="/intake" className="text-blue-400 transition hover:text-blue-300">
-                        Start a web project →
+                      <a href="/services/web" className="text-blue-400 transition hover:text-blue-300">
+                        See web development services →
                       </a>
                     </p>
                   </div>

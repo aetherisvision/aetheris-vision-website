@@ -102,13 +102,16 @@ jobs:
 
       - name: Build
         run: npm run build
+        # Build-time placeholders only: nothing in the build reads a live
+        # service, and keeping production secrets out of CI means a
+        # compromised action or dependency cannot exfiltrate them.
         env:
-          PREVIEW_PASSWORD: ${{ secrets.PREVIEW_PASSWORD }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          PREVIEW_PASSWORD: ci-placeholder
+          DATABASE_URL: postgres://placeholder:placeholder@localhost:5432/placeholder
+          NEXTAUTH_SECRET: ci-placeholder-secret
           NEXTAUTH_URL: https://aetherisvision.com
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          RESEND_API_KEY: re_placeholder
+          STRIPE_SECRET_KEY: sk_test_placeholder
+          STRIPE_WEBHOOK_SECRET: whsec_placeholder
+          ANTHROPIC_API_KEY: sk-ant-placeholder
 

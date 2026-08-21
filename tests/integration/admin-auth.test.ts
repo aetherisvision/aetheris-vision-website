@@ -1,4 +1,4 @@
-import { createHmac } from 'crypto'
+import { createHash, createHmac, randomBytes } from 'crypto'
 import { NextRequest } from 'next/server'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
@@ -8,9 +8,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const TEST_PASSPHRASE = 'super-secret-test-passphrase'
 
-function hmacToken(passphrase: string): string {
-  return createHmac('sha256', passphrase).update('admin-session').digest('hex')
+/**
+ * Mint a valid session token the way src/lib/admin-auth.ts does when no
+ * ADMIN_SESSION_SECRET is configured: `<sid>.<exp>.<HMAC(key, "sid.exp")>`
+ * with key = sha256("av-admin-session-key|" + passphrase) as hex.
+ */
+function hmacToken(passphrase: string, ttlSeconds = 3600): string {
+  const key = createHash('sha256').update(`av-admin-session-key|${passphrase}`).digest('hex')
+  const sid = randomBytes(16).toString('hex')
+  const exp = Math.floor(Date.now() / 1000) + ttlSeconds
+  const sig = createHmac('sha256', key).update(`${sid}.${exp}`).digest('hex')
+  return `${sid}.${exp}.${sig}`
 }
+
+const TOKEN_RE = /^[a-f0-9]{32}\.\d{1,12}\.[a-f0-9]{64}$/
 
 /** Build a NextRequest with an optional av-admin-session cookie. */
 function makeAdminRequest(
@@ -34,10 +45,30 @@ describe('getAdminSessionToken()', () => {
     vi.resetModules()
   })
 
-  it('returns hex HMAC-SHA256 of "admin-session" keyed by ADMIN_PASSPHRASE', async () => {
+  it('mints a well-formed, verifiable, unexpired session token', async () => {
     vi.stubEnv('ADMIN_PASSPHRASE', TEST_PASSPHRASE)
-    const { getAdminSessionToken } = await import('@/lib/admin-auth')
-    expect(getAdminSessionToken()).toBe(hmacToken(TEST_PASSPHRASE))
+    const { getAdminSessionToken, verifyAdminSessionToken } = await import('@/lib/admin-auth')
+    const token = getAdminSessionToken()
+    expect(token).toMatch(TOKEN_RE)
+    expect(verifyAdminSessionToken(token)).toBe(true)
+    // A token minted by the test helper with the same derivation also verifies
+    expect(verifyAdminSessionToken(hmacToken(TEST_PASSPHRASE))).toBe(true)
+  })
+
+  it('rejects an expired token and a token signed under another passphrase', async () => {
+    vi.stubEnv('ADMIN_PASSPHRASE', TEST_PASSPHRASE)
+    const { verifyAdminSessionToken } = await import('@/lib/admin-auth')
+    expect(verifyAdminSessionToken(hmacToken(TEST_PASSPHRASE, -60))).toBe(false)
+    expect(verifyAdminSessionToken(hmacToken('some-other-passphrase'))).toBe(false)
+  })
+
+  it('signs with ADMIN_SESSION_SECRET when configured, not the passphrase-derived key', async () => {
+    vi.stubEnv('ADMIN_PASSPHRASE', TEST_PASSPHRASE)
+    vi.stubEnv('ADMIN_SESSION_SECRET', 'a-dedicated-session-signing-secret')
+    const { getAdminSessionToken, verifyAdminSessionToken } = await import('@/lib/admin-auth')
+    expect(verifyAdminSessionToken(getAdminSessionToken())).toBe(true)
+    expect(verifyAdminSessionToken(hmacToken(TEST_PASSPHRASE))).toBe(false)
+    vi.stubEnv('ADMIN_SESSION_SECRET', '')
   })
 
   it('returns a different token when ADMIN_PASSPHRASE changes', async () => {
@@ -125,7 +156,7 @@ describe('POST /api/admin/auth', () => {
     expect(res.status).toBe(401)
   })
 
-  it('returns 200 and sets HMAC cookie on correct passphrase', async () => {
+  it('returns 200 and sets a signed, expiring session cookie on correct passphrase', async () => {
     const { POST } = await import('@/app/api/admin/auth/route')
     const req = new NextRequest('http://localhost/api/admin/auth', {
       method: 'POST',
@@ -140,8 +171,11 @@ describe('POST /api/admin/auth', () => {
 
     // Cookie must carry the HMAC token, not the bare string 'authenticated'
     const setCookie = res.headers.get('set-cookie') ?? ''
-    const expectedToken = hmacToken(TEST_PASSPHRASE)
-    expect(setCookie).toContain(`av-admin-session=${expectedToken}`)
+    const match = setCookie.match(/av-admin-session=([^;]+)/)
+    expect(match).not.toBeNull()
+    expect(match![1]).toMatch(TOKEN_RE)
+    const { verifyAdminSessionToken } = await import('@/lib/admin-auth')
+    expect(verifyAdminSessionToken(match![1])).toBe(true)
     expect(setCookie).not.toContain('authenticated')
   })
 

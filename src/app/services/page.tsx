@@ -227,12 +227,8 @@ export default function ServicesPage() {
               <p className="text-sm text-gray-500 font-light leading-relaxed max-w-2xl">
                 We also build and maintain custom web applications — including this
                 site — for select clients.{" "}
-                <a href="/services/web" className="text-gray-400 hover:text-white underline underline-offset-2 transition">
-                  Web development services
-                </a>{" "}
-                ·{" "}
-                <a href="/portfolio" className="text-gray-400 hover:text-white underline underline-offset-2 transition inline-flex items-center gap-1">
-                  Portfolio <CodeBracketIcon className="h-3.5 w-3.5" />
+                <a href="/services/web" className="text-gray-400 hover:text-white underline underline-offset-2 transition inline-flex items-center gap-1">
+                  Web development services <CodeBracketIcon className="h-3.5 w-3.5" />
                 </a>
               </p>
             </section>

@@ -25,6 +25,7 @@ import { put } from '@vercel/blob'
 import { NextRequest, NextResponse } from 'next/server'
 import { timingSafeEqual } from 'node:crypto'
 import { isAdmin } from '@/lib/admin-auth'
+import { decryptToken } from '@/lib/token-crypto'
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const GMAIL_API = 'https://gmail.googleapis.com/gmail/v1'
@@ -220,7 +221,8 @@ async function processAccount(
           const blob = await put(
             `receipts/gmail/${Date.now()}-${vendorName.toLowerCase()}.pdf`,
             bytes,
-            { access: 'public', contentType: 'application/pdf' }
+            // Random suffix: the URL must not be enumerable from the cron schedule.
+            { access: 'public', contentType: 'application/pdf', addRandomSuffix: true }
           )
           receiptUrl = blob.url
         } catch { /* attachment upload optional — proceed without */ }
@@ -281,9 +283,16 @@ export async function GET(request: NextRequest) {
 
   // Load refresh tokens from DB (set via /admin/gmail)
   const tokenRows = await sql`SELECT account, refresh_token FROM oauth_tokens WHERE account IN ('biz', 'per')`
-  const tokenMap = Object.fromEntries(
-    (tokenRows as { account: string; refresh_token: string }[]).map(r => [r.account, r.refresh_token])
-  )
+  // Decrypt per row: an unreadable token (key rotated without re-connecting
+  // that mailbox) disables only that account, never the whole run.
+  const tokenMap: Record<string, string> = {}
+  for (const row of tokenRows as { account: string; refresh_token: string }[]) {
+    try {
+      tokenMap[row.account] = decryptToken(row.refresh_token)
+    } catch {
+      console.error(`receipts cron: cannot decrypt refresh token for "${row.account}" — reconnect it at /admin/gmail`)
+    }
+  }
 
   if (!tokenMap.biz && !tokenMap.per) {
     return NextResponse.json({ error: 'No Gmail accounts connected. Visit /admin/gmail to connect.' }, { status: 400 })

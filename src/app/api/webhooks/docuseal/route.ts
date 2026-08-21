@@ -47,7 +47,20 @@ function verifySignature(
   signatureHeader: string,
   secret: string,
 ): boolean {
-  const parts = signatureHeader.trim().split('.')
+  const header = signatureHeader.trim()
+  if (!header) return false
+
+  // DocuSeal's hosted "Secret" setting sends the configured value verbatim;
+  // self-signed deliveries use `<unix-ts>.<hex HMAC(ts "." body)>`. Match on
+  // that exact shape — a static secret may itself contain dots — and compare
+  // each in constant time; anything else fails closed.
+  if (!/^\d+\.[a-f0-9]{64}$/i.test(header)) {
+    const given = Buffer.from(header)
+    const want = Buffer.from(secret)
+    return want.length >= 32 && given.length === want.length && timingSafeEqual(given, want)
+  }
+
+  const parts = header.split('.')
   if (parts.length !== 2) return false
 
   const [timestamp, signature] = parts

@@ -18,7 +18,7 @@
   - Flow: /api/auth/send-magic → /client/confirm → /api/auth/magic
 - Payments: Stripe (STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET in Vercel env)
 - E-signing: Docuseal API
-- Site lock: src/proxy.ts — basic-auth via PREVIEW_PASSWORD env var (default: marston-av)
+- Site lock: src/proxy.ts — signed preview cookie via PREVIEW_PASSWORD env var (value in ~/.secrets / Vercel; never commit it)
 
 ## Key Files
 - src/lib/constants.ts — SITE object (legalName, email, tagline, etc.) — always source business facts from here

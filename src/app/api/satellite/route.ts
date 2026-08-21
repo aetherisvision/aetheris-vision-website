@@ -66,6 +66,9 @@ export async function GET(req: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": contentType,
+        // Upstream is a trusted CDN, but never let a served SVG be treated as
+        // active content by a browser that sniffs.
+        "X-Content-Type-Options": "nosniff",
         // Cache for 10 minutes — satellite imagery updates that frequently
         "Cache-Control": "public, max-age=600, s-maxage=600",
       },

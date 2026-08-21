@@ -2,7 +2,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
 import { SITE } from "@/lib/constants";
-import { publisherRef } from "@/lib/jsonld";
 import {
   tiers,
   processSteps,
@@ -21,6 +20,7 @@ import Image from "next/image";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata = createPageMetadata({
+  noIndex: true,
   title: `Enterprise Web Development | ${SITE.name}`,
   description:
     "Professional web development for serious businesses. Custom platforms, business applications, and enterprise-grade websites. From $2,800.",
@@ -84,10 +84,10 @@ export default function PortfolioPage() {
               {[
                 { icon: ClockIcon, label: "15-21 Day Delivery", sub: "Professional development cycle" },
                 { icon: CpuChipIcon, label: "Enterprise Architecture", sub: "Scalable & maintainable" },
-                { icon: ShieldCheckIcon, label: "SOC-2 Ready", sub: "Enterprise security standards" },
-                { icon: CheckIcon, label: "30-90 Day Warranty", sub: "Comprehensive guarantee" },
-                { icon: SparklesIcon, label: "Lighthouse 90+", sub: "Performance guaranteed" },
-                { icon: LockClosedIcon, label: "GDPR/CCPA Compliant", sub: "Data protection ready" },
+                { icon: ShieldCheckIcon, label: "Security Headers & CSP", sub: "Hardened by default" },
+                { icon: CheckIcon, label: "30-Day Support Window", sub: "Fixes after launch" },
+                { icon: SparklesIcon, label: "Lighthouse 90+ Target", sub: "Measured on every build" },
+                { icon: LockClosedIcon, label: "Privacy-Conscious", sub: "Consent and data handling built in" },
               ].map(({ icon: Icon, label, sub }) => (
                 <div key={label} className="flex items-start gap-3">
                   <Icon className="h-5 w-5 text-blue-400 mt-0.5 shrink-0" />
@@ -169,9 +169,9 @@ export default function PortfolioPage() {
 
           {/* ── SLA ── */}
           <FadeIn>
-            <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Service Commitments</p>
+            <p className="text-sm font-semibold tracking-widest text-blue-500 uppercase mb-3">Typical Engagement</p>
             <h2 className="text-3xl md:text-4xl font-semibold text-white mb-4 tracking-tight">What You Get</h2>
-            <p className="text-gray-400 mb-10 max-w-xl">These are commitments, not estimates.</p>
+            <p className="text-gray-400 mb-10 max-w-xl">Typical scope and timelines; every engagement is confirmed in writing before work begins.</p>
           </FadeIn>
 
           <FadeIn>
@@ -464,45 +464,6 @@ export default function PortfolioPage() {
 
       <Footer />
 
-      {/* JSON-LD Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Service",
-            name: "Enterprise Website Development",
-            provider: publisherRef,
-            description:
-              "Enterprise-grade website development for professional businesses. Custom platforms with advanced features delivered in 15-21 business days with comprehensive warranties.",
-            offers: [
-              {
-                "@type": "Offer",
-                name: "Professional Package",
-                price: "2800",
-                priceCurrency: "USD",
-                description: "Enterprise-grade foundation with custom design, security headers, 30-day warranty, delivered in 15 business days.",
-              },
-              {
-                "@type": "Offer",
-                name: "Business Package",
-                price: "4800",
-                priceCurrency: "USD",
-                description: "Advanced business platform with integrations, user authentication, CRM connectivity, delivered in 21 business days.",
-              },
-              {
-                "@type": "Offer",
-                name: "Enterprise Package",
-                price: "8500",
-                priceCurrency: "USD",
-                description: "Comprehensive custom solution with role-based access, advanced features, priority support, custom timeline.",
-              },
-            ],
-            areaServed: "US",
-            serviceType: "Web Development",
-          }),
-        }}
-      />
     </div>
   );
 }

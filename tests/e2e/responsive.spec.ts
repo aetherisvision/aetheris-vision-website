@@ -22,7 +22,6 @@ const publicRoutes = [
   "/review",
   "/privacy",
   "/security",
-  "/performance",
   "/portfolio/analytics-dashboard",
   "/portfolio/wp-editorial",
   "/portfolio/portal-pro",

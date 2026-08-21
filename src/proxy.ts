@@ -2,27 +2,39 @@ import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/rate-limit'
 import { hasPreviewSession } from '@/lib/preview-auth'
 
+const hex = (bytes: ArrayBuffer) =>
+  Array.from(new Uint8Array(bytes)).map(b => b.toString(16).padStart(2, '0')).join('')
+
 /**
  * Verify the admin session cookie using Web Crypto (Edge Runtime compatible).
- * Mirrors the Node.js HMAC-SHA256 logic in src/lib/admin-auth.ts.
+ * Token format and key derivation mirror src/lib/admin-auth.ts exactly:
+ * `<sid>.<exp>.<HMAC-SHA256(key, "sid.exp")>`, key = ADMIN_SESSION_SECRET or
+ * sha256("av-admin-session-key|" + ADMIN_PASSPHRASE) as hex.
  */
 async function isAdminSession(request: NextRequest): Promise<boolean> {
   const cookieValue = request.cookies.get('av-admin-session')?.value
-  const passphrase = process.env.ADMIN_PASSPHRASE
-  if (!cookieValue || !passphrase) return false
+  if (!cookieValue) return false
   const enc = new TextEncoder()
+  let keyMaterial = process.env.ADMIN_SESSION_SECRET
+  if (!keyMaterial) {
+    const passphrase = process.env.ADMIN_PASSPHRASE
+    if (!passphrase) return false
+    keyMaterial = hex(await crypto.subtle.digest('SHA-256', enc.encode(`av-admin-session-key|${passphrase}`)))
+  }
+  const parts = cookieValue.split('.')
+  if (parts.length !== 3) return false
+  const [sid, exp, sig] = parts
+  if (!/^[a-f0-9]{32}$/.test(sid) || !/^\d{1,12}$/.test(exp) || !/^[a-f0-9]{64}$/.test(sig)) return false
+  if (Number(exp) <= Math.floor(Date.now() / 1000)) return false
   const key = await crypto.subtle.importKey(
-    'raw', enc.encode(passphrase), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+    'raw', enc.encode(keyMaterial), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
   )
-  const sig = await crypto.subtle.sign('HMAC', key, enc.encode('admin-session'))
-  const expected = Array.from(new Uint8Array(sig))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('')
+  const expected = hex(await crypto.subtle.sign('HMAC', key, enc.encode(`${sid}.${exp}`)))
   // Constant-time comparison via length check + XOR fold
-  if (cookieValue.length !== expected.length) return false
+  if (sig.length !== expected.length) return false
   let diff = 0
   for (let i = 0; i < expected.length; i++) {
-    diff |= cookieValue.charCodeAt(i) ^ expected.charCodeAt(i)
+    diff |= sig.charCodeAt(i) ^ expected.charCodeAt(i)
   }
   return diff === 0
 }
@@ -124,8 +136,14 @@ export async function proxy(request: NextRequest) {
   // legitimately polls job status every few seconds (a 3-method comparison
   // run alone is ~100 requests), and the old shared 100/15min budget made
   // the Download button 429 right after a successful run.
-  const isAuthedAdminApi =
-    isApiRoute && pathname.startsWith('/api/admin/') && (await isAdminSession(request))
+  const isAdminApiPath =
+    pathname.startsWith('/api/admin/') ||
+    pathname.startsWith('/api/expenses') ||
+    pathname.startsWith('/api/receipts/')
+  // Verify once; both the rate-limit tier and the guard below reuse the result.
+  const hasAdminSession =
+    isAdminApiPath || pathname.startsWith('/admin') ? await isAdminSession(request) : false
+  const isAuthedAdminApi = isApiRoute && pathname.startsWith('/api/admin/') && hasAdminSession
   const maxRequests = isAuthedAdminApi ? 2000 : 100
   let rateRemaining = maxRequests - 1
   if (isApiRoute) {
@@ -145,18 +163,15 @@ export async function proxy(request: NextRequest) {
 
   // Admin API guard — every handler also checks isAdmin() itself; this makes a
   // forgotten check in a future route fail closed instead of open.
-  const isAdminApi =
-    (pathname.startsWith('/api/admin/') && pathname !== '/api/admin/auth') ||
-    pathname.startsWith('/api/expenses') ||
-    pathname.startsWith('/api/receipts/')
-  if (isAdminApi && !(await isAdminSession(request))) {
+  const isAdminApi = isAdminApiPath && pathname !== '/api/admin/auth'
+  if (isAdminApi && !hasAdminSession) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   // Admin auth guard
   if (pathname.startsWith('/admin')) {
     const isLoginPage = pathname === '/admin/login'
-    const hasSession = await isAdminSession(request)
+    const hasSession = hasAdminSession
 
     if (!isLoginPage && !hasSession) {
       const loginUrl = new URL('/admin/login', request.url)

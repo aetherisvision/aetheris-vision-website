@@ -190,16 +190,6 @@ export default function Home() {
 
               <div className="divide-y divide-[#17252f]/15 border-y border-[#17252f]/15">
                 <div className="py-7">
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#486890]">Technology</p>
-                  <h3 className="mt-2 font-serif text-2xl text-[#0a1628]">Omni Gridder</h3>
-                  <p className="mt-3 max-w-xl text-base leading-7 text-[#42565f]">
-                    In-house regridding technology, applied within engagements to move weather and Earth-system data between grids, formats, and projections while preserving scientific meaning.
-                  </p>
-                  <div className="mt-4">
-                    <TextLink href="/omni-gridder">See an Omni Gridder example</TextLink>
-                  </div>
-                </div>
-                <div className="py-7">
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#486890]">Expertise</p>
                   <h3 className="mt-2 font-serif text-2xl text-[#0a1628]">Systems &amp; Process Expertise</h3>
                   <p className="mt-3 max-w-xl text-base leading-7 text-[#42565f]">
@@ -219,7 +209,17 @@ export default function Home() {
                     <TextLink href="#how-we-work">How we work</TextLink>
                   </div>
                 </div>
-              </div>
+                <div className="py-7">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#486890]">Technology</p>
+                  <h3 className="mt-2 font-serif text-2xl text-[#0a1628]">Omni Gridder</h3>
+                  <p className="mt-3 max-w-xl text-base leading-7 text-[#42565f]">
+                    In-house regridding technology, applied within engagements to move weather and Earth-system data between grids, formats, and projections while preserving scientific meaning.
+                  </p>
+                  <div className="mt-4">
+                    <TextLink href="/omni-gridder">See an Omni Gridder example</TextLink>
+                  </div>
+                </div>
+</div>
             </div>
           </div>
         </section>

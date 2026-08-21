@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { ADMIN_COOKIE, getAdminSessionToken, safeEqual } from '@/lib/admin-auth'
+import {
+  ADMIN_COOKIE,
+  ADMIN_SESSION_REMEMBER_TTL_SECONDS,
+  ADMIN_SESSION_TTL_SECONDS,
+  createAdminSessionToken,
+  safeEqual,
+} from '@/lib/admin-auth'
 import { rateLimit } from '@/lib/rate-limit'
+import { getTrustedClientIp } from '@/lib/request-security'
 
 const LOGIN_LIMIT = 5
 const LOGIN_WINDOW_MS = 15 * 60 * 1000
@@ -12,14 +19,12 @@ function noStoreJson(body: Record<string, unknown>, init?: ResponseInit) {
 }
 
 export async function POST(request: NextRequest) {
-  const ip =
-    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
+  const ip = getTrustedClientIp(request) ?? 'unknown'
   const limit = await rateLimit(ip, {
     limit: LOGIN_LIMIT,
     windowMs: LOGIN_WINDOW_MS,
     prefix: 'admin-login',
+    requireDistributed: process.env.NODE_ENV === 'production',
   })
 
   if (!limit.success) {
@@ -48,9 +53,10 @@ export async function POST(request: NextRequest) {
     return noStoreJson({ error: 'Incorrect passphrase' }, { status: 401 })
   }
 
-  const token = getAdminSessionToken()
+  const ttl = rememberMe ? ADMIN_SESSION_REMEMBER_TTL_SECONDS : ADMIN_SESSION_TTL_SECONDS
+  const token = createAdminSessionToken(ttl)
   if (!token) {
-    // ADMIN_PASSPHRASE not configured — fail closed rather than setting an empty-key HMAC
+    // No signing key configured — fail closed rather than minting an unsigned session
     return noStoreJson({ error: 'Server misconfiguration' }, { status: 500 })
   }
 
@@ -62,7 +68,7 @@ export async function POST(request: NextRequest) {
     httpOnly: true,
     secure: useSecure,
     sameSite: 'lax',
-    maxAge: rememberMe ? 30 * 24 * 60 * 60 : 8 * 60 * 60,
+    maxAge: ttl,
     path: '/',
   })
 

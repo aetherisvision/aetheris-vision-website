@@ -14,10 +14,12 @@ describe("Regression: sitemap completeness", () => {
     }
   });
 
-  it("sitemap includes portfolio page", async () => {
+  it("sitemap excludes the demoted web-agency pages (noindex: portfolio, intake)", async () => {
     const { default: sitemap } = await import("@/app/sitemap");
     const urls = sitemap().map((e) => e.url);
-    expect(urls).toContain(`${SITE.url}/portfolio`);
+    expect(urls).not.toContain(`${SITE.url}/portfolio`);
+    expect(urls).not.toContain(`${SITE.url}/intake`);
+    expect(urls).toContain(`${SITE.url}/services/web`);
   });
 
   it("sitemap excludes fictional portfolio demo pages", async () => {
