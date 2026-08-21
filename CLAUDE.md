@@ -83,7 +83,7 @@ Value lives in Vercel env / `~/.secrets` — not hardcoded in the repo.
 | `/admin/expenses` | Expense tracking |
 | `/admin/gmail` | Gmail OAuth for receipt scanning |
 
-⚠️ Admin portal auth is currently open — flag any work near `/admin/*` routes.
+Admin auth verified 2026-08-21: `/admin/*` pages are gated in `proxy.ts` and every `/api/admin/*` handler calls `isAdmin()` (timing-safe passphrase compare, rate-limited login). Still flag any work near `/admin/*` routes.
 
 ---
 
@@ -102,7 +102,7 @@ DATABASE_URL=           # Neon
 NEXTAUTH_URL=
 NEXTAUTH_SECRET=
 ADMIN_PASSPHRASE=       # /admin/* protection
-PREVIEW_PASSWORD=       # Site lock (default: marston-av)
+PREVIEW_PASSWORD=       # Site lock (value in ~/.secrets / Vercel env; rotate to a long random string)
 CRON_SECRET=            # Vercel cron auth
 STRIPE_SECRET_KEY=      # Stripe dashboard → Developers → API keys
 STRIPE_WEBHOOK_SECRET=

@@ -10,13 +10,14 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
 import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE, SAM } from "@/lib/constants";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: `Weather AI, GIS & Geospatial Services | ${SITE.name}`,
   description:
     "Applied meteorology, AI weather forecasting, GIS, geospatial regridding, CRS transformation, and scientific data-pipeline consulting.",
-  alternates: { canonical: "/services" },
-};
+  path: "/services",
+});
 
 const transformationCapabilities = [
   {
@@ -56,7 +57,7 @@ const consultingAreas = [
   {
     icon: ShieldCheckIcon,
     title: "Technical Program Leadership",
-    body: "Integrated product team direction for defense and civil-agency modernization efforts — technology assessment, risk-managed deployment, and workforce enablement.",
+    body: "Technical direction for integrated product teams on defense and civil-agency modernization: technology assessment, risk-managed deployment, and staff training.",
   },
 ];
 

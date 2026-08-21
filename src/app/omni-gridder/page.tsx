@@ -24,7 +24,7 @@ export default function OmniGridderPage() {
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[1.35fr_0.65fr] lg:items-end lg:gap-20 lg:px-10 lg:py-24">
             <div>
               <Link href="/" className="text-xs font-bold uppercase tracking-[0.18em] text-[#486890] hover:underline">
-                Aetheris Vision Consulting
+                Aetheris Vision
               </Link>
               <p className="mt-8 text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Featured Example</p>
               <h1 className="mt-4 font-serif text-[clamp(3.4rem,8vw,7rem)] leading-[0.92] tracking-[-0.05em] text-[#0a1628]">Omni Gridder</h1>

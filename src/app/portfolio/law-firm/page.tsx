@@ -266,7 +266,7 @@ export default function LawFirmPage() {
                     <span className="text-yellow-600 text-lg">✉️</span>
                     <div>
                       <p className="font-semibold">Email</p>
-                      <a href="mailto:info@mitchellassociateslaw.com" className="text-[#1e3a5f] hover:text-yellow-600 transition-colors">info@mitchellassociateslaw.com</a>
+                      <span className="text-[#1e3a5f] hover:text-yellow-600 transition-colors">info@example.com</span>
                     </div>
                   </div>
                 </div>

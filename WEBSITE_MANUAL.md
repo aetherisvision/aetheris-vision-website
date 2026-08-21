@@ -505,7 +505,7 @@ They live in two places:
 
 #### PREVIEW_PASSWORD
 - **What it does:** Password-protects the site before it goes public. Anyone trying to visit aetherisvision.com must enter this password.
-- **Default value:** `marston-av` (built into the code — no env var needed unless you want to change it)
+- **Default value:** `(value in ~/.secrets / Vercel env)` (built into the code — no env var needed unless you want to change it)
 - **How to change it:** Add `PREVIEW_PASSWORD=your-new-password` to Vercel env vars
 - **At go-live:** Remove this env var entirely AND remove the auth check from `src/middleware.ts`
 
@@ -704,7 +704,7 @@ The email is sent server-side from `/api/contact` (not from the visitor's browse
 
 **File:** `src/middleware.ts`
 
-Before the site goes live, every page is password protected. When a visitor goes to any page, the server checks for a password before showing anything. The default password is `marston-av`.
+Before the site goes live, every page is password protected. When a visitor goes to any page, the server checks for a password before showing anything. The default password is `(value in ~/.secrets / Vercel env)`.
 
 **How to enter it:** When the browser shows a login popup, leave the username blank and type the password.
 
@@ -789,7 +789,7 @@ The CSP is the most complex security feature. Here's how it works:
 
 ### "The site shows a password prompt I can't get past"
 
-The password is `marston-av`. Enter it in the password field (leave username blank). If you've changed `PREVIEW_PASSWORD` in Vercel, use that new value instead.
+The password is `(value in ~/.secrets / Vercel env)`. Enter it in the password field (leave username blank). If you've changed `PREVIEW_PASSWORD` in Vercel, use that new value instead.
 
 ### "I accidentally deleted a file"
 

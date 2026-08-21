@@ -3,7 +3,7 @@ import { SAM, SITE } from "@/lib/constants";
 import { AV_MARK_DATA_URI } from "../og-mark";
 
 export const runtime = "edge";
-export const alt = `Capabilities Statement | ${SITE.name}`;
+export const alt = `Capability Statement | ${SITE.name}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

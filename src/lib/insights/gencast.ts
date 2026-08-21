@@ -58,7 +58,7 @@ GenCast defines the research frontier for probabilistic AI forecasting, and its 
 
 - Price, I., et al. (2024). ["Probabilistic weather forecasting with machine learning."](https://doi.org/10.1038/s41586-024-08252-9) *Nature*, 637, 84–90.
 - Price, I., et al. (2023). ["GenCast: Diffusion-based ensemble forecasting for medium-range weather."](https://arxiv.org/abs/2312.15796) The extended preprint.
-- [google-deepmind/graphcast on GitHub](https://github.com/google-deepmind/graphcast) — the repository also hosts GenCast code and weights.
+- [google-deepmind/weathernext on GitHub (formerly graphcast)](https://github.com/google-deepmind/weathernext) — the repository also hosts GenCast code and weights.
 - Ho, J., et al. (2020). ["Denoising Diffusion Probabilistic Models."](https://arxiv.org/abs/2006.11239) The diffusion foundation, for readers who want the generative machinery itself.
 
 *Next profile: [AIFS](/blog/aifs) — the first AI model made operational by a major forecast center.*

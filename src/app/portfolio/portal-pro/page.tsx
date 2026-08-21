@@ -65,7 +65,7 @@ const mockUsers: User[] = [
   {
     id: 1,
     name: "Sarah Chen",
-    email: "sarah@techcorp.com",
+    email: "sarah@example.com",
     role: "admin",
     status: "active",
     lastLogin: "2 minutes ago",
@@ -74,7 +74,7 @@ const mockUsers: User[] = [
   {
     id: 2,
     name: "Marcus Johnson",
-    email: "marcus@designstudio.com", 
+    email: "marcus@example.com", 
     role: "manager",
     status: "active",
     lastLogin: "1 hour ago",
@@ -83,7 +83,7 @@ const mockUsers: User[] = [
   {
     id: 3,
     name: "Lisa Rodriguez",
-    email: "lisa@startup.io",
+    email: "lisa@example.com",
     role: "customer",
     status: "active", 
     lastLogin: "3 hours ago",
@@ -92,7 +92,7 @@ const mockUsers: User[] = [
   {
     id: 4,
     name: "David Kim",
-    email: "david@enterprise.com",
+    email: "david@example.com",
     role: "customer",
     status: "inactive",
     lastLogin: "2 days ago", 
@@ -663,11 +663,11 @@ function ManagerDashboard({ projects }: { projects: Project[] }) {
                     {project.dueDate}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button className="text-indigo-600 hover:text-indigo-900 mr-3">
-                      <PencilSquareIcon className="h-4 w-4" />
+                    <button className="text-indigo-600 hover:text-indigo-900 mr-3" aria-label="Edit project">
+                      <PencilSquareIcon className="h-4 w-4" aria-hidden="true" />
                     </button>
-                    <button className="text-red-600 hover:text-red-900">
-                      <TrashIcon className="h-4 w-4" />
+                    <button className="text-red-600 hover:text-red-900" aria-label="Delete project">
+                      <TrashIcon className="h-4 w-4" aria-hidden="true" />
                     </button>
                   </td>
                 </tr>

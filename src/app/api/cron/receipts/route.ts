@@ -23,6 +23,7 @@
 import { sql } from '@/lib/db'
 import { put } from '@vercel/blob'
 import { NextRequest, NextResponse } from 'next/server'
+import { timingSafeEqual } from 'node:crypto'
 import { isAdmin } from '@/lib/admin-auth'
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
@@ -257,7 +258,11 @@ async function processAccount(
 function authorizeCron(request: NextRequest): boolean {
   const secret = process.env.CRON_SECRET
   const authHeader = request.headers.get('authorization')
-  if (secret && authHeader === `Bearer ${secret}`) return true
+  if (secret && authHeader) {
+    const expected = Buffer.from(`Bearer ${secret}`)
+    const given = Buffer.from(authHeader)
+    if (expected.length === given.length && timingSafeEqual(expected, given)) return true
+  }
   // Manual runs from /admin/gmail carry the admin session cookie.
   return isAdmin(request)
 }

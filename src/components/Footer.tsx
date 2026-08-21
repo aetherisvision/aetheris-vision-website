@@ -50,24 +50,24 @@ export default function Footer() {
           <div className="md:text-right">
             <nav aria-label="Footer navigation" className="flex max-w-xl flex-wrap gap-x-6 gap-y-3 md:ml-auto md:justify-end">
               {footerLinks.map((link) => (
-                <a key={link.label} href={link.href} className="inline-flex min-h-11 items-center text-sm text-white/70 transition hover:text-white">
+                <Link key={link.label} href={link.href} className="inline-flex min-h-11 items-center text-sm text-white/70 transition hover:text-white">
                   {link.label}
-                </a>
+                </Link>
               ))}
             </nav>
             <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 md:justify-end">
-              <a href="/capabilities#contracting-codes" className="inline-flex min-h-11 items-center text-xs text-white/65 transition hover:text-white">
+              <Link href="/capabilities#contracting-codes" className="inline-flex min-h-11 items-center text-xs text-white/65 transition hover:text-white">
                 NAICS &amp; PSC Codes
-              </a>
-              <a href={CAPABILITY_STATEMENT_REQUEST_HREF} className="inline-flex min-h-11 items-center text-xs text-white/65 transition hover:text-white">
+              </Link>
+              <Link href={CAPABILITY_STATEMENT_REQUEST_HREF} className="inline-flex min-h-11 items-center text-xs text-white/65 transition hover:text-white">
                 Capability Statement
-              </a>
-              <a href="/client/login" className="inline-flex min-h-11 items-center text-xs text-white/65 transition hover:text-white">
+              </Link>
+              <Link href="/client/login" className="inline-flex min-h-11 items-center text-xs text-white/65 transition hover:text-white">
                 Client Portal
-              </a>
-              <a href="/privacy" className="inline-flex min-h-11 items-center text-xs text-white/65 transition hover:text-white">
+              </Link>
+              <Link href="/privacy" className="inline-flex min-h-11 items-center text-xs text-white/65 transition hover:text-white">
                 Privacy
-              </a>
+              </Link>
             </div>
           </div>
         </div>

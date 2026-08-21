@@ -4,7 +4,9 @@ import type { NextConfig } from "next";
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
-  { key: "X-XSS-Protection", value: "1; mode=block" },
+  // The legacy auditor is disabled on purpose: "1; mode=block" can open
+  // side channels in old browsers, and the nonce-based CSP does the real work.
+  { key: "X-XSS-Protection", value: "0" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
     key: "Strict-Transport-Security",
@@ -12,7 +14,7 @@ const securityHeaders = [
   },
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
+    value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
   },
 ];
 

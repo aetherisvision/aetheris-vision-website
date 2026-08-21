@@ -351,7 +351,7 @@ export default function PhotographyStudioPage() {
       {/* Footer */}
       <footer className="border-t border-white/5 px-6 py-8 text-center text-sm text-stone-500" style={{ background: "#0d0d0d" }}>
         <p className="font-semibold text-white tracking-wide">Lumen & Co. Photography</p>
-        <p className="mt-1">Oklahoma City, OK · (405) 555-0242 · hello@lumenandco.demo</p>
+        <p className="mt-1">Oklahoma City, OK · (405) 555-0242 · hello@example.com</p>
         <p className="mt-4 text-xs text-stone-700">
           Demo site built by{" "}
           <Link href="/portfolio" className="text-stone-500 hover:underline">{SITE.legalName}</Link>

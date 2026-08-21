@@ -226,7 +226,7 @@ export default function TradesContractorPage() {
       <footer className="bg-zinc-900 px-6 py-8 text-center text-sm text-zinc-500">
         <p className="font-bold text-white">Summit Home Services</p>
         <p className="mt-1">Licensed · Bonded · Insured · OKC Metro</p>
-        <p className="mt-1">(405) 555-0142 · info@summithomeservices.com</p>
+        <p className="mt-1">(405) 555-0142 · info@example.com</p>
         <p className="mt-4 text-xs text-zinc-600">
           Demo site built by{" "}
           <Link href="/portfolio" className="text-blue-400 hover:underline">{SITE.legalName}</Link>

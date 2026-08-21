@@ -5,7 +5,7 @@ import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE, SAM } from "@/lib/constants";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata = createPageMetadata({
-  title: `Capabilities Statement | ${SITE.name}`,
+  title: `Capability Statement | ${SITE.name}`,
   description:
     "Aetheris Vision registration data, contracting codes, core competencies, and differentiators for state and federal procurement.",
   path: "/capabilities",
@@ -17,7 +17,7 @@ const companyData: { label: string; value: ReactNode }[] = [
   { label: "UEI", value: <span className="font-mono">{SAM.uei}</span> },
   { label: "CAGE", value: <span className="font-mono">{SAM.cage}</span> },
   { label: "SAM.gov", value: "Active" },
-  { label: "Primary NAICS", value: `${SAM.naicsPrimary}: Scientific & Technical Consulting` },
+  { label: "Primary NAICS", value: `${SAM.naicsPrimary}: Other Scientific and Technical Consulting Services` },
   {
     label: "Certifications",
     value: SAM.setAsidePills.join(". "),
@@ -153,6 +153,7 @@ function CodeTable({
   rows: { code: string; description: string; primary?: boolean }[];
 }) {
   return (
+    <div className="overflow-x-auto">
     <table className="w-full text-sm">
       <caption className="sr-only">{caption}</caption>
       <thead className="sr-only">
@@ -179,6 +180,7 @@ function CodeTable({
         ))}
       </tbody>
     </table>
+    </div>
   );
 }
 
@@ -198,7 +200,7 @@ export default function CapabilitiesPage() {
                   Government Contracting
                 </p>
                 <h1 className="text-4xl md:text-5xl font-semibold text-white tracking-tight mb-4">
-                  Capabilities Statement
+                  Capability Statement
                 </h1>
                 <p className="text-gray-400 font-light leading-relaxed">
                   Scientific, technical, and program support for state and federal agencies, backed
@@ -310,7 +312,7 @@ export default function CapabilitiesPage() {
                 href={CAPABILITY_STATEMENT_REQUEST_HREF}
                 className="inline-flex h-11 items-center justify-center text-sm text-gray-300 hover:text-white transition underline underline-offset-4 decoration-white/30"
               >
-                Request Capabilities Statement (PDF)
+                Request Capability Statement (PDF)
               </a>
             </div>
           </footer>

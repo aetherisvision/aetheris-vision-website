@@ -168,7 +168,7 @@ export default function GeospatialRegriddingPage() {
               Have GIS or Earth data that does not line up with the system that needs it?
             </p>
             <Link href="/contact#contact-form" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-white px-7 text-sm font-medium text-black transition hover:bg-gray-200">
-              Discuss your data <ArrowRightIcon className="h-4 w-4" />
+              Discuss Your Data <ArrowRightIcon className="h-4 w-4" />
             </Link>
           </div>
         </section>

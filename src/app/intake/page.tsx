@@ -9,7 +9,7 @@ import { createPageMetadata } from "@/lib/seo";
 export const metadata = createPageMetadata({
   title: `Start a Web Project | ${SITE.name}`,
   description:
-    "Tell us about your website or web application project in plain English. Takes 2 minutes. We'll follow up within one business day.",
+    "Tell us about your website or web application project in plain English. We'll follow up within one business day.",
   path: "/intake",
 });
 
@@ -29,7 +29,7 @@ export default function IntakePage() {
                 Tell us what you need built
               </h1>
               <p className="text-gray-400 font-light text-base leading-relaxed">
-                For website and web-application projects. 5 quick fields, no jargon required. We&apos;ll review your project and follow up within one business day.
+                For website and web-application projects. Allow about ten minutes; answer what you can and leave the rest blank. We&apos;ll review your project and follow up within one business day.
               </p>
               <p className="text-sm text-gray-600 mt-3">
                 Prefer to talk first?{" "}

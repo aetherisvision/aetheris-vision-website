@@ -58,7 +58,7 @@ export default function BlogClientPage({
               fill
               className="object-cover opacity-80 group-hover:opacity-95 group-hover:scale-[1.02] transition duration-500"
               sizes="(max-width: 768px) 100vw, 768px"
-              priority
+              preload
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/85 via-[#050505]/20 to-transparent" />
             <span className="absolute top-4 left-4 font-mono text-[11px] uppercase tracking-wider text-white/90 border border-white/25 bg-black/40 backdrop-blur-sm rounded-sm px-2 py-1">

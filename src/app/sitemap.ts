@@ -3,6 +3,10 @@ import { posts, parsePostDate } from "@/lib/posts";
 import { SITE } from "@/lib/constants";
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  // While the preview lock is on, robots.ts disallows everything; publishing the
+  // full route list here anyway would contradict it. Launch flips both together.
+  if (process.env.PREVIEW_PASSWORD) return [];
+
   const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: SITE.url,

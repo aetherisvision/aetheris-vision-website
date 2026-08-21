@@ -59,7 +59,7 @@ const techStack = [
   { name: "Neon / Postgres", role: "Database" },
   { name: "Vercel", role: "Hosting" },
   { name: "Resend", role: "Email" },
-  { name: "Docuseal", role: "E‑Signing" },
+  { name: "DocuSeal", role: "E‑Signing" },
 ];
 
 const process = [
@@ -71,7 +71,7 @@ const process = [
   {
     step: "02",
     title: "Scoping Call",
-    body: "A 30-45 minute conversation to align on goals, timeline, and budget. No obligation, just clarity.",
+    body: "A 30-minute conversation to align on goals, timeline, and budget. No obligation, just clarity.",
   },
   {
     step: "03",
@@ -206,10 +206,10 @@ export default function WebServicesPage() {
                   Work Directly with the Founder
                 </h2>
                 <p className="text-gray-400 font-light leading-relaxed max-w-2xl mb-6">
-                  The founder and lead engineer of Aetheris Vision writes and ships the code himself, drawing on a PhD in atmospheric and environmental science, service as a USAF veteran, and a U.S. Government Secret clearance held across military and civilian assignments — a background built on systems that have to work under pressure. When you hire us, you get one experienced engineer from start to finish.
+                  The founder and principal consultant of Aetheris Vision writes and ships the code himself, drawing on a Ph.D. in atmospheric and environmental science, service as a USAF weather forecaster, and a U.S. Government Secret clearance held across military and civilian assignments — a background built on systems that have to work under pressure. When you hire us, you get one experienced engineer from start to finish.
                 </p>
                 <div className="flex flex-wrap gap-3">
-                  {["Founder & Lead Engineer", "PhD Environmental Science", "USAF Veteran", "U.S. Government Secret Clearance", "Mustang, OK"].map((tag) => (
+                  {["Founder & Principal Consultant", "Ph.D., Atmospheric and Environmental Science", "USAF Veteran", "U.S. Government Secret Clearance", "Mustang, OK"].map((tag) => (
                     <span key={tag} className="rounded-full border border-white/10 px-3 py-1 text-xs text-gray-400">
                       {tag}
                     </span>

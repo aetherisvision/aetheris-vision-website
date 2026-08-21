@@ -30,7 +30,7 @@ export const organizationJsonLd = {
   founder: {
     "@type": "Person" as const,
     "@id": `${SITE.url}/about#marston-ward`,
-    name: "Marston Ward, PhD, CCM",
+    name: "Marston Ward, Ph.D., CCM",
     url: `${SITE.url}/about`,
     jobTitle: "Founder and Principal Consultant",
     sameAs: CCM_CREDENTIAL.profileUrl,

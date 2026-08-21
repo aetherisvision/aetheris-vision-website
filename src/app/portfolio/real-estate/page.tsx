@@ -258,7 +258,7 @@ export default function RealEstatePage() {
 
       <footer id="contact" className="bg-[#1c1917] border-t border-stone-800 px-6 py-8 text-center text-sm text-stone-500">
         <p className="font-semibold text-white">Pinnacle Realty Group</p>
-        <p className="mt-1">Oklahoma City Metro · (405) 555-0180 · hello@pinnaclerealty.demo</p>
+        <p className="mt-1">Oklahoma City Metro · (405) 555-0180 · hello@example.com</p>
         <p className="mt-4 text-xs text-stone-600">
           Demo site built by{" "}
           <Link href="/portfolio" className="text-stone-400 hover:underline">{SITE.legalName}</Link>

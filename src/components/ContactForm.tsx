@@ -392,7 +392,7 @@ export default function ContactForm() {
               onChange={(e) => update("email", e.target.value)}
               onBlur={() => handleBlur("email")}
               data-error={fieldErrors.email ? true : undefined}
-              placeholder="you@company.com"
+              placeholder="you@example.com"
               className={`w-full rounded-lg border px-4 py-3 text-sm text-white placeholder:text-gray-600 bg-white/[0.03] focus:outline-none focus:bg-white/[0.05] transition ${
                 fieldErrors.email ? "border-red-500/60" : "border-white/10 focus:border-blue-500/50"
               }`}

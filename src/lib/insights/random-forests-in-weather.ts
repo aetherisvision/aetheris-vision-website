@@ -45,7 +45,7 @@ Notice the pattern: in every case the physics is still done by the NWP model. Th
 ## Weaknesses and limits
 
 - **No sense of space.** A forest sees a table of numbers. It does not know that two grid points are neighbors, that a cold front is a coherent object, or that a storm is moving. Spatial structure has to be hand-engineered into predictors — storm-relative helicity, gradients, area maxima — and anything you fail to encode, the model cannot use. This is precisely the gap convolutional networks fill, which is the subject of [the next article in this series](/blog/cnns-in-weather).
-- **No extrapolation.** Tree predictions are averages of training outcomes, so a forest cannot output a value beyond the range it has seen. In a warming climate, or for a record-breaking event, that is a hard ceiling — the model literally cannot imagine a new extreme.
+- **No extrapolation.** Tree predictions are averages of training outcomes, so a forest cannot output a value beyond the range it has seen. When the climate drifts from the training record, or for a record-breaking event, that is a hard ceiling — the model literally cannot imagine a new extreme.
 - **A fixed-relationship assumption.** The learned NWP-to-truth correction is tied to the NWP model version it trained on. Upgrade the physics model, and yesterday's corrections partially stale — a real maintenance cost that rarely appears in papers.
 - **No dynamics.** These models predict a quantity at a time; they do not evolve the atmosphere. They are diagnostic tools, not forecast engines.
 

@@ -96,7 +96,7 @@ function LoginForm() {
           onChange={e => setEmail(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          placeholder="you@company.com"
+          placeholder="you@example.com"
           style={{
             display: 'block', width: '100%', boxSizing: 'border-box',
             padding: '13px 16px', borderRadius: '10px',

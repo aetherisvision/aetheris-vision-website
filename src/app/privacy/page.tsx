@@ -36,7 +36,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold text-white mb-3">1. Who We Are</h2>
             <p>
               {SITE.legalName} (&quot;{SITE.name}&quot;, &quot;we&quot;, &quot;us&quot;) is a
-              Veteran-Owned Small Business in the United States. This policy covers personal
+              veteran-owned small business in the United States. This policy covers personal
               data handled through our website at{" "}
               <strong className="text-gray-300">{SITE.url.replace(/^https?:\/\//, "")}</strong>.
               We do not sell, rent, or broker personal data.
@@ -94,7 +94,7 @@ export default function PrivacyPage() {
                 submission are sent to Anthropic for processing.
               </li>
               <li><strong className="text-gray-300">Stripe</strong> &mdash; invoicing and payment processing.</li>
-              <li><strong className="text-gray-300">Docuseal</strong> &mdash; document e-signature.</li>
+              <li><strong className="text-gray-300">DocuSeal</strong> &mdash; document e-signature.</li>
               <li><strong className="text-gray-300">Resend</strong> &mdash; transactional email (sign-in links, invoices, form notifications, and confirmations).</li>
             </ul>
             <p className="mt-3 text-sm text-gray-500">

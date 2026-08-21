@@ -38,7 +38,7 @@ const capabilities = [
   },
   {
     title: "Uncertainty and decision support",
-    body: "Translate ensembles, probabilistic output, confidence limits, and known model failure modes into information people and automated systems can use responsibly.",
+    body: "Translate ensembles, probabilistic output, confidence limits, and known model failure modes into information people and automated systems can act on within known limits.",
   },
   {
     title: "Operational delivery",

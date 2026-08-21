@@ -59,7 +59,7 @@ GraphCast remains the deterministic reference model in research, while its linea
 
 - Lam, R., et al. (2023). ["Learning skillful medium-range global weather forecasting."](https://doi.org/10.1126/science.adi2336) *Science*, 382, 1416–1421.
 - Lam, R., et al. (2022). ["GraphCast: Learning skillful medium-range global weather forecasting."](https://arxiv.org/abs/2212.12794) The extended preprint, with fuller methods.
-- [google-deepmind/graphcast on GitHub](https://github.com/google-deepmind/graphcast) — code, weights, and example notebooks.
+- [google-deepmind/weathernext on GitHub (formerly graphcast)](https://github.com/google-deepmind/weathernext) — code, weights, and example notebooks.
 - Ben Bouallègue, Z., et al. (2024). ["The Rise of Data-Driven Weather Forecasting."](https://doi.org/10.1175/BAMS-D-23-0162.1) *BAMS*, 105. Independent verification.
 
 *Next profile: [GenCast](/blog/gencast).*

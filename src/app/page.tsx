@@ -235,7 +235,7 @@ export default function Home() {
               </div>
               <div className="border-y border-white/25 py-8 sm:py-10">
                 <p className="max-w-3xl font-serif text-2xl leading-snug text-white/95 sm:text-3xl">
-                  We begin with what your project needs and where focused support can make the greatest difference
+                  We begin with what your project needs and where focused support can make the greatest difference.
                 </p>
               </div>
             </div>

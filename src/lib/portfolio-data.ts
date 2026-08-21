@@ -332,7 +332,7 @@ export const demos: Demo[] = [
     slug: "veteran-nonprofit",
     title: "Veterans Forward Oklahoma",
     industry: "Nonprofit",
-    desc: "Impact stats, programs, donate & volunteer CTAs. Patriotic red, white & blue; emotion-first storytelling with bold stat callouts for a rallying, community-centered aesthetic.",
+    desc: "Impact stats, programs, donate & volunteer CTAs. Patriotic red, white & blue; story-led layout with bold stat callouts for a rallying, bold stat callouts.",
     image: "/images/portfolio/veteran-nonprofit.webp",
     stack: "Next.js · Tailwind CSS",
     highlight: "Story-led giving — impact stats, donate and volunteer funnels",

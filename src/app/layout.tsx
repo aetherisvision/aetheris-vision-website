@@ -110,7 +110,9 @@ export default async function RootLayout({
                 gtag('js', new Date());
                 gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
                   page_title: document.title,
-                  page_location: window.location.href
+                  // Origin + path only: query strings carry magic-link tokens
+                  // on /client/confirm and must never reach analytics.
+                  page_location: window.location.origin + window.location.pathname
                 });
               `}
             </Script>
@@ -121,7 +123,7 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify([organizationJsonLd, websiteJsonLd]),
+            __html: JSON.stringify([organizationJsonLd, websiteJsonLd]).replace(/</g, "\\u003c"),
           }}
         />
       </body>

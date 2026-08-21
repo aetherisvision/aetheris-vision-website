@@ -8,13 +8,13 @@ const article: ArticleSeed = {
   category: CATEGORY_PROFILES,
   author: AUTHOR,
   summary:
-    "Microsoft's Aurora tests the foundation-model thesis on the atmosphere: pretrain one large model on diverse Earth-system data, then fine-tune it cheaply for weather, air quality, and ocean waves.",
+    "Microsoft's Aurora tests the foundation-model thesis on the atmosphere: pretrain one large model on varied Earth-system data, then fine-tune it cheaply for weather, air quality, and ocean waves.",
   content: `
 *Part of our model-profile series. Template and critical lens described in [the foundations article](/blog/transformers-and-graph-networks-in-weather).*
 
 ## What it is
 
-Aurora, from Microsoft Research, published in *Nature* in May 2025, imports the strategy that transformed language AI into Earth science: **pretrain one large "foundation model" on as much diverse atmospheric data as possible, then fine-tune it — cheaply — for specific tasks.** Where the other models in this series were each built for one job, Aurora's claim is generality: the same pretrained core was adapted to medium-range weather at 0.1° resolution, air quality, ocean waves, and tropical cyclone tracks, each fine-tune a small fraction of the original training cost.
+Aurora, from Microsoft Research, published in *Nature* in May 2025, imports the strategy that transformed language AI into Earth science: **pretrain one large "foundation model" on as much varied atmospheric data as possible, then fine-tune it — cheaply — for specific tasks.** Where the other models in this series were each built for one job, Aurora's claim is generality: the same pretrained core was adapted to medium-range weather at 0.1° resolution, air quality, ocean waves, and tropical cyclone tracks, each fine-tune a small fraction of the original training cost.
 
 ![Schematic: one pretrained atmospheric core, fine-tuned into separate heads for weather, air quality, and ocean waves.](/images/insights/aurora-foundation.svg)
 

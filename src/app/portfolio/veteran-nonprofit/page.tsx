@@ -68,7 +68,7 @@ export default function VeteranNonprofitPage() {
       <section className="bg-[#0f172a] px-6 py-28 text-white">
         <div className="mx-auto max-w-4xl">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-semibold text-gray-300">
-            Oklahoma 501(c)(3) · EIN 73-XXXXXXX
+            Oklahoma 501(c)(3) · 501(c)(3) nonprofit
           </div>
           <h1 className="mb-5 text-5xl font-extrabold leading-tight sm:text-6xl">
             They Served.<br />
@@ -182,7 +182,7 @@ export default function VeteranNonprofitPage() {
                     <span className="text-red-600 text-lg">✉️</span>
                     <div>
                       <p className="font-semibold">Email</p>
-                      <a href="mailto:info@veteransforwardok.org" className="text-red-700 hover:text-red-800 transition-colors">info@veteransforwardok.org</a>
+                      <span className="text-red-700 hover:text-red-800 transition-colors">info@example.com</span>
                     </div>
                   </div>
                 </div>
@@ -217,7 +217,7 @@ export default function VeteranNonprofitPage() {
             </div>
             <div className="mb-3 h-10 rounded border border-zinc-200 bg-zinc-50" />
             <button className="w-full rounded-full bg-red-700 py-3 font-bold text-white hover:bg-red-800 transition-colors">Donate Securely</button>
-            <p className="mt-3 text-xs text-zinc-400">Tax-deductible · 501(c)(3) · EIN 73-XXXXXXX</p>
+            <p className="mt-3 text-xs text-zinc-400">Tax-deductible · 501(c)(3) · 501(c)(3) nonprofit</p>
           </div>
 
           {/* Volunteer */}
@@ -237,7 +237,7 @@ export default function VeteranNonprofitPage() {
 
       <footer className="bg-zinc-900 px-6 py-8 text-center text-sm text-zinc-500">
         <p className="font-bold text-white">Veterans Forward Oklahoma</p>
-        <p className="mt-1">Oklahoma City, OK · (405) 555-0260 · info@veteransforwardok.org</p>
+        <p className="mt-1">Oklahoma City, OK · (405) 555-0260 · info@example.com</p>
         <p className="mt-1 text-xs">501(c)(3) Non-Profit · Donations are tax-deductible</p>
         <p className="mt-4 text-xs text-zinc-600">
           Demo site built by{" "}

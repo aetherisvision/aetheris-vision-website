@@ -143,6 +143,16 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // Admin API guard — every handler also checks isAdmin() itself; this makes a
+  // forgotten check in a future route fail closed instead of open.
+  const isAdminApi =
+    (pathname.startsWith('/api/admin/') && pathname !== '/api/admin/auth') ||
+    pathname.startsWith('/api/expenses') ||
+    pathname.startsWith('/api/receipts/')
+  if (isAdminApi && !(await isAdminSession(request))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   // Admin auth guard
   if (pathname.startsWith('/admin')) {
     const isLoginPage = pathname === '/admin/login'

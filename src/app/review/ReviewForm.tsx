@@ -217,7 +217,7 @@ export default function ReviewForm() {
             id="client_company"
             type="text"
             autoComplete="organization"
-            placeholder="e.g., Tropical Hut OKC"
+            placeholder="e.g., Your Company"
             value={form.client_company}
             onChange={(e) => setForm((f) => ({ ...f, client_company: e.target.value }))}
             maxLength={200}
@@ -243,7 +243,7 @@ export default function ReviewForm() {
           ref={textareaRef}
           required
           rows={5}
-          placeholder="Tell us about your experience working with Aetheris Vision. What did we build for you? What made the difference?"
+          placeholder="Tell us about your experience working with Aetheris Vision. What did we deliver for you? What made the difference?"
           value={form.body}
           onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
           maxLength={5000}

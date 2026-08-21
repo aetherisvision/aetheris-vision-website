@@ -10,6 +10,9 @@ const ALLOWED_HOSTS = new Set([
   "images.nasa.gov",
 ]);
 
+// Full-disk GOES frames run 1–3 MB; anything larger is not a satellite image.
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+
 export async function GET(req: NextRequest) {
   const raw = req.nextUrl.searchParams.get("url");
   if (!raw) {
@@ -33,6 +36,8 @@ export async function GET(req: NextRequest) {
         // Present a neutral browser-like User-Agent
         "User-Agent": "Mozilla/5.0 (compatible; AetherisBot/1.0)",
       },
+      // An open redirect on an allowlisted host must not become an SSRF pivot.
+      redirect: "error",
       // 10-second timeout
       signal: AbortSignal.timeout(10_000),
     });
@@ -45,7 +50,17 @@ export async function GET(req: NextRequest) {
 
     const contentType =
       upstream.headers.get("content-type") ?? "image/jpeg";
+    if (!contentType.startsWith("image/")) {
+      return new NextResponse("Upstream is not an image", { status: 502 });
+    }
+    const declared = Number(upstream.headers.get("content-length") ?? 0);
+    if (declared > MAX_IMAGE_BYTES) {
+      return new NextResponse("Upstream image too large", { status: 502 });
+    }
     const body = await upstream.arrayBuffer();
+    if (body.byteLength > MAX_IMAGE_BYTES) {
+      return new NextResponse("Upstream image too large", { status: 502 });
+    }
 
     return new NextResponse(body, {
       status: 200,

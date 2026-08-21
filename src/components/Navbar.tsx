@@ -61,8 +61,6 @@ export default function Navbar() {
     if (href === "/blog") return pathname.startsWith("/blog");
     if (href === "/about") return pathname === "/about";
     if (href === "/capabilities") return pathname === "/capabilities";
-    if (href === "/performance") return pathname === "/performance";
-    if (href === "/metrics") return pathname === "/metrics";
     if (href === "/contact") return pathname === "/contact";
     if (href === "/services") return pathname.startsWith("/services");
     return false;
@@ -111,7 +109,7 @@ export default function Navbar() {
         <div className="hidden min-w-0 items-center gap-7 text-sm xl:flex">
           <nav aria-label="Primary navigation" className="flex min-w-0 gap-7">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.label}
                 href={link.href}
                 aria-current={isActive(link.href) ? "page" : undefined}
@@ -123,15 +121,15 @@ export default function Navbar() {
                 )}
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </nav>
-          <a
+          <Link
             href={consultationHref}
             className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap border border-white/40 px-4 text-xs font-semibold text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-[#0a1628]"
           >
             Get in touch
-          </a>
+          </Link>
         </div>
 
         {/* Mobile Hamburger */}
@@ -164,7 +162,7 @@ export default function Navbar() {
             style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom, 0px))" }}
           >
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.label}
                 href={link.href}
                 aria-current={isActive(link.href) ? "page" : undefined}
@@ -177,15 +175,15 @@ export default function Navbar() {
                 )}
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
-            <a
+            <Link
               href={consultationHref}
               onClick={() => setMobileOpen(false)}
               className="mt-6 inline-flex min-h-12 items-center justify-center border border-white/40 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-[#0a1628]"
             >
               Get in touch
-            </a>
+            </Link>
           </nav>
         </div>
       )}

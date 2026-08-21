@@ -43,7 +43,7 @@ const credentials = [
   },
   {
     label: "Atmospheric & Environmental Science",
-    detail: "PhD with international academic and research experience",
+    detail: "Ph.D. with international academic and research experience",
   },
   {
     label: "Applied Artificial Intelligence",
@@ -111,7 +111,7 @@ export default function AboutPage() {
           <div className="mb-20 grid grid-cols-1 gap-12 md:grid-cols-3">
             <FadeIn delay={0.1} className="md:col-span-2">
               <article>
-                <h2 className="mb-1 text-xl font-medium text-white">Marston Ward, PhD, CCM</h2>
+                <h2 className="mb-1 text-xl font-medium text-white">Marston Ward, Ph.D., CCM</h2>
                 <p className="mb-8 text-sm font-semibold uppercase tracking-widest text-blue-400">
                   Founder &amp; Principal Consultant
                 </p>
@@ -186,7 +186,7 @@ export default function AboutPage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#050505]/85 via-transparent to-transparent" />
                   <figcaption className="absolute bottom-3 left-4 right-4 text-xs font-light text-gray-400">
-                    Marston Ward, PhD, CCM
+                    Marston Ward, Ph.D., CCM
                   </figcaption>
                 </figure>
 

@@ -223,7 +223,7 @@ export default function RestaurantPage() {
                     <span className="text-amber-600 text-lg">✉️</span>
                     <div>
                       <p className="font-semibold">Email</p>
-                      <a href="mailto:hello@casaverdekitchen.com" className="text-[#92400e] hover:text-amber-700 transition-colors">hello@casaverdekitchen.com</a>
+                      <span className="text-[#92400e] hover:text-amber-700 transition-colors">hello@example.com</span>
                     </div>
                   </div>
                 </div>

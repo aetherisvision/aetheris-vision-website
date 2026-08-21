@@ -75,7 +75,7 @@ const portfolioOptions = [
   { id: "law-firm", label: "Law Firm: Professional services with case studies and client testimonials" },
   { id: "restaurant", label: "Restaurant: Local business with menu, reservations, and online ordering" },
   { id: "trades-contractor", label: "Trades Contractor: Service business with project galleries and quote requests" },
-  { id: "veteran-nonprofit", label: "Veteran Nonprofit: Mission-driven organization with donation and volunteer systems" },
+  { id: "veteran-nonprofit", label: "Veteran Nonprofit: Nonprofit with donation and volunteer systems" },
   { id: "healthcare", label: "Healthcare: Medical practice with physician profiles, insurance info, and appointment booking" },
   { id: "wp-editorial", label: "Editorial / Publishing: Content-heavy publication managed via WordPress CMS" },
   { id: "real-estate", label: "Real Estate: Property listings, agent profiles, and home valuation form" },
@@ -456,7 +456,7 @@ export default function ProjectIntakeForm() {
                 value={formData.contactEmail}
                 onChange={(e) => handleInputChange("contactEmail", e.target.value)}
                 className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                placeholder="your@email.com"
+                placeholder="you@example.com"
               />
             </div>
 
@@ -611,7 +611,7 @@ export default function ProjectIntakeForm() {
           Platform Preference
         </h3>
         <div className="space-y-4">
-          <p className="text-sm text-gray-400">Not sure? Leave this on &quot;Help me decide&quot; and we&apos;ll recommend the right stack based on your goals.</p>
+          <p className="text-sm text-gray-400">Not sure? Choose &quot;Help me decide&quot; and we&apos;ll recommend the right stack based on your goals.</p>
           <div className="grid grid-cols-1 gap-3">
             {[
               { id: "nextjs", label: "Custom Next.js: Fast, modern, fully custom frontend. Best for performance and brand differentiation." },
@@ -645,7 +645,7 @@ export default function ProjectIntakeForm() {
         <div className="space-y-6">
           <div className="rounded-lg border border-blue-500/20 bg-blue-950/10 p-4 mb-6">
             <p className="text-sm text-blue-200 leading-relaxed">
-              <strong>Security by Design:</strong> We implement enterprise-grade security from the ground up, not as an afterthought. Select any requirements that apply to your industry or business needs.
+              <strong>Security by Design:</strong> Select any requirements that apply to your industry or business. Select any requirements that apply to your industry or business needs.
             </p>
           </div>
 
@@ -728,7 +728,7 @@ export default function ProjectIntakeForm() {
 
           <div className="bg-gray-900 border border-white/5 rounded-lg p-4">
             <p className="text-xs text-gray-400 leading-relaxed">
-              <strong className="text-gray-300">Security Expertise:</strong> Our team holds a U.S. Government Secret clearance, brings 35+ years of operational security experience, and implements security frameworks from NIST to CMMC. We don&apos;t just check compliance boxes; we engineer defense-grade protection into every system.
+              <strong className="text-gray-300">Security Expertise:</strong> The principal holds an active U.S. Government Secret clearance and applies NIST and CMMC frameworks where a project requires them.
             </p>
           </div>
         </div>

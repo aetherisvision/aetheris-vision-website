@@ -72,7 +72,7 @@ export default function PortfolioImage({
           alt={fallbackAlt}
           width={width}
           height={height}
-          priority={priority}
+          preload={priority}
           className={`h-full w-full transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
           style={{ objectFit: 'cover', width: '100%', height: '100%' }}
           onLoad={() => setIsLoading(false)}
@@ -99,7 +99,7 @@ export function HeroImage({ category, description, className = '' }: {
       description={description}
       width={1920}
       height={1080}
-      priority={true}
+      priority
       className={`w-full h-96 lg:h-[500px] object-cover ${className}`}
     />
   );

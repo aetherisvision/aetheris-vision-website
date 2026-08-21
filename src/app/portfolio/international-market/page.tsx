@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   keywords: "international food, global market, specialty ingredients, cultural foods, online grocery",
   openGraph: {
     title: `Global Harvest Market - International Foods Demo | ${SITE.name}`,
-    description: "Modern food market with vibrant emerald & gold design, showcasing global cuisine and cultural diversity.",
+    description: "Modern food market with vibrant emerald & gold design, showcasing international foods and regional sections.",
     type: "website",
   },
 };
@@ -340,7 +340,7 @@ export default function InternationalMarketDemo() {
                         { icon: "👨‍🍳", feature: "Cultural cooking demonstrations" },
                         { icon: "🥘", feature: "Ready-to-eat international meals" },
                         { icon: "📞", feature: "Phone: (405) 555-0175" },
-                        { icon: "✉️", feature: "Email: hello@globalharvestmarket.com" },
+                        { icon: "✉️", feature: "Email: hello@example.com" },
                       ].map((item) => (
                         <div key={item.feature} className="flex items-center gap-3">
                           <span className="text-lg">{item.icon}</span>

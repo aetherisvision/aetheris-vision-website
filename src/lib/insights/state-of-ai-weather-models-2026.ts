@@ -55,7 +55,7 @@ This closing piece is the scorecard: what has actually been achieved, what is be
 
 - **Data assimilation.** Turning millions of raw, irregular observations into a coherent initial state is still physics' game — and it is the input every AI model depends on.
 - **Convective scale.** Explicit storm dynamics, local wind systems, orographic detail.
-- **Novel conditions.** Equations generalize to atmospheres never observed; learned statistics extrapolate at their peril — a live concern in a shifting climate.
+- **Novel conditions.** Equations generalize to atmospheres never observed; learned statistics extrapolate at their peril — a live concern whenever the background climate differs from the training record.
 - **Process understanding.** A physical model is an experiment you can interrogate; understanding *why* remains largely a physics product.
 
 ## How to consume this field without being fooled

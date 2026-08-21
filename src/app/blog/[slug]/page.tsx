@@ -189,6 +189,7 @@ export default async function BlogPost({ params }: Props) {
             "@type": "BlogPosting",
             headline: post.title,
             description: post.summary,
+            image: [`${SITE.url}/blog/${slug}/opengraph-image`],
             datePublished: getPostISODate(post),
             author: {
               "@type": "Person",
@@ -201,7 +202,7 @@ export default async function BlogPost({ params }: Props) {
               "@id": `${SITE.url}/blog/${slug}`,
             },
             articleSection: post.category,
-          }),
+          }).replace(/</g, "\\u003c"),
         }}
       />
     </div>
