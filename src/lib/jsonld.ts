@@ -9,12 +9,24 @@ const SAME_AS = [AMS_PROFILE_URL, GITHUB_ORG_URL];
 /** Full Organization entity — use in layout.tsx root JSON-LD */
 export const organizationJsonLd = {
   "@context": "https://schema.org" as const,
-  "@type": "Organization" as const,
+  "@type": ["Organization", "ProfessionalService"] as const,
+  "@id": `${SITE.url}/#organization`,
   name: SITE.legalName,
   url: SITE.url,
   logo: SITE.logoUrl,
+  image: SITE.logoUrl,
   description: SITE.description,
   sameAs: SAME_AS,
+  address: {
+    "@type": "PostalAddress" as const,
+    streetAddress: SITE.address.street,
+    addressLocality: SITE.address.locality,
+    addressRegion: SITE.address.region,
+    postalCode: SITE.address.postalCode,
+    addressCountry: SITE.address.country,
+  },
+  areaServed: "US",
+  priceRange: "$$",
   knowsAbout: [
     "Applied meteorology",
     "AI weather forecasting",
@@ -60,6 +72,7 @@ export const organizationJsonLd = {
 /** Minimal publisher reference — use inside BlogPosting, Service, etc. */
 export const publisherRef = {
   "@type": "Organization" as const,
+  "@id": `${SITE.url}/#organization`,
   name: SITE.legalName,
   url: SITE.url,
 };
@@ -67,31 +80,9 @@ export const publisherRef = {
 export const websiteJsonLd = {
   "@context": "https://schema.org" as const,
   "@type": "WebSite" as const,
+  "@id": `${SITE.url}/#website`,
   name: SITE.name,
   url: SITE.url,
-};
-
-export const localBusinessJsonLd = {
-  "@context": "https://schema.org" as const,
-  // ProfessionalService is a LocalBusiness subtype — the specific type for a
-  // consulting practice with a Google Business Profile.
-  "@type": "ProfessionalService" as const,
-  name: SITE.legalName,
-  url: SITE.url,
-  // Deliberately no telephone or email: contact routes through the verified
-  // inquiry form or Cal.com booking, and JSON-LD is as scrapable as text.
-  logo: SITE.logoUrl,
-  image: SITE.logoUrl,
-  description: SITE.description,
-  sameAs: SAME_AS,
-  address: {
-    "@type": "PostalAddress" as const,
-    streetAddress: SITE.address.street,
-    addressLocality: SITE.address.locality,
-    addressRegion: SITE.address.region,
-    postalCode: SITE.address.postalCode,
-    addressCountry: SITE.address.country,
-  },
-  areaServed: "US",
-  priceRange: "$$",
+  inLanguage: "en-US",
+  publisher: publisherRef,
 };

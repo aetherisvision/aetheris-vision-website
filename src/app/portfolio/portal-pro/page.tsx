@@ -1,6 +1,5 @@
 "use client";
 
-import { Metadata } from "next";
 import { useState, useEffect, useMemo } from "react";
 import FadeIn from "@/components/FadeIn";
 import { SITE } from "@/lib/constants";

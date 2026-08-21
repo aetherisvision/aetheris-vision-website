@@ -18,17 +18,17 @@ import {
 import { CheckIcon, ClockIcon, ShieldCheckIcon, CpuChipIcon, ArrowRightIcon, BoltIcon, LockClosedIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import Image from "next/image";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: `Enterprise Web Development | ${SITE.name}`,
   description:
     "Professional web development for serious businesses. Custom platforms, business applications, and enterprise-grade websites. From $2,800.",
-  openGraph: {
-    title: `Enterprise-Grade Web Development | ${SITE.name}`,
-    description: "Custom business platforms and sophisticated web applications. Lighthouse 90+ performance, enterprise security, comprehensive warranties. Starting at $2,800.",
-    type: "website",
-  },
-};
+  path: "/portfolio",
+  socialTitle: `Enterprise-Grade Web Development | ${SITE.name}`,
+  socialDescription:
+    "Custom business platforms and sophisticated web applications. Lighthouse 90+ performance, enterprise security, comprehensive warranties. Starting at $2,800.",
+});
 
 export default function PortfolioPage() {
   return (

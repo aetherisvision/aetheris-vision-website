@@ -4,12 +4,14 @@ import Footer from "@/components/Footer";
 import ProjectIntakeForm from "@/components/ProjectIntakeForm";
 import FadeIn from "@/components/FadeIn";
 import Link from "next/link";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: `Start a Web Project | ${SITE.name}`,
   description:
     "Tell us about your website or web application project in plain English. Takes 2 minutes. We'll follow up within one business day.",
-};
+  path: "/intake",
+});
 
 export default function IntakePage() {
   return (

@@ -3,6 +3,7 @@ import { SITE } from "@/lib/constants";
 
 export const metadata = {
   title: `Iron District Fitness Gym Demo | ${SITE.name} Portfolio`,
+  robots: { index: false, follow: true },
 };
 
 const plans = [

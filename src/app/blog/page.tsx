@@ -4,11 +4,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BlogClientPage from "@/components/BlogClientPage";
 import { SITE } from "@/lib/constants";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: `Blog | ${SITE.name}`,
   description: `Insights on AI, meteorology, and systems engineering from ${SITE.name}.`,
-};
+  path: "/blog",
+});
 
 export default function BlogIndex() {
   const categories = getCategories();

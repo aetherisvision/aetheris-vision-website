@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { SITE } from "@/lib/constants";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: `Privacy Policy | ${SITE.name}`,
   description: "How Aetheris Vision LLC collects, uses, and protects your personal information.",
-};
+  path: "/privacy",
+});
 
 const EFFECTIVE_DATE = "August 16, 2026";
 

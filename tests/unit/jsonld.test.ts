@@ -6,13 +6,17 @@ describe("JSON-LD structured data", () => {
   describe("organizationJsonLd", () => {
     it("has correct @type and @context", () => {
       expect(organizationJsonLd["@context"]).toBe("https://schema.org");
-      expect(organizationJsonLd["@type"]).toBe("Organization");
+      expect(organizationJsonLd["@type"]).toEqual([
+        "Organization",
+        "ProfessionalService",
+      ]);
     });
 
     it("references SITE constants consistently", () => {
       expect(organizationJsonLd.name).toBe(SITE.legalName);
       expect(organizationJsonLd.url).toBe(SITE.url);
       expect(organizationJsonLd.logo).toBe(SITE.logoUrl);
+      expect(organizationJsonLd["@id"]).toBe(`${SITE.url}/#organization`);
     });
 
     it("does not expose a direct contact address", () => {
@@ -36,6 +40,9 @@ describe("JSON-LD structured data", () => {
   describe("websiteJsonLd", () => {
     it("has correct @type", () => {
       expect(websiteJsonLd["@type"]).toBe("WebSite");
+      expect(websiteJsonLd.publisher["@id"]).toBe(
+        organizationJsonLd["@id"],
+      );
     });
   });
 

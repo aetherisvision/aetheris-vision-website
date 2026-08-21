@@ -2,12 +2,14 @@ import type { ReactNode } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE, SAM } from "@/lib/constants";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: `Capabilities Statement | ${SITE.name}`,
   description:
     "Aetheris Vision registration data, contracting codes, core competencies, and differentiators for state and federal procurement.",
-};
+  path: "/capabilities",
+});
 
 const companyData: { label: string; value: ReactNode }[] = [
   { label: "Legal Name", value: SITE.legalName },

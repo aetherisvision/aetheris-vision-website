@@ -37,6 +37,7 @@ type Category = "Asian" | "European" | "African" | "Latin American" | "Middle Ea
 export const metadata: Metadata = {
   title: `Global Harvest Market Demo | ${SITE.name}`,
   description: "International food market demo site featuring product search, cultural sections, and online ordering system.",
+  robots: { index: false, follow: true },
   keywords: "international food, global market, specialty ingredients, cultural foods, online grocery",
   openGraph: {
     title: `Global Harvest Market - International Foods Demo | ${SITE.name}`,

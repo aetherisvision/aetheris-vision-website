@@ -5,6 +5,7 @@ import PortfolioImage from "@/components/PortfolioImage";
 
 export const metadata = {
   title: `Summit Home Services Contractor Demo | ${SITE.name} Portfolio`,
+  robots: { index: false, follow: true },
 };
 
 const services = [

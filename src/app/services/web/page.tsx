@@ -3,12 +3,14 @@ import { SITE } from "@/lib/constants";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: `Web Development Services | ${SITE.name}`,
   description:
     "Custom websites, web applications, and client portals for Oklahoma businesses. Built on Next.js, React, and modern cloud infrastructure. Veteran-owned, Mustang OK.",
-};
+  path: "/services/web",
+});
 
 const services = [
   {

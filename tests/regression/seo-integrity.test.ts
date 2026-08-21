@@ -20,13 +20,20 @@ describe("Regression: sitemap completeness", () => {
     expect(urls).toContain(`${SITE.url}/portfolio`);
   });
 
-  it("sitemap includes portfolio demo pages", async () => {
+  it("sitemap excludes fictional portfolio demo pages", async () => {
     const { default: sitemap } = await import("@/app/sitemap");
     const urls = sitemap().map((e) => e.url);
     const demoSlugs = ["law-firm", "restaurant", "trades-contractor", "veteran-nonprofit"];
     for (const slug of demoSlugs) {
-      expect(urls).toContain(`${SITE.url}/portfolio/${slug}`);
+      expect(urls).not.toContain(`${SITE.url}/portfolio/${slug}`);
     }
+  });
+
+  it("sitemap excludes conversion-only and review routes", async () => {
+    const { default: sitemap } = await import("@/app/sitemap");
+    const urls = sitemap().map((e) => e.url);
+    expect(urls).not.toContain(`${SITE.url}/review`);
+    expect(urls).not.toContain(`${SITE.url}/performance`);
   });
 
   it("sitemap includes privacy page", async () => {

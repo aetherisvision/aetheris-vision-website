@@ -9,12 +9,14 @@ import {
   ClipboardDocumentIcon,
 } from "@heroicons/react/24/outline";
 import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE } from "@/lib/constants";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: `Discuss a Project | ${SITE.name}`,
   description:
     "Tell Aetheris Vision about your weather, Earth-system, geospatial, applied AI, or digital project. Marston Ward typically replies within one business day.",
-};
+  path: "/contact",
+});
 
 const nextSteps = [
   ["Review", "Marston Ward reviews your inquiry and identifies the most useful next step."],

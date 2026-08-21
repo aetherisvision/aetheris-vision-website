@@ -4,6 +4,7 @@ import PortfolioImage from "@/components/PortfolioImage";
 
 export const metadata = {
   title: `Pinnacle Realty Group Real Estate Demo | ${SITE.name} Portfolio`,
+  robots: { index: false, follow: true },
 };
 
 const listings = [

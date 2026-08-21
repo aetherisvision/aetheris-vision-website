@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { SITE } from "@/lib/constants";
-import { localBusinessJsonLd, organizationJsonLd, websiteJsonLd, publisherRef } from "@/lib/jsonld";
+import { organizationJsonLd, websiteJsonLd, publisherRef } from "@/lib/jsonld";
 import {
   tiers,
   processSteps,
@@ -28,8 +28,8 @@ describe("Regression: brand consistency", () => {
 
   it("does not expose direct contact details in public JSON-LD", () => {
     expect(organizationJsonLd).not.toHaveProperty("contactPoint");
-    expect(localBusinessJsonLd).not.toHaveProperty("email");
-    expect(localBusinessJsonLd).not.toHaveProperty("telephone");
+    expect(organizationJsonLd).not.toHaveProperty("email");
+    expect(organizationJsonLd).not.toHaveProperty("telephone");
   });
 });
 

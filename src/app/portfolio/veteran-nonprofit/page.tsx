@@ -4,6 +4,7 @@ import LocationMap from "@/components/LocationMap";
 
 export const metadata = {
   title: `Veterans Forward Oklahoma Nonprofit Demo | ${SITE.name} Portfolio`,
+  robots: { index: false, follow: true },
 };
 
 const programs = [

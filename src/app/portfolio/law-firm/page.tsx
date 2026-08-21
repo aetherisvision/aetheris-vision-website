@@ -20,6 +20,7 @@ const attorneys = [
 
 export const metadata = {
   title: `Mitchell & Associates Law Firm Demo | ${SITE.name} Portfolio`,
+  robots: { index: false, follow: true },
 };
 
 export default function LawFirmPage() {

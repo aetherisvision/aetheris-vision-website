@@ -5,6 +5,7 @@ import PortfolioImage from "@/components/PortfolioImage";
 
 export const metadata = {
   title: `Casa Verde Kitchen Restaurant Demo | ${SITE.name} Portfolio`,
+  robots: { index: false, follow: true },
 };
 
 const menuSections = [

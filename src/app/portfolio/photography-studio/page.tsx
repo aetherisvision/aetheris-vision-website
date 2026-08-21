@@ -4,6 +4,7 @@ import PortfolioImage from "@/components/PortfolioImage";
 
 export const metadata = {
   title: `Lumen & Co. Photography Creative Studio Demo | ${SITE.name} Portfolio`,
+  robots: { index: false, follow: true },
 };
 
 const gallery = [

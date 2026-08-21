@@ -3,12 +3,14 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
 import { AMS_PROFILE_URL, SITE, SAM } from "@/lib/constants";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: `About | ${SITE.name}`,
   description:
     `${SITE.name} brings operational weather, international research, industry delivery, and applied AI experience to complex consulting engagements.`,
-};
+  path: "/about",
+});
 
 const timeline = [
   {

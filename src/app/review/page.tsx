@@ -3,11 +3,14 @@ import type { Metadata } from 'next'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import ReviewForm from './ReviewForm'
+import { createPageMetadata } from '@/lib/seo'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: 'Leave a Review | Aetheris Vision',
   description: 'Share your experience working with Aetheris Vision. Your feedback helps us improve and helps other clients find the right partner.',
-}
+  path: '/review',
+  noIndex: true,
+})
 
 export default function ReviewPage() {
   return (

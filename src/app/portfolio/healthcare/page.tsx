@@ -4,6 +4,7 @@ import PortfolioImage from "@/components/PortfolioImage";
 
 export const metadata = {
   title: `Clarity Health Group Healthcare Demo | ${SITE.name} Portfolio`,
+  robots: { index: false, follow: true },
 };
 
 const services = [

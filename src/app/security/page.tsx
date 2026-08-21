@@ -8,11 +8,13 @@ import {
   CloudArrowUpIcon,
 } from "@heroicons/react/24/outline";
 import { SITE } from "@/lib/constants";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: `Security Practices | ${SITE.name}`,
   description: `Security practices used to protect the ${SITE.name} website, administrative tools, and client portal.`,
-};
+  path: "/security",
+});
 
 export default function SecurityPage() {
   return (

@@ -1,8 +1,11 @@
 {
   "name": "Aetheris Vision",
   "short_name": "Aetheris",
-  "description": "Advanced AI/ML weather prediction algorithms, operational meteorology, and federal contracting solutions.",
+  "description": "Principal-led scientific consulting in applied meteorology, AI weather forecasting, GIS, geospatial regridding, Earth-system data, and scientific software.",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
+  "lang": "en-US",
   "display": "standalone",
   "background_color": "#0d0c0f",
   "theme_color": "#29426c",

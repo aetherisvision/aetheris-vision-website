@@ -5,12 +5,14 @@ import Footer from "@/components/Footer";
 import CalBooking from "@/components/CalBooking";
 import QuickContactForm from "@/components/QuickContactForm";
 import { SITE } from "@/lib/constants";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: `Get in Touch | ${SITE.name}`,
   description:
     `Ask a question, tell ${SITE.name} about your project, or schedule a free consultation to discuss the focused support your work needs.`,
-};
+  path: "/book",
+});
 
 export default function BookPage() {
   return (

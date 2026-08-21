@@ -4,6 +4,7 @@ import PortfolioImage from "@/components/PortfolioImage";
 
 export const metadata = {
   title: `Prairie Standard WordPress Headless Demo | ${SITE.name} Portfolio`,
+  robots: { index: false, follow: true },
 };
 
 const featured = {

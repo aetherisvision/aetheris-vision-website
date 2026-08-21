@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 import { SITE } from "@/lib/constants";
-import { organizationJsonLd, websiteJsonLd, localBusinessJsonLd } from "@/lib/jsonld";
+import { organizationJsonLd, websiteJsonLd } from "@/lib/jsonld";
 import "./globals.css";
 import BackToTop from "@/components/BackToTop";
 
@@ -21,17 +21,16 @@ export const metadata: Metadata = {
   title: `${SITE.name} | ${SITE.tagline}`,
   description: SITE.description,
   metadataBase: new URL(SITE.url),
+  applicationName: SITE.name,
+  authors: [{ name: "Marston Ward", url: `${SITE.url}/about` }],
+  creator: "Marston Ward",
+  publisher: SITE.legalName,
+  category: "technology",
   // Site lock: every page carries noindex only while PREVIEW_PASSWORD gates
   // the site. Launch (unsetting the var) flips this and robots.ts together.
   ...(process.env.PREVIEW_PASSWORD
     ? { robots: { index: false, follow: false } }
     : {}),
-  alternates: {
-    canonical: "./",
-    types: {
-      "application/rss+xml": `${SITE.url}/feed.xml`,
-    },
-  },
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -73,6 +72,15 @@ export default async function RootLayout({
   void nonce; // available for explicit <Script nonce={nonce}> usage if needed
   return (
     <html lang="en" className="dark scroll-smooth">
+      <head>
+        {/* Keep feed discovery present even when a page replaces metadata.alternates. */}
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title={`${SITE.name} Insights`}
+          href={`${SITE.url}/feed.xml`}
+        />
+      </head>
       <body
         className={`${inter.className} ${newsreader.variable} min-h-[100dvh] bg-black text-gray-100 antialiased selection:bg-gray-800 selection:text-white`}
       >
@@ -112,7 +120,7 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify([organizationJsonLd, websiteJsonLd, localBusinessJsonLd]),
+            __html: JSON.stringify([organizationJsonLd, websiteJsonLd]),
           }}
         />
       </body>
