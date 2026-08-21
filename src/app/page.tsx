@@ -55,20 +55,19 @@ function TextLink({ href, children, onDark = false }: { href: string; children: 
 export default function Home() {
   return (
     <div className="flex min-h-[100dvh] flex-col bg-[#f4f1ea] text-[#17252f]">
+      <link
+        rel="preload"
+        href="/earth-textures/day-2k.webp"
+        as="image"
+        type="image/webp"
+        media="(min-width: 1024px) and (prefers-reduced-motion: no-preference)"
+        fetchPriority="high"
+      />
       <Navbar />
 
       <main id="main" className="flex-1">
         <section className="relative border-b border-white/15 bg-[#0a1628] pt-20 text-white">
           <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
-            {/* Static weather view for mobile, reduced-motion, data-saver, and no-WebGL clients. */}
-            <Image
-              src="/images/home/hero-earth-weather.jpg"
-              alt=""
-              fill
-              preload
-              className="object-cover object-[22%_50%] opacity-40"
-              sizes="100vw"
-            />
             <HeroGlobe />
             <div className="absolute inset-0 bg-gradient-to-r from-[#0a1628]/95 via-[#0a1628]/60 to-[#0a1628]/25" />
             <div className="absolute inset-0 bg-gradient-to-b from-[#0a1628]/55 via-[#0a1628]/10 to-[#0a1628]/50" />

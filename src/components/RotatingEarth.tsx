@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { RefObject } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Stars, useTexture } from "@react-three/drei";
 import {
@@ -8,9 +9,9 @@ import {
   SRGBColorSpace,
   Vector3,
 } from "three";
-import type { Group, Mesh, MeshBasicMaterial, Texture } from "three";
+import type { Group, MeshBasicMaterial, Texture } from "three";
 
-const DAY_PREVIEW_TEXTURE = "/earth-textures/day-4k.webp";
+const DAY_PREVIEW_TEXTURE = "/earth-textures/day-2k.webp";
 const DAY_DETAIL_TEXTURE = "/earth-textures/day-8k.webp";
 const NIGHT_TEXTURE = "/earth-textures/night-2k.webp";
 const CLOUD_PREVIEW_TEXTURE = "/earth-textures/storm-clouds-4k.webp";
@@ -57,42 +58,107 @@ function configureTexture(texture: Texture, anisotropy: number) {
   texture.needsUpdate = true;
 }
 
-function DetailTextureUpgrade({
+function TextureUpgrade({
+  source,
   anisotropy,
   onLoaded,
 }: {
+  source: string;
   anisotropy: number;
-  onLoaded: (dayTexture: Texture, cloudTexture: Texture) => void;
+  onLoaded: (texture: Texture) => void;
 }) {
-  const [dayTexture, cloudTexture] = useTexture([DAY_DETAIL_TEXTURE, CLOUD_DETAIL_TEXTURE]);
+  const texture = useTexture(source);
 
   useEffect(() => {
-    configureTexture(dayTexture, anisotropy);
-    configureTexture(cloudTexture, anisotropy);
-    onLoaded(dayTexture, cloudTexture);
-  }, [anisotropy, cloudTexture, dayTexture, onLoaded]);
+    configureTexture(texture, anisotropy);
+    onLoaded(texture);
+  }, [anisotropy, onLoaded, texture]);
 
   return null;
 }
 
+function NightLayer({ anisotropy }: { anisotropy: number }) {
+  const nightTexture = useTexture(NIGHT_TEXTURE);
+
+  useEffect(() => {
+    configureTexture(nightTexture, anisotropy);
+  }, [anisotropy, nightTexture]);
+
+  const nightUniforms = useMemo(
+    () => ({
+      nightMap: { value: nightTexture },
+      lightDirection: { value: LIGHT_DIRECTION },
+    }),
+    [nightTexture],
+  );
+
+  return (
+    <mesh>
+      <sphereGeometry args={[NIGHT_RADIUS, 192, 192]} />
+      <shaderMaterial
+        vertexShader={NIGHT_VERTEX_SHADER}
+        fragmentShader={NIGHT_FRAGMENT_SHADER}
+        uniforms={nightUniforms}
+        transparent
+        blending={AdditiveBlending}
+        depthWrite={false}
+        toneMapped={false}
+      />
+    </mesh>
+  );
+}
+
+function CloudLayer({
+  anisotropy,
+  materialRef,
+  onDetailLoaded,
+}: {
+  anisotropy: number;
+  materialRef: RefObject<MeshBasicMaterial | null>;
+  onDetailLoaded: (texture: Texture) => void;
+}) {
+  const cloudTexture = useTexture(CLOUD_PREVIEW_TEXTURE);
+
+  useEffect(() => {
+    configureTexture(cloudTexture, anisotropy);
+  }, [anisotropy, cloudTexture]);
+
+  return (
+    <mesh>
+      <sphereGeometry args={[CLOUD_RADIUS, 192, 192]} />
+      <meshBasicMaterial
+        ref={materialRef}
+        map={cloudTexture}
+        color="#eef8ff"
+        opacity={0.68}
+        transparent
+        blending={AdditiveBlending}
+        depthWrite={false}
+        toneMapped={false}
+      />
+      <Suspense fallback={null}>
+        <TextureUpgrade
+          source={CLOUD_DETAIL_TEXTURE}
+          anisotropy={anisotropy}
+          onLoaded={onDetailLoaded}
+        />
+      </Suspense>
+    </mesh>
+  );
+}
+
 function EarthMesh({ animate, onReady }: { animate: boolean; onReady?: () => void }) {
   const surfaceRef = useRef<Group>(null);
-  const cloudsRef = useRef<Mesh>(null);
+  const cloudsRef = useRef<Group>(null);
   const dayMaterialRef = useRef<MeshBasicMaterial>(null);
   const cloudMaterialRef = useRef<MeshBasicMaterial>(null);
   const readyNotifiedRef = useRef(false);
   const { gl } = useThree();
-  const [dayTexture, nightTexture, cloudTexture] = useTexture([
-    DAY_PREVIEW_TEXTURE,
-    NIGHT_TEXTURE,
-    CLOUD_PREVIEW_TEXTURE,
-  ]);
+  const dayTexture = useTexture(DAY_PREVIEW_TEXTURE);
   const anisotropy = Math.min(16, gl.capabilities.getMaxAnisotropy());
 
   useEffect(() => {
     configureTexture(dayTexture, anisotropy);
-    configureTexture(nightTexture, anisotropy);
-    configureTexture(cloudTexture, anisotropy);
 
     const frame = requestAnimationFrame(() => {
       if (!readyNotifiedRef.current) {
@@ -102,26 +168,22 @@ function EarthMesh({ animate, onReady }: { animate: boolean; onReady?: () => voi
     });
 
     return () => cancelAnimationFrame(frame);
-  }, [anisotropy, cloudTexture, dayTexture, nightTexture, onReady]);
+  }, [anisotropy, dayTexture, onReady]);
 
-  const applyDetailTextures = useCallback((detailDay: Texture, detailClouds: Texture) => {
+  const applyDayDetail = useCallback((detailDay: Texture) => {
     if (dayMaterialRef.current) {
       dayMaterialRef.current.map = detailDay;
       dayMaterialRef.current.needsUpdate = true;
     }
+  }, []);
+
+  const applyCloudDetail = useCallback((detailClouds: Texture) => {
     if (cloudMaterialRef.current) {
       cloudMaterialRef.current.map = detailClouds;
       cloudMaterialRef.current.needsUpdate = true;
     }
   }, []);
 
-  const nightUniforms = useMemo(
-    () => ({
-      nightMap: { value: nightTexture },
-      lightDirection: { value: LIGHT_DIRECTION },
-    }),
-    [nightTexture],
-  );
   useFrame((_, delta) => {
     if (!animate) return;
     if (surfaceRef.current) surfaceRef.current.rotation.y += delta * 0.055;
@@ -138,36 +200,23 @@ function EarthMesh({ animate, onReady }: { animate: boolean; onReady?: () => voi
             map={dayTexture}
           />
         </mesh>
-        <mesh>
-          <sphereGeometry args={[NIGHT_RADIUS, 192, 192]} />
-          <shaderMaterial
-            vertexShader={NIGHT_VERTEX_SHADER}
-            fragmentShader={NIGHT_FRAGMENT_SHADER}
-            uniforms={nightUniforms}
-            transparent
-            blending={AdditiveBlending}
-            depthWrite={false}
-            toneMapped={false}
-          />
-        </mesh>
+        <Suspense fallback={null}>
+          <NightLayer anisotropy={anisotropy} />
+        </Suspense>
       </group>
 
-      <mesh ref={cloudsRef}>
-        <sphereGeometry args={[CLOUD_RADIUS, 192, 192]} />
-        <meshBasicMaterial
-          ref={cloudMaterialRef}
-          map={cloudTexture}
-          color="#eef8ff"
-          opacity={0.68}
-          transparent
-          blending={AdditiveBlending}
-          depthWrite={false}
-          toneMapped={false}
-        />
-      </mesh>
+      <group ref={cloudsRef}>
+        <Suspense fallback={null}>
+          <CloudLayer
+            anisotropy={anisotropy}
+            materialRef={cloudMaterialRef}
+            onDetailLoaded={applyCloudDetail}
+          />
+        </Suspense>
+      </group>
 
       <Suspense fallback={null}>
-        <DetailTextureUpgrade anisotropy={anisotropy} onLoaded={applyDetailTextures} />
+        <TextureUpgrade source={DAY_DETAIL_TEXTURE} anisotropy={anisotropy} onLoaded={applyDayDetail} />
       </Suspense>
     </group>
   );
@@ -176,13 +225,10 @@ function EarthMesh({ animate, onReady }: { animate: boolean; onReady?: () => voi
 function Scene({ animate, onReady }: { animate: boolean; onReady?: () => void }) {
   const { size } = useThree();
   const framing = useMemo(() => {
-    // Keep the globe large enough to read as a horizon, but reveal substantially
-    // more of the northern hemisphere behind the principal profile.
-    const diameterPixels = Math.max(size.width * 1.28, size.height * 1.75);
+    // Preserve the horizon treatment while revealing the northern tropics.
+    const diameterPixels = Math.max(size.width * 1.08, size.height * 1.5);
     const scale = diameterPixels / (EARTH_RADIUS * 2 * CAMERA_ZOOM);
-    // Lift the globe by another 10% of the hero height so more of the
-    // northern hemisphere remains visible behind the profile.
-    const horizonTopPixels = size.height * 0.15;
+    const horizonTopPixels = size.height * 0.04;
     const horizonTopWorld = (size.height * 0.5 - horizonTopPixels) / CAMERA_ZOOM;
 
     return {
