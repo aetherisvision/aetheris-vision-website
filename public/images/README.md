@@ -86,6 +86,14 @@ imgix params (`fm=webp&q=55–75`), then served through `next/image`.
 | `technical-leadership.webp` | Chess pieces mid-game, dark monochrome | https://unsplash.com/photos/nAjil1z3eLk (`photo-1528819622765-d6bcf132f793`) | Felix Mittermeier |
 | `state-federal-contracting.webp` | U.S. Capitol dome at night, monochrome (brightness lifted via imgix `bri=22&gam=15` for card visibility) | https://unsplash.com/photos/vZkZH6K5mCo (`photo-1635255752782-febbe92c2da6`) | MIKE STOLL |
 
+## insights/ — AI & Weather article diagrams
+
+Original schematic SVGs created in-house for the Insights series (no external sources;
+generated programmatically, safe to regenerate or edit). One per article:
+`random-forest-voting`, `cnn-filters`, `global-attention`, `fourcastnet-fourier`,
+`pangu-temporal`, `graphcast-mesh`, `gencast-ensemble`, `aifs-pipeline`,
+`aurora-foundation`, `neuralgcm-hybrid`, `ai-weather-timeline`.
+
 ## home/ — homepage section backgrounds
 
 | File | Shows | Source | Photographer |
