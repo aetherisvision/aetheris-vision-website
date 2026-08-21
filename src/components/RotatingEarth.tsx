@@ -22,6 +22,10 @@ const EARTH_RADIUS = 1.3;
 const NIGHT_RADIUS = EARTH_RADIUS * 1.0015;
 const CLOUD_RADIUS = EARTH_RADIUS * 1.004;
 const CAMERA_ZOOM = 182;
+// Orthographic distance does not affect the globe's apparent size. Keep the
+// camera well outside the enlarged sphere so wide/retina viewports cannot clip
+// a circular hole through its near surface.
+const CAMERA_DISTANCE = 50;
 const LIGHT_DIRECTION = new Vector3(5, 3, 4).normalize();
 
 const NIGHT_VERTEX_SHADER = /* glsl */ `
@@ -278,7 +282,7 @@ export default function RotatingEarth({ onReady }: { onReady?: () => void }) {
     <div className="relative h-full w-full" aria-hidden="true">
       <Canvas
         orthographic
-        camera={{ position: [0, 0, 5], zoom: CAMERA_ZOOM }}
+        camera={{ position: [0, 0, CAMERA_DISTANCE], zoom: CAMERA_ZOOM }}
         dpr={2.25}
         gl={{
           antialias: true,
