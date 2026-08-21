@@ -24,3 +24,5 @@ export const AUTHOR = {
 /** Category labels used across the series. */
 export const CATEGORY_FOUNDATIONS = "AI & Weather";
 export const CATEGORY_PROFILES = "Model Profiles";
+export const CATEGORY_NWP = "Traditional NWP";
+export const CATEGORY_CRAFT = "Forecasting Craft";

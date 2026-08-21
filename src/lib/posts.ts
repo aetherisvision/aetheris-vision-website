@@ -9,6 +9,16 @@ import aifs from "./insights/aifs";
 import aurora from "./insights/aurora";
 import neuralgcm from "./insights/neuralgcm";
 import stateOfAiWeatherModels from "./insights/state-of-ai-weather-models-2026";
+import richardsonsDream from "./insights/richardsons-dream";
+import insideAWeatherModel from "./insights/inside-a-weather-model";
+import dataAssimilation from "./insights/data-assimilation-the-initial-state";
+import theModelsWeRan from "./insights/the-models-we-ran";
+import ensembles from "./insights/ensembles-and-the-end-of-the-single-forecast";
+import mosAndTheForecaster from "./insights/mos-and-the-forecaster";
+import handAnalysis from "./insights/hand-analysis";
+import readingTheSkewT from "./insights/reading-the-skew-t";
+import rulesOfThumb from "./insights/rules-of-thumb";
+import forecastersWorkstation1990 from "./insights/the-forecasters-workstation-1990";
 
 export type Post = {
   id: number
@@ -60,11 +70,21 @@ export function sortPostsByDateDesc<T extends Pick<Post, "date" | "id">>(items: 
 }
 
 /**
- * The AI & Weather series — one article per file under ./insights/.
- * Foundations track (model families) plus one profile per current model,
- * anchored by the state-of-the-field survey.
+ * Two series, one article per file under ./insights/, dated so they read in
+ * historical order: the Traditional NWP + Forecasting Craft series (Jun–Jul)
+ * precedes the AI & Weather series (Jul–Aug), whose survey is the featured post.
  */
 const authoredPosts: Omit<Post, "readTime">[] = [
+  richardsonsDream,
+  insideAWeatherModel,
+  dataAssimilation,
+  theModelsWeRan,
+  ensembles,
+  mosAndTheForecaster,
+  handAnalysis,
+  readingTheSkewT,
+  rulesOfThumb,
+  forecastersWorkstation1990,
   randomForestsInWeather,
   cnnsInWeather,
   transformersAndGraphNetworks,
