@@ -12,9 +12,11 @@ import {
 } from "three";
 import type { Group, Mesh, Texture } from "three";
 
-const DAY_TEXTURE = "/earth-textures/day-4k.webp";
+const DAY_TEXTURE = "/earth-textures/day-8k.webp";
 const NIGHT_TEXTURE = "/earth-textures/night-2k.webp";
-const CLOUD_TEXTURE = "/earth-textures/clouds-4k.webp";
+const CLOUD_TEXTURE = "/earth-textures/storm-clouds-8k.webp";
+const EARTH_RADIUS = 1.3;
+const CAMERA_ZOOM = 182;
 const LIGHT_DIRECTION = new Vector3(5, 3, 4).normalize();
 
 const NIGHT_VERTEX_SHADER = /* glsl */ `
@@ -61,7 +63,7 @@ const ATMOSPHERE_FRAGMENT_SHADER = /* glsl */ `
   varying float vIntensity;
 
   void main() {
-    gl_FragColor = vec4(glowColor, vIntensity * 0.48);
+    gl_FragColor = vec4(glowColor, vIntensity * 0.58);
   }
 `;
 
@@ -96,7 +98,7 @@ function EarthMesh({ animate }: { animate: boolean }) {
     [nightTexture],
   );
   const atmosphereUniforms = useMemo(
-    () => ({ glowColor: { value: new Color("#559bd1") } }),
+    () => ({ glowColor: { value: new Color("#65b9f2") } }),
     [],
   );
 
@@ -110,11 +112,11 @@ function EarthMesh({ animate }: { animate: boolean }) {
     <group rotation={[0.16, -0.2, -0.08]}>
       <group ref={surfaceRef}>
         <mesh>
-          <sphereGeometry args={[1.3, 128, 128]} />
+          <sphereGeometry args={[EARTH_RADIUS, 192, 192]} />
           <meshStandardMaterial map={dayTexture} metalness={0} roughness={0.9} />
         </mesh>
         <mesh>
-          <sphereGeometry args={[1.304, 128, 128]} />
+          <sphereGeometry args={[1.304, 192, 192]} />
           <shaderMaterial
             vertexShader={NIGHT_VERTEX_SHADER}
             fragmentShader={NIGHT_FRAGMENT_SHADER}
@@ -128,11 +130,11 @@ function EarthMesh({ animate }: { animate: boolean }) {
       </group>
 
       <mesh ref={cloudsRef}>
-        <sphereGeometry args={[1.318, 128, 128]} />
+        <sphereGeometry args={[1.326, 192, 192]} />
         <meshBasicMaterial
           map={cloudTexture}
-          color="#dceeff"
-          opacity={0.32}
+          color="#eef8ff"
+          opacity={0.68}
           transparent
           blending={AdditiveBlending}
           depthWrite={false}
@@ -141,7 +143,7 @@ function EarthMesh({ animate }: { animate: boolean }) {
       </mesh>
 
       <mesh scale={1.075}>
-        <sphereGeometry args={[1.3, 128, 128]} />
+        <sphereGeometry args={[EARTH_RADIUS, 192, 192]} />
         <shaderMaterial
           vertexShader={ATMOSPHERE_VERTEX_SHADER}
           fragmentShader={ATMOSPHERE_FRAGMENT_SHADER}
@@ -158,11 +160,28 @@ function EarthMesh({ animate }: { animate: boolean }) {
 }
 
 function Scene({ animate }: { animate: boolean }) {
+  const { size } = useThree();
+  const framing = useMemo(() => {
+    // Oversize and lower the globe so the curved limb reads as a planetary
+    // horizon instead of a separate object tucked behind the portrait.
+    const diameterPixels = Math.max(size.width * 2.05, size.height * 2.8);
+    const scale = diameterPixels / (EARTH_RADIUS * 2 * CAMERA_ZOOM);
+    const horizonTopPixels = size.height * 0.64;
+    const horizonTopWorld = (size.height * 0.5 - horizonTopPixels) / CAMERA_ZOOM;
+
+    return {
+      positionY: horizonTopWorld - EARTH_RADIUS * scale,
+      scale,
+    };
+  }, [size.height, size.width]);
+
   return (
     <>
       <ambientLight intensity={0.08} />
       <directionalLight position={[5, 3, 4]} color="#d8efff" intensity={2.5} />
-      <EarthMesh animate={animate} />
+      <group position={[0, framing.positionY, 0]} scale={framing.scale}>
+        <EarthMesh animate={animate} />
+      </group>
       <Stars radius={55} depth={28} count={1800} factor={2.2} saturation={0} fade speed={0.12} />
     </>
   );
@@ -199,7 +218,7 @@ export default function RotatingEarth() {
     <div className="relative h-full w-full" aria-hidden="true">
       <Canvas
         orthographic
-        camera={{ position: [0, 0, 5], zoom: 182 }}
+        camera={{ position: [0, 0, 5], zoom: CAMERA_ZOOM }}
         dpr={2.25}
         gl={{
           antialias: true,

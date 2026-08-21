@@ -70,8 +70,8 @@ export default function Home() {
               sizes="100vw"
             />
             <HeroGlobe />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0a1628]/95 via-[#0a1628]/55 to-[#0a1628]/30" />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0a1628]/40 via-[#0a1628]/70 to-[#0a1628]" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0a1628]/95 via-[#0a1628]/60 to-[#0a1628]/25" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0a1628]/55 via-[#0a1628]/10 to-[#0a1628]/50" />
           </div>
 
           <div className="relative mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">

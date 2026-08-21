@@ -36,8 +36,8 @@ export default function HeroGlobe() {
 
   return (
     <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-      <div className="absolute inset-0 bg-[#06101e]/75" />
-      <div className="absolute left-[49%] top-1/2 h-[clamp(42rem,66vw,58rem)] w-[clamp(42rem,66vw,58rem)] -translate-y-1/2 xl:left-[54%]">
+      <div className="absolute inset-0 bg-[#06101e]/90" />
+      <div className="absolute inset-0">
         <Suspense fallback={null}>
           <RotatingEarth />
         </Suspense>
