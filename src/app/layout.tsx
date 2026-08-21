@@ -3,7 +3,7 @@ import { Inter, Newsreader } from "next/font/google";
 import { headers } from "next/headers";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
-import { SITE } from "@/lib/constants";
+import { CORE_SEO_KEYWORDS, SITE } from "@/lib/constants";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/jsonld";
 import "./globals.css";
 import BackToTop from "@/components/BackToTop";
@@ -20,6 +20,7 @@ const newsreader = Newsreader({
 export const metadata: Metadata = {
   title: `${SITE.name} | ${SITE.tagline}`,
   description: SITE.description,
+  keywords: [...CORE_SEO_KEYWORDS],
   metadataBase: new URL(SITE.url),
   applicationName: SITE.name,
   authors: [{ name: "Marston Ward", url: `${SITE.url}/about` }],

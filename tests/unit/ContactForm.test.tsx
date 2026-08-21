@@ -14,6 +14,11 @@ import ContactForm from "@/components/ContactForm";
 
 beforeEach(() => {
   holder.params = new URLSearchParams();
+  vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "");
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 function setField(id: string, value: string) {

@@ -1,26 +1,23 @@
-import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRightIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import { SITE } from "@/lib/constants";
+import { SITE, WEATHER_SEO_KEYWORDS } from "@/lib/constants";
+import { createPageMetadata } from "@/lib/seo";
 
 const PAGE_URL = `${SITE.url}/services/weather-ai`;
+const PAGE_DESCRIPTION =
+  "AI weather forecasting and applied meteorology consulting for NWP/ML systems, forecast verification, uncertainty, weather and climate data pipelines, and operational delivery.";
 
-export const metadata: Metadata = {
+export const metadata = createPageMetadata({
   title: `AI Weather Forecasting & Meteorology Consulting | ${SITE.name}`,
-  description:
-    "AI weather forecasting and applied meteorology consulting for NWP/ML systems, forecast verification, uncertainty, Earth-data pipelines, and operational delivery.",
-  alternates: { canonical: PAGE_URL },
-  openGraph: {
-    title: `AI Weather Forecasting & Meteorology Consulting | ${SITE.name}`,
-    description:
-      "Scientific guidance and production delivery for AI/ML weather systems, forecast evaluation, and meteorological data pipelines.",
-    url: PAGE_URL,
-    type: "website",
-  },
-};
+  description: PAGE_DESCRIPTION,
+  path: "/services/weather-ai",
+  keywords: [...WEATHER_SEO_KEYWORDS],
+  socialDescription:
+    "Scientific guidance and production delivery for AI/ML weather systems, forecast evaluation, and meteorological data pipelines.",
+});
 
 const capabilities = [
   {
@@ -37,7 +34,7 @@ const capabilities = [
   },
   {
     title: "Weather data engineering",
-    body: "Prepare model, satellite, radar, station, and reanalysis data for training, inference, comparison, and downstream applications with traceable transformations.",
+    body: "Prepare model, satellite, radar, station, reanalysis, and climate data for training, inference, comparison, and downstream applications with traceable transformations.",
   },
   {
     title: "Uncertainty and decision support",
@@ -62,7 +59,7 @@ const serviceJsonLd = {
   "@type": "Service",
   name: "AI weather forecasting and applied meteorology consulting",
   url: PAGE_URL,
-  description: metadata.description,
+  description: PAGE_DESCRIPTION,
   areaServed: "US",
   provider: {
     "@type": "Organization",
@@ -74,6 +71,7 @@ const serviceJsonLd = {
     "Applied meteorology consulting",
     "Forecast verification",
     "Weather data engineering",
+    "Weather and climate data analysis",
     "NWP and machine-learning integration",
   ],
 };
@@ -96,7 +94,7 @@ export default function WeatherAiPage() {
               Scientific guidance and working technical delivery for organizations evaluating, building, or operating AI/ML weather systems—from data and baselines through verification, uncertainty, and production use.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              {["AI weather forecasting", "Applied meteorology", "Forecast verification", "NWP/ML systems"].map((item) => (
+              {["AI weather forecasting", "Applied meteorology", "Forecast verification", "NWP/ML systems", "Weather & climate data"].map((item) => (
                 <span key={item} className="rounded-full border border-white/15 px-4 py-2 text-xs text-gray-300">
                   {item}
                 </span>

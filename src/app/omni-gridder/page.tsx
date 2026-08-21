@@ -3,13 +3,16 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import OmniGridderComparison from "@/components/OmniGridderComparison";
+import { GEOSPATIAL_SEO_KEYWORDS } from "@/lib/constants";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: `Geospatial Regridding & GIS Transformation | Omni Gridder`,
   description:
     "GIS and geospatial regridding for weather, climate, and Earth-system data across difficult grids, projections, resolutions, and observation geometries.",
-  alternates: { canonical: "/omni-gridder" },
-};
+  path: "/omni-gridder",
+  keywords: [...GEOSPATIAL_SEO_KEYWORDS],
+});
 
 export default function OmniGridderPage() {
   return (

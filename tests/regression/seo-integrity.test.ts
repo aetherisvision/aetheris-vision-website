@@ -64,6 +64,10 @@ describe("Regression: structured service topics", () => {
         "AI weather forecasting",
         "Geographic information systems (GIS)",
         "Geospatial regridding",
+        "Coordinate reference system transformation",
+        "Weather and climate data analysis",
+        "Bilinear interpolation",
+        "Elliptical Weighted Averaging (EWA)",
       ]),
     );
   });

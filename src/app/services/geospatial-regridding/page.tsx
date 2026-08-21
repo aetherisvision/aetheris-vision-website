@@ -1,25 +1,22 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRightIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import { SITE } from "@/lib/constants";
+import { GEOSPATIAL_SEO_KEYWORDS, SITE } from "@/lib/constants";
+import { createPageMetadata } from "@/lib/seo";
 
 const PAGE_URL = `${SITE.url}/services/geospatial-regridding`;
+const PAGE_DESCRIPTION =
+  "GIS consulting and geospatial regridding for weather, climate, satellite, and environmental data, including CRS transformation, reprojection, resampling, and validation.";
 
-export const metadata: Metadata = {
+export const metadata = createPageMetadata({
   title: `GIS & Geospatial Regridding Services | ${SITE.name}`,
-  description:
-    "GIS consulting and geospatial regridding for weather, climate, satellite, and environmental data, including CRS transformation, reprojection, resampling, and validation.",
-  alternates: { canonical: PAGE_URL },
-  openGraph: {
-    title: `GIS & Geospatial Regridding Services | ${SITE.name}`,
-    description:
-      "Transform weather and Earth-system data across coordinate systems, grids, resolutions, and scientific formats without losing meaning.",
-    url: PAGE_URL,
-    type: "website",
-  },
-};
+  description: PAGE_DESCRIPTION,
+  path: "/services/geospatial-regridding",
+  keywords: [...GEOSPATIAL_SEO_KEYWORDS],
+  socialDescription:
+    "Transform weather and Earth-system data across coordinate systems, grids, resolutions, and scientific formats without losing meaning.",
+});
 
 const capabilities = [
   {
@@ -32,7 +29,7 @@ const capabilities = [
   },
   {
     title: "Spatial interpolation and remapping",
-    body: "Select methods appropriate to continuous, categorical, or conservation-sensitive fields instead of forcing every variable through the same interpolation.",
+    body: "Select nearest-neighbor, bilinear, conservative remapping, or Elliptical Weighted Averaging (EWA) according to whether a field is continuous, categorical, conservation-sensitive, or sampled along satellite swaths.",
   },
   {
     title: "Scientific format engineering",
@@ -61,7 +58,7 @@ const serviceJsonLd = {
   "@type": "Service",
   name: "GIS and geospatial regridding services",
   url: PAGE_URL,
-  description: metadata.description,
+  description: PAGE_DESCRIPTION,
   areaServed: "US",
   provider: {
     "@type": "Organization",
@@ -73,6 +70,10 @@ const serviceJsonLd = {
     "Geospatial regridding",
     "Coordinate reference system transformation",
     "Spatial interpolation",
+    "Bilinear interpolation",
+    "Conservative regridding",
+    "Elliptical Weighted Averaging (EWA)",
+    "Satellite swath resampling",
     "Earth-system data engineering",
   ],
 };

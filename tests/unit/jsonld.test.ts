@@ -22,6 +22,15 @@ describe("JSON-LD structured data", () => {
     it("does not expose a direct contact address", () => {
       expect(organizationJsonLd).not.toHaveProperty("contactPoint");
     });
+
+    it("describes the principal's CCM credential and AMS issuer", () => {
+      expect(organizationJsonLd.founder.hasCredential.name).toBe(
+        "Certified Consulting Meteorologist (CCM)",
+      );
+      expect(
+        organizationJsonLd.founder.hasCredential.recognizedBy.name,
+      ).toBe("American Meteorological Society (AMS)");
+    });
   });
 
   describe("publisherRef", () => {

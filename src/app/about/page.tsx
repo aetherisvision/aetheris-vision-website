@@ -2,7 +2,7 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FadeIn from "@/components/FadeIn";
-import { AMS_PROFILE_URL, SITE, SAM } from "@/lib/constants";
+import { AMS_PROFILE_URL, CREDENTIAL_SEO_KEYWORDS, SITE, SAM } from "@/lib/constants";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata = createPageMetadata({
@@ -10,6 +10,7 @@ export const metadata = createPageMetadata({
   description:
     `${SITE.name} brings operational weather, international research, industry delivery, and applied AI experience to complex consulting engagements.`,
   path: "/about",
+  keywords: [...CREDENTIAL_SEO_KEYWORDS],
 });
 
 const timeline = [

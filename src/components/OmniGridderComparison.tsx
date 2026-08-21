@@ -180,7 +180,7 @@ export default function OmniGridderComparison() {
           </div>
           <div>
             <p className="text-base leading-7 text-[#42565f]">
-              Familiar interpolation methods remain useful. Omni Gridder is aimed at the harder cases—where resolution, physical meaning, or observation geometry makes a visually plausible answer insufficient.
+              Familiar methods such as nearest-neighbor and bilinear interpolation remain useful. Omni Gridder is aimed at the harder cases—where resolution, physical meaning, or observation geometry makes a visually plausible answer insufficient.
             </p>
           </div>
         </div>

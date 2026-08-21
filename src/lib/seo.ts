@@ -5,6 +5,7 @@ interface PageMetadataOptions {
   title: string;
   description: string;
   path: `/${string}` | "/";
+  keywords?: Metadata["keywords"];
   noIndex?: boolean;
   socialTitle?: string;
   socialDescription?: string;
@@ -15,6 +16,7 @@ export function createPageMetadata({
   title,
   description,
   path,
+  keywords,
   noIndex = false,
   socialTitle = title,
   socialDescription = description,
@@ -24,6 +26,7 @@ export function createPageMetadata({
   return {
     title,
     description,
+    ...(keywords ? { keywords } : {}),
     alternates: {
       canonical: url,
     },

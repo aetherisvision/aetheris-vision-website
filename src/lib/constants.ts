@@ -21,6 +21,67 @@ export const SITE = {
     "Applied meteorology, AI weather forecasting, GIS, geospatial regridding, and Earth-system data consulting. Veteran-owned and based in Oklahoma.",
 } as const;
 
+/**
+ * Search topics shared by the pages that substantively cover them. These are
+ * supporting metadata signals; visible page copy and structured data carry
+ * the primary search meaning.
+ */
+export const CORE_SEO_KEYWORDS = [
+  "Aetheris Vision",
+  "Certified Consulting Meteorologist (CCM)",
+  "American Meteorological Society (AMS)",
+  "applied meteorology consulting",
+  "weather consulting",
+  "weather AI",
+  "AI weather forecasting",
+  "weather and climate data",
+  "GIS consulting",
+  "geospatial consulting",
+  "geospatial regridding",
+  "Earth-system data engineering",
+  "scientific software engineering",
+] as const;
+
+export const WEATHER_SEO_KEYWORDS = [
+  "AI weather forecasting",
+  "weather AI consulting",
+  "applied meteorology consulting",
+  "Certified Consulting Meteorologist (CCM)",
+  "AMS Certified Consulting Meteorologist",
+  "numerical weather prediction",
+  "NWP machine learning",
+  "forecast verification",
+  "weather and climate data",
+  "meteorological data pipelines",
+  "forecast uncertainty",
+] as const;
+
+export const GEOSPATIAL_SEO_KEYWORDS = [
+  "GIS consulting",
+  "geospatial consulting",
+  "geospatial regridding",
+  "CRS transformation",
+  "coordinate reference system transformation",
+  "map reprojection",
+  "bilinear interpolation",
+  "nearest-neighbor resampling",
+  "conservative regridding",
+  "Elliptical Weighted Averaging",
+  "EWA resampling",
+  "satellite swath resampling",
+  "weather and climate data",
+  "GRIB NetCDF HDF",
+] as const;
+
+export const CREDENTIAL_SEO_KEYWORDS = [
+  "Marston Ward CCM",
+  "Certified Consulting Meteorologist (CCM)",
+  "AMS Certified Consulting Meteorologist",
+  "American Meteorological Society (AMS)",
+  "applied meteorologist",
+  "weather consulting",
+] as const;
+
 /** Public request flow for the current capability statement PDF. */
 export const CAPABILITY_STATEMENT_REQUEST_HREF =
   "/contact?requirement=Capability%20Statement%20Request&topic=Please%20send%20me%20the%20Aetheris%20Vision%20capability%20statement.#contact-form";
@@ -28,6 +89,12 @@ export const CAPABILITY_STATEMENT_REQUEST_HREF =
 /** Public AMS Weather and Climate Directory listing for Aetheris Vision LLC. */
 export const AMS_PROFILE_URL =
   "https://wcdirectory.ametsoc.org/united-states/mustang/service-provider/aetheris-vision-llc";
+
+export const CCM_CREDENTIAL = {
+  name: "Certified Consulting Meteorologist (CCM)",
+  issuer: "American Meteorological Society (AMS)",
+  profileUrl: AMS_PROFILE_URL,
+} as const;
 
 /** Public GitHub organization for Aetheris Vision LLC. */
 export const GITHUB_ORG_URL = "https://github.com/aetherisvision";

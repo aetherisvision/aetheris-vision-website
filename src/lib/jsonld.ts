@@ -1,4 +1,4 @@
-import { AMS_PROFILE_URL, GITHUB_ORG_URL, SITE } from "./constants";
+import { AMS_PROFILE_URL, CCM_CREDENTIAL, GITHUB_ORG_URL, SITE } from "./constants";
 
 /**
  * Same-entity profiles Google uses to reconcile the site with the Google
@@ -27,6 +27,23 @@ export const organizationJsonLd = {
   },
   areaServed: "US",
   priceRange: "$$",
+  founder: {
+    "@type": "Person" as const,
+    "@id": `${SITE.url}/about#marston-ward`,
+    name: "Marston Ward, PhD, CCM",
+    url: `${SITE.url}/about`,
+    jobTitle: "Founder and Principal Consultant",
+    sameAs: CCM_CREDENTIAL.profileUrl,
+    hasCredential: {
+      "@type": "EducationalOccupationalCredential" as const,
+      name: CCM_CREDENTIAL.name,
+      credentialCategory: "Professional certification",
+      recognizedBy: {
+        "@type": "Organization" as const,
+        name: CCM_CREDENTIAL.issuer,
+      },
+    },
+  },
   knowsAbout: [
     "Applied meteorology",
     "AI weather forecasting",
@@ -34,6 +51,11 @@ export const organizationJsonLd = {
     "Geographic information systems (GIS)",
     "Geospatial regridding",
     "Coordinate reference system transformation",
+    "Weather and climate data analysis",
+    "Bilinear interpolation",
+    "Conservative regridding",
+    "Elliptical Weighted Averaging (EWA)",
+    "Satellite swath resampling",
     "Earth-system data",
     "Scientific data pipelines",
   ],

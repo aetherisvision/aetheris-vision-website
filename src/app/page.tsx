@@ -6,16 +6,18 @@ import HeroGlobe from "@/components/HeroGlobe";
 import Navbar from "@/components/Navbar";
 import SatelliteDisplay, { type SatelliteSource } from "@/components/SatelliteDisplay";
 import { posts } from "@/lib/posts";
-import { AMS_PROFILE_URL, SITE } from "@/lib/constants";
+import { AMS_PROFILE_URL, CORE_SEO_KEYWORDS, SITE } from "@/lib/constants";
+import { createPageMetadata } from "@/lib/seo";
 
 export const revalidate = 3600;
 
-export const metadata = {
+export const metadata = createPageMetadata({
   title: `Weather AI, GIS & Geospatial Regridding | ${SITE.name}`,
   description:
     "Scientific consulting in applied meteorology, AI weather forecasting, GIS data transformation, geospatial regridding, and Earth-system data pipelines.",
-  alternates: { canonical: "/" },
-};
+  path: "/",
+  keywords: [...CORE_SEO_KEYWORDS],
+});
 
 function satelliteImage(url: string) {
   return `/api/satellite?url=${encodeURIComponent(url)}`;
@@ -100,7 +102,7 @@ export default function Home() {
                   <span className="whitespace-nowrap">Earth-System Data Pipelines</span>
                 </p>
                 <p className="mt-7 max-w-2xl text-lg font-medium leading-8 text-white/90">
-                  For research teams, government programs, and companies that depend on weather and Earth-system data.
+                  For research teams, government programs, and companies that depend on weather, climate, and Earth-system data.
                 </p>
                 <p className="mt-4 max-w-2xl text-base leading-8 text-white/70">
                   Principal-led consulting grounded in more than 35 years across operational weather, scientific analysis, software delivery, and research.
