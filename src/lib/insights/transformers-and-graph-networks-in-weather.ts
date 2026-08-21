@@ -8,7 +8,7 @@ const article: ArticleSeed = {
   category: CATEGORY_FOUNDATIONS,
   author: AUTHOR,
   summary:
-    "How attention-based and graph-based architectures produce global ten-day forecasts in under a minute, what the skill scores really say, and the caveats the press releases skip.",
+    "How attention and graph networks produce global ten-day forecasts in under a minute — explained twice, once in plain language and once with the machinery — plus the caveats the press releases skip.",
   content: `
 This is the family behind every "AI beats traditional weather forecasting" headline since 2022: GraphCast, Pangu-Weather, FourCastNet, AIFS, and their descendants. The claims are partly true, genuinely important — and consistently oversold. This article explains how these models work and gives you the tools to read the headlines critically.
 
@@ -24,7 +24,50 @@ Two architectures deliver that:
 
 Either way, the training recipe is the same and is worth stating plainly, because it defines both the power and the limits: **take roughly forty years of ERA5 reanalysis — our best gridded reconstruction of the atmosphere across the satellite era — and learn the function that maps the state now to the state six hours from now.** Apply that function repeatedly and you have a ten-day global forecast.
 
+That is the executive summary, and it is enough to carry you through the rest of the series. The next four sections open the hood. Each comes in two passes — the intuition first, then the machinery for readers who want it — and if mechanics are not why you came, skip ahead to "What they genuinely achieve": the critical-reading tools at the end of this article require no code.
+
 ![Schematic: attention and multi-scale graph edges let distant points on the globe exchange information in a few steps.](/images/insights/global-attention.svg)
+
+## What attention actually does
+
+### The intuition
+
+Watch an experienced forecaster work a chart and you will notice she does not weigh every point on Earth equally. Forecasting for Oklahoma at day five, she looks at particular distant places — the trough digging off Japan, the ridge building over the Gulf of Alaska, the subtropical moisture feed — because experience has taught her *which remote features matter for this forecast, at this range, in this situation*. Attention is that judgment, made mechanical and learnable. For every location, the model computes a set of relevance weights over other locations — how much should conditions *there* revise my estimate of what happens *here*? — and, crucially, those weights are not fixed rules. They are recomputed from the current state of the atmosphere, so a blocked pattern and a fast-moving progressive pattern produce entirely different maps of who listens to whom. That adaptivity is exactly what the fixed local filters of the [CNN era](/blog/cnns-in-weather) could not provide.
+
+### Under the hood
+
+The machinery is the same one language models apply to words. The atmospheric state is cut into small patches, and each patch is embedded as a vector — a *token*. Every token derives three quantities: a query (what am I looking for?), a key (what do I contain?), and a value (what information do I pass along if someone attends to me). Relevance is the match between one token's query and another's key; the output for each token is the relevance-weighted blend of everyone's values — in the standard notation, $\\mathrm{softmax}(QK^{\\top}/\\sqrt{d})\\,V$. In English: compare every location's question to every other location's contents, convert the match scores to weights that sum to one, and mix accordingly.
+
+The catch is cost. Comparing everything with everything grows with the *square* of the token count, and a quarter-degree global grid holds just over a million columns of atmosphere — a trillion pairings per layer, which is not a computation anyone runs. The weather transformers earn their tractability with structure:
+
+- **Windowed attention.** Pangu-Weather adapts the Swin transformer's trick to the atmosphere: attention runs only inside local 3D windows (spanning longitude, latitude, *and* pressure level), and the windows shift between layers so information leaks across boundaries, layer by layer. An Earth-specific positional bias teaches the windows that they live on a sphere with a vertical structure, not on a flat image.
+- **Frequency-space mixing.** FourCastNet sidesteps the pairing problem entirely: transform the fields into waves with a Fourier transform, mix information globally there — where planetary-scale structure is cheap to manipulate — and transform back. For a fluid on a sphere this is a natural move; spectral NWP models have represented the atmosphere this way for decades.
+
+## Forecasting on a mesh: the graph route
+
+### The intuition
+
+There is an older problem hiding in every "global grid": latitude–longitude cells are not the same size. Meridians converge toward the poles, so a grid that is 28 km wide at the equator crowds into slivers near the poles — and a filter that sees "one cell in each direction" sees wildly different amounts of atmosphere depending on where it sits. GraphCast's answer is to abandon the grid and forecast on a **mesh** — picture a geodesic dome wrapped around the planet, its nodes spread almost evenly from equator to pole. Neighboring nodes exchange information like colleagues passing notes, and the mesh carries edges at several scales at once: short edges for fronts and local gradients, and long edges — express lanes — that let a signal cross an ocean basin in a single hop.
+
+### Under the hood
+
+GraphCast is an encoder–processor–decoder. The **encoder** learns to move the state from the million-column latitude–longitude grid onto the mesh nodes. The **processor** runs repeated rounds of *message passing*: each node gathers learned messages from its neighbors along every edge, updates its state, and repeats — and because the mesh is a **multi-mesh** (a coarse icosahedron refined several times, all refinement levels kept and overlaid), the coarsest edges span continents while the finest resolve synoptic detail. A signal can traverse the hemisphere in a handful of rounds rather than hundreds of local hops. The **decoder** maps the result back to the familiar grid. The [GraphCast profile](/blog/graphcast) covers the specifics; ECMWF's AIFS combines this graph machinery with transformer processing, which tells you the two routes are complements, not rivals.
+
+## Why global reach is non-negotiable
+
+This is the meteorological grounding the architecture papers tend to state only in passing. The atmosphere moves information *fast*. Winds in the jet stream commonly run 150–250 km/h, so in a single six-hour step, air — and the disturbances it carries — travels on the order of a thousand kilometers. Worse, for the forecaster's purposes: Rossby wave energy propagates *downstream faster than the individual troughs and ridges move*, the classic downstream-development mechanism, so the true influence radius of six hours exceeds what advection alone suggests. Any model that steps the planet forward six hours at a time must let information travel at least that far per step, or it is wrong by construction — not wrong in a subtle statistical way, but in the way a forecaster who refuses to look upstream is wrong.
+
+Physical models get this reach from the equations themselves, which propagate signals at the speeds the dynamics dictate. Attention and long-range graph edges are the *learned* equivalents — reach built into the architecture rather than derived from physics. That is also the honest way to frame teleconnections: this machinery is what would let a learned model represent them in principle. Whether the models capture those linkages at the right strength is a separate, and much harder, verification question — see the caveats below.
+
+## What training actually involves
+
+### The picture
+
+ERA5, sampled six-hourly across four decades, is roughly 58,000 snapshots of the global atmosphere. Training shows the model a snapshot and asks it to predict the next one, adjusting its internal weights after every miss — millions of times, until the six-hour map is learned. That single map is the entire product. A ten-day forecast is, in the simplest designs, that map applied forty times to its own output, which is why the compounding-error caveat below is not incidental: rollout *is* the forecast.
+
+### Under the hood
+
+The training objective is an average-error loss, weighted so that shrinking high-latitude cells, different variables, and different pressure levels contribute sensibly — and that objective choice, more than any architecture detail, drives the blurring behavior discussed below. Because a model trained only on single steps meets its own imperfect output for the first time at forecast time, the leading models are *fine-tuned on rollouts* — trained against multi-step sequences so they learn to live with their own errors. Two facts about scale deserve to be more widely known. These models are small: tens to a few hundred million parameters, thousands of times smaller than a frontier language model, because the constraint is atmospheric data and physical structure, not parameter count. And the costs are lopsided: training runs for days to weeks on tens to hundreds of accelerators — a one-time expense — after which each ten-day forecast costs under a minute on a single one. Both halves of that asymmetry matter when you read the economics claims later in this article.
 
 ## What they genuinely achieve
 
@@ -64,6 +107,7 @@ Transformer and graph models are the real thing: a genuine change in how global 
 **Technical depth**
 
 - Vaswani, A., et al. (2017). ["Attention Is All You Need."](https://arxiv.org/abs/1706.03762) The transformer paper itself.
+- Liu, Z., et al. (2021). ["Swin Transformer: Hierarchical Vision Transformer using Shifted Windows."](https://arxiv.org/abs/2103.14030) The windowed-attention design Pangu-Weather adapts to the atmosphere.
 - Lam, R., et al. (2023). ["Learning skillful medium-range global weather forecasting."](https://doi.org/10.1126/science.adi2336) *Science*, 382. GraphCast.
 - Bi, K., et al. (2023). ["Accurate medium-range global weather forecasting with 3D neural networks."](https://doi.org/10.1038/s41586-023-06185-3) *Nature*, 619. Pangu-Weather.
 - Ben Bouallègue, Z., et al. (2024). ["The Rise of Data-Driven Weather Forecasting."](https://doi.org/10.1175/BAMS-D-23-0162.1) *BAMS*, 105. ECMWF's independent evaluation — essential hype control.
