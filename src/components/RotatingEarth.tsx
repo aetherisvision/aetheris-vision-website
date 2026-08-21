@@ -215,12 +215,11 @@ function EarthMesh({ animate, onReady }: { animate: boolean; onReady?: () => voi
 function Scene({ animate, onReady }: { animate: boolean; onReady?: () => void }) {
   const { size } = useThree();
   const framing = useMemo(() => {
-    // Keep the globe larger than the viewport so it reads as a horizon, while
-    // revealing enough of the northern hemisphere to show recognizable land
-    // and weather systems behind the principal profile.
-    const diameterPixels = Math.max(size.width * 1.55, size.height * 2.15);
+    // Keep the globe large enough to read as a horizon, but reveal substantially
+    // more of the northern hemisphere behind the principal profile.
+    const diameterPixels = Math.max(size.width * 1.28, size.height * 1.75);
     const scale = diameterPixels / (EARTH_RADIUS * 2 * CAMERA_ZOOM);
-    const horizonTopPixels = size.height * 0.46;
+    const horizonTopPixels = size.height * 0.25;
     const horizonTopWorld = (size.height * 0.5 - horizonTopPixels) / CAMERA_ZOOM;
 
     return {
