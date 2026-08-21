@@ -8,7 +8,7 @@ import {
   SRGBColorSpace,
   Vector3,
 } from "three";
-import type { Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, Texture } from "three";
+import type { Group, Mesh, MeshBasicMaterial, Texture } from "three";
 
 const DAY_PREVIEW_TEXTURE = "/earth-textures/day-4k.webp";
 const DAY_DETAIL_TEXTURE = "/earth-textures/day-8k.webp";
@@ -78,7 +78,7 @@ function DetailTextureUpgrade({
 function EarthMesh({ animate, onReady }: { animate: boolean; onReady?: () => void }) {
   const surfaceRef = useRef<Group>(null);
   const cloudsRef = useRef<Mesh>(null);
-  const dayMaterialRef = useRef<MeshStandardMaterial>(null);
+  const dayMaterialRef = useRef<MeshBasicMaterial>(null);
   const cloudMaterialRef = useRef<MeshBasicMaterial>(null);
   const readyNotifiedRef = useRef(false);
   const { gl } = useThree();
@@ -133,11 +133,9 @@ function EarthMesh({ animate, onReady }: { animate: boolean; onReady?: () => voi
       <group ref={surfaceRef}>
         <mesh>
           <sphereGeometry args={[EARTH_RADIUS, 192, 192]} />
-          <meshStandardMaterial
+          <meshBasicMaterial
             ref={dayMaterialRef}
             map={dayTexture}
-            metalness={0}
-            roughness={0.9}
           />
         </mesh>
         <mesh>
@@ -195,8 +193,6 @@ function Scene({ animate, onReady }: { animate: boolean; onReady?: () => void })
 
   return (
     <>
-      <ambientLight intensity={0.08} />
-      <directionalLight position={[5, 3, 4]} color="#d8efff" intensity={2.5} />
       <group position={[0, framing.positionY, 0]} scale={framing.scale}>
         <EarthMesh animate={animate} onReady={onReady} />
       </group>
