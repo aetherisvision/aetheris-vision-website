@@ -5,8 +5,6 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Stars, useTexture } from "@react-three/drei";
 import {
   AdditiveBlending,
-  BackSide,
-  Color,
   SRGBColorSpace,
   Vector3,
 } from "three";
@@ -18,6 +16,10 @@ const NIGHT_TEXTURE = "/earth-textures/night-2k.webp";
 const CLOUD_PREVIEW_TEXTURE = "/earth-textures/storm-clouds-4k.webp";
 const CLOUD_DETAIL_TEXTURE = "/earth-textures/storm-clouds-8k.webp";
 const EARTH_RADIUS = 1.3;
+// Keep transparent detail layers nearly flush with the surface so their
+// silhouettes read as one planet instead of concentric circles.
+const NIGHT_RADIUS = EARTH_RADIUS * 1.0015;
+const CLOUD_RADIUS = EARTH_RADIUS * 1.004;
 const CAMERA_ZOOM = 182;
 const LIGHT_DIRECTION = new Vector3(5, 3, 4).normalize();
 
@@ -46,26 +48,6 @@ const NIGHT_FRAGMENT_SHADER = /* glsl */ `
     float lights = smoothstep(0.025, 0.34, luminance);
 
     gl_FragColor = vec4(nightColor * 1.35, nightSide * lights * 0.95);
-  }
-`;
-
-const ATMOSPHERE_VERTEX_SHADER = /* glsl */ `
-  varying float vIntensity;
-
-  void main() {
-    vec3 viewNormal = normalize(normalMatrix * normal);
-    vec3 viewPosition = normalize((modelViewMatrix * vec4(position, 1.0)).xyz);
-    vIntensity = pow(max(0.0, 0.72 + dot(viewNormal, viewPosition)), 2.4);
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`;
-
-const ATMOSPHERE_FRAGMENT_SHADER = /* glsl */ `
-  uniform vec3 glowColor;
-  varying float vIntensity;
-
-  void main() {
-    gl_FragColor = vec4(glowColor, vIntensity * 0.58);
   }
 `;
 
@@ -140,11 +122,6 @@ function EarthMesh({ animate, onReady }: { animate: boolean; onReady?: () => voi
     }),
     [nightTexture],
   );
-  const atmosphereUniforms = useMemo(
-    () => ({ glowColor: { value: new Color("#65b9f2") } }),
-    [],
-  );
-
   useFrame((_, delta) => {
     if (!animate) return;
     if (surfaceRef.current) surfaceRef.current.rotation.y += delta * 0.055;
@@ -164,7 +141,7 @@ function EarthMesh({ animate, onReady }: { animate: boolean; onReady?: () => voi
           />
         </mesh>
         <mesh>
-          <sphereGeometry args={[1.304, 192, 192]} />
+          <sphereGeometry args={[NIGHT_RADIUS, 192, 192]} />
           <shaderMaterial
             vertexShader={NIGHT_VERTEX_SHADER}
             fragmentShader={NIGHT_FRAGMENT_SHADER}
@@ -178,26 +155,12 @@ function EarthMesh({ animate, onReady }: { animate: boolean; onReady?: () => voi
       </group>
 
       <mesh ref={cloudsRef}>
-        <sphereGeometry args={[1.326, 192, 192]} />
+        <sphereGeometry args={[CLOUD_RADIUS, 192, 192]} />
         <meshBasicMaterial
           ref={cloudMaterialRef}
           map={cloudTexture}
           color="#eef8ff"
           opacity={0.68}
-          transparent
-          blending={AdditiveBlending}
-          depthWrite={false}
-          toneMapped={false}
-        />
-      </mesh>
-
-      <mesh scale={1.075}>
-        <sphereGeometry args={[EARTH_RADIUS, 192, 192]} />
-        <shaderMaterial
-          vertexShader={ATMOSPHERE_VERTEX_SHADER}
-          fragmentShader={ATMOSPHERE_FRAGMENT_SHADER}
-          uniforms={atmosphereUniforms}
-          side={BackSide}
           transparent
           blending={AdditiveBlending}
           depthWrite={false}
