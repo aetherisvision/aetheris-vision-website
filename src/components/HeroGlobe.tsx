@@ -1,6 +1,6 @@
 "use client";
 
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 
 const RotatingEarth = lazy(() => import("@/components/RotatingEarth"));
 
@@ -18,6 +18,8 @@ function supportsWebGL2(): boolean {
 
 export default function HeroGlobe() {
   const [show, setShow] = useState(false);
+  const [ready, setReady] = useState(false);
+  const handleReady = useCallback(() => setReady(true), []);
 
   useEffect(() => {
     // Preserve the static hero for smaller screens, reduced-motion users,
@@ -36,10 +38,14 @@ export default function HeroGlobe() {
 
   return (
     <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-      <div className="absolute inset-0 bg-[#06101e]/90" />
-      <div className="absolute inset-0">
+      <div
+        className={`absolute inset-0 bg-[#06101e]/90 transition-opacity duration-700 ${ready ? "opacity-100" : "opacity-0"}`}
+      />
+      <div
+        className={`absolute inset-0 transition-opacity duration-700 ${ready ? "opacity-100" : "opacity-0"}`}
+      >
         <Suspense fallback={null}>
-          <RotatingEarth />
+          <RotatingEarth onReady={handleReady} />
         </Suspense>
       </div>
     </div>

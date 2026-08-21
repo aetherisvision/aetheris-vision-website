@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Stars, useTexture } from "@react-three/drei";
 import {
@@ -10,11 +10,13 @@ import {
   SRGBColorSpace,
   Vector3,
 } from "three";
-import type { Group, Mesh, Texture } from "three";
+import type { Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, Texture } from "three";
 
-const DAY_TEXTURE = "/earth-textures/day-8k.webp";
+const DAY_PREVIEW_TEXTURE = "/earth-textures/day-4k.webp";
+const DAY_DETAIL_TEXTURE = "/earth-textures/day-8k.webp";
 const NIGHT_TEXTURE = "/earth-textures/night-2k.webp";
-const CLOUD_TEXTURE = "/earth-textures/storm-clouds-8k.webp";
+const CLOUD_PREVIEW_TEXTURE = "/earth-textures/storm-clouds-4k.webp";
+const CLOUD_DETAIL_TEXTURE = "/earth-textures/storm-clouds-8k.webp";
 const EARTH_RADIUS = 1.3;
 const CAMERA_ZOOM = 182;
 const LIGHT_DIRECTION = new Vector3(5, 3, 4).normalize();
@@ -73,22 +75,63 @@ function configureTexture(texture: Texture, anisotropy: number) {
   texture.needsUpdate = true;
 }
 
-function EarthMesh({ animate }: { animate: boolean }) {
-  const surfaceRef = useRef<Group>(null);
-  const cloudsRef = useRef<Mesh>(null);
-  const { gl } = useThree();
-  const [dayTexture, nightTexture, cloudTexture] = useTexture([
-    DAY_TEXTURE,
-    NIGHT_TEXTURE,
-    CLOUD_TEXTURE,
-  ]);
+function DetailTextureUpgrade({
+  anisotropy,
+  onLoaded,
+}: {
+  anisotropy: number;
+  onLoaded: (dayTexture: Texture, cloudTexture: Texture) => void;
+}) {
+  const [dayTexture, cloudTexture] = useTexture([DAY_DETAIL_TEXTURE, CLOUD_DETAIL_TEXTURE]);
 
   useEffect(() => {
-    const anisotropy = Math.min(16, gl.capabilities.getMaxAnisotropy());
+    configureTexture(dayTexture, anisotropy);
+    configureTexture(cloudTexture, anisotropy);
+    onLoaded(dayTexture, cloudTexture);
+  }, [anisotropy, cloudTexture, dayTexture, onLoaded]);
+
+  return null;
+}
+
+function EarthMesh({ animate, onReady }: { animate: boolean; onReady?: () => void }) {
+  const surfaceRef = useRef<Group>(null);
+  const cloudsRef = useRef<Mesh>(null);
+  const dayMaterialRef = useRef<MeshStandardMaterial>(null);
+  const cloudMaterialRef = useRef<MeshBasicMaterial>(null);
+  const readyNotifiedRef = useRef(false);
+  const { gl } = useThree();
+  const [dayTexture, nightTexture, cloudTexture] = useTexture([
+    DAY_PREVIEW_TEXTURE,
+    NIGHT_TEXTURE,
+    CLOUD_PREVIEW_TEXTURE,
+  ]);
+  const anisotropy = Math.min(16, gl.capabilities.getMaxAnisotropy());
+
+  useEffect(() => {
     configureTexture(dayTexture, anisotropy);
     configureTexture(nightTexture, anisotropy);
     configureTexture(cloudTexture, anisotropy);
-  }, [cloudTexture, dayTexture, gl, nightTexture]);
+
+    const frame = requestAnimationFrame(() => {
+      if (!readyNotifiedRef.current) {
+        readyNotifiedRef.current = true;
+        onReady?.();
+      }
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [anisotropy, cloudTexture, dayTexture, nightTexture, onReady]);
+
+  const applyDetailTextures = useCallback((detailDay: Texture, detailClouds: Texture) => {
+    if (dayMaterialRef.current) {
+      dayMaterialRef.current.map = detailDay;
+      dayMaterialRef.current.needsUpdate = true;
+    }
+    if (cloudMaterialRef.current) {
+      cloudMaterialRef.current.map = detailClouds;
+      cloudMaterialRef.current.needsUpdate = true;
+    }
+  }, []);
 
   const nightUniforms = useMemo(
     () => ({
@@ -113,7 +156,12 @@ function EarthMesh({ animate }: { animate: boolean }) {
       <group ref={surfaceRef}>
         <mesh>
           <sphereGeometry args={[EARTH_RADIUS, 192, 192]} />
-          <meshStandardMaterial map={dayTexture} metalness={0} roughness={0.9} />
+          <meshStandardMaterial
+            ref={dayMaterialRef}
+            map={dayTexture}
+            metalness={0}
+            roughness={0.9}
+          />
         </mesh>
         <mesh>
           <sphereGeometry args={[1.304, 192, 192]} />
@@ -132,6 +180,7 @@ function EarthMesh({ animate }: { animate: boolean }) {
       <mesh ref={cloudsRef}>
         <sphereGeometry args={[1.326, 192, 192]} />
         <meshBasicMaterial
+          ref={cloudMaterialRef}
           map={cloudTexture}
           color="#eef8ff"
           opacity={0.68}
@@ -155,11 +204,15 @@ function EarthMesh({ animate }: { animate: boolean }) {
           toneMapped={false}
         />
       </mesh>
+
+      <Suspense fallback={null}>
+        <DetailTextureUpgrade anisotropy={anisotropy} onLoaded={applyDetailTextures} />
+      </Suspense>
     </group>
   );
 }
 
-function Scene({ animate }: { animate: boolean }) {
+function Scene({ animate, onReady }: { animate: boolean; onReady?: () => void }) {
   const { size } = useThree();
   const framing = useMemo(() => {
     // Keep the globe larger than the viewport so it reads as a horizon, while
@@ -181,7 +234,7 @@ function Scene({ animate }: { animate: boolean }) {
       <ambientLight intensity={0.08} />
       <directionalLight position={[5, 3, 4]} color="#d8efff" intensity={2.5} />
       <group position={[0, framing.positionY, 0]} scale={framing.scale}>
-        <EarthMesh animate={animate} />
+        <EarthMesh animate={animate} onReady={onReady} />
       </group>
       <Stars radius={55} depth={28} count={1800} factor={2.2} saturation={0} fade speed={0.12} />
     </>
@@ -196,7 +249,7 @@ function supportsWebGL2() {
   }
 }
 
-export default function RotatingEarth() {
+export default function RotatingEarth({ onReady }: { onReady?: () => void }) {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [hasWebGL, setHasWebGL] = useState(true);
 
@@ -230,7 +283,7 @@ export default function RotatingEarth() {
         }}
         resize={{ debounce: { scroll: 50, resize: 50 } }}
       >
-        <Scene animate />
+        <Scene animate onReady={onReady} />
       </Canvas>
     </div>
   );
