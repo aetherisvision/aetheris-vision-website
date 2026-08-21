@@ -2,7 +2,7 @@ import Image from "next/image";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import type { ReactNode } from "react";
 import Footer from "@/components/Footer";
-import HeroVideo from "@/components/HeroVideo";
+import HeroGlobe from "@/components/HeroGlobe";
 import Navbar from "@/components/Navbar";
 import SatelliteDisplay, { type SatelliteSource } from "@/components/SatelliteDisplay";
 import { posts } from "@/lib/posts";
@@ -60,8 +60,7 @@ export default function Home() {
       <main id="main" className="flex-1">
         <section className="relative border-b border-white/15 bg-[#0a1628] pt-20 text-white">
           <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
-            {/* Static weather view (a frame of hero-1.mp4) for mobile, reduced-motion,
-                and data-saver clients; on desktop the video fades in over it. */}
+            {/* Static weather view for mobile, reduced-motion, data-saver, and no-WebGL clients. */}
             <Image
               src="/images/home/hero-earth-weather.jpg"
               alt=""
@@ -70,7 +69,8 @@ export default function Home() {
               className="object-cover object-[22%_50%] opacity-40"
               sizes="100vw"
             />
-            <HeroVideo />
+            <HeroGlobe />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0a1628]/95 via-[#0a1628]/55 to-[#0a1628]/30" />
             <div className="absolute inset-0 bg-gradient-to-b from-[#0a1628]/40 via-[#0a1628]/70 to-[#0a1628]" />
           </div>
 
