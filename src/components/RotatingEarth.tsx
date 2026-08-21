@@ -162,11 +162,12 @@ function EarthMesh({ animate }: { animate: boolean }) {
 function Scene({ animate }: { animate: boolean }) {
   const { size } = useThree();
   const framing = useMemo(() => {
-    // Oversize and lower the globe so the curved limb reads as a planetary
-    // horizon instead of a separate object tucked behind the portrait.
-    const diameterPixels = Math.max(size.width * 2.05, size.height * 2.8);
+    // Keep the globe larger than the viewport so it reads as a horizon, while
+    // revealing enough of the northern hemisphere to show recognizable land
+    // and weather systems behind the principal profile.
+    const diameterPixels = Math.max(size.width * 1.55, size.height * 2.15);
     const scale = diameterPixels / (EARTH_RADIUS * 2 * CAMERA_ZOOM);
-    const horizonTopPixels = size.height * 0.64;
+    const horizonTopPixels = size.height * 0.46;
     const horizonTopWorld = (size.height * 0.5 - horizonTopPixels) / CAMERA_ZOOM;
 
     return {
