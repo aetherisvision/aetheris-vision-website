@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import { posts } from "@/lib/posts";
+import { posts, parsePostDate } from "@/lib/posts";
 import { SITE } from "@/lib/constants";
 import { demos } from "@/lib/portfolio-data";
 
@@ -114,7 +114,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const blogRoutes: MetadataRoute.Sitemap = posts.map((post) => ({
     url: `${SITE.url}/blog/${post.slug}`,
-    lastModified: new Date(post.date),
+    lastModified: parsePostDate(post.date),
     changeFrequency: "never",
     priority: 0.6,
   }));
