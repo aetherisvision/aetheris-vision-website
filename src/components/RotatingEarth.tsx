@@ -182,7 +182,9 @@ function Scene({ animate, onReady }: { animate: boolean; onReady?: () => void })
     // more of the northern hemisphere behind the principal profile.
     const diameterPixels = Math.max(size.width * 1.28, size.height * 1.75);
     const scale = diameterPixels / (EARTH_RADIUS * 2 * CAMERA_ZOOM);
-    const horizonTopPixels = size.height * 0.25;
+    // Lift the globe by another 10% of the hero height so more of the
+    // northern hemisphere remains visible behind the profile.
+    const horizonTopPixels = size.height * 0.15;
     const horizonTopWorld = (size.height * 0.5 - horizonTopPixels) / CAMERA_ZOOM;
 
     return {
