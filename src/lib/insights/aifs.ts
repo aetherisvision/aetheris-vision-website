@@ -32,7 +32,7 @@ ECMWF's published verification showed AIFS Single beating IFS HRES on many headl
 
 - **Operational legitimacy.** Not a paper, not a demo: a scheduled forecast product with service obligations, run by the center everyone else benchmarks against.
 - **Assimilation-consistent initialization.** Trained and initialized inside one coherent pipeline — the cleanest setup any AI model currently enjoys.
-- **Radical openness.** Real-time AIFS output is free under open data; the training framework (Anemoi) is open source and explicitly built so national services can train their own models.
+- **Open by design.** Real-time AIFS output is free under open data; the training framework (Anemoi) is open source and explicitly built so national services can train their own models.
 - **Honest verification culture.** Weaknesses are documented in the same charts as strengths.
 
 ## Limitations
