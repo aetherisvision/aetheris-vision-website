@@ -14,7 +14,7 @@ import type { Group, Mesh, Texture } from "three";
 
 const DAY_TEXTURE = "/earth-textures/day-4k.webp";
 const NIGHT_TEXTURE = "/earth-textures/night-2k.webp";
-const CLOUD_TEXTURE = "/earth-textures/clouds-2k.webp";
+const CLOUD_TEXTURE = "/earth-textures/clouds-4k.webp";
 const LIGHT_DIRECTION = new Vector3(5, 3, 4).normalize();
 
 const NIGHT_VERTEX_SHADER = /* glsl */ `
@@ -61,7 +61,7 @@ const ATMOSPHERE_FRAGMENT_SHADER = /* glsl */ `
   varying float vIntensity;
 
   void main() {
-    gl_FragColor = vec4(glowColor, vIntensity * 0.62);
+    gl_FragColor = vec4(glowColor, vIntensity * 0.48);
   }
 `;
 
@@ -82,7 +82,7 @@ function EarthMesh({ animate }: { animate: boolean }) {
   ]);
 
   useEffect(() => {
-    const anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy());
+    const anisotropy = Math.min(16, gl.capabilities.getMaxAnisotropy());
     configureTexture(dayTexture, anisotropy);
     configureTexture(nightTexture, anisotropy);
     configureTexture(cloudTexture, anisotropy);
@@ -132,7 +132,7 @@ function EarthMesh({ animate }: { animate: boolean }) {
         <meshBasicMaterial
           map={cloudTexture}
           color="#dceeff"
-          opacity={0.44}
+          opacity={0.32}
           transparent
           blending={AdditiveBlending}
           depthWrite={false}
@@ -179,7 +179,6 @@ function supportsWebGL2() {
 export default function RotatingEarth() {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [hasWebGL, setHasWebGL] = useState(true);
-  const dpr = useMemo(() => [1, 2] as [number, number], []);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -201,8 +200,14 @@ export default function RotatingEarth() {
       <Canvas
         orthographic
         camera={{ position: [0, 0, 5], zoom: 182 }}
-        dpr={dpr}
-        gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+        dpr={2.25}
+        gl={{
+          antialias: true,
+          alpha: true,
+          powerPreference: "high-performance",
+          precision: "highp",
+          stencil: false,
+        }}
         resize={{ debounce: { scroll: 50, resize: 50 } }}
       >
         <Scene animate />
