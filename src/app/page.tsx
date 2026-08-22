@@ -13,7 +13,7 @@ import { createPageMetadata } from "@/lib/seo";
 export const revalidate = 3600;
 
 export const metadata = createPageMetadata({
-  title: `Weather AI, GIS & Geospatial Regridding | ${SITE.name}`,
+  title: `Weather AI & Geospatial Consulting | ${SITE.name}`,
   description:
     "Scientific consulting in applied meteorology, AI weather forecasting, GIS data transformation, geospatial regridding, and Earth-system data pipelines.",
   path: "/",
@@ -92,9 +92,9 @@ export default function Home() {
                   Aetheris Vision LLC
                 </p>
                 <h1 className="max-w-5xl font-serif text-[clamp(2.5rem,5.4vw,5rem)] leading-[1.02] tracking-[-0.04em] text-white">
-                  AI and Geospatial
+                  Weather AI &amp;
                   <br />
-                  Weather Systems
+                  Geospatial Consulting
                 </h1>
                 <p className="mt-8 text-xs font-semibold uppercase leading-7 tracking-[0.06em] text-[#bcd4e4] sm:text-sm">
                   <span className="whitespace-nowrap">AI Weather Forecasting</span>{" "}
