@@ -42,8 +42,8 @@ describe("public form email verification", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: /send message/i }));
 
-    expect(await screen.findByText("Enter the six-digit code")).toBeInTheDocument();
-    expect(screen.queryByText("Message received")).not.toBeInTheDocument();
+    expect(await screen.findByText("Enter the Six-Digit Code")).toBeInTheDocument();
+    expect(screen.queryByText("Message Received")).not.toBeInTheDocument();
 
     const initialBody = JSON.parse(fetchMock.mock.calls[0][1]?.body as string);
     expect(fetchMock.mock.calls[0][0]).toBe("/api/contact");
@@ -57,7 +57,7 @@ describe("public form email verification", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: /confirm and submit/i }));
 
-    expect(await screen.findByText("Message received")).toBeInTheDocument();
+    expect(await screen.findByText("Message Received")).toBeInTheDocument();
     const verifiedBody = JSON.parse(fetchMock.mock.calls[1][1]?.body as string);
     expect(verifiedBody).toEqual(
       expect.objectContaining({
@@ -107,8 +107,8 @@ describe("public form email verification", () => {
     );
     fireEvent.submit(form!);
 
-    expect(await screen.findByText("Enter the six-digit code")).toBeInTheDocument();
-    expect(screen.queryByText("Project details received")).not.toBeInTheDocument();
+    expect(await screen.findByText("Enter the Six-Digit Code")).toBeInTheDocument();
+    expect(screen.queryByText("Project Details Received")).not.toBeInTheDocument();
 
     const initialCall = fetchMock.mock.calls.find(([url]) => url === "/api/intake");
     expect(initialCall).toBeDefined();
@@ -126,7 +126,7 @@ describe("public form email verification", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: /confirm and send project details/i }));
 
-    expect(await screen.findByText("Project details received")).toBeInTheDocument();
+    expect(await screen.findByText("Project Details Received")).toBeInTheDocument();
     const intakeCalls = fetchMock.mock.calls.filter(([url]) => url === "/api/intake");
     expect(intakeCalls).toHaveLength(2);
     const verifiedBody = JSON.parse(intakeCalls[1][1]?.body as string);

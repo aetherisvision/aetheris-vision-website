@@ -27,7 +27,7 @@ export default function EmailVerificationStep({
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-300">
         Email verification
       </p>
-      <h3 className="mt-3 text-xl font-semibold text-white">Enter the six-digit code</h3>
+      <h3 className="mt-3 text-xl font-semibold text-white">Enter the Six-Digit Code</h3>
       <p className="mt-3 text-sm leading-6 text-gray-400">
         We sent a confirmation code to <span className="font-medium text-white">{email}</span>.
         Your information will not be submitted until the code is confirmed.

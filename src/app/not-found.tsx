@@ -16,7 +16,7 @@ export default function NotFound() {
           404
         </p>
         <h1 className="mt-2 text-4xl font-bold tracking-tight text-white sm:text-5xl">
-          Page not found
+          Page Not Found
         </h1>
         <p className="mt-4 max-w-md text-gray-400">
           The page you&apos;re looking for doesn&apos;t exist or has been moved.

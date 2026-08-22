@@ -63,7 +63,7 @@ export default function OGImage() {
             letterSpacing: "-2px",
           }}
         >
-          Scientific insight
+          Scientific Insight
         </h1>
         <h1
           style={{
@@ -77,7 +77,7 @@ export default function OGImage() {
             letterSpacing: "-2px",
           }}
         >
-          Practical delivery
+          Practical Delivery
         </h1>
         <p
           style={{

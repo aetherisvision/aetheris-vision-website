@@ -49,7 +49,7 @@ export default async function PreviewPage({ searchParams }: PreviewPageProps) {
 
         <section className="mx-auto mt-16 w-full max-w-sm border-t border-[#17252f]/15 pt-10">
           <h2 className="text-center text-xs font-bold uppercase tracking-[0.18em] text-[#486890]">
-            Client &amp; partner preview
+            Client &amp; Partner Preview
           </h2>
 
           <form action="/api/preview/auth" method="post" className="mt-6">

@@ -33,7 +33,7 @@ function ConfirmForm() {
             <path d="M12 8v4m0 4h.01" stroke="#f87171" strokeWidth="1.8" strokeLinecap="round"/>
           </svg>
         </div>
-        <h2 style={{ fontSize: '18px', fontWeight: '700', color: dark.text, margin: '0 0 8px' }}>Invalid link</h2>
+        <h2 style={{ fontSize: '18px', fontWeight: '700', color: dark.text, margin: '0 0 8px' }}>Invalid Link</h2>
         <p style={{ color: dark.textMuted, fontSize: '14px', margin: '0 0 24px' }}>
           This link is missing required parameters.
         </p>
@@ -64,7 +64,7 @@ function ConfirmForm() {
       </div>
 
       <h2 style={{ fontSize: '20px', fontWeight: '700', color: dark.text, margin: '0 0 6px' }}>
-        Ready to log in
+        Ready to Log In
       </h2>
       <p style={{ color: dark.textMuted, fontSize: '14px', margin: '0 0 16px' }}>
         Signing in as

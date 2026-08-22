@@ -308,7 +308,7 @@ export default function ProjectIntakeForm() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h3 className="text-2xl font-semibold text-white mb-4">Project details received</h3>
+        <h3 className="text-2xl font-semibold text-white mb-4">Project Details Received</h3>
         <p className="text-gray-400 mb-6 max-w-lg mx-auto">
           Thank you. Aetheris Vision will review the information you provided and follow up about the next step.
         </p>

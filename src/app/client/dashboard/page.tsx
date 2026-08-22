@@ -288,14 +288,14 @@ export default function ClientDashboard() {
               {!hasDocs && (
                 <div style={{ marginBottom: '40px' }}>
                   <p style={{ color: dark.textDim, fontSize: '13px', margin: '0 0 6px', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: '600' }}>Client Dashboard</p>
-                  <h1 style={{ color: dark.text, fontSize: '30px', fontWeight: '800', margin: '0 0 6px', letterSpacing: '-0.02em' }}>Welcome back, {firstName}</h1>
+                  <h1 style={{ color: dark.text, fontSize: '30px', fontWeight: '800', margin: '0 0 6px', letterSpacing: '-0.02em' }}>Welcome Back, {firstName}</h1>
                   <p style={{ color: dark.textMuted, fontSize: '15px', margin: 0 }}>Here&apos;s the latest on your project.</p>
                 </div>
               )}
 
               {hasDocs && (
                 <div style={{ marginBottom: '32px' }}>
-                  <h1 style={{ color: dark.text, fontSize: '26px', fontWeight: '800', margin: '0 0 4px', letterSpacing: '-0.01em' }}>Welcome back, {firstName}</h1>
+                  <h1 style={{ color: dark.text, fontSize: '26px', fontWeight: '800', margin: '0 0 4px', letterSpacing: '-0.01em' }}>Welcome Back, {firstName}</h1>
                   <p style={{ color: dark.textMuted, fontSize: '14px', margin: 0 }}>Here&apos;s the latest on your project.</p>
                 </div>
               )}
@@ -305,7 +305,7 @@ export default function ClientDashboard() {
                   <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke="rgba(255,255,255,0.25)" strokeWidth="1.8" strokeLinecap="round"/></svg>
                   </div>
-                  <h3 style={{ color: dark.textMuted, fontWeight: '600', fontSize: '16px', margin: '0 0 6px' }}>No projects yet</h3>
+                  <h3 style={{ color: dark.textMuted, fontWeight: '600', fontSize: '16px', margin: '0 0 6px' }}>No Projects Yet</h3>
                   <p style={{ color: dark.textDim, fontSize: '14px', margin: 0 }}>Your project timeline will appear here once it&apos;s ready.</p>
                 </div>
               ) : (

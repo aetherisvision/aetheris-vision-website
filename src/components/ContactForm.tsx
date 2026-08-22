@@ -319,7 +319,7 @@ export default function ContactForm() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
           </div>
-          <h3 className="text-white font-semibold text-lg mb-2">Message received</h3>
+          <h3 className="text-white font-semibold text-lg mb-2">Message Received</h3>
           <p className="text-gray-400 font-light text-sm">
             Thank you. Aetheris Vision will review your message and typically reply within one business day.
           </p>

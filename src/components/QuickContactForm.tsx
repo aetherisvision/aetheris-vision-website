@@ -264,7 +264,7 @@ export default function QuickContactForm() {
         tabIndex={-1}
         className="border border-white/20 bg-white/[0.04] p-8 outline-none sm:p-10"
       >
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#9bc3df]">Message received</p>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#9bc3df]">Message Received</p>
         <p className="mt-4 font-serif text-3xl leading-tight text-white">
           Thank you. Aetheris Vision will review your message and typically reply within one business day.
         </p>

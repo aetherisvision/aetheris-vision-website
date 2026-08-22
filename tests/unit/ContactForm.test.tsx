@@ -259,8 +259,8 @@ describe("ContactForm — submission", () => {
     fillValidFields();
     fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
 
-    expect(await screen.findByText("Enter the six-digit code")).toBeInTheDocument();
-    expect(screen.queryByText("Message received")).not.toBeInTheDocument();
+    expect(await screen.findByText("Enter the Six-Digit Code")).toBeInTheDocument();
+    expect(screen.queryByText("Message Received")).not.toBeInTheDocument();
 
     const firstBody = JSON.parse(fetchMock.mock.calls[0][1]?.body as string);
     expect(firstBody).toEqual(
@@ -280,7 +280,7 @@ describe("ContactForm — submission", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: /confirm and submit/i }));
 
-    expect(await screen.findByText("Message received")).toBeInTheDocument();
+    expect(await screen.findByText("Message Received")).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(2);
 
     const secondBody = JSON.parse(fetchMock.mock.calls[1][1]?.body as string);
@@ -312,7 +312,7 @@ describe("ContactForm — submission", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "The service returned an unexpected response.",
     );
-    expect(screen.queryByText("Message received")).not.toBeInTheDocument();
+    expect(screen.queryByText("Message Received")).not.toBeInTheDocument();
   });
 
   it("shows error message on API failure", async () => {

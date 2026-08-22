@@ -303,7 +303,7 @@ export default function Home() {
               <div className="flex flex-col items-start justify-center">
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#486890]">Selected Example · Omni Gridder</p>
                 <h2 className="mt-5 font-serif text-4xl leading-tight tracking-[-0.025em] text-[#0a1628] sm:text-6xl">
-                  Regridding made simple
+                  Regridding Made Simple
                 </h2>
                 <p className="mt-6 max-w-xl text-base leading-8 text-[#42565f]">
                   Omni Gridder shows how Aetheris Vision approaches geospatial regridding: moving weather and Earth-system data between GIS grids while preserving scientific meaning. The public demonstration shows selected inputs and outputs; the production methods remain proprietary.

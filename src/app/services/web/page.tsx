@@ -49,7 +49,7 @@ export default function WebServicesPage() {
               Web &amp; Application Development
             </p>
             <h1 className="mb-6 text-4xl font-semibold leading-[1.1] tracking-tight text-white md:text-5xl">
-              We build websites and web applications
+              We Build Websites and Web Applications
             </h1>
             <p className="max-w-2xl text-lg font-light leading-relaxed text-gray-400">
               Alongside our scientific and geospatial consulting, Aetheris Vision develops
@@ -64,7 +64,7 @@ export default function WebServicesPage() {
         <section className="border-t border-white/5 bg-background py-16">
           <div className="mx-auto max-w-5xl px-4 sm:px-6">
             <FadeIn>
-              <h2 className="mb-10 text-2xl font-semibold text-white md:text-3xl">What we build</h2>
+              <h2 className="mb-10 text-2xl font-semibold text-white md:text-3xl">What We Build</h2>
             </FadeIn>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {capabilities.map((c, i) => (
@@ -91,11 +91,11 @@ export default function WebServicesPage() {
           </div>
         </section>
 
-        {/* Delivered work */}
+        {/* Delivered Work */}
         <section className="border-t border-white/5 py-16">
           <div className="mx-auto max-w-5xl px-4 sm:px-6">
             <FadeIn>
-              <h2 className="mb-3 text-2xl font-semibold text-white md:text-3xl">Delivered work</h2>
+              <h2 className="mb-3 text-2xl font-semibold text-white md:text-3xl">Delivered Work</h2>
               <p className="mb-10 max-w-2xl font-light text-gray-400">
                 Live sites we built and continue to support.
               </p>
@@ -142,7 +142,7 @@ export default function WebServicesPage() {
                   <p className="mb-1 text-xs uppercase tracking-widest text-gray-500">
                     Scientific &amp; Technical Consulting
                   </p>
-                  <h3 className="mb-2 text-lg font-medium text-white">This site</h3>
+                  <h3 className="mb-2 text-lg font-medium text-white">This Site</h3>
                   <p className="mb-4 text-sm font-light leading-relaxed text-gray-400">
                     aetherisvision.com is one of our own: the same stack, the same security
                     posture, and the same care we bring to client work, running in production
@@ -169,7 +169,7 @@ export default function WebServicesPage() {
           <div className="mx-auto max-w-5xl px-4 text-center sm:px-6">
             <FadeIn>
               <h2 className="mb-4 text-2xl font-semibold text-white md:text-3xl">
-                Have a project in mind?
+                Have a Project in Mind?
               </h2>
               <p className="mx-auto mb-8 max-w-xl font-light text-gray-400">
                 Tell us what you need. We reply within one business day.

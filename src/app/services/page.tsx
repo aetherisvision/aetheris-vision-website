@@ -145,7 +145,7 @@ export default function ServicesPage() {
                 </div>
                 <div className="mt-8 flex flex-col gap-5 rounded-xl border border-blue-500/25 bg-blue-500/[0.06] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                   <div className="max-w-2xl">
-                    <h3 className="text-lg font-medium text-white">Need the data done correctly without spending months assembling the toolchain?</h3>
+                    <h3 className="text-lg font-medium text-white">Need the Data Done Correctly Without Spending Months Assembling the Toolchain?</h3>
                     <p className="mt-2 text-sm font-light leading-relaxed text-gray-400">
                       Show us the source, the destination, and what the result must support. We&apos;ll take it from there.
                     </p>

@@ -27,7 +27,7 @@ export default function IntakePage() {
             <div className="mb-10">
               <p className="text-xs font-semibold tracking-widest text-av-accent uppercase mb-3">Start a Web Project</p>
               <h1 className="text-3xl md:text-4xl font-semibold text-white tracking-tight mb-3">
-                Tell us what you need built
+                Tell Us What You Need Built
               </h1>
               <p className="text-gray-400 font-light text-base leading-relaxed">
                 For website and web-application projects. Allow about ten minutes; answer what you can and leave the rest blank. We&apos;ll review your project and follow up within one business day.

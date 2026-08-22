@@ -314,7 +314,7 @@ export default function CapabilitiesPage() {
                   id="sec-capability-statement"
                   className="mb-3 text-2xl font-semibold tracking-tight text-white"
                 >
-                  Get the capability statement
+                  Get the Capability Statement
                 </h2>
                 <p className="font-light leading-relaxed text-gray-400">
                   Enter an address and the current one-page statement arrives as a PDF
@@ -347,7 +347,7 @@ export default function CapabilitiesPage() {
                 href={CAPABILITY_STATEMENT_REQUEST_HREF}
                 className="inline-flex h-11 items-center justify-center text-sm text-gray-300 hover:text-white transition underline underline-offset-4 decoration-white/30"
               >
-                Get the capability statement (PDF)
+                Get the Capability Statement (PDF)
               </a>
             </div>
           </footer>

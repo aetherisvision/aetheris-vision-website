@@ -49,15 +49,15 @@ describe("Feature: Contact Form verification journey", () => {
     fillValidForm();
     fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
 
-    expect(await screen.findByText("Enter the six-digit code")).toBeInTheDocument();
-    expect(screen.queryByText("Message received")).not.toBeInTheDocument();
+    expect(await screen.findByText("Enter the Six-Digit Code")).toBeInTheDocument();
+    expect(screen.queryByText("Message Received")).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText(/confirmation code/i), {
       target: { value: "123456" },
     });
     fireEvent.click(screen.getByRole("button", { name: /confirm and submit/i }));
 
-    expect(await screen.findByText("Message received")).toBeInTheDocument();
+    expect(await screen.findByText("Message Received")).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
@@ -78,6 +78,6 @@ describe("Feature: Contact Form verification journey", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "The service returned an unexpected response.",
     );
-    expect(screen.queryByText("Message received")).not.toBeInTheDocument();
+    expect(screen.queryByText("Message Received")).not.toBeInTheDocument();
   });
 });

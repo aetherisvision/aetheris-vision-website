@@ -175,7 +175,7 @@ export default function OmniGridderComparison() {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#486890]">Where method matters</p>
             <h3 id="workflows-heading" className="mt-3 font-serif text-4xl tracking-[-0.025em] text-[#0a1628] sm:text-5xl">
-              When simple interpolation is not enough
+              When Simple Interpolation Is Not Enough
             </h3>
           </div>
           <div>
@@ -189,7 +189,7 @@ export default function OmniGridderComparison() {
           <article className="min-w-0 border border-[#17252f]/20 bg-white p-5 sm:p-7">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#486890]">Conservative remapping</p>
-              <h4 id="conservative-heading" className="mt-2 font-serif text-2xl text-[#0a1628]">Preserve what matters as resolution changes</h4>
+              <h4 id="conservative-heading" className="mt-2 font-serif text-2xl text-[#0a1628]">Preserve What Matters as Resolution Changes</h4>
             </div>
             <div
               className="mt-6 max-w-full overflow-x-auto overscroll-x-contain border-y border-[#17252f]/15 py-4"
@@ -211,7 +211,7 @@ export default function OmniGridderComparison() {
           <article className="min-w-0 border border-[#17252f]/20 bg-white p-5 sm:p-7">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#486890]">Elliptical Weighted Averaging (EWA)</p>
-              <h4 id="ewa-heading" className="mt-2 font-serif text-2xl text-[#0a1628]">Respect the observation geometry</h4>
+              <h4 id="ewa-heading" className="mt-2 font-serif text-2xl text-[#0a1628]">Respect the Observation Geometry</h4>
             </div>
             <div
               className="mt-6 max-w-full overflow-x-auto overscroll-x-contain border-y border-[#17252f]/15 py-4"

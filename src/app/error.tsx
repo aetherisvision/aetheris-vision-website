@@ -19,7 +19,7 @@ export default function Error({
         Error
       </p>
       <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-        Something went wrong
+        Something Went Wrong
       </h1>
       <p className="mt-4 max-w-md text-gray-400">
         An unexpected error occurred. Please try again.

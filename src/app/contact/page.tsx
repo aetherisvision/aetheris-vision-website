@@ -48,7 +48,7 @@ export default function ContactPage() {
               Project Inquiries
             </p>
             <h1 className="mb-4 max-w-3xl text-3xl font-semibold tracking-tight text-white md:text-5xl">
-              Tell us what you&apos;re working on
+              Tell Us What You&apos;re Working On
             </h1>
             <p className="mb-10 max-w-2xl text-lg font-light leading-relaxed text-gray-300">
               Share the problem, the outcome you need, and any constraints. Marston Ward reviews every inquiry and typically replies within one business day with a practical next step.

@@ -143,7 +143,7 @@ export default function ReviewForm() {
       >
         <div style={{ fontSize: '40px', marginBottom: '16px' }}>✓</div>
         <h2 style={{ color: '#6ee7b7', fontSize: '20px', fontWeight: '600', marginBottom: '10px' }}>
-          Thank you for your review!
+          Thank You for Your Review!
         </h2>
         <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '15px', lineHeight: '1.6' }}>
           Your review has been submitted and will appear on our site after approval.

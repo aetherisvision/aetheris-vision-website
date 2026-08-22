@@ -39,7 +39,7 @@ export default function BookPage() {
               Get in Touch
             </p>
             <h1 className="mb-4 text-3xl font-semibold tracking-tight text-white md:text-5xl">
-              How can we help?
+              How Can We Help?
             </h1>
             <p className="font-light leading-relaxed text-gray-400">
               Ask a question, tell us about your project, or schedule a free consultation.
@@ -50,7 +50,7 @@ export default function BookPage() {
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:gap-14">
             <section aria-labelledby="ask-a-question">
               <h2 id="ask-a-question" className="text-xl font-semibold text-white">
-                Ask a question
+                Ask a Question
               </h2>
               <p className="mt-2 text-sm font-light leading-relaxed text-gray-400">
                 Comments, general questions, or website matters — a few sentences are enough.
@@ -63,7 +63,7 @@ export default function BookPage() {
             <aside className="space-y-8">
               <section aria-labelledby="project-inquiry" className="border border-white/10 bg-white/[0.02] p-6">
                 <h2 id="project-inquiry" className="text-xl font-semibold text-white">
-                  Tell us about your project
+                  Tell Us About Your Project
                 </h2>
                 <p className="mt-2 text-sm font-light leading-relaxed text-gray-400">
                   Planning weather, Earth-system, geospatial, or applied-AI work? Share the
@@ -84,7 +84,7 @@ export default function BookPage() {
           <section id="consultation" aria-labelledby="consultation-heading" className="mt-16 scroll-mt-28 sm:mt-20">
             <div className="mx-auto mb-8 max-w-xl text-center">
               <h2 id="consultation-heading" className="text-2xl font-semibold tracking-tight text-white md:text-3xl">
-                Schedule a free consultation
+                Schedule a Free Consultation
               </h2>
               <p className="mt-3 text-sm font-light leading-relaxed text-gray-400">
                 Book a time that works for you. We&apos;ll talk through what your project needs

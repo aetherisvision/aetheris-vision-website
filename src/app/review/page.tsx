@@ -7,7 +7,7 @@ import { createPageMetadata } from '@/lib/seo'
 
 export const metadata: Metadata = createPageMetadata({
   title: 'Leave a Review | Aetheris Vision',
-  description: 'Share your experience working with Aetheris Vision. Your feedback helps us improve and helps other clients find the right partner.',
+  description: 'Share Your Experience working with Aetheris Vision. Your feedback helps us improve and helps other clients find the right partner.',
   path: '/review',
   noIndex: true,
 })
@@ -44,7 +44,7 @@ export default function ReviewPage() {
                 lineHeight: '1.2',
               }}
             >
-              Share your experience
+              Share Your Experience
             </h1>
             <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '16px', lineHeight: '1.6', fontWeight: '300' }}> It helps us improve and helps other business owners and organizations know what to expect when they work with us.
             </p>
