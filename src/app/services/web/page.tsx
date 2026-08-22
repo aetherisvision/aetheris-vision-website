@@ -49,7 +49,7 @@ export default function WebServicesPage() {
               Web &amp; Application Development
             </p>
             <h1 className="mb-6 text-4xl font-semibold leading-[1.1] tracking-tight text-white md:text-5xl">
-              We build websites and web applications.
+              We build websites and web applications
             </h1>
             <p className="max-w-2xl text-lg font-light leading-relaxed text-gray-400">
               Alongside our scientific and geospatial consulting, Aetheris Vision develops

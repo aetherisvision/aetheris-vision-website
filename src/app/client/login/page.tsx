@@ -176,7 +176,7 @@ export default function ClientLoginPage() {
           </div>
 
           <h2 style={{ color: dark.text, fontSize: '32px', fontWeight: '800', lineHeight: '1.25', margin: '0 0 16px', letterSpacing: '-0.02em' }}>
-            Your project,<br />fully visible.
+            Your project,<br />fully visible
           </h2>
           <p style={{ color: dark.textMuted, fontSize: '15px', lineHeight: '1.8', margin: '0 0 40px' }}>
             Track progress, view milestones, and sign documents, all in one place.

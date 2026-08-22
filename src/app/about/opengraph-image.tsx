@@ -56,7 +56,7 @@ export default function OGImage() {
             letterSpacing: "-2px",
           }}
         >
-          Science and Delivery.
+          Science and Delivery
         </h1>
         <p style={{ fontSize: "22px", color: "#9ca3af", marginTop: "28px", maxWidth: "700px", lineHeight: 1.5 }}>
           Weather · Earth systems · Geospatial data · Applied AI · Technical delivery

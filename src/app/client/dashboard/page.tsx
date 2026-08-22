@@ -288,14 +288,14 @@ export default function ClientDashboard() {
               {!hasDocs && (
                 <div style={{ marginBottom: '40px' }}>
                   <p style={{ color: dark.textDim, fontSize: '13px', margin: '0 0 6px', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: '600' }}>Client Dashboard</p>
-                  <h1 style={{ color: dark.text, fontSize: '30px', fontWeight: '800', margin: '0 0 6px', letterSpacing: '-0.02em' }}>Welcome back, {firstName}.</h1>
+                  <h1 style={{ color: dark.text, fontSize: '30px', fontWeight: '800', margin: '0 0 6px', letterSpacing: '-0.02em' }}>Welcome back, {firstName}</h1>
                   <p style={{ color: dark.textMuted, fontSize: '15px', margin: 0 }}>Here&apos;s the latest on your project.</p>
                 </div>
               )}
 
               {hasDocs && (
                 <div style={{ marginBottom: '32px' }}>
-                  <h1 style={{ color: dark.text, fontSize: '26px', fontWeight: '800', margin: '0 0 4px', letterSpacing: '-0.01em' }}>Welcome back, {firstName}.</h1>
+                  <h1 style={{ color: dark.text, fontSize: '26px', fontWeight: '800', margin: '0 0 4px', letterSpacing: '-0.01em' }}>Welcome back, {firstName}</h1>
                   <p style={{ color: dark.textMuted, fontSize: '14px', margin: 0 }}>Here&apos;s the latest on your project.</p>
                 </div>
               )}

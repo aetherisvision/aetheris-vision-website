@@ -56,7 +56,7 @@ export default function OGImage() {
             letterSpacing: "-2px",
           }}
         >
-          &amp; Analysis.
+          &amp; Analysis
         </h1>
         <p style={{ fontSize: "22px", color: "#9ca3af", marginTop: "28px", maxWidth: "700px", lineHeight: 1.5 }}>
           Perspectives on atmospheric modeling, machine learning architecture, and complex systems engineering.
