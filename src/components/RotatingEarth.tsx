@@ -268,16 +268,12 @@ function EarthMesh({ animate, onReady }: { animate: boolean; onReady?: () => voi
 function Scene({ animate, onReady }: { animate: boolean; onReady?: () => void }) {
   const { size } = useThree();
   const framing = useMemo(() => {
-    // Preserve the horizon treatment while revealing the northern tropics.
-    const diameterPixels = Math.max(size.width * 1.08, size.height * 1.5);
+    // Show the full sphere, centered, sized to whichever viewport dimension
+    // is smaller so the complete disc always fits without clipping.
+    const diameterPixels = Math.min(size.width, size.height) * 0.86;
     const scale = diameterPixels / (EARTH_RADIUS * 2 * CAMERA_ZOOM);
-    const horizonTopPixels = size.height * 0.04;
-    const horizonTopWorld = (size.height * 0.5 - horizonTopPixels) / CAMERA_ZOOM;
 
-    return {
-      positionY: horizonTopWorld - EARTH_RADIUS * scale,
-      scale,
-    };
+    return { positionY: 0, scale };
   }, [size.height, size.width]);
 
   return (

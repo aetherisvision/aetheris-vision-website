@@ -135,6 +135,31 @@ export default function WebServicesPage() {
                   </article>
                 </FadeIn>
               ))}
+
+              {/* This site itself — the clearest example, since the visitor is already on it. */}
+              <FadeIn delay={clientWork.length * 0.05} direction="up">
+                <article className="flex h-full flex-col justify-center overflow-hidden rounded-xl border border-white/5 bg-white/[0.02] p-6">
+                  <p className="mb-1 text-xs uppercase tracking-widest text-gray-500">
+                    Scientific &amp; Technical Consulting
+                  </p>
+                  <h3 className="mb-2 text-lg font-medium text-white">This site</h3>
+                  <p className="mb-4 text-sm font-light leading-relaxed text-gray-400">
+                    aetherisvision.com is one of our own: the same stack, the same security
+                    posture, and the same care we bring to client work, running in production
+                    right now — you&apos;re looking at it.
+                  </p>
+                  <p className="mb-4 text-xs text-gray-500">
+                    Next.js 16 · TypeScript · Postgres · Vercel
+                  </p>
+                  <Link
+                    href="/"
+                    className="inline-flex items-center gap-1.5 text-sm text-blue-400 transition hover:text-blue-300"
+                  >
+                    Back to the homepage
+                    <ArrowRightIcon className="h-3.5 w-3.5" />
+                  </Link>
+                </article>
+              </FadeIn>
             </div>
           </div>
         </section>
