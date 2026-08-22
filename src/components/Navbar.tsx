@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import { BRAND_LOGO } from "@/lib/brand";
+import { scrollToHash } from "@/lib/scroll-to-hash";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -20,12 +21,28 @@ const navLinks = [
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [currentHash, setCurrentHash] = useState("");
   const mobileTriggerRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
   const consultationHref = "/book";
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMobileOpen(false), [pathname]);
+
+  useEffect(() => {
+    // Covers page load and browser back/forward — both change the hash
+    // without a click this component sees. Ordinary nav clicks update
+    // currentHash directly in handleNavLinkClick instead of waiting on this,
+    // because a same-path hash change (e.g. "/#how-we-work" -> "/") fires
+    // neither a pathname change nor a "hashchange"/"popstate" event, so this
+    // listener alone would leave a stale section highlighted after such a
+    // click.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCurrentHash(window.location.hash.slice(1));
+    const onPopState = () => setCurrentHash(window.location.hash.slice(1));
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [pathname]);
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -63,8 +80,38 @@ export default function Navbar() {
     if (href === "/capabilities") return pathname === "/capabilities";
     if (href === "/contact") return pathname === "/contact";
     if (href === "/services") return pathname.startsWith("/services");
+    if (href.startsWith("/#")) return pathname === "/" && currentHash === href.slice(2);
     return false;
   }
+
+  // Next.js only promises to scroll the destination *page* into view on a
+  // cross-route Link navigation, not a specific in-page id, and does nothing
+  // at all when the target hash is on the page you're already viewing. When
+  // we're already on "/", handle the scroll ourselves instead of relying on
+  // the router; a genuine route change still lands normally and is picked up
+  // by HashScrollOnLoad once the homepage mounts.
+  //
+  // Every link click also sets currentHash directly from the href being
+  // clicked, rather than waiting on a pathname or hash-change event: dropping
+  // a hash while staying on "/" (e.g. clicking "Home" from "/#how-we-work")
+  // changes neither, so an event-only approach leaves the wrong nav item
+  // highlighted until the next real navigation.
+  const handleNavLinkClick = useCallback(
+    (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+      const hashIndex = href.indexOf("#");
+      const targetHash = hashIndex === -1 ? "" : href.slice(hashIndex + 1);
+      const targetPath = hashIndex === -1 ? href : href.slice(0, hashIndex);
+
+      if (targetHash && targetPath === "/" && pathname === "/") {
+        event.preventDefault();
+        window.history.pushState(null, "", href);
+        scrollToHash(targetHash);
+      }
+
+      setCurrentHash(targetHash);
+    },
+    [pathname],
+  );
 
   return (
     <header
@@ -76,14 +123,15 @@ export default function Navbar() {
         <Link
           href="/"
           className="flex shrink-0 items-center gap-3 whitespace-nowrap"
-          onClick={() =>
+          onClick={(event) => {
+            handleNavLinkClick(event, "/");
             window.scrollTo({
               top: 0,
               behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
                 ? "auto"
                 : "smooth",
-            })
-          }
+            });
+          }}
         >
           <Image
             src={BRAND_LOGO.markSvg}
@@ -113,6 +161,7 @@ export default function Navbar() {
                 key={link.label}
                 href={link.href}
                 aria-current={isActive(link.href) ? "page" : undefined}
+                onClick={(event) => handleNavLinkClick(event, link.href)}
                 className={clsx(
                   "inline-flex h-11 items-center whitespace-nowrap border-b text-[13px] font-semibold uppercase tracking-[0.08em] transition-colors duration-200",
                   isActive(link.href)
@@ -166,7 +215,10 @@ export default function Navbar() {
                 key={link.label}
                 href={link.href}
                 aria-current={isActive(link.href) ? "page" : undefined}
-                onClick={() => setMobileOpen(false)}
+                onClick={(event) => {
+                  handleNavLinkClick(event, link.href);
+                  setMobileOpen(false);
+                }}
                 className={clsx(
                   "flex min-h-12 items-center border-b border-white/10 py-3 text-sm font-semibold transition last:border-0",
                   isActive(link.href)

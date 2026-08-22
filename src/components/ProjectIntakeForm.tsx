@@ -326,7 +326,7 @@ export default function ProjectIntakeForm() {
             href="/book"
             className="inline-flex h-11 items-center justify-center rounded-md border border-white/20 bg-black/50 px-6 text-sm font-medium text-white hover:bg-white/5 transition"
           >
-            Book a consultation
+            Book a free consultation
           </a>
         </div>
       </div>

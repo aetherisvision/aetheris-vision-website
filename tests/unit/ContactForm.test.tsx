@@ -65,7 +65,7 @@ describe("ContactForm — unavailable notice", () => {
 
     const notice = await screen.findByRole("status");
     const text = notice.textContent?.replace(/\s+/g, " ").trim();
-    expect(text).toContain("try again later or book a consultation.");
+    expect(text).toContain("try again later or book a free consultation.");
     expect(notice.querySelector('a[href="/book#consultation"]')).not.toBeNull();
     expect(notice.innerHTML).not.toContain("mailto:");
     expect(notice.innerHTML).not.toContain("tel:");
@@ -328,7 +328,7 @@ describe("ContactForm — submission", () => {
     fireEvent.click(screen.getByRole("button", { name: /send inquiry/i }));
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent(/Something went wrong/);
-    expect(alert.querySelector('a[href="/book#consultation"]')).toHaveTextContent("book a consultation");
+    expect(alert.querySelector('a[href="/book#consultation"]')).toHaveTextContent("book a free consultation");
     expect(alert.querySelector('a[href^="mailto:"]')).not.toBeInTheDocument();
     expect(alert.querySelector('a[href^="tel:"]')).not.toBeInTheDocument();
   });

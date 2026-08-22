@@ -2,6 +2,7 @@ import Image from "next/image";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import type { ReactNode } from "react";
 import Footer from "@/components/Footer";
+import HashScrollOnLoad from "@/components/HashScrollOnLoad";
 import HeroGlobe from "@/components/HeroGlobe";
 import Navbar from "@/components/Navbar";
 import SatelliteDisplay, { type SatelliteSource } from "@/components/SatelliteDisplay";
@@ -74,6 +75,7 @@ export default function Home() {
         fetchPriority="low"
       />
       <Navbar />
+      <HashScrollOnLoad />
 
       <main id="main" className="flex-1">
         <section className="relative border-b border-white/15 bg-[#0a1628] pt-20 text-white">

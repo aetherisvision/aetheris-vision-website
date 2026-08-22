@@ -72,7 +72,13 @@ export default async function RootLayout({
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   void nonce; // available for explicit <Script nonce={nonce}> usage if needed
   return (
-    <html lang="en" className="dark scroll-smooth">
+    // Next.js 16 no longer disables `scroll-behavior: smooth` during its own
+    // route-transition scroll handling unless told to — without this
+    // attribute, the router's scroll-to-page-top and any in-page smooth
+    // scroll (e.g. a hash-link jump) can run at the same time and fight each
+    // other, which is what made cross-page nav to an anchor feel glitchy.
+    // https://nextjs.org/docs/messages/missing-data-scroll-behavior
+    <html lang="en" className="dark scroll-smooth" data-scroll-behavior="smooth">
       <head>
         {/* Keep feed discovery present even when a page replaces metadata.alternates. */}
         <link

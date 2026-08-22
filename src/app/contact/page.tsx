@@ -93,7 +93,7 @@ export default function ContactPage() {
                       <p className="text-sm font-medium text-white">Prefer to talk?</p>
                     </div>
                     <a href="/book#consultation" className="text-sm text-blue-400 transition hover:text-blue-300">
-                      Book a 30-minute consultation →
+                      Book a free 30-minute consultation →
                     </a>
                   </div>
 

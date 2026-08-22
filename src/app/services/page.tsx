@@ -114,7 +114,7 @@ export default function ServicesPage() {
                   href="/book#consultation"
                   className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition mt-10"
                 >
-                  Book a consultation <ArrowRightIcon className="h-3.5 w-3.5" />
+                  Book a free consultation <ArrowRightIcon className="h-3.5 w-3.5" />
                 </a>
               </div>
             </section>

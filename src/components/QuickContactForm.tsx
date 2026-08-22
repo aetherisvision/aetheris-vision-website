@@ -380,7 +380,7 @@ export default function QuickContactForm() {
       {status === "unavailable" && (
         <p role="status" className="mt-5 border border-amber-300/30 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">
           The form is temporarily unavailable. Please try again later or{" "}
-          <a className="font-semibold underline" href="/book#consultation">schedule a consultation</a>.
+          <a className="font-semibold underline" href="/book#consultation">schedule a free consultation</a>.
         </p>
       )}
 
