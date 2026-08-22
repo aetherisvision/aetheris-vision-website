@@ -26,6 +26,12 @@ const CAMERA_ZOOM = 182;
 // camera well outside the enlarged sphere so wide/retina viewports cannot clip
 // a circular hole through its near surface.
 const CAMERA_DISTANCE = 50;
+// The globe's background layer fills the whole hero section, including the
+// band directly behind the fixed navbar (h-20 in Navbar.tsx) — that strip is
+// visually obscured even though it's part of the canvas. Excluded from the
+// fit so the sphere isn't centered as if that space were visible, which cut
+// off the Arctic.
+const OBSCURED_TOP_PX = 80;
 const LIGHT_DIRECTION = new Vector3(5, 3, 4).normalize();
 
 type IdleCapableWindow = Window & {
@@ -268,12 +274,18 @@ function EarthMesh({ animate, onReady }: { animate: boolean; onReady?: () => voi
 function Scene({ animate, onReady }: { animate: boolean; onReady?: () => void }) {
   const { size } = useThree();
   const framing = useMemo(() => {
-    // Show the full sphere, centered, sized to whichever viewport dimension
-    // is smaller so the complete disc always fits without clipping.
-    const diameterPixels = Math.min(size.width, size.height) * 0.86;
+    // Show the full sphere, centered within the space that's actually
+    // visible (below the fixed navbar), sized to whichever dimension of
+    // that space is smaller so the complete disc always fits without
+    // clipping.
+    const visibleHeight = size.height - OBSCURED_TOP_PX;
+    const diameterPixels = Math.min(size.width, visibleHeight) * 0.86;
     const scale = diameterPixels / (EARTH_RADIUS * 2 * CAMERA_ZOOM);
+    // Shift down by half the obscured band to re-center within the visible
+    // area; screen-down is negative world-Y under this camera's convention.
+    const positionY = -(OBSCURED_TOP_PX / 2) / CAMERA_ZOOM;
 
-    return { positionY: 0, scale };
+    return { positionY, scale };
   }, [size.height, size.width]);
 
   return (
