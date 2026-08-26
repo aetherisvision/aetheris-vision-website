@@ -7,7 +7,7 @@ import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
  *
  * One-time call: applies Aetheris Vision brand colors to the Stripe account.
  * The logo must still be set manually: Stripe Dashboard → Settings → Branding.
- * Upload: brand/logo/horizontal/av-logo-horizontal-dark-rgb.png (1280×320)
+ * Upload: brand/logo/horizontal/av-logo-horizontal-color-rgb.png (2622×600 transparent PNG)
  */
 export async function POST(req: NextRequest) {
   if (!isAdmin(req)) return unauthorizedResponse()
@@ -39,6 +39,6 @@ export async function POST(req: NextRequest) {
     ok: true,
     account_id: data.id,
     colors_applied: { primary: '#29426C', secondary: '#5BA8D9' },
-    next_step: 'Go to Stripe Dashboard → Settings → Branding → upload brand/logo/horizontal/av-logo-horizontal-dark-rgb.png (1280×320 PNG) as your logo.',
+    next_step: 'Go to Stripe Dashboard → Settings → Branding → upload brand/logo/horizontal/av-logo-horizontal-color-rgb.png (2622×600 transparent PNG) as your logo.',
   })
 }

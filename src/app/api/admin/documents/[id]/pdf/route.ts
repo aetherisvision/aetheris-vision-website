@@ -166,7 +166,7 @@ export async function GET(
     <!-- Header -->
     <div class="doc-header">
       <img
-        src="https://aetherisvision.com/logo/av-logo-horizontal-dark.png"
+        src="https://aetherisvision.com/logo/av-logo-horizontal-mono-white.png"
         alt="Aetheris Vision"
         onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
       />
@@ -203,4 +203,3 @@ export async function GET(
     },
   })
 }
-

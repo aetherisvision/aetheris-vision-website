@@ -21,22 +21,21 @@ function logoSrc(container: HTMLElement): string {
 }
 
 describe("brand logo", () => {
-  it("BRAND_LOGO.markSvg is the canonical eye+globe mark", () => {
+  it("keeps the canonical globe-only mark for favicon-sized placements", () => {
     expect(BRAND_LOGO.markSvg).toBe("/logo/av-mark-favicon.svg");
   });
 
-  it("Navbar renders the canonical mark from BRAND_LOGO", () => {
+  it("Navbar renders the canonical reversed horizontal lockup", () => {
     const { container } = render(<Navbar />);
-    expect(logoSrc(container)).toContain(BRAND_LOGO.markSvg);
+    expect(logoSrc(container)).toContain(BRAND_LOGO.horizontalReversedSvg);
   });
 
-  it("Footer renders the canonical mark from BRAND_LOGO", () => {
+  it("Footer renders the canonical reversed horizontal lockup", () => {
     const { container } = render(<Footer />);
-    const mark = container.querySelector("img");
+    const logo = container.querySelector("img");
 
-    expect(logoSrc(container)).toContain(BRAND_LOGO.markSvg);
-    expect(mark).toHaveAttribute("alt", "");
-    expect(mark).toHaveAttribute("aria-hidden", "true");
+    expect(logoSrc(container)).toContain(BRAND_LOGO.horizontalReversedSvg);
+    expect(logo).toHaveAttribute("alt", "Aetheris Vision");
   });
 
   it("does not reference the retired off-brand logo asset", () => {

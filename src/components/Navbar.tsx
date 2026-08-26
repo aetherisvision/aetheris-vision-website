@@ -134,21 +134,12 @@ export default function Navbar() {
           }}
         >
           <Image
-            src={BRAND_LOGO.markSvg}
-            alt=""
-            aria-hidden="true"
-            width={44}
-            height={44}
-            className="h-10 w-10"
+            src={BRAND_LOGO.horizontalReversedSvg}
+            alt="Aetheris Vision"
+            width={197}
+            height={45}
+            className="h-auto w-[172px] sm:w-[197px]"
           />
-          <div>
-            <div className="text-xl font-bold tracking-tight text-white md:text-2xl">
-              <span className="font-light text-white/65">Aetheris</span>Vision
-            </div>
-            <p className="hidden text-[9px] font-semibold uppercase tracking-[0.18em] text-[#7eabca] sm:block">
-              Scientific &amp; Technical Consulting
-            </p>
-          </div>
         </Link>
 
         {/* Desktop Nav — seven labels plus the CTA need ~1,190px beside the

@@ -3,7 +3,7 @@ export const SITE = {
   legalName: "Aetheris Vision LLC",
   tagline: "Applied meteorology, weather AI, GIS, and geospatial data",
   url: "https://aetherisvision.com",
-  logoUrl: "https://aetherisvision.com/logo/av-logo-horizontal-dark.png",
+  logoUrl: "https://aetherisvision.com/logo/av-logo-horizontal-color-rgb.png",
   email: "contact@aetherisvision.com",
   // Business NAP — must stay byte-identical to the Google Business Profile
   // listing and SAM.gov ("PMB", never "#" or "Suite"). Deliberately no phone

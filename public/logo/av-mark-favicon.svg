@@ -1,49 +1,60 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none" role="img" aria-label="Aetheris Vision">
-  <!-- Square favicon mark: globe + eye swooshes (no wordmark). Colors from brand/colors/tokens.json -->
-  <defs>
-    <linearGradient id="swoopUpper" x1="80" y1="200" x2="400" y2="160" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#29426C"/>
-      <stop offset="100%" stop-color="#486890"/>
-    </linearGradient>
-    <linearGradient id="swoopLower" x1="60" y1="320" x2="420" y2="360" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#5BA8D9"/>
-      <stop offset="100%" stop-color="#6EC4D6"/>
-    </linearGradient>
-    <radialGradient id="globeShade" cx="0.35" cy="0.3" r="0.75">
-      <stop offset="0%" stop-color="#7EABCA"/>
-      <stop offset="55%" stop-color="#486890"/>
-      <stop offset="100%" stop-color="#29426C"/>
-    </radialGradient>
-    <clipPath id="globeClip">
-      <circle cx="256" cy="262" r="78"/>
-    </clipPath>
-  </defs>
+<?xml version="1.0" encoding="UTF-8"?>
+        <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+          <title id="title">Aetheris Vision globe favicon</title>
+          <desc id="desc">Aetheris Vision eye-and-globe brand mark with outlined wordmark lettering.</desc>
+          <metadata>Copyright 2026 Aetheris Vision LLC. Wordmark outlines derived from Roboto Condensed Light under Apache License 2.0.</metadata>
 
-  <!-- Lower eyelid -->
-  <path
-    d="M72 292 C120 360, 200 388, 256 388 C312 388, 392 360, 440 292"
-    stroke="url(#swoopLower)" stroke-width="28" stroke-linecap="round" fill="none"/>
-  <!-- Upper eyelid -->
-  <path
-    d="M88 228 C150 150, 210 128, 256 128 C302 128, 362 150, 424 228"
-    stroke="url(#swoopUpper)" stroke-width="30" stroke-linecap="round" fill="none"/>
+          <defs><linearGradient id="av-upper" x1="20" y1="186" x2="594" y2="75" gradientUnits="userSpaceOnUse">
+  <stop offset="0" stop-color="#29426C"/>
+  <stop offset="0.72" stop-color="#486890"/>
+  <stop offset="1" stop-color="#7EABCA"/>
+</linearGradient>
+<linearGradient id="av-lower" x1="18" y1="186" x2="410" y2="250" gradientUnits="userSpaceOnUse">
+  <stop offset="0" stop-color="#29426C"/>
+  <stop offset="0.48" stop-color="#486890"/>
+  <stop offset="1" stop-color="#5BA8D9"/>
+</linearGradient>
+<linearGradient id="av-inner-upper" x1="300" y1="62" x2="550" y2="94" gradientUnits="userSpaceOnUse">
+  <stop offset="0" stop-color="#29426C"/>
+  <stop offset="1" stop-color="#486890"/>
+</linearGradient>
+<linearGradient id="av-inner-lower" x1="94" y1="168" x2="462" y2="260" gradientUnits="userSpaceOnUse">
+  <stop offset="0" stop-color="#486890"/>
+  <stop offset="0.56" stop-color="#5BA8D9"/>
+  <stop offset="1" stop-color="#7EABCA"/>
+</linearGradient>
+<radialGradient id="av-globe" cx="0" cy="0" r="1" gradientTransform="translate(67 45) rotate(48) scale(138)" gradientUnits="userSpaceOnUse">
+  <stop offset="0" stop-color="#FFFFFF"/>
+  <stop offset="0.17" stop-color="#7EABCA"/>
+  <stop offset="0.48" stop-color="#486890"/>
+  <stop offset="1" stop-color="#29426C"/>
+</radialGradient>
+<radialGradient id="av-globe-shine" cx="0" cy="0" r="1" gradientTransform="translate(72 50) scale(35)" gradientUnits="userSpaceOnUse">
+  <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.96"/>
+  <stop offset="0.2" stop-color="#FFFFFF" stop-opacity="0.9"/>
+  <stop offset="0.46" stop-color="#7EABCA" stop-opacity="0.42"/>
+  <stop offset="1" stop-color="#7EABCA" stop-opacity="0"/>
+</radialGradient>
+<clipPath id="av-globe-clip"><circle cx="90" cy="90" r="78"/></clipPath></defs>
+          <g transform="translate(76 76) scale(2)">
+            <circle cx="90" cy="90" r="78" fill="url(#av-globe)"/>
+            <g clip-path="url(#av-globe-clip)">
+              <g fill="#DCEAF2" fill-opacity="0.3">
+                <path d="M31 50 42 38l25-9 17 8 13 13-14 10-9 16-15-4-7 15-12-9-5-17-11-7Z"/>
+                <path d="m75 82 20 11 5 18-10 19-6 23-13-11-5-21-10-13 6-15Z"/>
+                <path d="m107 43 21-3 15 12-14 13-13 1-5 13 18 7 5 18-13 18-7 25-14-14-2-20-11-13 8-14-1-14Z"/>
+                <path d="M127 49c21 2 37 17 42 36l-17 6-12-10-17-2-9-14Z"/>
+              </g>
+              <g fill="none" stroke="#DCEAF2" stroke-linecap="round" stroke-width="3.2" stroke-opacity="0.78">
+                <ellipse cx="90" cy="90" rx="36" ry="84"/>
+                <ellipse cx="90" cy="90" rx="63" ry="84"/>
+                <ellipse cx="90" cy="90" rx="84" ry="33"/>
+                <ellipse cx="90" cy="90" rx="84" ry="59"/>
+                <path d="M6 90h168"/>
+              </g>
+              <circle cx="90" cy="90" r="78" fill="url(#av-globe-shine)"/>
+            </g>
+            <circle cx="90" cy="90" r="78" fill="none" stroke="#DCEAF2" stroke-width="2"/>
+          </g>
 
-  <!-- Globe -->
-  <circle cx="256" cy="262" r="78" fill="url(#globeShade)"/>
-  <g clip-path="url(#globeClip)" stroke="rgba(255,255,255,0.45)" stroke-width="2.2" fill="none">
-    <ellipse cx="256" cy="262" rx="78" ry="26"/>
-    <ellipse cx="256" cy="262" rx="78" ry="52"/>
-    <ellipse cx="256" cy="262" rx="52" ry="78"/>
-    <line x1="178" y1="262" x2="334" y2="262"/>
-    <path d="M256 184 A78 78 0 0 1 256 340"/>
-    <path d="M256 184 A78 78 0 0 0 256 340"/>
-    <path d="M210 262 A46 78 0 0 1 302 262"/>
-    <path d="M210 262 A46 78 0 0 0 302 262"/>
-  </g>
-  <circle cx="230" cy="236" r="18" fill="rgba(255,255,255,0.35)"/>
-
-  <!-- Inner motion accent -->
-  <path
-    d="M118 268 C170 248, 210 242, 256 248"
-    stroke="#5BA8D9" stroke-width="10" stroke-linecap="round" fill="none" opacity="0.85"/>
-</svg>
+        </svg>

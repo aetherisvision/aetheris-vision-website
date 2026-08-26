@@ -14,13 +14,15 @@ export const BRAND = {
 } as const;
 
 export const BRAND_LOGO = {
-  horizontal: "/logo/av-logo-horizontal-dark.png",
-  horizontalSvg: "/logo/av-logo-horizontal-dark.svg",
+  horizontal: "/logo/av-logo-horizontal-color-rgb.png",
+  horizontalSvg: "/logo/av-logo-horizontal-color-rgb.svg",
+  horizontalReversed: "/logo/av-logo-horizontal-mono-white.png",
+  horizontalReversedSvg: "/logo/av-logo-horizontal-mono-white.svg",
   mark: "/logo/av-mark-globe.png",
   markSvg: "/logo/av-mark-favicon.svg",
   mark192: "/logo/av-favicon-192.png",
   mark512: "/logo/av-favicon-512.png",
-  favicon32: "/logo/favicon-32.png",
+  favicon32: "/logo/av-favicon-32.png",
 } as const;
 
 /** rgba glow for accent (accent = #5BA8D9) */
