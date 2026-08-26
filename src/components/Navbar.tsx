@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import { BRAND_LOGO } from "@/lib/brand";
+import { BRAND_POSITIONING } from "@/lib/constants";
 import { scrollToHash } from "@/lib/scroll-to-hash";
 
 const navLinks = [
@@ -146,7 +147,7 @@ export default function Navbar() {
               <span className="font-light text-white/65">Aetheris</span>Vision
             </div>
             <p className="hidden text-[9px] font-semibold uppercase tracking-[0.18em] text-[#7eabca] sm:block">
-              Scientific &amp; Technical Consulting
+              {BRAND_POSITIONING.text}
             </p>
           </div>
         </Link>

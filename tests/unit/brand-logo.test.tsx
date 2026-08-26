@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render } from "@testing-library/react";
 import { BRAND_LOGO } from "@/lib/brand";
+import { BRAND_POSITIONING } from "@/lib/constants";
 
 // Navbar pulls navigation hooks from next/navigation; stub them so the
 // component renders in jsdom without a real router.
@@ -28,6 +29,12 @@ describe("brand logo", () => {
   it("Navbar renders the canonical mark from BRAND_LOGO", () => {
     const { container } = render(<Navbar />);
     expect(logoSrc(container)).toContain(BRAND_LOGO.markSvg);
+  });
+
+  it("Navbar logo descriptor matches the site positioning", () => {
+    const { container } = render(<Navbar />);
+    expect(container).toHaveTextContent(BRAND_POSITIONING.text);
+    expect(container).not.toHaveTextContent("Scientific & Technical Consulting");
   });
 
   it("Footer renders the canonical mark from BRAND_LOGO", () => {

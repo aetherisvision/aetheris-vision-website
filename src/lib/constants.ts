@@ -1,7 +1,12 @@
+export const BRAND_POSITIONING = {
+  text: "Weather AI & Geospatial Consulting",
+  lines: ["Weather AI &", "Geospatial Consulting"],
+} as const;
+
 export const SITE = {
   name: "Aetheris Vision",
   legalName: "Aetheris Vision LLC",
-  tagline: "Applied meteorology, weather AI, GIS, and geospatial data",
+  tagline: BRAND_POSITIONING.text,
   url: "https://aetherisvision.com",
   logoUrl: "https://aetherisvision.com/logo/av-logo-horizontal-dark.png",
   email: "contact@aetherisvision.com",
