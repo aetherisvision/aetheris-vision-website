@@ -93,7 +93,7 @@ export const CREDENTIAL_SEO_KEYWORDS = [
 export const CAPABILITY_STATEMENT_REQUEST_HREF = "/capabilities#capability-statement";
 
 /** Revision date of private/capability-statement.pdf. Update both together. */
-export const CAPABILITY_STATEMENT_REVISION = "August 2026";
+export const CAPABILITY_STATEMENT_REVISION = "August 25, 2026";
 
 /** Public AMS Weather and Climate Directory listing for Aetheris Vision LLC. */
 export const AMS_PROFILE_URL =

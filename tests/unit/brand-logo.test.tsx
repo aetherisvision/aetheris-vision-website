@@ -21,8 +21,8 @@ function logoSrc(container: HTMLElement): string {
 }
 
 describe("brand logo", () => {
-  it("keeps the canonical globe-only mark for favicon-sized placements", () => {
-    expect(BRAND_LOGO.markSvg).toBe("/logo/av-mark-favicon.svg");
+  it("keeps the canonical orbital A mark for compact placements", () => {
+    expect(BRAND_LOGO.markSvg).toBe("/logo/av-logo-icon-color-rgb.svg");
   });
 
   it("Navbar renders the canonical reversed horizontal lockup", () => {

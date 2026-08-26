@@ -24,7 +24,7 @@ export default function Footer() {
                 src={BRAND_LOGO.horizontalReversedSvg}
                 alt="Aetheris Vision"
                 width={184}
-                height={42}
+                height={57}
                 className="h-auto w-[184px]"
               />
             </Link>

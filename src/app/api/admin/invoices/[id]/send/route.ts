@@ -131,7 +131,7 @@ function emailHtml(inv: InvoiceDeliveryRow, amount: string, invoiceUrl: string):
           <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
             <tr>
               <td style="background:#0A1628;padding:20px 32px;">
-                <img src="https://aetherisvision.com/logo/av-logo-horizontal-mono-white.png" alt="Aetheris Vision" width="220" height="50" style="display:block;border:0;max-width:220px;height:auto;" />
+                <img src="https://aetherisvision.com/logo/av-logo-horizontal-reversed.png" alt="Aetheris Vision" width="220" height="68" style="display:block;border:0;max-width:220px;height:auto;" />
               </td>
             </tr>
             <tr>

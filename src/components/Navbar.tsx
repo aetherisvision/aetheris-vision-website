@@ -137,7 +137,7 @@ export default function Navbar() {
             src={BRAND_LOGO.horizontalReversedSvg}
             alt="Aetheris Vision"
             width={197}
-            height={45}
+            height={61}
             className="h-auto w-[172px] sm:w-[197px]"
           />
         </Link>
