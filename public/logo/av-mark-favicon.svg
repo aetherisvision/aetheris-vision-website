@@ -1,14 +1,49 @@
-<?xml version='1.0' encoding='utf-8'?>
-<svg xmlns="http://www.w3.org/2000/svg" width="84" height="84" viewBox="0 0 84 84" fill="none" role="img" aria-labelledby="av-title av-description">
-  <title id="av-title">Aetheris Vision favicon mark</title>
-  <desc id="av-description">Full-color orbital A mark prepared for square digital icons.</desc>
-  <metadata>Aetheris Vision LLC; approved 2026-08-25; Figma file USnql3F5jVZdVg8mxfawam; source node 209:44.</metadata>
-  <g id="Logo/Mark/Color">
-    <g id="Mark">
-      <path id="Vector" d="M60.7 22.8C56.7596 19.1609 51.7533 16.8855 46.4205 16.3101C41.0877 15.7346 35.7113 16.8895 31.0852 19.6042C26.4592 22.319 22.829 26.4495 20.7307 31.3858C18.6324 36.3221 18.1773 41.8024 19.4327 47.0171C20.6881 52.2319 23.5874 56.9046 27.7024 60.3451C31.8173 63.7856 36.9296 65.8115 42.2843 66.1235C47.639 66.4354 52.952 65.0169 57.4386 62.0775C61.9252 59.1381 65.3475 54.8337 67.2 49.8" stroke="#29426C" stroke-width="4.5" stroke-linecap="round" />
-      <path id="Vector_2" d="M60.7 26C62.4673 26 63.9 24.5673 63.9 22.8C63.9 21.0327 62.4673 19.6 60.7 19.6C58.9327 19.6 57.5 21.0327 57.5 22.8C57.5 24.5673 58.9327 26 60.7 26Z" fill="#6EC4D6" />
-      <path id="Vector_3" d="M28.5 53.5L42 28.5L55.5 53.5" stroke="#29426C" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
-      <path id="Vector_4" d="M31.5 46.8C38.1 42.6 45.9 42.6 52.5 46.8" stroke="#6EC4D6" stroke-width="4" stroke-linecap="round" />
-    </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none" role="img" aria-label="Aetheris Vision">
+  <!-- Square favicon mark: globe + eye swooshes (no wordmark). Colors from brand/colors/tokens.json -->
+  <defs>
+    <linearGradient id="swoopUpper" x1="80" y1="200" x2="400" y2="160" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#29426C"/>
+      <stop offset="100%" stop-color="#486890"/>
+    </linearGradient>
+    <linearGradient id="swoopLower" x1="60" y1="320" x2="420" y2="360" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#5BA8D9"/>
+      <stop offset="100%" stop-color="#6EC4D6"/>
+    </linearGradient>
+    <radialGradient id="globeShade" cx="0.35" cy="0.3" r="0.75">
+      <stop offset="0%" stop-color="#7EABCA"/>
+      <stop offset="55%" stop-color="#486890"/>
+      <stop offset="100%" stop-color="#29426C"/>
+    </radialGradient>
+    <clipPath id="globeClip">
+      <circle cx="256" cy="262" r="78"/>
+    </clipPath>
+  </defs>
+
+  <!-- Lower eyelid -->
+  <path
+    d="M72 292 C120 360, 200 388, 256 388 C312 388, 392 360, 440 292"
+    stroke="url(#swoopLower)" stroke-width="28" stroke-linecap="round" fill="none"/>
+  <!-- Upper eyelid -->
+  <path
+    d="M88 228 C150 150, 210 128, 256 128 C302 128, 362 150, 424 228"
+    stroke="url(#swoopUpper)" stroke-width="30" stroke-linecap="round" fill="none"/>
+
+  <!-- Globe -->
+  <circle cx="256" cy="262" r="78" fill="url(#globeShade)"/>
+  <g clip-path="url(#globeClip)" stroke="rgba(255,255,255,0.45)" stroke-width="2.2" fill="none">
+    <ellipse cx="256" cy="262" rx="78" ry="26"/>
+    <ellipse cx="256" cy="262" rx="78" ry="52"/>
+    <ellipse cx="256" cy="262" rx="52" ry="78"/>
+    <line x1="178" y1="262" x2="334" y2="262"/>
+    <path d="M256 184 A78 78 0 0 1 256 340"/>
+    <path d="M256 184 A78 78 0 0 0 256 340"/>
+    <path d="M210 262 A46 78 0 0 1 302 262"/>
+    <path d="M210 262 A46 78 0 0 0 302 262"/>
   </g>
+  <circle cx="230" cy="236" r="18" fill="rgba(255,255,255,0.35)"/>
+
+  <!-- Inner motion accent -->
+  <path
+    d="M118 268 C170 248, 210 242, 256 248"
+    stroke="#5BA8D9" stroke-width="10" stroke-linecap="round" fill="none" opacity="0.85"/>
 </svg>

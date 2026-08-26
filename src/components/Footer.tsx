@@ -21,12 +21,16 @@ export default function Footer() {
           <div className="max-w-md">
             <Link href="/" className="flex min-h-11 shrink-0 items-center gap-3">
               <Image
-                src={BRAND_LOGO.horizontalReversedSvg}
-                alt="Aetheris Vision"
-                width={184}
-                height={57}
-                className="h-auto w-[184px]"
+                src={BRAND_LOGO.markSvg}
+                alt=""
+                aria-hidden="true"
+                width={36}
+                height={36}
+                className="h-9 w-9"
               />
+              <div className="text-lg font-bold tracking-tight text-white">
+                <span className="font-light text-white/55">Aetheris</span>Vision
+              </div>
             </Link>
             <p className="mt-5 text-sm leading-6 text-white/70">
               Scientific and technical consulting that helps complex projects move forward efficiently and stay on schedule.

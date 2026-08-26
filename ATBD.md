@@ -322,7 +322,7 @@ export const SITE = {
   legalName: "Aetheris Vision LLC",
   tagline: "Predictive Clarity at the Highest Level",
   url: "https://aetherisvision.com",
-  logoUrl: "https://aetherisvision.com/logo/av-logo-horizontal-color-rgb.png",
+  logoUrl: "https://aetherisvision.com/logo/av-logo-horizontal-dark.png",
   email: "contact@aetherisvision.com",
   description: "Advanced AI/ML weather prediction...",
   ogDescription: "Advanced AI/ML weather prediction...",

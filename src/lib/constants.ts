@@ -3,7 +3,7 @@ export const SITE = {
   legalName: "Aetheris Vision LLC",
   tagline: "Applied meteorology, weather AI, GIS, and geospatial data",
   url: "https://aetherisvision.com",
-  logoUrl: "https://aetherisvision.com/logo/av-logo-horizontal-color-rgb.png",
+  logoUrl: "https://aetherisvision.com/logo/av-logo-horizontal-dark.png",
   email: "contact@aetherisvision.com",
   // Business NAP — must stay byte-identical to the Google Business Profile
   // listing and SAM.gov ("PMB", never "#" or "Suite"). Deliberately no phone
@@ -93,7 +93,7 @@ export const CREDENTIAL_SEO_KEYWORDS = [
 export const CAPABILITY_STATEMENT_REQUEST_HREF = "/capabilities#capability-statement";
 
 /** Revision date of private/capability-statement.pdf. Update both together. */
-export const CAPABILITY_STATEMENT_REVISION = "August 25, 2026";
+export const CAPABILITY_STATEMENT_REVISION = "August 2026";
 
 /** Public AMS Weather and Climate Directory listing for Aetheris Vision LLC. */
 export const AMS_PROFILE_URL =
