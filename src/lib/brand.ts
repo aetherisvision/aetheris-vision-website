@@ -14,6 +14,10 @@ export const BRAND = {
 } as const;
 
 export const BRAND_LOGO = {
+  /** Family 3 natural-Earth lockup with dark lettering for white/cream surfaces. */
+  family3OnLightSvg: "/logo/candidates/av-logo-family3-natural-on-light.svg",
+  /** Family 3 natural-Earth lockup with reversed lettering for navy surfaces. */
+  family3OnDarkSvg: "/logo/candidates/av-logo-family3-web-dark.svg",
   horizontal: "/logo/av-logo-horizontal-dark.png",
   horizontalSvg: "/logo/av-logo-horizontal-dark.svg",
   mark: "/logo/av-mark-globe.png",

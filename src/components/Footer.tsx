@@ -1,6 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CAPABILITY_STATEMENT_REQUEST_HREF, SITE, SAM } from "@/lib/constants";
+import {
+  BRAND_POSITIONING,
+  CAPABILITY_STATEMENT_REQUEST_HREF,
+  SITE,
+  SAM,
+} from "@/lib/constants";
 import { BRAND_LOGO } from "@/lib/brand";
 
 const footerLinks = [
@@ -19,21 +24,17 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:px-10">
         <div className="grid gap-12 md:grid-cols-[1fr_1.2fr] md:gap-16">
           <div className="max-w-md">
-            <Link href="/" className="flex min-h-11 shrink-0 items-center gap-3">
+            <Link href="/" className="inline-flex min-h-11 shrink-0 items-center">
               <Image
-                src={BRAND_LOGO.markSvg}
-                alt=""
-                aria-hidden="true"
-                width={36}
-                height={36}
-                className="h-9 w-9"
+                src={BRAND_LOGO.family3OnDarkSvg}
+                alt="Aetheris Vision"
+                width={1184}
+                height={188}
+                className="h-auto w-[280px] max-w-full"
               />
-              <div className="text-lg font-bold tracking-tight text-white">
-                <span className="font-light text-white/55">Aetheris</span>Vision
-              </div>
             </Link>
             <p className="mt-5 text-sm leading-6 text-white/70">
-              Scientific and technical consulting that helps complex projects move forward efficiently and stay on schedule.
+              {BRAND_POSITIONING.text} for complex, mission-driven work—from atmospheric intelligence to production-ready software.
             </p>
             {/* Business address for local SEO / Google Business Profile.
                 Deliberately no email or phone — contact routes through the

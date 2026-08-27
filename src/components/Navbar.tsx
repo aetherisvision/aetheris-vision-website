@@ -123,7 +123,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-3 whitespace-nowrap"
+          className="flex shrink-0 items-center whitespace-nowrap"
           onClick={(event) => {
             handleNavLinkClick(event, "/");
             window.scrollTo({
@@ -134,19 +134,16 @@ export default function Navbar() {
             });
           }}
         >
-          <Image
-            src={BRAND_LOGO.markSvg}
-            alt=""
-            aria-hidden="true"
-            width={44}
-            height={44}
-            className="h-10 w-10"
-          />
-          <div>
-            <div className="text-xl font-bold tracking-tight text-white md:text-2xl">
-              <span className="font-light text-white/65">Aetheris</span>Vision
-            </div>
-            <p className="hidden text-[9px] font-semibold uppercase tracking-[0.18em] text-[#7eabca] sm:block">
+          <div className="w-[210px] sm:w-[270px]">
+            <Image
+              src={BRAND_LOGO.family3OnDarkSvg}
+              alt="Aetheris Vision"
+              width={1184}
+              height={188}
+              priority
+              className="h-auto w-full"
+            />
+            <p className="mt-0.5 hidden pl-[34.5%] text-left text-[8px] font-semibold uppercase tracking-[0.16em] text-[#7eabca] sm:block">
               {BRAND_POSITIONING.text}
             </p>
           </div>

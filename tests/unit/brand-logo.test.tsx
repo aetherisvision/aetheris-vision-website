@@ -26,24 +26,42 @@ describe("brand logo", () => {
     expect(BRAND_LOGO.markSvg).toBe("/logo/av-mark-favicon.svg");
   });
 
-  it("Navbar renders the canonical mark from BRAND_LOGO", () => {
+  it("defines separate Family 3 lockups for light and dark backgrounds", () => {
+    expect(BRAND_LOGO.family3OnLightSvg).toBe(
+      "/logo/candidates/av-logo-family3-natural-on-light.svg",
+    );
+    expect(BRAND_LOGO.family3OnDarkSvg).toBe(
+      "/logo/candidates/av-logo-family3-web-dark.svg",
+    );
+  });
+
+  it("Navbar renders the Family 3 dark lockup from BRAND_LOGO", () => {
     const { container } = render(<Navbar />);
-    expect(logoSrc(container)).toContain(BRAND_LOGO.markSvg);
+    const logo = container.querySelector("img");
+
+    expect(logoSrc(container)).toContain(BRAND_LOGO.family3OnDarkSvg);
+    expect(logo).toHaveAttribute("alt", "Aetheris Vision");
   });
 
   it("Navbar logo descriptor matches the site positioning", () => {
     const { container } = render(<Navbar />);
-    expect(container).toHaveTextContent(BRAND_POSITIONING.text);
+    const descriptor = Array.from(container.querySelectorAll("p")).find(
+      (paragraph) => paragraph.textContent === BRAND_POSITIONING.text,
+    );
+
+    expect(descriptor).toBeDefined();
+    expect(descriptor).toHaveClass("pl-[34.5%]", "text-left");
+    expect(descriptor).not.toHaveClass("text-center");
     expect(container).not.toHaveTextContent("Scientific & Technical Consulting");
   });
 
-  it("Footer renders the canonical mark from BRAND_LOGO", () => {
+  it("Footer renders the Family 3 dark lockup from BRAND_LOGO", () => {
     const { container } = render(<Footer />);
-    const mark = container.querySelector("img");
+    const logo = container.querySelector("img");
 
-    expect(logoSrc(container)).toContain(BRAND_LOGO.markSvg);
-    expect(mark).toHaveAttribute("alt", "");
-    expect(mark).toHaveAttribute("aria-hidden", "true");
+    expect(logoSrc(container)).toContain(BRAND_LOGO.family3OnDarkSvg);
+    expect(logo).toHaveAttribute("alt", "Aetheris Vision");
+    expect(container).toHaveTextContent(BRAND_POSITIONING.text);
   });
 
   it("does not reference the retired off-brand logo asset", () => {
