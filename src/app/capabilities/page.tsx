@@ -136,7 +136,7 @@ const differentiators = [
   },
   {
     title: "Government Contracting Foundation",
-    body: "Aetheris Vision is active in SAM.gov, has an assigned UEI and CAGE code, and is pursuing SDVOSB and HUBZone certification. An active Secret clearance is held by the principal.",
+    body: `Aetheris Vision is active in SAM.gov, has an assigned UEI and CAGE code, and is an SBA-certified SDVOSB, VOSB, and HUBZone small business. Certifications are ${SAM.certificationTerm.toLowerCase()}. An active Secret clearance is held by the principal.`,
   },
 ];
 

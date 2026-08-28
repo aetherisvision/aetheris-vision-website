@@ -118,9 +118,9 @@ export const SAM = {
   uei: "ZM8QWJ4ABWZ9",
   cage: "20SQ1",
   naicsPrimary: "541690",
-  setAside: "SDVOSB/VOSB and HUBZone certifications pending",
-  // Single source of truth for set-aside status badges. Never state a
-  // certification is held until VetCert / HUBZone certification is issued.
-  setAsidePills: ["SDVOSB / VOSB — VetCert pending", "HUBZone Eligible"],
+  setAside: "SBA-certified SDVOSB, VOSB, and HUBZone small business",
+  certificationTerm: "Active August 28, 2026 through August 27, 2029",
+  // Single source of truth for public set-aside status badges.
+  setAsidePills: ["SDVOSB — Active", "VOSB — Active", "HUBZone — Active"],
   samUrl: "https://sam.gov",
 } as const;

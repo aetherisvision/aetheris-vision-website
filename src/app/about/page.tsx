@@ -55,11 +55,11 @@ const credentials = [
   },
   {
     label: "SDVOSB / VOSB",
-    detail: "SBA VetCert application pending",
+    detail: `SBA certified · ${SAM.certificationTerm}`,
   },
   {
     label: "HUBZone",
-    detail: "Eligibility confirmed; certification pending",
+    detail: `SBA certified · ${SAM.certificationTerm}`,
   },
   {
     label: "SAM.gov Registration",
