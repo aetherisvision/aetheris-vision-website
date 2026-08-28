@@ -2,7 +2,7 @@
 
 **Written for:** Anyone who needs to maintain, rebuild, or hand off this website.  
 **Reading level:** No coding experience required. Technical terms are explained the first time they appear.  
-**Last updated:** March 19, 2026
+**Last updated:** August 28, 2026
 
 ---
 
@@ -28,11 +28,11 @@
 
 ## 1. What This Website Is
 
-This is the official website for **Aetheris Vision LLC**, a veteran-owned small business providing operational meteorology, AI/ML integration, web & digital solutions, and state and federal contracting services.
+This is the official website for **Aetheris Vision LLC**, an SBA-certified Service-Disabled Veteran-Owned Small Business (SDVOSB), Veteran-Owned Small Business (VOSB), and HUBZone small business providing operational meteorology, AI/ML integration, web & digital solutions, and state and federal contracting services. The certifications entered 8/28/2026 and renew 8/27/2029.
 
 **What the website does:**
 - Describes the company and all services it offers
-- Shows credentials (VOSB, clearance, NAICS codes) for state and federal procurement
+- Shows credentials (SBA-certified SDVOSB, VOSB, HUBZone, clearance, UEI/CAGE, and NAICS codes) for state and federal procurement
 - Markets web development services with pricing, demos, and a project intake form
 - Hosts a blog with technical articles
 - Lets visitors book a 30-minute call
