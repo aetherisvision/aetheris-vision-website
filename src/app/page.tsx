@@ -7,6 +7,7 @@ import HeroGlobe from "@/components/HeroGlobe";
 import Navbar from "@/components/Navbar";
 import SatelliteDisplay, { type SatelliteSource } from "@/components/SatelliteDisplay";
 import { posts } from "@/lib/posts";
+import { INSIGHTS_PUBLIC } from "@/lib/features";
 import { AMS_PROFILE_URL, BRAND_POSITIONING, CORE_SEO_KEYWORDS, SITE } from "@/lib/constants";
 import { createPageMetadata } from "@/lib/seo";
 
@@ -406,7 +407,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="insights" className="scroll-mt-20 bg-[#fbfaf7] py-20 sm:py-28">
+        {INSIGHTS_PUBLIC && <section id="insights" className="scroll-mt-20 bg-[#fbfaf7] py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
             <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
               <div>
@@ -436,7 +437,7 @@ export default function Home() {
               ))}
             </div>
           </div>
-        </section>
+        </section>}
       </main>
 
       <Footer />

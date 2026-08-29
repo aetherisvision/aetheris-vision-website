@@ -7,6 +7,7 @@ import {
   SAM,
 } from "@/lib/constants";
 import { BRAND_LOGO } from "@/lib/brand";
+import { INSIGHTS_PUBLIC } from "@/lib/features";
 
 const footerLinks = [
   { label: "Expertise", href: "/services" },
@@ -14,7 +15,7 @@ const footerLinks = [
   { label: "Selected Work", href: "/#selected-work" },
   { label: "Principal", href: "/about" },
   { label: "Federal Contracting", href: "/capabilities" },
-  { label: "Insights", href: "/blog" },
+  ...(INSIGHTS_PUBLIC ? [{ label: "Insights", href: "/blog" }] : []),
   { label: "Contact", href: "/contact" },
 ];
 

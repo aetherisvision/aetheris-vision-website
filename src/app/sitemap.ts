@@ -1,6 +1,7 @@
 import { MetadataRoute } from "next";
 import { posts, parsePostDate } from "@/lib/posts";
 import { SITE } from "@/lib/constants";
+import { INSIGHTS_PUBLIC } from "@/lib/features";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // While the preview lock is on, robots.ts disallows everything; publishing the
@@ -43,11 +44,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.8,
     },
-    {
-      url: `${SITE.url}/blog`,
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
+    ...(INSIGHTS_PUBLIC
+      ? [{
+          url: `${SITE.url}/blog`,
+          changeFrequency: "weekly" as const,
+          priority: 0.7,
+        }]
+      : []),
     {
       url: `${SITE.url}/book`,
       changeFrequency: "monthly",
@@ -75,12 +78,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  const blogRoutes: MetadataRoute.Sitemap = posts.map((post) => ({
+  const blogRoutes: MetadataRoute.Sitemap = INSIGHTS_PUBLIC ? posts.map((post) => ({
     url: `${SITE.url}/blog/${post.slug}`,
     lastModified: parsePostDate(post.date),
     changeFrequency: "never",
     priority: 0.6,
-  }));
+  })) : [];
 
   return [...staticRoutes, ...blogRoutes];
 }

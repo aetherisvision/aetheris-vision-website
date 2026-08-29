@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 import { SITE } from "@/lib/constants";
+import { INSIGHTS_PUBLIC } from "@/lib/features";
 
 // Mirrors the site lock: while PREVIEW_PASSWORD gates the site, crawlers are
 // told to stay out. Launch (unsetting the var and redeploying) flips this to
@@ -15,7 +16,13 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/admin/", "/api/", "/client/", "/preview"],
+      disallow: [
+        "/admin/",
+        "/api/",
+        "/client/",
+        "/preview",
+        ...(!INSIGHTS_PUBLIC ? ["/blog", "/feed.xml"] : []),
+      ],
     },
     sitemap: `${SITE.url}/sitemap.xml`,
   };

@@ -7,6 +7,7 @@ import { CORE_SEO_KEYWORDS, SITE } from "@/lib/constants";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/jsonld";
 import "./globals.css";
 import BackToTop from "@/components/BackToTop";
+import { INSIGHTS_PUBLIC } from "@/lib/features";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -81,12 +82,14 @@ export default async function RootLayout({
     <html lang="en" className="dark scroll-smooth" data-scroll-behavior="smooth">
       <head>
         {/* Keep feed discovery present even when a page replaces metadata.alternates. */}
-        <link
-          rel="alternate"
-          type="application/rss+xml"
-          title={`${SITE.name} Insights`}
-          href={`${SITE.url}/feed.xml`}
-        />
+        {INSIGHTS_PUBLIC && (
+          <link
+            rel="alternate"
+            type="application/rss+xml"
+            title={`${SITE.name} Insights`}
+            href={`${SITE.url}/feed.xml`}
+          />
+        )}
       </head>
       <body
         className={`${inter.className} ${newsreader.variable} min-h-[100dvh] bg-black text-gray-100 antialiased selection:bg-gray-800 selection:text-white`}

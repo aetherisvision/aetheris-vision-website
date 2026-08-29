@@ -5,6 +5,8 @@ import Footer from "@/components/Footer";
 import BlogClientPage from "@/components/BlogClientPage";
 import { SITE } from "@/lib/constants";
 import { createPageMetadata } from "@/lib/seo";
+import { notFound } from "next/navigation";
+import { INSIGHTS_PUBLIC } from "@/lib/features";
 
 export const metadata = createPageMetadata({
   title: `Blog | ${SITE.name}`,
@@ -13,6 +15,8 @@ export const metadata = createPageMetadata({
 });
 
 export default function BlogIndex() {
+  if (!INSIGHTS_PUBLIC) notFound();
+
   const categories = getCategories();
 
   return (

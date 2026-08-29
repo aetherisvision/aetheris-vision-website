@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { SITE } from "@/lib/constants";
+import { INSIGHTS_PUBLIC } from "@/lib/features";
 
 /**
  * Regression tests for sitemap, robots, and SEO metadata consistency.
@@ -44,10 +45,14 @@ describe("Regression: sitemap completeness", () => {
     expect(urls).toContain(`${SITE.url}/privacy`);
   });
 
-  it("sitemap includes blog index", async () => {
+  it("sitemap reflects the Insights publication state", async () => {
     const { default: sitemap } = await import("@/app/sitemap");
     const urls = sitemap().map((e) => e.url);
-    expect(urls).toContain(`${SITE.url}/blog`);
+    if (INSIGHTS_PUBLIC) {
+      expect(urls).toContain(`${SITE.url}/blog`);
+    } else {
+      expect(urls).not.toContain(`${SITE.url}/blog`);
+    }
   });
 
   it("sitemap includes focused weather AI and geospatial service pages", async () => {

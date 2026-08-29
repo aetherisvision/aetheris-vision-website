@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { posts } from "@/lib/posts";
+import { INSIGHTS_PUBLIC } from "@/lib/features";
 
 /**
  * BDD step definitions for navigation.feature
@@ -18,7 +19,8 @@ describe("Feature: Site Navigation", () => {
         return u.pathname;
       });
 
-      const required = ["/", "/about", "/capabilities", "/blog", "/book", "/contact"];
+      const required = ["/", "/about", "/capabilities", "/book", "/contact"];
+      if (INSIGHTS_PUBLIC) required.push("/blog");
       for (const path of required) {
         expect(urls).toContain(path);
       }
@@ -35,10 +37,14 @@ describe("Feature: Site Navigation", () => {
       const sitemap = sitemapModule.default();
       const urls = sitemap.map((entry) => entry.url);
 
-      // Then each blog post slug should have a sitemap entry
+      // Then each article follows the publication state
       for (const post of posts) {
         const expected = `https://aetherisvision.com/blog/${post.slug}`;
-        expect(urls).toContain(expected);
+        if (INSIGHTS_PUBLIC) {
+          expect(urls).toContain(expected);
+        } else {
+          expect(urls).not.toContain(expected);
+        }
       }
     });
   });

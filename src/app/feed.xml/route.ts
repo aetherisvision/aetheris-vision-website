@@ -1,5 +1,6 @@
 import { posts, parsePostDate } from "@/lib/posts";
 import { SITE } from "@/lib/constants";
+import { INSIGHTS_PUBLIC } from "@/lib/features";
 
 export const dynamic = "force-static";
 
@@ -13,6 +14,10 @@ function escapeXml(value: string): string {
 }
 
 export function GET(): Response {
+  if (!INSIGHTS_PUBLIC) {
+    return new Response("Not Found", { status: 404 });
+  }
+
   const lastBuildDate = posts.length > 0 ? parsePostDate(posts[0].date).toUTCString() : new Date().toUTCString();
 
   const items = posts

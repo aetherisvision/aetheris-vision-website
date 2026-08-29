@@ -10,16 +10,19 @@ import ArticleRenderer from "@/components/ArticleRenderer";
 import BlogComments from "@/components/BlogComments";
 import Link from "next/link";
 import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
+import { INSIGHTS_PUBLIC } from "@/lib/features";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
 export async function generateStaticParams() {
+  if (!INSIGHTS_PUBLIC) return [];
   return posts.map((post) => ({ slug: post.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  if (!INSIGHTS_PUBLIC) return { robots: { index: false, follow: false } };
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) return {};
@@ -48,6 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function BlogPost({ params }: Props) {
+  if (!INSIGHTS_PUBLIC) notFound();
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) notFound();

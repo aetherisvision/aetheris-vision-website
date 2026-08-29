@@ -9,6 +9,7 @@ import clsx from "clsx";
 import { BRAND_LOGO } from "@/lib/brand";
 import { BRAND_POSITIONING } from "@/lib/constants";
 import { scrollToHash } from "@/lib/scroll-to-hash";
+import { INSIGHTS_PUBLIC } from "@/lib/features";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -17,7 +18,7 @@ const navLinks = [
   { label: "Selected Work", href: "/#selected-work" },
   { label: "Principal", href: "/about" },
   { label: "Federal", href: "/capabilities" },
-  { label: "Insights", href: "/blog" },
+  ...(INSIGHTS_PUBLIC ? [{ label: "Insights", href: "/blog" }] : []),
 ];
 
 export default function Navbar() {

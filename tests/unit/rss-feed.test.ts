@@ -2,15 +2,24 @@ import { describe, it, expect } from "vitest";
 import { GET } from "@/app/feed.xml/route";
 import { posts } from "@/lib/posts";
 import { SITE } from "@/lib/constants";
+import { INSIGHTS_PUBLIC } from "@/lib/features";
 
 describe("RSS feed (/feed.xml)", () => {
   it("responds with an RSS content type", () => {
     const res = GET();
-    expect(res.headers.get("Content-Type")).toContain("application/rss+xml");
+    if (INSIGHTS_PUBLIC) {
+      expect(res.headers.get("Content-Type")).toContain("application/rss+xml");
+    } else {
+      expect(res.status).toBe(404);
+    }
   });
 
   it("is a valid RSS 2.0 document with a channel", async () => {
     const xml = await GET().text();
+    if (!INSIGHTS_PUBLIC) {
+      expect(xml).toBe("Not Found");
+      return;
+    }
     expect(xml).toContain('<rss version="2.0"');
     expect(xml).toContain("<channel>");
     expect(xml).toContain(`<link>${SITE.url}/blog</link>`);
@@ -18,6 +27,10 @@ describe("RSS feed (/feed.xml)", () => {
 
   it("includes one item per post with title, link, pubDate, and description", async () => {
     const xml = await GET().text();
+    if (!INSIGHTS_PUBLIC) {
+      expect(xml).toBe("Not Found");
+      return;
+    }
     expect(xml.match(/<item>/g)?.length).toBe(posts.length);
     for (const post of posts) {
       expect(xml).toContain(`<link>${SITE.url}/blog/${post.slug}</link>`);
