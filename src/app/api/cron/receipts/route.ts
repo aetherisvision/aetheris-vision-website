@@ -26,9 +26,7 @@ import { timingSafeEqual } from 'node:crypto'
 import { isAdmin } from '@/lib/admin-auth'
 import { decryptToken } from '@/lib/token-crypto'
 import { putReceipt } from '@/lib/receipt-blob'
-
-const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
-const GMAIL_API = 'https://gmail.googleapis.com/gmail/v1'
+import { getGmailAccessToken, GMAIL_API } from '@/lib/gmail-client'
 
 // Known vendors: [display name, Gmail sender match, category]
 const VENDORS: [string, string, string][] = [
@@ -72,22 +70,6 @@ const VENDORS: [string, string, string][] = [
   // Professional certifications (AMS CCM exam, etc.)
   ['AMS',          'ametsoc.org',             'Professional Certifications'],
 ]
-
-async function getAccessToken(refreshToken: string): Promise<string> {
-  const res = await fetch(GOOGLE_TOKEN_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      client_id: process.env.GMAIL_CLIENT_ID!,
-      client_secret: process.env.GMAIL_CLIENT_SECRET!,
-      refresh_token: refreshToken,
-      grant_type: 'refresh_token',
-    }),
-  })
-  const data = await res.json()
-  if (!data.access_token) throw new Error(`Token refresh failed: ${JSON.stringify(data)}`)
-  return data.access_token
-}
 
 async function gmailGet(token: string, path: string) {
   const res = await fetch(`${GMAIL_API}${path}`, {
@@ -165,7 +147,7 @@ async function processAccount(
   accountLabel: string,
   daysBack: number
 ): Promise<{ logged: number; skipped: number; queried: number }> {
-  const token = await getAccessToken(refreshToken)
+  const token = await getGmailAccessToken(refreshToken)
   const start = new Date(Date.now() - daysBack * 86400 * 1000)
   const y = start.getFullYear()
   const m = String(start.getMonth() + 1).padStart(2, '0')
