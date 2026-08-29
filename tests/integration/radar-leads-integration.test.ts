@@ -6,9 +6,17 @@ const { captureGovconLeadMock, updateGovconLeadMock } = vi.hoisted(() => ({
   updateGovconLeadMock: vi.fn(),
 }))
 
+class MockLeadConflictError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'LeadConflictError'
+  }
+}
+
 vi.mock('@/lib/crm', () => ({
   captureGovconLead: captureGovconLeadMock,
   updateGovconLead: updateGovconLeadMock,
+  LeadConflictError: MockLeadConflictError,
   LEAD_STAGES: ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'],
 }))
 
@@ -121,5 +129,44 @@ describe('opportunity-radar leads integration API contract', () => {
     )
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toEqual({ leadId: 5, stage: 'contacted' })
+  })
+
+  it('maps a LeadConflictError to 409', async () => {
+    captureGovconLeadMock.mockRejectedValueOnce(new MockLeadConflictError('conflict'))
+    const { POST } = await import('@/app/api/integrations/radar/leads/route')
+    const response = await POST(request('POST', { title: 'x', externalRef: 'SAM.gov:abc123' }))
+    expect(response.status).toBe(409)
+  })
+
+  it('maps a plain validation Error to 400, not 409', async () => {
+    captureGovconLeadMock.mockRejectedValueOnce(new Error('estimatedValueCents is invalid'))
+    const { POST } = await import('@/app/api/integrations/radar/leads/route')
+    const response = await POST(request('POST', { title: 'x', externalRef: 'SAM.gov:abc123' }))
+    expect(response.status).toBe(400)
+  })
+
+  it('rejects a non-JSON Content-Type', async () => {
+    const { POST } = await import('@/app/api/integrations/radar/leads/route')
+    const response = await POST(
+      new NextRequest('http://localhost/api/integrations/radar/leads', {
+        method: 'POST',
+        body: 'title=x',
+        headers: new Headers({
+          'Content-Type': 'text/plain',
+          Authorization: `Bearer ${TEST_SECRET}`,
+        }),
+      }),
+    )
+    expect(response.status).toBe(415)
+    expect(captureGovconLeadMock).not.toHaveBeenCalled()
+  })
+
+  it('rejects an oversized body', async () => {
+    const { POST } = await import('@/app/api/integrations/radar/leads/route')
+    const response = await POST(
+      request('POST', { title: 'x'.repeat(20_000), externalRef: 'SAM.gov:abc123' }),
+    )
+    expect(response.status).toBe(413)
+    expect(captureGovconLeadMock).not.toHaveBeenCalled()
   })
 })

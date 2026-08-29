@@ -387,7 +387,12 @@ function nullableDate(value: Date | string | null | undefined, field: string): s
 /** Thrown only for a genuine (source, external_id) conflict -- lets route
  * handlers map this to 409 while every other thrown Error (validation) maps
  * to 400. */
-export class LeadConflictError extends Error {}
+export class LeadConflictError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'LeadConflictError'
+  }
+}
 
 function firstRow<T>(rows: unknown, message: string): T {
   const row = (rows as T[])[0]

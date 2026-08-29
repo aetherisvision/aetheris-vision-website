@@ -32,9 +32,13 @@ import {
   type GovconLeadUpdateInput,
   type ManualLeadStage,
 } from '@/lib/crm'
+import { readJsonBody, RequestSecurityError } from '@/lib/request-security'
 
 const NO_STORE_HEADERS = { 'Cache-Control': 'no-store' }
 const MANUAL_STAGES = LEAD_STAGES.filter((stage) => stage !== 'won') as readonly ManualLeadStage[]
+// A govcon lead payload is a handful of short fields plus a small govcon
+// JSON blob -- far under this cap in normal use.
+const MAX_BODY_BYTES = 16 * 1024
 
 function json(body: unknown, init?: { status?: number }) {
   return NextResponse.json(body, { ...init, headers: NO_STORE_HEADERS })
@@ -48,21 +52,34 @@ function authorized(request: NextRequest): boolean {
   return safeEqual(authHeader, `Bearer ${secret}`)
 }
 
-async function readBody(request: NextRequest): Promise<Record<string, unknown> | null> {
-  try {
-    const parsed: unknown = await request.json()
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-      ? (parsed as Record<string, unknown>)
-      : null
-  } catch {
-    return null
+function publicSecurityError(error: RequestSecurityError) {
+  const messages: Record<RequestSecurityError['code'], string> = {
+    'invalid-origin': 'This request could not be accepted',
+    'invalid-content-type': 'Content-Type must be application/json',
+    'invalid-body': 'Invalid request body',
+    'body-too-large': 'Request body is too large',
+    'rate-limit-unavailable': 'Request protection is temporarily unavailable',
   }
+  return json({ error: messages[error.code] }, { status: error.status })
+}
+
+async function readBody(request: NextRequest): Promise<Record<string, unknown> | null> {
+  const parsed = await readJsonBody<unknown>(request, MAX_BODY_BYTES)
+  return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+    ? (parsed as Record<string, unknown>)
+    : null
 }
 
 export async function POST(request: NextRequest) {
   if (!authorized(request)) return json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await readBody(request)
+  let body: Record<string, unknown> | null
+  try {
+    body = await readBody(request)
+  } catch (error) {
+    if (error instanceof RequestSecurityError) return publicSecurityError(error)
+    throw error
+  }
   if (!body) return json({ error: 'Invalid request body' }, { status: 400 })
 
   if (typeof body.title !== 'string' || !body.title.trim()) {
@@ -109,7 +126,13 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   if (!authorized(request)) return json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await readBody(request)
+  let body: Record<string, unknown> | null
+  try {
+    body = await readBody(request)
+  } catch (error) {
+    if (error instanceof RequestSecurityError) return publicSecurityError(error)
+    throw error
+  }
   if (!body) return json({ error: 'Invalid request body' }, { status: 400 })
 
   if (typeof body.externalRef !== 'string' || !body.externalRef.trim()) {
