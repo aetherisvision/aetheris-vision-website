@@ -110,6 +110,16 @@ describe('opportunity-radar govcon lead capture', () => {
     expect(mocks.sql.transaction).not.toHaveBeenCalled()
   })
 
+  it('also rejects a whitespace-only email, which normalizes to blank under btrim', async () => {
+    mocks.sql.mockResolvedValueOnce([{ email: '   ' }])
+
+    await expect(
+      prepareLeadProposal({ leadId: 12, projectName: 'FERC hydrology consulting' }),
+    ).rejects.toThrow(/no contact email on file/)
+
+    expect(mocks.sql.transaction).not.toHaveBeenCalled()
+  })
+
   it('proceeds to the transaction for a lead with a real contact email', async () => {
     mocks.sql.mockResolvedValueOnce([{ email: 'client@example.com' }])
     mocks.transactionSql.mockResolvedValueOnce([

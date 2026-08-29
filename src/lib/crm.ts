@@ -893,8 +893,8 @@ export async function prepareLeadProposal(
   // clients_email_normalized_uidx. Reject up front with a clear message
   // instead of letting that collision happen inside the transaction.
   const leadEmailRows = await sql`SELECT email FROM leads WHERE id = ${leadId}`
-  const leadEmail = (leadEmailRows as { email: string }[])[0]?.email
-  if (leadEmail === '') {
+  const leadEmailRow = (leadEmailRows as { email: string }[])[0]
+  if (leadEmailRow && leadEmailRow.email.trim() === '') {
     throw new Error('Lead has no contact email on file -- add one before preparing a proposal')
   }
 
@@ -910,7 +910,7 @@ export async function prepareLeadProposal(
         existing_client AS MATERIALIZED (
           SELECT clients.id
           FROM clients CROSS JOIN selected_lead
-          WHERE selected_lead.email <> ''
+          WHERE btrim(selected_lead.email) <> ''
             AND lower(btrim(clients.email)) = lower(btrim(selected_lead.email))
           FOR UPDATE OF clients
         ),
