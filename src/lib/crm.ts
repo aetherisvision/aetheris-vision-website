@@ -57,7 +57,6 @@ export interface GovconLeadInput {
   notes?: string | null
   /** NAICS/PSC/set-aside/solicitation number/contracting-officer/source URL, etc. */
   govcon?: Record<string, unknown> | null
-  source?: string
 }
 
 export interface GovconLeadUpdateInput {
@@ -68,7 +67,6 @@ export interface GovconLeadUpdateInput {
   estimatedValueCents?: number | null
   /** Shallow-merged into the existing govcon JSON, not a full overwrite. */
   govconPatch?: Record<string, unknown> | null
-  source?: string
 }
 
 export interface IntakeGraphInput {
@@ -477,7 +475,7 @@ const GOVCON_DEFAULT_SOURCE = 'opportunity-radar'
  */
 export async function captureGovconLead(input: GovconLeadInput): Promise<LeadCaptureResult> {
   const name = requiredText(input.title, 'title')
-  const source = normalizedSource(input.source, GOVCON_DEFAULT_SOURCE)
+  const source = GOVCON_DEFAULT_SOURCE
   const externalRef = requiredText(input.externalRef, 'externalRef')
   const govconJson = input.govcon ? JSON.stringify(input.govcon) : null
   const estimatedValueCents = nullableCurrencyCents(input.estimatedValueCents ?? null)
@@ -517,7 +515,7 @@ export async function captureGovconLead(input: GovconLeadInput): Promise<LeadCap
 export async function updateGovconLead(
   input: GovconLeadUpdateInput,
 ): Promise<{ leadId: number; stage: LeadStage } | null> {
-  const source = normalizedSource(input.source, GOVCON_DEFAULT_SOURCE)
+  const source = GOVCON_DEFAULT_SOURCE
   const externalRef = requiredText(input.externalRef, 'externalRef')
   const govconPatchJson = input.govconPatch ? JSON.stringify(input.govconPatch) : null
   const estimatedValueCents = nullableCurrencyCents(input.estimatedValueCents ?? null)
@@ -883,6 +881,18 @@ export async function prepareLeadProposal(
   const source = normalizedSource(input.source, 'lead_promotion')
   const externalRef = requiredText(input.externalRef ?? `lead:${leadId}`, 'externalRef')
 
+  // Govcon leads (e.g. opportunity-radar) can legitimately have no contact
+  // email (leads.email is NOT NULL, so a blank string stands in for "none").
+  // Blank-to-blank email is not an identity: matching or inserting clients
+  // on it below would collide unrelated blank-email clients together via
+  // clients_email_normalized_uidx. Reject up front with a clear message
+  // instead of letting that collision happen inside the transaction.
+  const leadEmailRows = await sql`SELECT email FROM leads WHERE id = ${leadId}`
+  const leadEmail = (leadEmailRows as { email: string }[])[0]?.email
+  if (leadEmail === '') {
+    throw new Error('Lead has no contact email on file -- add one before preparing a proposal')
+  }
+
   const [rows] = await sql.transaction(
     (transactionSql) => [
       transactionSql`
@@ -895,7 +905,8 @@ export async function prepareLeadProposal(
         existing_client AS MATERIALIZED (
           SELECT clients.id
           FROM clients CROSS JOIN selected_lead
-          WHERE lower(btrim(clients.email)) = lower(btrim(selected_lead.email))
+          WHERE selected_lead.email <> ''
+            AND lower(btrim(clients.email)) = lower(btrim(selected_lead.email))
           FOR UPDATE OF clients
         ),
         existing_project AS MATERIALIZED (

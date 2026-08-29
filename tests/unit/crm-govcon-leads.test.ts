@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/lib/db', () => ({ sql: mocks.sql }))
 
-import { captureGovconLead, updateGovconLead } from '@/lib/crm'
+import { captureGovconLead, updateGovconLead, prepareLeadProposal } from '@/lib/crm'
 
 describe('opportunity-radar govcon lead capture', () => {
   beforeEach(() => {
@@ -44,13 +44,12 @@ describe('opportunity-radar govcon lead capture', () => {
     expect(values[7]).toBe('SAM.gov:abc123')
   })
 
-  it('defaults source to opportunity-radar and lowercases an explicit override', async () => {
+  it('always writes source as opportunity-radar -- callers cannot override it', async () => {
     mocks.transactionSql.mockResolvedValueOnce([{ lead_id: 8, stage: 'new', created: true }])
 
     await captureGovconLead({
       title: 'Water utility outreach',
       externalRef: 'water:OK0001',
-      source: 'Opportunity-Radar',
     })
 
     const [, ...values] = mocks.transactionSql.mock.calls[0] as [
@@ -99,5 +98,32 @@ describe('opportunity-radar govcon lead capture', () => {
     expect(text).toContain('external_id =')
     expect(values).toContain('opportunity-radar')
     expect(values).toContain('SAM.gov:abc123')
+  })
+
+  it('rejects preparing a proposal for a govcon lead with no contact email, without opening a transaction', async () => {
+    mocks.sql.mockResolvedValueOnce([{ email: '' }])
+
+    await expect(
+      prepareLeadProposal({ leadId: 12, projectName: 'FERC hydrology consulting' }),
+    ).rejects.toThrow(/no contact email on file/)
+
+    expect(mocks.sql.transaction).not.toHaveBeenCalled()
+  })
+
+  it('proceeds to the transaction for a lead with a real contact email', async () => {
+    mocks.sql.mockResolvedValueOnce([{ email: 'client@example.com' }])
+    mocks.transactionSql.mockResolvedValueOnce([
+      { lead_id: 12, client_id: 5, project_id: 9, lead_stage: 'proposal', project_status: 'proposal' },
+    ])
+
+    await expect(
+      prepareLeadProposal({ leadId: 12, projectName: 'FERC hydrology consulting' }),
+    ).resolves.toEqual({
+      leadId: 12,
+      clientId: 5,
+      projectId: 9,
+      leadStage: 'proposal',
+      projectStatus: 'proposal',
+    })
   })
 })
