@@ -23,3 +23,13 @@ describe("proxy Content Security Policy", () => {
     expect(csp).toMatch(/frame-src[^;]*https:\/\/challenges\.cloudflare\.com/);
   });
 });
+
+describe("proxy Insights publication lock", () => {
+  it.each(["/blog", "/blog/graphcast"])("hard-blocks %s", async (path) => {
+    const response = await proxy(new NextRequest(`https://aetherisvision.com${path}`));
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("X-Robots-Tag")).toBe("noindex, nofollow");
+    await expect(response.text()).resolves.toBe("Not Found");
+  });
+});

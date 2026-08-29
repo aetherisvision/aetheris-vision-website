@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/rate-limit'
 import { hasPreviewSession } from '@/lib/preview-auth'
+import { INSIGHTS_PUBLIC } from '@/lib/features'
 
 const hex = (bytes: ArrayBuffer) =>
   Array.from(new Uint8Array(bytes)).map(b => b.toString(16).padStart(2, '0')).join('')
@@ -67,6 +68,16 @@ function buildCsp(nonce: string): string {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // Keep draft Insights content unreachable while it is under editorial review.
+  // Enforce this at the request boundary so App Router streaming cannot turn a
+  // notFound() result into a soft 200 response.
+  if (!INSIGHTS_PUBLIC && (pathname === '/blog' || pathname.startsWith('/blog/'))) {
+    return new NextResponse('Not Found', {
+      status: 404,
+      headers: { 'X-Robots-Tag': 'noindex, nofollow' },
+    })
+  }
 
   // Skip processing for static assets
   if (
