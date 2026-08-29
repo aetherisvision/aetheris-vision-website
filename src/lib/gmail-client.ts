@@ -36,6 +36,15 @@ export interface DraftAttachment {
   base64Content: string
 }
 
+/** Reject a value that could inject additional MIME headers (e.g. a CRLF in
+ * a lead's stored email/org name adding a Bcc: line) instead of silently
+ * stripping it -- a header value that isn't single-line indicates bad or
+ * malicious upstream data, not something safe to guess at and continue. */
+function assertSingleLineHeaderValue(value: string, field: string): string {
+  if (/[\r\n]/.test(value)) throw new Error(`${field} must not contain line breaks`)
+  return value
+}
+
 function encodeHeaderValue(value: string): string {
   // Lead titles/org names sourced from SAM.gov etc. are ASCII in practice,
   // but a header carrying a real email must not assume that.
@@ -53,10 +62,13 @@ export function buildDraftRawMessage(options: {
   htmlBody: string
   attachment?: DraftAttachment
 }): string {
+  const to = assertSingleLineHeaderValue(options.to.trim(), 'to')
+  const subject = assertSingleLineHeaderValue(options.subject.trim(), 'subject')
+
   const boundary = `av-draft-${randomUUID()}`
   const lines: string[] = [
-    `To: ${options.to}`,
-    `Subject: ${encodeHeaderValue(options.subject)}`,
+    `To: ${to}`,
+    `Subject: ${encodeHeaderValue(subject)}`,
     'MIME-Version: 1.0',
     `Content-Type: multipart/mixed; boundary="${boundary}"`,
     '',
@@ -68,11 +80,13 @@ export function buildDraftRawMessage(options: {
   ]
 
   if (options.attachment) {
+    const filename = assertSingleLineHeaderValue(options.attachment.filename, 'attachment filename')
+    if (filename.includes('"')) throw new Error('attachment filename must not contain a quote character')
     lines.push(
       '',
       `--${boundary}`,
-      `Content-Type: ${options.attachment.mimeType}; name="${options.attachment.filename}"`,
-      `Content-Disposition: attachment; filename="${options.attachment.filename}"`,
+      `Content-Type: ${options.attachment.mimeType}; name="${filename}"`,
+      `Content-Disposition: attachment; filename="${filename}"`,
       'Content-Transfer-Encoding: base64',
       '',
       options.attachment.base64Content,
@@ -86,11 +100,17 @@ export function buildDraftRawMessage(options: {
 
 /** Create a Gmail draft -- never sends. Throws GmailApiError with the
  * response status so callers can distinguish "reconnect with a wider
- * scope" (403) from a transient failure. */
+ * scope" (403) from a transient failure.
+ *
+ * Returns both ids: `draftId` is the Gmail *draft resource* id (only useful
+ * for further Drafts API calls -- get/update/delete); `messageId` is the id
+ * Gmail's own web UI actually deep-links by (`#drafts?compose=<messageId>`,
+ * not `#drafts/<draftId>`), so callers building a link for a human to click
+ * must use `messageId`. */
 export async function createGmailDraft(
   accessToken: string,
   rawMessage: string,
-): Promise<{ draftId: string; messageId: string | null }> {
+): Promise<{ draftId: string; messageId: string }> {
   const res = await fetch(`${GMAIL_API}/users/me/drafts`, {
     method: 'POST',
     headers: {
@@ -111,5 +131,8 @@ export async function createGmailDraft(
     const message = typeof data?.error?.message === 'string' ? data.error.message : 'Gmail API error'
     throw new GmailApiError(message, res.status)
   }
-  return { draftId: data.id, messageId: data.message?.id ?? null }
+  if (!data.id || !data.message?.id) {
+    throw new Error('Gmail draft creation returned an unexpected response shape')
+  }
+  return { draftId: data.id, messageId: data.message.id }
 }

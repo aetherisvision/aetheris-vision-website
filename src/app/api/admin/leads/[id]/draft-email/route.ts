@@ -38,16 +38,25 @@ function parseLeadId(value: string): number | null {
   return Number.isSafeInteger(id) && id > 0 ? id : null
 }
 
+// Gmail's web UI deep-links an existing draft by its message id via a
+// `compose` query param, not by the Drafts-API resource id -- gmail_draft_id
+// stores that message id (see createGmailDraft's own doc comment).
+function gmailDraftUrl(messageId: string): string {
+  return `https://mail.google.com/mail/u/0/#drafts?compose=${encodeURIComponent(messageId)}`
+}
+
 interface LeadForDraft {
   id: number
   name: string
   email: string
   organization: string | null
+  gmail_draft_id: string | null
+  gmail_draft_created_at: string | null
 }
 
 async function findLeadForDraft(id: number): Promise<LeadForDraft | null> {
   const rows = await sql`
-    SELECT id, name, email, organization
+    SELECT id, name, email, organization, gmail_draft_id, gmail_draft_created_at
     FROM leads
     WHERE id = ${id}
   `
@@ -80,20 +89,43 @@ export async function POST(
   const lead = await findLeadForDraft(id)
   if (!lead) return json({ error: 'Lead not found' }, { status: 404 })
 
+  // Idempotent: a double-click, a retry, or a direct repeat API call must
+  // never silently create a second draft for the same lead.
+  if (lead.gmail_draft_id) {
+    return json({
+      draftId: lead.gmail_draft_id,
+      draftUrl: gmailDraftUrl(lead.gmail_draft_id),
+      draftedAt: lead.gmail_draft_created_at,
+    })
+  }
+
   if (!lead.email.trim()) {
     return json({ error: 'This lead has no contact email on file' }, { status: 400 })
   }
 
   const tokenRows = await sql`
-    SELECT refresh_token FROM oauth_tokens WHERE account = ${GMAIL_ACCOUNT}
+    SELECT refresh_token, scopes FROM oauth_tokens WHERE account = ${GMAIL_ACCOUNT}
   `
-  const encryptedToken = (tokenRows as { refresh_token: string }[])[0]?.refresh_token
-  if (!encryptedToken) {
+  const tokenRow = (tokenRows as { refresh_token: string; scopes: string | null }[])[0]
+  if (!tokenRow?.refresh_token) {
     return json(
       { error: 'Connect the Aetheris Vision Gmail mailbox at /admin/gmail first' },
       { status: 409 },
     )
   }
+  // scopes is only populated from a callback that ran after migration 007 --
+  // a connection made before that has scopes = null and is given the
+  // benefit of the doubt; the Gmail API call below is still the real check.
+  if (tokenRow.scopes && !tokenRow.scopes.includes('gmail.compose')) {
+    return json(
+      {
+        error:
+          'The connected Gmail mailbox needs to be reconnected with drafting permission at /admin/gmail',
+      },
+      { status: 409 },
+    )
+  }
+  const encryptedToken = tokenRow.refresh_token
 
   let refreshToken: string
   try {
@@ -138,18 +170,18 @@ export async function POST(
 
   try {
     const accessToken = await getGmailAccessToken(refreshToken)
-    const { draftId } = await createGmailDraft(accessToken, raw)
+    const { messageId } = await createGmailDraft(accessToken, raw)
 
     const draftedAt = new Date().toISOString()
     await sql`
       UPDATE leads
-      SET gmail_draft_id = ${draftId}, gmail_draft_created_at = ${draftedAt}::timestamptz
+      SET gmail_draft_id = ${messageId}, gmail_draft_created_at = ${draftedAt}::timestamptz
       WHERE id = ${id}
     `
 
     return json({
-      draftId,
-      draftUrl: `https://mail.google.com/mail/u/0/#drafts/${draftId}`,
+      draftId: messageId,
+      draftUrl: gmailDraftUrl(messageId),
       draftedAt,
     })
   } catch (error) {

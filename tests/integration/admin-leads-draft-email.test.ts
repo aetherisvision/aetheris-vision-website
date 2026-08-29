@@ -99,7 +99,9 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
   })
 
   it('rejects a lead with no contact email on file', async () => {
-    sqlMock.mockResolvedValueOnce([{ id: 12, name: 'FERC lead', email: '', organization: 'FERC' }])
+    sqlMock.mockResolvedValueOnce([
+      { id: 12, name: 'FERC lead', email: '', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+    ])
     const response = await callRoute('12')
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
@@ -108,9 +110,35 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     expect(getGmailAccessTokenMock).not.toHaveBeenCalled()
   })
 
+  it('is idempotent: a lead that already has a draft returns it instead of creating another', async () => {
+    sqlMock.mockResolvedValueOnce([
+      {
+        id: 12,
+        name: 'FERC lead',
+        email: 'officer@ferc.gov',
+        organization: 'FERC',
+        gmail_draft_id: 'msg-existing',
+        gmail_draft_created_at: '2026-08-29T00:00:00.000Z',
+      },
+    ])
+
+    const response = await callRoute('12')
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      draftId: 'msg-existing',
+      draftUrl: 'https://mail.google.com/mail/u/0/#drafts?compose=msg-existing',
+      draftedAt: '2026-08-29T00:00:00.000Z',
+    })
+    expect(sqlMock).toHaveBeenCalledTimes(1)
+    expect(getGmailAccessTokenMock).not.toHaveBeenCalled()
+    expect(createGmailDraftMock).not.toHaveBeenCalled()
+  })
+
   it('returns 409 asking to connect Gmail when no biz oauth_tokens row exists', async () => {
     sqlMock
-      .mockResolvedValueOnce([{ id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC' }])
+      .mockResolvedValueOnce([
+        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+      ])
       .mockResolvedValueOnce([])
 
     const response = await callRoute('12')
@@ -120,10 +148,27 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     })
   })
 
-  it('creates a draft, persists the draft id, and returns a Gmail link', async () => {
+  it('returns 409 without calling Gmail when the stored connection predates gmail.compose', async () => {
+    sqlMock.mockResolvedValueOnce([
+      { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+    ])
+    sqlMock.mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.readonly' }])
+
+    const response = await callRoute('12')
+    expect(response.status).toBe(409)
+    await expect(response.json()).resolves.toEqual({
+      error:
+        'The connected Gmail mailbox needs to be reconnected with drafting permission at /admin/gmail',
+    })
+    expect(getGmailAccessTokenMock).not.toHaveBeenCalled()
+  })
+
+  it('creates a draft, persists the message id, and returns a compose-deep-link URL', async () => {
     sqlMock
-      .mockResolvedValueOnce([{ id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC' }])
-      .mockResolvedValueOnce([{ refresh_token: 'enc1:stored' }])
+      .mockResolvedValueOnce([
+        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+      ])
+      .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.compose' }])
       .mockResolvedValueOnce([])
 
     decryptTokenMock.mockReturnValue('plain-refresh-token')
@@ -134,19 +179,21 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
 
     expect(response.status).toBe(200)
     const data = (await response.json()) as { draftId: string; draftUrl: string; draftedAt: string }
-    expect(data.draftId).toBe('draft-123')
-    expect(data.draftUrl).toBe('https://mail.google.com/mail/u/0/#drafts/draft-123')
+    expect(data.draftId).toBe('msg-1')
+    expect(data.draftUrl).toBe('https://mail.google.com/mail/u/0/#drafts?compose=msg-1')
     expect(getGmailAccessTokenMock).toHaveBeenCalledWith('plain-refresh-token')
     expect(createGmailDraftMock).toHaveBeenCalledWith('access-token', expect.any(String))
 
-    // The third sql call is the UPDATE persisting gmail_draft_id.
+    // The third sql call is the UPDATE persisting gmail_draft_id (as the message id).
     expect(sqlMock).toHaveBeenCalledTimes(3)
   })
 
   it('maps a 403 from Gmail (insufficient scope) to a clear reconnect message, not a raw API error', async () => {
     sqlMock
-      .mockResolvedValueOnce([{ id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC' }])
-      .mockResolvedValueOnce([{ refresh_token: 'enc1:stored' }])
+      .mockResolvedValueOnce([
+        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+      ])
+      .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: null }])
 
     decryptTokenMock.mockReturnValue('plain-refresh-token')
     getGmailAccessTokenMock.mockResolvedValue('access-token')

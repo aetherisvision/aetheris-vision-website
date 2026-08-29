@@ -52,4 +52,44 @@ describe('buildDraftRawMessage', () => {
     expect(message).toMatch(/^Subject: =\?UTF-8\?B\?/m)
     expect(message).not.toContain('café')
   })
+
+  it('rejects a "to" address containing a CRLF header-injection attempt', () => {
+    expect(() =>
+      buildDraftRawMessage({
+        to: 'lead@example.com\r\nBcc: attacker@example.com',
+        subject: 'x',
+        htmlBody: '<p>y</p>',
+      }),
+    ).toThrow(/to must not contain line breaks/)
+  })
+
+  it('rejects a subject containing a bare LF', () => {
+    expect(() =>
+      buildDraftRawMessage({
+        to: 'lead@example.com',
+        subject: 'x\nBcc: attacker@example.com',
+        htmlBody: '<p>y</p>',
+      }),
+    ).toThrow(/subject must not contain line breaks/)
+  })
+
+  it('rejects an attachment filename containing a CRLF or a quote', () => {
+    expect(() =>
+      buildDraftRawMessage({
+        to: 'lead@example.com',
+        subject: 'x',
+        htmlBody: '<p>y</p>',
+        attachment: { filename: 'a\r\nX-Evil: 1.pdf', mimeType: 'application/pdf', base64Content: 'AA==' },
+      }),
+    ).toThrow(/attachment filename must not contain line breaks/)
+
+    expect(() =>
+      buildDraftRawMessage({
+        to: 'lead@example.com',
+        subject: 'x',
+        htmlBody: '<p>y</p>',
+        attachment: { filename: 'a".pdf', mimeType: 'application/pdf', base64Content: 'AA==' },
+      }),
+    ).toThrow(/must not contain a quote character/)
+  })
 })
