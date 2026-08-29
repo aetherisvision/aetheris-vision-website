@@ -394,6 +394,20 @@ export class LeadConflictError extends Error {
   }
 }
 
+/** Thrown only for a bad-input failure caught before any database call --
+ * lets route handlers map this to 400 while an unrecognized Error (a DB or
+ * runtime failure) maps to a generic 500 instead of leaking its message. */
+export class GovconValidationError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'GovconValidationError'
+  }
+}
+
+function asGovconValidationError(error: unknown): GovconValidationError {
+  return new GovconValidationError(error instanceof Error ? error.message : 'Invalid input')
+}
+
 function firstRow<T>(rows: unknown, message: string): T {
   const row = (rows as T[])[0]
   if (!row) throw new Error(message)
@@ -479,12 +493,21 @@ const GOVCON_DEFAULT_SOURCE = 'opportunity-radar'
  * finer-grained than this lead's funnel stage.
  */
 export async function captureGovconLead(input: GovconLeadInput): Promise<LeadCaptureResult> {
-  const name = requiredText(input.title, 'title')
+  let name: string
+  let externalRef: string
+  let govconJson: string | null
+  let estimatedValueCents: number | null
+  let nextFollowUp: string | null
+  try {
+    name = requiredText(input.title, 'title')
+    externalRef = requiredText(input.externalRef, 'externalRef')
+    govconJson = input.govcon ? JSON.stringify(input.govcon) : null
+    estimatedValueCents = nullableCurrencyCents(input.estimatedValueCents ?? null)
+    nextFollowUp = nullableTimestamp(input.nextFollowUp ?? null, 'nextFollowUp')
+  } catch (error) {
+    throw asGovconValidationError(error)
+  }
   const source = GOVCON_DEFAULT_SOURCE
-  const externalRef = requiredText(input.externalRef, 'externalRef')
-  const govconJson = input.govcon ? JSON.stringify(input.govcon) : null
-  const estimatedValueCents = nullableCurrencyCents(input.estimatedValueCents ?? null)
-  const nextFollowUp = nullableTimestamp(input.nextFollowUp ?? null, 'nextFollowUp')
 
   const [rows] = await sql.transaction((transactionSql) => [
     transactionSql`
@@ -520,11 +543,19 @@ export async function captureGovconLead(input: GovconLeadInput): Promise<LeadCap
 export async function updateGovconLead(
   input: GovconLeadUpdateInput,
 ): Promise<{ leadId: number; stage: LeadStage } | null> {
+  let externalRef: string
+  let govconPatchJson: string | null
+  let estimatedValueCents: number | null
+  let nextFollowUp: string | null
+  try {
+    externalRef = requiredText(input.externalRef, 'externalRef')
+    govconPatchJson = input.govconPatch ? JSON.stringify(input.govconPatch) : null
+    estimatedValueCents = nullableCurrencyCents(input.estimatedValueCents ?? null)
+    nextFollowUp = nullableTimestamp(input.nextFollowUp ?? null, 'nextFollowUp')
+  } catch (error) {
+    throw asGovconValidationError(error)
+  }
   const source = GOVCON_DEFAULT_SOURCE
-  const externalRef = requiredText(input.externalRef, 'externalRef')
-  const govconPatchJson = input.govconPatch ? JSON.stringify(input.govconPatch) : null
-  const estimatedValueCents = nullableCurrencyCents(input.estimatedValueCents ?? null)
-  const nextFollowUp = nullableTimestamp(input.nextFollowUp ?? null, 'nextFollowUp')
 
   const [rows] = await sql.transaction((transactionSql) => [
     transactionSql`

@@ -13,10 +13,18 @@ class MockLeadConflictError extends Error {
   }
 }
 
+class MockGovconValidationError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'GovconValidationError'
+  }
+}
+
 vi.mock('@/lib/crm', () => ({
   captureGovconLead: captureGovconLeadMock,
   updateGovconLead: updateGovconLeadMock,
   LeadConflictError: MockLeadConflictError,
+  GovconValidationError: MockGovconValidationError,
   LEAD_STAGES: ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'],
 }))
 
@@ -138,11 +146,22 @@ describe('opportunity-radar leads integration API contract', () => {
     expect(response.status).toBe(409)
   })
 
-  it('maps a plain validation Error to 400, not 409', async () => {
-    captureGovconLeadMock.mockRejectedValueOnce(new Error('estimatedValueCents is invalid'))
+  it('maps a GovconValidationError to 400, not 409', async () => {
+    captureGovconLeadMock.mockRejectedValueOnce(
+      new MockGovconValidationError('estimatedValueCents is invalid'),
+    )
     const { POST } = await import('@/app/api/integrations/radar/leads/route')
     const response = await POST(request('POST', { title: 'x', externalRef: 'SAM.gov:abc123' }))
     expect(response.status).toBe(400)
+  })
+
+  it('maps an unrecognized Error (e.g. a DB failure) to a generic 500, never leaking its message', async () => {
+    captureGovconLeadMock.mockRejectedValueOnce(new Error('connection terminated unexpectedly'))
+    const { POST } = await import('@/app/api/integrations/radar/leads/route')
+    const response = await POST(request('POST', { title: 'x', externalRef: 'SAM.gov:abc123' }))
+    expect(response.status).toBe(500)
+    const payload = (await response.json()) as { error: string }
+    expect(payload.error).not.toContain('connection terminated')
   })
 
   it('rejects a non-JSON Content-Type', async () => {

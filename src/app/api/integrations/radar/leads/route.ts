@@ -27,6 +27,7 @@ import {
   captureGovconLead,
   updateGovconLead,
   LeadConflictError,
+  GovconValidationError,
   LEAD_STAGES,
   type GovconLeadInput,
   type GovconLeadUpdateInput,
@@ -116,7 +117,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof LeadConflictError) {
       return json({ error: error.message }, { status: 409 })
     }
-    if (error instanceof Error) {
+    if (error instanceof GovconValidationError) {
       return json({ error: error.message }, { status: 400 })
     }
     return json({ error: 'The lead could not be captured' }, { status: 500 })
@@ -172,7 +173,7 @@ export async function PATCH(request: NextRequest) {
     if (error instanceof LeadConflictError) {
       return json({ error: error.message }, { status: 409 })
     }
-    if (error instanceof Error) {
+    if (error instanceof GovconValidationError) {
       return json({ error: error.message }, { status: 400 })
     }
     return json({ error: 'The lead could not be updated' }, { status: 500 })
