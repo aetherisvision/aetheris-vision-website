@@ -22,8 +22,8 @@ function logoSrc(container: HTMLElement): string {
 }
 
 describe("brand logo", () => {
-  it("BRAND_LOGO.markSvg is the canonical eye+globe mark", () => {
-    expect(BRAND_LOGO.markSvg).toBe("/logo/av-mark-favicon.svg");
+  it("BRAND_LOGO.markSvg is the canonical Family 3 eye-and-globe mark", () => {
+    expect(BRAND_LOGO.markSvg).toBe("/logo/family3-mark.svg");
   });
 
   it("defines separate Family 3 lockups for light and dark backgrounds", () => {

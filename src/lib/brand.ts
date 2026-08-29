@@ -20,11 +20,11 @@ export const BRAND_LOGO = {
   family3OnDarkSvg: "/logo/candidates/av-logo-family3-web-dark.svg",
   horizontal: "/logo/av-logo-horizontal-dark.png",
   horizontalSvg: "/logo/av-logo-horizontal-dark.svg",
-  mark: "/logo/av-mark-globe.png",
-  markSvg: "/logo/av-mark-favicon.svg",
-  mark192: "/logo/av-favicon-192.png",
-  mark512: "/logo/av-favicon-512.png",
-  favicon32: "/logo/favicon-32.png",
+  mark: "/logo/family3-favicon-512.png",
+  markSvg: "/logo/family3-mark.svg",
+  mark192: "/logo/family3-favicon-192.png",
+  mark512: "/logo/family3-favicon-512.png",
+  favicon32: "/logo/family3-favicon-32.png",
 } as const;
 
 /** rgba glow for accent (accent = #5BA8D9) */
