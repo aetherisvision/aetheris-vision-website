@@ -37,6 +37,38 @@ export interface LeadCaptureResult {
   created: boolean
 }
 
+/**
+ * A government-contracting lead surfaced by opportunity-radar (a SAM.gov/
+ * HigherGov/etc. solicitation, or a utility/insurer BD contact) -- not a
+ * website visitor. Deliberately has no emailVerifiedAt: there is no human
+ * submitting a form to verify. contactEmail is optional because many
+ * government notices simply don't list one.
+ */
+export interface GovconLeadInput {
+  /** Solicitation title or the contact's organization name -- becomes leads.name. */
+  title: string
+  agency?: string | null
+  externalRef: string
+  contactEmail?: string | null
+  contactPhone?: string | null
+  estimatedValueCents?: number | null
+  /** Response deadline, or next planned outreach touch. */
+  nextFollowUp?: Date | string | null
+  notes?: string | null
+  /** NAICS/PSC/set-aside/solicitation number/contracting-officer/source URL, etc. */
+  govcon?: Record<string, unknown> | null
+}
+
+export interface GovconLeadUpdateInput {
+  externalRef: string
+  stage?: ManualLeadStage
+  notes?: string | null
+  nextFollowUp?: Date | string | null
+  estimatedValueCents?: number | null
+  /** Shallow-merged into the existing govcon JSON, not a full overwrite. */
+  govconPatch?: Record<string, unknown> | null
+}
+
 export interface IntakeGraphInput {
   externalRef: string
   companyName: string
@@ -352,9 +384,39 @@ function nullableDate(value: Date | string | null | undefined, field: string): s
   return normalized
 }
 
+/** Thrown only for a genuine (source, external_id) conflict -- lets route
+ * handlers map this to 409 while every other thrown Error (validation) maps
+ * to 400. */
+export class LeadConflictError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'LeadConflictError'
+  }
+}
+
+/** Thrown only for a bad-input failure caught before any database call --
+ * lets route handlers map this to 400 while an unrecognized Error (a DB or
+ * runtime failure) maps to a generic 500 instead of leaking its message. */
+export class GovconValidationError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'GovconValidationError'
+  }
+}
+
+function asGovconValidationError(error: unknown): GovconValidationError {
+  return new GovconValidationError(error instanceof Error ? error.message : 'Invalid input')
+}
+
 function firstRow<T>(rows: unknown, message: string): T {
   const row = (rows as T[])[0]
   if (!row) throw new Error(message)
+  return row
+}
+
+function firstConflictRow<T>(rows: unknown, message: string): T {
+  const row = (rows as T[])[0]
+  if (!row) throw new LeadConflictError(message)
   return row
 }
 
@@ -411,11 +473,114 @@ export async function captureContactLead(input: ContactLeadInput): Promise<LeadC
     `,
   ])
 
-  const row = firstRow<LeadCaptureRow>(
+  const row = firstConflictRow<LeadCaptureRow>(
     rows,
     'The external reference is already assigned to a different lead',
   )
   return { leadId: row.lead_id, stage: row.stage, created: row.created }
+}
+
+const GOVCON_DEFAULT_SOURCE = 'opportunity-radar'
+
+/**
+ * Capture (or recover, idempotently) a government-contracting lead from
+ * opportunity-radar. Mirrors captureContactLead's ON CONFLICT (source,
+ * external_id) idempotency key, but without the email-verification/coarse-
+ * location semantics that only make sense for a human-submitted web form.
+ * A retry with the same externalRef returns the existing row rather than
+ * duplicating or overwriting it -- opportunity-radar's own local state
+ * (workflow_status, engagement history) stays authoritative for anything
+ * finer-grained than this lead's funnel stage.
+ */
+export async function captureGovconLead(input: GovconLeadInput): Promise<LeadCaptureResult> {
+  let name: string
+  let externalRef: string
+  let govconJson: string | null
+  let estimatedValueCents: number | null
+  let nextFollowUp: string | null
+  try {
+    name = requiredText(input.title, 'title')
+    externalRef = requiredText(input.externalRef, 'externalRef')
+    govconJson = input.govcon ? JSON.stringify(input.govcon) : null
+    estimatedValueCents = nullableCurrencyCents(input.estimatedValueCents ?? null)
+    nextFollowUp = nullableTimestamp(input.nextFollowUp ?? null, 'nextFollowUp')
+  } catch (error) {
+    throw asGovconValidationError(error)
+  }
+  const source = GOVCON_DEFAULT_SOURCE
+
+  const [rows] = await sql.transaction((transactionSql) => [
+    transactionSql`
+      INSERT INTO leads (
+        name, email, organization, phone, service, message, source, external_id,
+        estimated_value_cents, next_follow_up, notes, govcon
+      )
+      VALUES (
+        ${name}, ${optionalText(input.contactEmail) ?? ''}, ${optionalText(input.agency)},
+        ${optionalText(input.contactPhone)}, ${source}, ${name}, ${source}, ${externalRef},
+        ${estimatedValueCents}, ${nextFollowUp}::timestamptz,
+        ${optionalText(input.notes)}, ${govconJson}::jsonb
+      )
+      ON CONFLICT (source, external_id) WHERE external_id IS NOT NULL
+      DO UPDATE SET updated_at = now()
+      RETURNING id AS lead_id, stage, (xmax = 0) AS created
+    `,
+  ])
+
+  const row = firstRow<LeadCaptureRow>(rows, 'Failed to capture govcon lead')
+  return { leadId: row.lead_id, stage: row.stage, created: row.created }
+}
+
+/**
+ * Update a govcon lead's funnel state. Every write is scoped to
+ * `source = 'opportunity-radar'` IN THE SQL, not just validated in the
+ * route handler above this function -- this is the actual boundary that
+ * keeps opportunity-radar's integration credential from being able to
+ * touch a website-originated lead, even if the route layer had a bug.
+ * Returns null (not an error) when no matching row exists, so the caller
+ * can 404 rather than assume success.
+ */
+export async function updateGovconLead(
+  input: GovconLeadUpdateInput,
+): Promise<{ leadId: number; stage: LeadStage } | null> {
+  let externalRef: string
+  let govconPatchJson: string | null
+  let estimatedValueCents: number | null
+  let nextFollowUp: string | null
+  try {
+    externalRef = requiredText(input.externalRef, 'externalRef')
+    govconPatchJson = input.govconPatch ? JSON.stringify(input.govconPatch) : null
+    estimatedValueCents = nullableCurrencyCents(input.estimatedValueCents ?? null)
+    nextFollowUp = nullableTimestamp(input.nextFollowUp ?? null, 'nextFollowUp')
+  } catch (error) {
+    throw asGovconValidationError(error)
+  }
+  const source = GOVCON_DEFAULT_SOURCE
+
+  const [rows] = await sql.transaction((transactionSql) => [
+    transactionSql`
+      UPDATE leads
+      SET
+        stage = COALESCE(${input.stage ?? null}, stage),
+        notes = COALESCE(${optionalText(input.notes ?? null)}, notes),
+        next_follow_up = COALESCE(
+          ${nextFollowUp}::timestamptz, next_follow_up
+        ),
+        estimated_value_cents = COALESCE(
+          ${estimatedValueCents}, estimated_value_cents
+        ),
+        govcon = CASE
+          WHEN ${govconPatchJson}::jsonb IS NULL THEN govcon
+          ELSE COALESCE(govcon, '{}'::jsonb) || ${govconPatchJson}::jsonb
+        END,
+        updated_at = now()
+      WHERE source = ${source} AND external_id = ${externalRef}
+      RETURNING id AS lead_id, stage
+    `,
+  ])
+
+  const row = (rows as { lead_id: number; stage: LeadStage }[])[0]
+  return row ? { leadId: row.lead_id, stage: row.stage } : null
 }
 
 /**
@@ -752,6 +917,18 @@ export async function prepareLeadProposal(
   const source = normalizedSource(input.source, 'lead_promotion')
   const externalRef = requiredText(input.externalRef ?? `lead:${leadId}`, 'externalRef')
 
+  // Govcon leads (e.g. opportunity-radar) can legitimately have no contact
+  // email (leads.email is NOT NULL, so a blank string stands in for "none").
+  // Blank-to-blank email is not an identity: matching or inserting clients
+  // on it below would collide unrelated blank-email clients together via
+  // clients_email_normalized_uidx. Reject up front with a clear message
+  // instead of letting that collision happen inside the transaction.
+  const leadEmailRows = await sql`SELECT email FROM leads WHERE id = ${leadId}`
+  const leadEmailRow = (leadEmailRows as { email: string }[])[0]
+  if (leadEmailRow && leadEmailRow.email.trim() === '') {
+    throw new Error('Lead has no contact email on file -- add one before preparing a proposal')
+  }
+
   const [rows] = await sql.transaction(
     (transactionSql) => [
       transactionSql`
@@ -764,7 +941,8 @@ export async function prepareLeadProposal(
         existing_client AS MATERIALIZED (
           SELECT clients.id
           FROM clients CROSS JOIN selected_lead
-          WHERE lower(btrim(clients.email)) = lower(btrim(selected_lead.email))
+          WHERE btrim(selected_lead.email) <> ''
+            AND lower(btrim(clients.email)) = lower(btrim(selected_lead.email))
           FOR UPDATE OF clients
         ),
         existing_project AS MATERIALIZED (

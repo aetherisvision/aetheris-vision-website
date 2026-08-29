@@ -106,10 +106,16 @@ export async function proxy(request: NextRequest) {
   // /admin/* retains its separate passphrase gate below.
   // Every handler under /api/auth/gmail/ enforces isAdmin itself, so the whole
   // prefix bypasses the site lock — new routes there must keep that guarantee.
+  // opportunity-radar's server-to-server sync (/api/integrations/radar/*)
+  // enforces its own auth (RADAR_SECRET) at the handler level and carries no
+  // preview cookie, so it bypasses the lock the same way -- but unlike the
+  // old early-return, it stays in this set so it still gets the CSP nonce
+  // and per-IP rate limiting applied below.
   const isPreviewAccessRoute =
     pathname === '/preview' ||
     pathname === '/api/preview/auth' ||
-    pathname.startsWith('/api/auth/gmail/')
+    pathname.startsWith('/api/auth/gmail/') ||
+    pathname.startsWith('/api/integrations/radar/')
   // Crawler meta files bypass only the lock (crawlers must always be able to
   // read crawl policy) but stay in the matcher so they still get the
   // CSP/security headers applied below.

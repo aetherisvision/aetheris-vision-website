@@ -4,6 +4,7 @@ import { clientFollowUpMigration } from './002_client_follow_up'
 import { depositLifecycleMigration } from './003_deposit_lifecycle'
 import { invoiceDeliveryMigration } from './004_invoice_delivery'
 import { contactVerificationMigration } from './005_contact_verification'
+import { govconLeadsMigration } from './006_govcon_leads'
 import { buildGuardedMigrationSql } from './execution'
 import type { DatabaseMigration } from './types'
 
@@ -13,6 +14,7 @@ const migrations: readonly DatabaseMigration[] = [
   depositLifecycleMigration,
   invoiceDeliveryMigration,
   contactVerificationMigration,
+  govconLeadsMigration,
 ]
 
 const requiredColumns = [
@@ -28,6 +30,7 @@ const requiredColumns = [
   'leads.location',
   'leads.email_verified_at',
   'leads.updated_at',
+  'leads.govcon',
   'contact_verification_challenges.id',
   'contact_verification_challenges.purpose',
   'contact_verification_challenges.submission_id',
@@ -60,6 +63,7 @@ const requiredIndexes = [
   'clients_next_touch_idx',
   'leads_source_external_uidx',
   'leads_stage_follow_up_idx',
+  'leads_govcon_idx',
   'contact_verification_purpose_submission_uidx',
   'contact_verification_expires_at_idx',
   'projects_lead_id_idx',

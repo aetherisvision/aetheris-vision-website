@@ -93,7 +93,8 @@ export async function POST(
       LEFT JOIN LATERAL (
         SELECT c.id
         FROM clients c
-        WHERE lower(btrim(c.email)) = lower(btrim(l.email))
+        WHERE btrim(l.email) <> ''
+          AND lower(btrim(c.email)) = lower(btrim(l.email))
         LIMIT 1
       ) matching_client ON TRUE
       LEFT JOIN LATERAL (

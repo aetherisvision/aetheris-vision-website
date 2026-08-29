@@ -294,7 +294,11 @@ export default function AdminLeadsPage() {
                       </span>
                     </div>
                     <p style={{ color: colors.muted, fontSize: '13px', margin: 0 }}>
-                      <a href={`mailto:${lead.email}`} style={{ color: colors.blue }}>{lead.email}</a>
+                      {lead.email ? (
+                        <a href={`mailto:${lead.email}`} style={{ color: colors.blue }}>{lead.email}</a>
+                      ) : (
+                        <span style={{ color: colors.dim, fontStyle: 'italic' }}>No contact email on file</span>
+                      )}
                       {lead.phone ? ` · ${lead.phone}` : ''}
                     </p>
                   </div>
