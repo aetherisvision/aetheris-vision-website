@@ -37,6 +37,40 @@ export interface LeadCaptureResult {
   created: boolean
 }
 
+/**
+ * A government-contracting lead surfaced by opportunity-radar (a SAM.gov/
+ * HigherGov/etc. solicitation, or a utility/insurer BD contact) -- not a
+ * website visitor. Deliberately has no emailVerifiedAt: there is no human
+ * submitting a form to verify. contactEmail is optional because many
+ * government notices simply don't list one.
+ */
+export interface GovconLeadInput {
+  /** Solicitation title or the contact's organization name -- becomes leads.name. */
+  title: string
+  agency?: string | null
+  externalRef: string
+  contactEmail?: string | null
+  contactPhone?: string | null
+  estimatedValueCents?: number | null
+  /** Response deadline, or next planned outreach touch. */
+  nextFollowUp?: Date | string | null
+  notes?: string | null
+  /** NAICS/PSC/set-aside/solicitation number/contracting-officer/source URL, etc. */
+  govcon?: Record<string, unknown> | null
+  source?: string
+}
+
+export interface GovconLeadUpdateInput {
+  externalRef: string
+  stage?: ManualLeadStage
+  notes?: string | null
+  nextFollowUp?: Date | string | null
+  estimatedValueCents?: number | null
+  /** Shallow-merged into the existing govcon JSON, not a full overwrite. */
+  govconPatch?: Record<string, unknown> | null
+  source?: string
+}
+
 export interface IntakeGraphInput {
   externalRef: string
   companyName: string
@@ -416,6 +450,93 @@ export async function captureContactLead(input: ContactLeadInput): Promise<LeadC
     'The external reference is already assigned to a different lead',
   )
   return { leadId: row.lead_id, stage: row.stage, created: row.created }
+}
+
+const GOVCON_DEFAULT_SOURCE = 'opportunity-radar'
+
+/**
+ * Capture (or recover, idempotently) a government-contracting lead from
+ * opportunity-radar. Mirrors captureContactLead's ON CONFLICT (source,
+ * external_id) idempotency key, but without the email-verification/coarse-
+ * location semantics that only make sense for a human-submitted web form.
+ * A retry with the same externalRef returns the existing row rather than
+ * duplicating or overwriting it -- opportunity-radar's own local state
+ * (workflow_status, engagement history) stays authoritative for anything
+ * finer-grained than this lead's funnel stage.
+ */
+export async function captureGovconLead(input: GovconLeadInput): Promise<LeadCaptureResult> {
+  const name = requiredText(input.title, 'title')
+  const source = normalizedSource(input.source, GOVCON_DEFAULT_SOURCE)
+  const externalRef = requiredText(input.externalRef, 'externalRef')
+  const govconJson = input.govcon ? JSON.stringify(input.govcon) : null
+
+  const [rows] = await sql.transaction((transactionSql) => [
+    transactionSql`
+      INSERT INTO leads (
+        name, email, organization, phone, service, message, source, external_id,
+        estimated_value_cents, next_follow_up, notes, govcon
+      )
+      VALUES (
+        ${name}, ${optionalText(input.contactEmail) ?? ''}, ${optionalText(input.agency)},
+        ${optionalText(input.contactPhone)}, ${source}, ${name}, ${source}, ${externalRef},
+        ${input.estimatedValueCents ?? null}, ${nullableIsoTimestamp(input.nextFollowUp ?? null)}::timestamptz,
+        ${optionalText(input.notes)}, ${govconJson}::jsonb
+      )
+      ON CONFLICT (source, external_id) WHERE external_id IS NOT NULL
+      DO UPDATE SET updated_at = leads.updated_at
+      WHERE lower(btrim(leads.email)) = lower(btrim(EXCLUDED.email))
+        OR leads.email = ''
+      RETURNING id AS lead_id, stage, (xmax = 0) AS created
+    `,
+  ])
+
+  const row = firstRow<LeadCaptureRow>(
+    rows,
+    'The external reference is already assigned to a different lead',
+  )
+  return { leadId: row.lead_id, stage: row.stage, created: row.created }
+}
+
+/**
+ * Update a govcon lead's funnel state. Every write is scoped to
+ * `source = 'opportunity-radar'` IN THE SQL, not just validated in the
+ * route handler above this function -- this is the actual boundary that
+ * keeps opportunity-radar's integration credential from being able to
+ * touch a website-originated lead, even if the route layer had a bug.
+ * Returns null (not an error) when no matching row exists, so the caller
+ * can 404 rather than assume success.
+ */
+export async function updateGovconLead(
+  input: GovconLeadUpdateInput,
+): Promise<{ leadId: number; stage: LeadStage } | null> {
+  const source = normalizedSource(input.source, GOVCON_DEFAULT_SOURCE)
+  const externalRef = requiredText(input.externalRef, 'externalRef')
+  const govconPatchJson = input.govconPatch ? JSON.stringify(input.govconPatch) : null
+
+  const [rows] = await sql.transaction((transactionSql) => [
+    transactionSql`
+      UPDATE leads
+      SET
+        stage = COALESCE(${input.stage ?? null}, stage),
+        notes = COALESCE(${optionalText(input.notes ?? null)}, notes),
+        next_follow_up = COALESCE(
+          ${nullableIsoTimestamp(input.nextFollowUp ?? null)}::timestamptz, next_follow_up
+        ),
+        estimated_value_cents = COALESCE(
+          ${input.estimatedValueCents ?? null}, estimated_value_cents
+        ),
+        govcon = CASE
+          WHEN ${govconPatchJson}::jsonb IS NULL THEN govcon
+          ELSE COALESCE(govcon, '{}'::jsonb) || ${govconPatchJson}::jsonb
+        END,
+        updated_at = now()
+      WHERE source = ${source} AND external_id = ${externalRef}
+      RETURNING id AS lead_id, stage
+    `,
+  ])
+
+  const row = (rows as { lead_id: number; stage: LeadStage }[])[0]
+  return row ? { leadId: row.lead_id, stage: row.stage } : null
 }
 
 /**
