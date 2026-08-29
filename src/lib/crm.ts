@@ -386,9 +386,20 @@ function nullableDate(value: Date | string | null | undefined, field: string): s
   return normalized
 }
 
+/** Thrown only for a genuine (source, external_id) conflict -- lets route
+ * handlers map this to 409 while every other thrown Error (validation) maps
+ * to 400. */
+export class LeadConflictError extends Error {}
+
 function firstRow<T>(rows: unknown, message: string): T {
   const row = (rows as T[])[0]
   if (!row) throw new Error(message)
+  return row
+}
+
+function firstConflictRow<T>(rows: unknown, message: string): T {
+  const row = (rows as T[])[0]
+  if (!row) throw new LeadConflictError(message)
   return row
 }
 
@@ -445,7 +456,7 @@ export async function captureContactLead(input: ContactLeadInput): Promise<LeadC
     `,
   ])
 
-  const row = firstRow<LeadCaptureRow>(
+  const row = firstConflictRow<LeadCaptureRow>(
     rows,
     'The external reference is already assigned to a different lead',
   )
@@ -469,6 +480,8 @@ export async function captureGovconLead(input: GovconLeadInput): Promise<LeadCap
   const source = normalizedSource(input.source, GOVCON_DEFAULT_SOURCE)
   const externalRef = requiredText(input.externalRef, 'externalRef')
   const govconJson = input.govcon ? JSON.stringify(input.govcon) : null
+  const estimatedValueCents = nullableCurrencyCents(input.estimatedValueCents ?? null)
+  const nextFollowUp = nullableTimestamp(input.nextFollowUp ?? null, 'nextFollowUp')
 
   const [rows] = await sql.transaction((transactionSql) => [
     transactionSql`
@@ -479,21 +492,16 @@ export async function captureGovconLead(input: GovconLeadInput): Promise<LeadCap
       VALUES (
         ${name}, ${optionalText(input.contactEmail) ?? ''}, ${optionalText(input.agency)},
         ${optionalText(input.contactPhone)}, ${source}, ${name}, ${source}, ${externalRef},
-        ${input.estimatedValueCents ?? null}, ${nullableIsoTimestamp(input.nextFollowUp ?? null)}::timestamptz,
+        ${estimatedValueCents}, ${nextFollowUp}::timestamptz,
         ${optionalText(input.notes)}, ${govconJson}::jsonb
       )
       ON CONFLICT (source, external_id) WHERE external_id IS NOT NULL
-      DO UPDATE SET updated_at = leads.updated_at
-      WHERE lower(btrim(leads.email)) = lower(btrim(EXCLUDED.email))
-        OR leads.email = ''
+      DO UPDATE SET updated_at = now()
       RETURNING id AS lead_id, stage, (xmax = 0) AS created
     `,
   ])
 
-  const row = firstRow<LeadCaptureRow>(
-    rows,
-    'The external reference is already assigned to a different lead',
-  )
+  const row = firstRow<LeadCaptureRow>(rows, 'Failed to capture govcon lead')
   return { leadId: row.lead_id, stage: row.stage, created: row.created }
 }
 
@@ -512,6 +520,8 @@ export async function updateGovconLead(
   const source = normalizedSource(input.source, GOVCON_DEFAULT_SOURCE)
   const externalRef = requiredText(input.externalRef, 'externalRef')
   const govconPatchJson = input.govconPatch ? JSON.stringify(input.govconPatch) : null
+  const estimatedValueCents = nullableCurrencyCents(input.estimatedValueCents ?? null)
+  const nextFollowUp = nullableTimestamp(input.nextFollowUp ?? null, 'nextFollowUp')
 
   const [rows] = await sql.transaction((transactionSql) => [
     transactionSql`
@@ -520,10 +530,10 @@ export async function updateGovconLead(
         stage = COALESCE(${input.stage ?? null}, stage),
         notes = COALESCE(${optionalText(input.notes ?? null)}, notes),
         next_follow_up = COALESCE(
-          ${nullableIsoTimestamp(input.nextFollowUp ?? null)}::timestamptz, next_follow_up
+          ${nextFollowUp}::timestamptz, next_follow_up
         ),
         estimated_value_cents = COALESCE(
-          ${input.estimatedValueCents ?? null}, estimated_value_cents
+          ${estimatedValueCents}, estimated_value_cents
         ),
         govcon = CASE
           WHEN ${govconPatchJson}::jsonb IS NULL THEN govcon

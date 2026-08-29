@@ -26,6 +26,7 @@ import { safeEqual } from '@/lib/admin-auth'
 import {
   captureGovconLead,
   updateGovconLead,
+  LeadConflictError,
   LEAD_STAGES,
   type GovconLeadInput,
   type GovconLeadUpdateInput,
@@ -95,7 +96,13 @@ export async function POST(request: NextRequest) {
       'Unable to capture opportunity-radar lead',
       error instanceof Error ? error.message : 'Unknown error',
     )
-    return json({ error: 'The lead could not be captured' }, { status: 409 })
+    if (error instanceof LeadConflictError) {
+      return json({ error: error.message }, { status: 409 })
+    }
+    if (error instanceof Error) {
+      return json({ error: error.message }, { status: 400 })
+    }
+    return json({ error: 'The lead could not be captured' }, { status: 500 })
   }
 }
 
@@ -139,6 +146,12 @@ export async function PATCH(request: NextRequest) {
       'Unable to update opportunity-radar lead',
       error instanceof Error ? error.message : 'Unknown error',
     )
-    return json({ error: 'The lead could not be updated' }, { status: 409 })
+    if (error instanceof LeadConflictError) {
+      return json({ error: error.message }, { status: 409 })
+    }
+    if (error instanceof Error) {
+      return json({ error: error.message }, { status: 400 })
+    }
+    return json({ error: 'The lead could not be updated' }, { status: 500 })
   }
 }

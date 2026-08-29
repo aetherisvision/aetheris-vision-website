@@ -100,6 +100,13 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // opportunity-radar's server-to-server sync must reach this route without
+  // a preview-session cookie -- it enforces its own auth (RADAR_SECRET) at
+  // the handler level, same pattern as /api/cron/*.
+  if (pathname.startsWith('/api/integrations/radar/')) {
+    return NextResponse.next()
+  }
+
   // Site lock: the public site remains gated while the new consulting site is
   // prepared for launch. A signed cookie avoids browser-native
   // Basic Auth dialogs, which do not work consistently in embedded browsers.
