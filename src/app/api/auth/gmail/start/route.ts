@@ -3,12 +3,16 @@ import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 import { setStateCookie } from '@/lib/gmail-oauth'
 import { NextRequest, NextResponse } from 'next/server'
 
-// gmail.compose grants create/update of drafts and their own sends only --
-// never gmail.send, which would let a stolen token send mail as this
-// mailbox. Never widened further than that: draft-then-review stays a
-// human action taken in Gmail itself, not an API call this app can make.
+// gmail.compose technically authorizes drafts.send (a token holder COULD
+// send mail via the API) -- this app just never calls it. Draft-then-review
+// stays a human action taken in Gmail itself by policy/code, not something
+// the granted scope itself prevents. gmail.settings.basic (read+write, no
+// narrower read-only variant exists) is needed to read the mailbox's own
+// configured signature via users.settings.sendAs so drafts can embed
+// whatever the human actually has set in Gmail, instead of a static copy
+// that can silently drift out of sync with edits made in Gmail's UI.
 const SCOPE =
-  'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.compose openid email'
+  'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.compose https://www.googleapis.com/auth/gmail.settings.basic openid email'
 
 export async function GET(request: NextRequest) {
   if (!isAdmin(request)) return unauthorizedResponse()

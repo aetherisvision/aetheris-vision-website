@@ -49,6 +49,52 @@ export async function getGmailAccessToken(refreshToken: string): Promise<string>
   return data.access_token
 }
 
+/** Read the mailbox's own currently-configured default signature (whatever
+ * the human has set as default under Gmail Settings > General > Signature)
+ * via users.settings.sendAs -- Gmail's REST API exposes only ONE signature
+ * per send-as identity (the one marked default in Gmail's own UI), not
+ * each of Gmail's named signatures individually, so there's no way to ask
+ * for a specific named signature other than "whichever one is default."
+ * Requires gmail.settings.basic (read+write; Google publishes no
+ * narrower read-only variant for send-as/signature data).
+ *
+ * Returns null (not an error) when the identity has no signature configured
+ * -- that's a legitimate state, not a failure. Throws GmailApiError on an
+ * API/auth failure; callers should treat that as soft-fail (draft without a
+ * signature) rather than blocking draft creation, since every draft is
+ * reviewed by a human in Gmail before it's ever sent. */
+export async function getGmailDefaultSignature(
+  accessToken: string,
+  expectedSendAsEmail?: string | null,
+): Promise<string | null> {
+  const res = await fetch(`${GMAIL_API}/users/me/settings/sendAs`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+  const text = await res.text()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Gmail API JSON
+  let data: any
+  try {
+    data = text ? JSON.parse(text) : {}
+  } catch {
+    data = {}
+  }
+  if (!res.ok) {
+    const message = typeof data?.error?.message === 'string' ? data.error.message : 'Gmail API error'
+    throw new GmailApiError(message, res.status)
+  }
+  const sendAsEntries: Array<{ sendAsEmail?: string; isDefault?: boolean; signature?: string }> =
+    Array.isArray(data.sendAs) ? data.sendAs : []
+  const defaultEntry =
+    sendAsEntries.find((entry) => entry.isDefault) ??
+    (expectedSendAsEmail
+      ? sendAsEntries.find(
+          (entry) => entry.sendAsEmail?.toLowerCase() === expectedSendAsEmail.toLowerCase(),
+        )
+      : undefined)
+  const signature = defaultEntry?.signature
+  return typeof signature === 'string' && signature.trim() ? signature : null
+}
+
 export interface DraftAttachment {
   filename: string
   mimeType: string

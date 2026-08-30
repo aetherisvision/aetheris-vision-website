@@ -7,15 +7,15 @@ const {
   decryptTokenMock,
   getGmailAccessTokenMock,
   createGmailDraftMock,
+  getGmailDefaultSignatureMock,
   loadEncodedCapabilityStatementMock,
-  loadEmailSignatureHtmlMock,
 } = vi.hoisted(() => ({
   sqlMock: vi.fn(),
   decryptTokenMock: vi.fn(),
   getGmailAccessTokenMock: vi.fn(),
   createGmailDraftMock: vi.fn(),
+  getGmailDefaultSignatureMock: vi.fn(),
   loadEncodedCapabilityStatementMock: vi.fn(),
-  loadEmailSignatureHtmlMock: vi.fn(),
 }))
 
 vi.mock('@/lib/db', () => ({ sql: sqlMock }))
@@ -23,9 +23,6 @@ vi.mock('@/lib/token-crypto', () => ({ decryptToken: decryptTokenMock }))
 vi.mock('@/lib/capability-statement', () => ({
   CAPABILITY_STATEMENT_FILENAME: 'Aetheris-Vision-Capability-Statement.pdf',
   loadEncodedCapabilityStatement: loadEncodedCapabilityStatementMock,
-}))
-vi.mock('@/lib/email-signature', () => ({
-  loadEmailSignatureHtml: loadEmailSignatureHtmlMock,
 }))
 
 class MockGmailApiError extends Error {
@@ -43,9 +40,26 @@ vi.mock('@/lib/gmail-client', async () => {
     ...actual,
     getGmailAccessToken: getGmailAccessTokenMock,
     createGmailDraft: createGmailDraftMock,
+    getGmailDefaultSignature: getGmailDefaultSignatureMock,
     GmailApiError: MockGmailApiError,
   }
 })
+
+function decodeRaw(raw: string): string {
+  return Buffer.from(raw, 'base64url').toString('utf8')
+}
+
+/** buildDraftRawMessage base64-encodes the HTML body as its own MIME part
+ * (wrapped to 76-char lines) -- pull that part out and decode it so tests
+ * can assert on the literal HTML instead of matching against base64. */
+function decodeHtmlBodyPart(raw: string): string {
+  const message = decodeRaw(raw)
+  const htmlPartMatch = message.match(
+    /Content-Type: text\/html; charset="UTF-8"\r\nContent-Transfer-Encoding: base64\r\n\r\n([\s\S]*?)\r\n--av-draft-/,
+  )
+  if (!htmlPartMatch) throw new Error('Could not locate the HTML body part in the raw message')
+  return Buffer.from(htmlPartMatch[1].replace(/\r\n/g, ''), 'base64').toString('utf8')
+}
 
 const TEST_PASSPHRASE = 'draft-email-contract-test'
 
@@ -73,13 +87,14 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     decryptTokenMock.mockReset()
     getGmailAccessTokenMock.mockReset()
     createGmailDraftMock.mockReset()
+    getGmailDefaultSignatureMock.mockReset()
     loadEncodedCapabilityStatementMock.mockReset()
-    loadEmailSignatureHtmlMock.mockReset()
     vi.stubEnv('ADMIN_PASSPHRASE', TEST_PASSPHRASE)
     vi.stubEnv('GMAIL_CLIENT_ID', 'client-id')
     vi.stubEnv('GMAIL_CLIENT_SECRET', 'client-secret')
     loadEncodedCapabilityStatementMock.mockResolvedValue('ZmFrZS1wZGY=')
-    loadEmailSignatureHtmlMock.mockResolvedValue('<table>sig</table>')
+    getGmailAccessTokenMock.mockResolvedValue('access-token')
+    getGmailDefaultSignatureMock.mockResolvedValue(null)
   })
 
   it('rejects an unauthenticated request before touching the database', async () => {
@@ -356,8 +371,54 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
       error:
         "This lead's stored data could not be used to build a valid email -- check its name/organization/email for stray line breaks",
     })
-    expect(getGmailAccessTokenMock).not.toHaveBeenCalled()
+    // The access token IS fetched (it's needed for the live signature look-up,
+    // which happens before the message is built) -- only draft creation itself
+    // never runs.
+    expect(getGmailAccessTokenMock).toHaveBeenCalled()
     expect(createGmailDraftMock).not.toHaveBeenCalled()
     expect(sqlMock).toHaveBeenCalledTimes(4)
+  })
+
+  it('embeds the live Gmail signature fetched via the mailbox\'s own default sendAs entry', async () => {
+    sqlMock
+      .mockResolvedValueOnce([
+        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+      ])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([
+        { refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose', email: 'marston@aetherisvision.com' },
+      ])
+      .mockResolvedValueOnce([])
+
+    decryptTokenMock.mockReturnValue('plain-refresh-token')
+    getGmailDefaultSignatureMock.mockResolvedValue('<table>AV2 signature</table>')
+    createGmailDraftMock.mockResolvedValue({ draftId: 'draft-123', messageId: 'msg-1' })
+
+    const response = await callRoute('12')
+
+    expect(response.status).toBe(200)
+    expect(getGmailDefaultSignatureMock).toHaveBeenCalledWith('access-token', 'marston@aetherisvision.com')
+    expect(createGmailDraftMock).toHaveBeenCalled()
+    const [, rawMessage] = createGmailDraftMock.mock.calls[0] as [string, string]
+    expect(decodeHtmlBodyPart(rawMessage)).toContain('<table>AV2 signature</table>')
+  })
+
+  it('drafts without a signature (never blocks, never falls back to a stale copy) when the live signature fetch fails', async () => {
+    sqlMock
+      .mockResolvedValueOnce([
+        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+      ])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
+      .mockResolvedValueOnce([])
+
+    decryptTokenMock.mockReturnValue('plain-refresh-token')
+    getGmailDefaultSignatureMock.mockRejectedValue(new MockGmailApiError('insufficient scope', 403))
+    createGmailDraftMock.mockResolvedValue({ draftId: 'draft-123', messageId: 'msg-1' })
+
+    const response = await callRoute('12')
+
+    expect(response.status).toBe(200)
+    expect(createGmailDraftMock).toHaveBeenCalled()
   })
 })

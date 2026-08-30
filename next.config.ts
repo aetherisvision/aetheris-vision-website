@@ -30,15 +30,12 @@ const nextConfig: NextConfig = {
 
   // The capability statement is deliberately stored outside public/ so it is
   // never directly fetchable — it is delivered by email from the API route.
-  // Tracing has to be told about it because nothing imports the file.
-  // The Gmail draft-email route reuses the same PDF and also needs the
-  // signature HTML fragment, neither of which anything else imports.
+  // Tracing has to be told about it because nothing imports the file. The
+  // Gmail draft-email route reuses the same PDF (its signature is fetched
+  // live from Gmail instead of a static file, so nothing to trace there).
   outputFileTracingIncludes: {
     "/api/capability-statement": ["./private/capability-statement.pdf"],
-    "/api/admin/leads/[id]/draft-email": [
-      "./private/capability-statement.pdf",
-      "./private/email-signature.html",
-    ],
+    "/api/admin/leads/[id]/draft-email": ["./private/capability-statement.pdf"],
   },
   
   images: {
