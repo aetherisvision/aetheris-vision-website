@@ -72,7 +72,9 @@ const stageColors: Record<Stage, string> = {
   proposal: '#c4b5fd',
   won: '#6ee7b7',
   lost: '#fca5a5',
-  declined: 'rgba(255,255,255,0.4)',
+  // Must stay a 6-digit hex: the badge/filter styles append hex alpha
+  // suffixes (e.g. `${stageColors[stage]}18`).
+  declined: '#9ca3af',
 }
 
 function dateInputValue(value: string | null) {
@@ -100,6 +102,11 @@ function titleCase(value: string | null) {
   return value.replaceAll('_', ' ').replace(/\b\w/g, char => char.toUpperCase())
 }
 
+function govconScore(lead: Lead): number {
+  const score = lead.govcon?.score
+  return typeof score === 'number' ? score : -1
+}
+
 export default function AdminLeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
@@ -124,11 +131,6 @@ export default function AdminLeadsPage() {
     // Initial data hydration for this client-only admin screen.
     void loadLeads()
   }, [])
-
-function govconScore(lead: Lead): number {
-    const score = lead.govcon?.score
-    return typeof score === 'number' ? score : -1
-  }
 
   const visible = useMemo(() => {
     const scoped = filter === 'all' ? leads : leads.filter(lead => lead.stage === filter)
