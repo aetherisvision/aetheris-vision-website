@@ -4,7 +4,15 @@ import { isAdmin } from '@/lib/admin-auth'
 import { updateLead, type ManualLeadStage } from '@/lib/crm'
 import { sql } from '@/lib/db'
 
-const MANUAL_STAGES = ['new', 'contacted', 'qualified', 'proposal', 'lost'] as const
+const MANUAL_STAGES = [
+  'new',
+  'contacted',
+  'qualified',
+  'proposal',
+  'lost',
+  'review',
+  'declined',
+] as const
 const ALLOWED_FIELDS = new Set([
   'id',
   'stage',
@@ -68,6 +76,7 @@ async function findLead(id: number) {
       l.client_id,
       l.gmail_draft_id,
       l.gmail_draft_created_at,
+      l.govcon,
       recent_project.id AS project_id,
       recent_intake.id AS intake_id,
       c.relationship_status,
@@ -124,6 +133,7 @@ export async function GET(request: NextRequest) {
         l.client_id,
         l.gmail_draft_id,
         l.gmail_draft_created_at,
+        l.govcon,
         recent_project.id AS project_id,
         recent_intake.id AS intake_id,
         c.relationship_status,

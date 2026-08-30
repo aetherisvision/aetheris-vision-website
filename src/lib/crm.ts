@@ -1,6 +1,19 @@
 import { sql } from '@/lib/db'
 
-export const LEAD_STAGES = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'] as const
+// 'review' is the entry stage for an opportunity-radar lead synced from a
+// scan (not yet pursued); 'declined' means "chose not to pursue" or
+// "expired unactioned" -- kept distinct from 'lost' ("bid and didn't win")
+// so win-rate/bid-ratio stay meaningful once declines are most of the rows.
+export const LEAD_STAGES = [
+  'new',
+  'contacted',
+  'qualified',
+  'proposal',
+  'won',
+  'lost',
+  'review',
+  'declined',
+] as const
 export const PROJECT_LIFECYCLE_STATUSES = ['proposal', 'signed', 'active', 'canceled'] as const
 export const INVOICE_PURPOSES = ['deposit'] as const
 export const CLIENT_RELATIONSHIP_STATUSES = [
@@ -513,16 +526,36 @@ export async function captureGovconLead(input: GovconLeadInput): Promise<LeadCap
     transactionSql`
       INSERT INTO leads (
         name, email, organization, phone, service, message, source, external_id,
-        estimated_value_cents, next_follow_up, notes, govcon
+        estimated_value_cents, next_follow_up, notes, govcon, stage
       )
       VALUES (
         ${name}, ${optionalText(input.contactEmail) ?? ''}, ${optionalText(input.agency)},
         ${optionalText(input.contactPhone)}, ${source}, ${name}, ${source}, ${externalRef},
         ${estimatedValueCents}, ${nextFollowUp}::timestamptz,
-        ${optionalText(input.notes)}, ${govconJson}::jsonb
+        ${optionalText(input.notes)}, ${govconJson}::jsonb, 'review'
       )
       ON CONFLICT (source, external_id) WHERE external_id IS NOT NULL
-      DO UPDATE SET updated_at = now()
+      DO UPDATE SET
+        -- Refresh scan-derived data on every re-sync (score, deadline,
+        -- amount can all change run to run) -- but never stage or notes,
+        -- which stay human-owned once a lead exists. estimated_value_cents
+        -- and next_follow_up are human-editable in the admin form, so they
+        -- only refresh while the lead is still in a scan-owned stage
+        -- (review/declined); govcon is purely scan-owned and always
+        -- refreshes. COALESCE keeps a scan that happens to omit a value
+        -- from blanking a previously-good one.
+        govcon = COALESCE(EXCLUDED.govcon, leads.govcon),
+        estimated_value_cents = CASE
+          WHEN leads.stage IN ('review', 'declined')
+            THEN COALESCE(EXCLUDED.estimated_value_cents, leads.estimated_value_cents)
+          ELSE leads.estimated_value_cents
+        END,
+        next_follow_up = CASE
+          WHEN leads.stage IN ('review', 'declined')
+            THEN COALESCE(EXCLUDED.next_follow_up, leads.next_follow_up)
+          ELSE leads.next_follow_up
+        END,
+        updated_at = now()
       RETURNING id AS lead_id, stage, (xmax = 0) AS created
     `,
   ])
@@ -556,12 +589,23 @@ export async function updateGovconLead(
     throw asGovconValidationError(error)
   }
   const source = GOVCON_DEFAULT_SOURCE
+  const stage = input.stage ?? null
+  const allowedFrom = stage ? leadTransitionSources[stage] : null
 
   const [rows] = await sql.transaction((transactionSql) => [
     transactionSql`
       UPDATE leads
       SET
-        stage = COALESCE(${input.stage ?? null}, stage),
+        -- Stage moves obey the same transition table as the admin UI, as a
+        -- quiet no-op rather than an error: a blocked move (e.g. the radar's
+        -- expiry auto-decline hitting a lead a human already advanced past
+        -- 'review') keeps the current stage while the rest of the patch
+        -- still applies. 'won' is never writable from this integration.
+        stage = CASE
+          WHEN ${stage}::text IS NULL THEN stage
+          WHEN stage <> 'won' AND stage = ANY(${allowedFrom}::text[]) THEN ${stage}
+          ELSE stage
+        END,
         notes = COALESCE(${optionalText(input.notes ?? null)}, notes),
         next_follow_up = COALESCE(
           ${nextFollowUp}::timestamptz, next_follow_up
@@ -1226,16 +1270,30 @@ export async function markEngagementSigned(input: {
 }
 
 const leadTransitionSources: Record<ManualLeadStage, readonly LeadStage[]> = {
-  new: ['new'],
+  // 'new' is also reachable from 'review' -- that's the "Pursue" action on
+  // an auto-synced opportunity-radar lead entering the normal funnel.
+  new: ['new', 'review'],
   contacted: ['new', 'contacted'],
   qualified: ['new', 'contacted', 'qualified'],
   proposal: ['new', 'contacted', 'qualified', 'proposal'],
   lost: ['new', 'contacted', 'qualified', 'proposal', 'lost'],
+  // 'review' is normally entered via captureGovconLead's initial insert, but
+  // is also reachable from 'declined' -- the "Reconsider" action on a
+  // declined card (deadline extended, or a change of mind). The radar's
+  // auto-decliner can't fight a reconsideration: it declines each lead at
+  // most once (its local 'expired' marker).
+  review: ['review', 'declined'],
+  // 'declined' is specifically the review-inbox "not pursuing" outcome, not
+  // a general give-up button for an already-engaged lead -- that's what
+  // 'lost' is for.
+  declined: ['review', 'declined'],
 }
 
 function manualLeadStage(value: string): ManualLeadStage {
   if (value === 'won' || !(LEAD_STAGES as readonly string[]).includes(value)) {
-    throw new Error('stage must be one of new, contacted, qualified, proposal, or lost')
+    throw new Error(
+      'stage must be one of new, contacted, qualified, proposal, lost, review, or declined',
+    )
   }
   return value as ManualLeadStage
 }

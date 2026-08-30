@@ -100,6 +100,58 @@ describe('opportunity-radar govcon lead capture', () => {
     expect(values).toContain('SAM.gov:abc123')
   })
 
+  it('guards stage moves with the transition table and never writes over won', async () => {
+    mocks.transactionSql.mockResolvedValueOnce([{ lead_id: 9, stage: 'declined' }])
+
+    await updateGovconLead({ externalRef: 'SAM.gov:abc123', stage: 'declined' })
+
+    const [strings, ...values] = mocks.transactionSql.mock.calls[0] as [
+      TemplateStringsArray,
+      ...unknown[],
+    ]
+    const text = strings.join(' ')
+    // Conditional SET, not WHERE: a blocked transition keeps the current
+    // stage while the rest of the patch still applies.
+    expect(text).toContain("stage <> 'won' AND stage = ANY(")
+    // 'declined' is only reachable from the review inbox (or itself).
+    expect(values).toContainEqual(['review', 'declined'])
+  })
+
+  it('passes a null transition list when no stage change is requested', async () => {
+    mocks.transactionSql.mockResolvedValueOnce([{ lead_id: 9, stage: 'contacted' }])
+
+    await updateGovconLead({
+      externalRef: 'SAM.gov:abc123',
+      govconPatch: { reply_status: 'replied' },
+    })
+
+    const [, ...values] = mocks.transactionSql.mock.calls[0] as [
+      TemplateStringsArray,
+      ...unknown[],
+    ]
+    expect(values[0]).toBeNull() // stage
+    expect(values[1]).toBeNull() // allowed-from list
+  })
+
+  it('only refreshes value and follow-up while the lead is still scan-owned', async () => {
+    mocks.transactionSql.mockResolvedValueOnce([{ lead_id: 7, stage: 'new', created: false }])
+
+    await captureGovconLead({
+      title: 'Re-synced notice',
+      externalRef: 'SAM.gov:abc123',
+      estimatedValueCents: 100_000,
+      nextFollowUp: '2026-09-15T00:00:00Z',
+    })
+
+    const [strings] = mocks.transactionSql.mock.calls[0] as [TemplateStringsArray, ...unknown[]]
+    const text = strings.join(' ')
+    // Human-editable fields refresh only in review/declined; a lead a human
+    // has advanced keeps its edited value and follow-up date.
+    expect(text).toContain("WHEN leads.stage IN ('review', 'declined')")
+    // govcon itself stays scan-owned and always refreshes.
+    expect(text).toContain('govcon = COALESCE(EXCLUDED.govcon, leads.govcon)')
+  })
+
   it('rejects preparing a proposal for a govcon lead with no contact email, without opening a transaction', async () => {
     mocks.sql.mockResolvedValueOnce([{ email: '' }])
 
