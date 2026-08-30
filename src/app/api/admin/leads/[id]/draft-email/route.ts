@@ -97,7 +97,7 @@ export async function POST(
   // already has a finished draft returns it instead of creating another.
   if (lead.gmail_draft_id) {
     return json({
-      draftId: lead.gmail_draft_id,
+      messageId: lead.gmail_draft_id,
       draftUrl: gmailDraftUrl(lead.gmail_draft_id),
       draftedAt: lead.gmail_draft_created_at,
     })
@@ -231,12 +231,31 @@ export async function POST(
       throw new ClaimedRequestError('The draft could not be created', 502)
     }
 
-    await sql`
-      UPDATE leads SET gmail_draft_id = ${messageId} WHERE id = ${id}
-    `
+    // A real Gmail draft exists from this point on. A failure below must
+    // NOT release the claim -- releasing it would let a retry call Gmail
+    // again and create a second, orphaned draft with no DB record of the
+    // first. Leaving the lead "claimed" (in flight) is the safe failure
+    // mode here; a human resolves it manually using the message id logged
+    // below, rather than the route silently duplicating outbound mail.
+    try {
+      await sql`UPDATE leads SET gmail_draft_id = ${messageId} WHERE id = ${id}`
+    } catch (error) {
+      console.error(
+        'Gmail draft was created but could not be recorded on the lead -- do not retry',
+        { leadId: id, messageId, error: error instanceof Error ? error.message : 'Unknown error' },
+      )
+      return json(
+        {
+          error: `A Gmail draft was created (message ${messageId}) but could not be saved to this lead. Do not retry -- open the draft in Gmail directly and update the lead's notes.`,
+          messageId,
+          draftUrl: gmailDraftUrl(messageId),
+        },
+        { status: 500 },
+      )
+    }
 
     return json({
-      draftId: messageId,
+      messageId,
       draftUrl: gmailDraftUrl(messageId),
       draftedAt: claim.gmail_draft_created_at,
     })

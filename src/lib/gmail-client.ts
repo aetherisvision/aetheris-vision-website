@@ -3,8 +3,21 @@ import { randomUUID } from 'node:crypto'
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 export const GMAIL_API = 'https://gmail.googleapis.com/gmail/v1'
 
+export class GmailApiError extends Error {
+  readonly status: number
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'GmailApiError'
+    this.status = status
+  }
+}
+
 /** Exchange a stored refresh token for a short-lived access token. Never
- * persisted -- callers use it for the duration of one request. */
+ * persisted -- callers use it for the duration of one request. Throws
+ * GmailApiError (not a plain Error) with the real HTTP status so callers can
+ * tell a revoked/expired refresh token (400 invalid_grant) apart from a
+ * transient failure, and so the error carries status context even if
+ * Google's response isn't the JSON body this endpoint normally returns. */
 export async function getGmailAccessToken(refreshToken: string): Promise<string> {
   const res = await fetch(GOOGLE_TOKEN_URL, {
     method: 'POST',
@@ -16,18 +29,24 @@ export async function getGmailAccessToken(refreshToken: string): Promise<string>
       grant_type: 'refresh_token',
     }),
   })
-  const data = await res.json()
-  if (!data.access_token) throw new Error(`Token refresh failed: ${JSON.stringify(data)}`)
-  return data.access_token
-}
-
-export class GmailApiError extends Error {
-  readonly status: number
-  constructor(message: string, status: number) {
-    super(message)
-    this.name = 'GmailApiError'
-    this.status = status
+  const text = await res.text()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Google token endpoint JSON
+  let data: any
+  try {
+    data = text ? JSON.parse(text) : {}
+  } catch {
+    data = {}
   }
+  if (!res.ok || typeof data.access_token !== 'string') {
+    const message =
+      typeof data.error_description === 'string'
+        ? data.error_description
+        : typeof data.error === 'string'
+          ? data.error
+          : 'Token refresh failed'
+    throw new GmailApiError(message, res.status)
+  }
+  return data.access_token
 }
 
 export interface DraftAttachment {

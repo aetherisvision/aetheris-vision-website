@@ -196,7 +196,7 @@ export default function AdminLeadsPage() {
       if (!response.ok) throw new Error(data.error || 'The draft could not be created')
 
       updateLocal(lead.id, {
-        gmail_draft_id: data.draftId,
+        gmail_draft_id: data.messageId,
         gmail_draft_created_at: data.draftedAt,
       })
       setNotice({ tone: 'success', text: `A Gmail draft is ready for ${lead.name} -- review and send from Gmail` })

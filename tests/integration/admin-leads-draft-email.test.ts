@@ -125,7 +125,7 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     const response = await callRoute('12')
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toEqual({
-      draftId: 'msg-existing',
+      messageId: 'msg-existing',
       draftUrl: 'https://mail.google.com/mail/u/0/#drafts?compose=msg-existing',
       draftedAt: '2026-08-29T00:00:00.000Z',
     })
@@ -220,8 +220,8 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     const response = await callRoute('12')
 
     expect(response.status).toBe(200)
-    const data = (await response.json()) as { draftId: string; draftUrl: string; draftedAt: string }
-    expect(data.draftId).toBe('msg-1')
+    const data = (await response.json()) as { messageId: string; draftUrl: string; draftedAt: string }
+    expect(data.messageId).toBe('msg-1')
     expect(data.draftUrl).toBe('https://mail.google.com/mail/u/0/#drafts?compose=msg-1')
     expect(data.draftedAt).toBe('2026-08-30T00:00:00.000Z')
     expect(getGmailAccessTokenMock).toHaveBeenCalledWith('plain-refresh-token')
@@ -250,5 +250,31 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
       error:
         'The connected Gmail mailbox needs to be reconnected with drafting permission at /admin/gmail',
     })
+  })
+
+  it('does NOT release the claim when the Gmail draft succeeds but the DB write fails -- prevents a retry from duplicating the draft', async () => {
+    sqlMock
+      .mockResolvedValueOnce([
+        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+      ])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
+      .mockRejectedValueOnce(new Error('connection terminated unexpectedly')) // the final UPDATE
+
+    decryptTokenMock.mockReturnValue('plain-refresh-token')
+    getGmailAccessTokenMock.mockResolvedValue('access-token')
+    createGmailDraftMock.mockResolvedValue({ draftId: 'draft-123', messageId: 'msg-1' })
+
+    const response = await callRoute('12')
+
+    expect(response.status).toBe(500)
+    const data = (await response.json()) as { error: string; messageId: string }
+    expect(data.messageId).toBe('msg-1')
+    expect(data.error).toContain('msg-1')
+    expect(data.error).toContain('Do not retry')
+
+    // findLead, claim, oauth_tokens, the failed final UPDATE -- and nothing
+    // after it. A releaseClaim() call would be a 5th sql invocation.
+    expect(sqlMock).toHaveBeenCalledTimes(4)
   })
 })
