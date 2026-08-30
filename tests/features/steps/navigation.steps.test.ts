@@ -27,8 +27,8 @@ describe("Feature: Site Navigation", () => {
     });
   });
 
-  describe("Scenario: Blog posts appear in sitemap", () => {
-    it("each blog post slug should have a sitemap entry", async () => {
+  describe("Scenario: Insights articles follow the publication state", () => {
+    it("each blog post entry should match the Insights publication state", async () => {
       // Given there are published blog posts
       expect(posts.length).toBeGreaterThan(0);
 
@@ -37,7 +37,12 @@ describe("Feature: Site Navigation", () => {
       const sitemap = sitemapModule.default();
       const urls = sitemap.map((entry) => entry.url);
 
-      // Then each article follows the publication state
+      // Then the /blog index and each article follow the publication state
+      if (INSIGHTS_PUBLIC) {
+        expect(urls).toContain("https://aetherisvision.com/blog");
+      } else {
+        expect(urls).not.toContain("https://aetherisvision.com/blog");
+      }
       for (const post of posts) {
         const expected = `https://aetherisvision.com/blog/${post.slug}`;
         if (INSIGHTS_PUBLIC) {

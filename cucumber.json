@@ -1,11 +1,7 @@
 {
   "default": {
     "paths": [
-      "tests/features/navigation.feature",
-      "tests/features/portfolio.feature",
-      "tests/features/email-security.feature",
-      "tests/features/contact-form.feature",
-      "tests/features/analytics-dashboard.feature"
+      "tests/features/*.feature"
     ],
     "import": [
       "tests/features/support/*.ts",
