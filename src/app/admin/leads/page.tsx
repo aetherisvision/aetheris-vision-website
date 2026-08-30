@@ -195,12 +195,21 @@ export default function AdminLeadsPage() {
     try {
       const response = await fetch(`/api/admin/leads/${lead.id}/draft-email`, { method: 'POST' })
       const data = await response.json()
+
+      // The route can fail after the Gmail draft already exists (its DB
+      // write failed) -- it still returns messageId/draftUrl on that 500 so
+      // the admin isn't stranded looking at "Draft in progress" until a
+      // full reload. Record it locally even though this response is an
+      // error.
+      if (data.messageId) {
+        updateLocal(lead.id, {
+          gmail_draft_id: data.messageId,
+          gmail_draft_created_at: data.draftedAt ?? new Date().toISOString(),
+        })
+      }
+
       if (!response.ok) throw new Error(data.error || 'The draft could not be created')
 
-      updateLocal(lead.id, {
-        gmail_draft_id: data.messageId,
-        gmail_draft_created_at: data.draftedAt,
-      })
       setNotice({ tone: 'success', text: `A Gmail draft is ready for ${lead.name} -- review and send from Gmail` })
     } catch (error) {
       setNotice({ tone: 'error', text: error instanceof Error ? error.message : 'The draft could not be created' })
