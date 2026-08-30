@@ -84,11 +84,12 @@ export async function getGmailDefaultSignature(
   }
   const sendAsEntries: Array<{ sendAsEmail?: string; isDefault?: boolean; signature?: string }> =
     Array.isArray(data.sendAs) ? data.sendAs : []
+  const normalizedExpectedEmail = expectedSendAsEmail?.trim().toLowerCase() || null
   const defaultEntry =
     sendAsEntries.find((entry) => entry.isDefault) ??
-    (expectedSendAsEmail
+    (normalizedExpectedEmail
       ? sendAsEntries.find(
-          (entry) => entry.sendAsEmail?.toLowerCase() === expectedSendAsEmail.toLowerCase(),
+          (entry) => entry.sendAsEmail?.trim().toLowerCase() === normalizedExpectedEmail,
         )
       : undefined)
   const signature = defaultEntry?.signature

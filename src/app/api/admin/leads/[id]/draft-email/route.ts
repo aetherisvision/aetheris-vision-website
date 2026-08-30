@@ -118,6 +118,20 @@ export async function POST(
       { status: 400 },
     )
   }
+  // The only lead field interpolated raw into a MIME header (the subject
+  // line, via SITE.name + lead.organization -- see below) is checked here,
+  // deterministically, before touching Gmail at all. buildDraftRawMessage
+  // would catch this too, but only after an avoidable token exchange and
+  // live-signature fetch for a request that's already guaranteed to fail.
+  if (lead.organization && /[\r\n]/.test(lead.organization)) {
+    return json(
+      {
+        error:
+          "This lead's stored data could not be used to build a valid email -- check its name/organization/email for stray line breaks",
+      },
+      { status: 400 },
+    )
+  }
 
   // Atomically claim the lead before calling Gmail: two concurrent requests
   // (two tabs, or a retry racing the first request) would otherwise both

@@ -346,23 +346,17 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     expect(sqlMock).toHaveBeenCalledTimes(4)
   })
 
-  it('maps a MIME-build failure (e.g. a stray CRLF in the lead org) to a 400 admin-actionable message, and releases the claim', async () => {
-    sqlMock
-      .mockResolvedValueOnce([
-        {
-          id: 12,
-          name: 'FERC lead',
-          email: 'officer@ferc.gov',
-          organization: 'FERC\r\nBcc: attacker@evil.example',
-          gmail_draft_id: null,
-          gmail_draft_created_at: null,
-        },
-      ])
-      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
-      .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
-      .mockResolvedValueOnce([]) // releaseClaim
-
-    decryptTokenMock.mockReturnValue('plain-refresh-token')
+  it('rejects a lead org containing a stray CRLF before touching Gmail or claiming the lead', async () => {
+    sqlMock.mockResolvedValueOnce([
+      {
+        id: 12,
+        name: 'FERC lead',
+        email: 'officer@ferc.gov',
+        organization: 'FERC\r\nBcc: attacker@evil.example',
+        gmail_draft_id: null,
+        gmail_draft_created_at: null,
+      },
+    ])
 
     const response = await callRoute('12')
 
@@ -371,12 +365,12 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
       error:
         "This lead's stored data could not be used to build a valid email -- check its name/organization/email for stray line breaks",
     })
-    // The access token IS fetched (it's needed for the live signature look-up,
-    // which happens before the message is built) -- only draft creation itself
-    // never runs.
-    expect(getGmailAccessTokenMock).toHaveBeenCalled()
+    // Deterministic bad-data case, rejected before the DB claim and before
+    // any Gmail call (token exchange, signature fetch) -- there's no point
+    // spending either on a request that's already guaranteed to fail.
+    expect(getGmailAccessTokenMock).not.toHaveBeenCalled()
     expect(createGmailDraftMock).not.toHaveBeenCalled()
-    expect(sqlMock).toHaveBeenCalledTimes(4)
+    expect(sqlMock).toHaveBeenCalledTimes(1)
   })
 
   it('embeds the live Gmail signature fetched via the mailbox\'s own default sendAs entry', async () => {
