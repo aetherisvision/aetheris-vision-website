@@ -1,7 +1,9 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import {
+  CAPABILITY_STATEMENT_FILENAME,
+  loadEncodedCapabilityStatement,
+} from "@/lib/capability-statement";
 import { SAM, SITE } from "@/lib/constants";
 import { escapeHtml } from "@/lib/escape-html";
 import { rateLimit } from "@/lib/rate-limit";
@@ -27,24 +29,6 @@ const ORG_MAX = 200;
 const WINDOW_MS = 60 * 60 * 1000;
 const IP_LIMIT = 5;
 const EMAIL_LIMIT = 2;
-
-const PDF_PATH = path.join(process.cwd(), "private", "capability-statement.pdf");
-const ATTACHMENT_FILENAME = "Aetheris-Vision-Capability-Statement.pdf";
-
-// The document is immutable for the life of a deployment, so read and encode it
-// once per warm instance instead of moving ~7 MB through memory per request.
-let encodedPdf: Promise<string> | null = null;
-function loadEncodedPdf(): Promise<string> {
-  encodedPdf ??= readFile(PDF_PATH)
-    .then(buffer => buffer.toString("base64"))
-    .catch(error => {
-      // Do not cache a failure: a redeploy or a transient read error should be
-      // retried on the next request rather than poisoning the instance.
-      encodedPdf = null;
-      throw error;
-    });
-  return encodedPdf;
-}
 
 /** Uniform reply. The caller never learns whether an address was rate limited. */
 function accepted() {
@@ -161,7 +145,7 @@ export async function POST(request: NextRequest) {
 
   let pdf: string;
   try {
-    pdf = await loadEncodedPdf();
+    pdf = await loadEncodedCapabilityStatement();
   } catch (error) {
     console.error("Capability statement PDF could not be read", {
       error: error instanceof Error ? error.name : "UnknownError",
@@ -179,7 +163,7 @@ export async function POST(request: NextRequest) {
       subject: message.subject,
       html: message.html,
       text: message.text,
-      attachments: [{ filename: ATTACHMENT_FILENAME, content: pdf }],
+      attachments: [{ filename: CAPABILITY_STATEMENT_FILENAME, content: pdf }],
     });
     if (result.error) {
       console.error("Capability statement delivery rejected by provider");

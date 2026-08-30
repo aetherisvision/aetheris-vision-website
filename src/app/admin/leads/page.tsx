@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 
+import { gmailDraftUrl } from '@/lib/gmail-draft-url'
+
 const STAGES = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'] as const
 const MANUAL_STAGES = ['new', 'contacted', 'qualified', 'proposal', 'lost'] as const
 
@@ -26,6 +28,8 @@ interface Lead {
   intake_id: number | null
   relationship_status: string | null
   project_status: string | null
+  gmail_draft_id: string | null
+  gmail_draft_created_at: string | null
   created_at: string
 }
 
@@ -179,6 +183,36 @@ export default function AdminLeadsPage() {
       await loadLeads()
     } catch (error) {
       setNotice({ tone: 'error', text: error instanceof Error ? error.message : 'The proposal could not be prepared' })
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  async function draftEmail(lead: Lead) {
+    setBusyId(lead.id)
+    setNotice(null)
+
+    try {
+      const response = await fetch(`/api/admin/leads/${lead.id}/draft-email`, { method: 'POST' })
+      const data = await response.json()
+
+      // The route can fail after the Gmail draft already exists (its DB
+      // write failed) -- it still returns messageId/draftUrl on that 500 so
+      // the admin isn't stranded looking at "Draft in progress" until a
+      // full reload. Record it locally even though this response is an
+      // error.
+      if (data.messageId) {
+        updateLocal(lead.id, {
+          gmail_draft_id: data.messageId,
+          gmail_draft_created_at: data.draftedAt ?? new Date().toISOString(),
+        })
+      }
+
+      if (!response.ok) throw new Error(data.error || 'The draft could not be created')
+
+      setNotice({ tone: 'success', text: `A Gmail draft is ready for ${lead.name} -- review and send from Gmail` })
+    } catch (error) {
+      setNotice({ tone: 'error', text: error instanceof Error ? error.message : 'The draft could not be created' })
     } finally {
       setBusyId(null)
     }
@@ -353,7 +387,12 @@ export default function AdminLeadsPage() {
                     {lead.intake_id && <Link href={`/admin/intake#intake-${lead.intake_id}`} style={relationLinkStyle}>Intake #{lead.intake_id}</Link>}
                     {lead.client_id && <Link href={`/admin/clients#client-${lead.client_id}`} style={relationLinkStyle}>Client #{lead.client_id}</Link>}
                     {lead.project_id && <Link href={`/admin/projects#project-${lead.project_id}`} style={relationLinkStyle}>Project #{lead.project_id}</Link>}
-                    {!lead.intake_id && !lead.client_id && !lead.project_id && <span style={{ color: colors.dim, fontSize: '12px' }}>No related records yet</span>}
+                    {lead.gmail_draft_id && (
+                      <a href={gmailDraftUrl(lead.gmail_draft_id)} target="_blank" rel="noopener noreferrer" style={relationLinkStyle}>
+                        Gmail draft ready
+                      </a>
+                    )}
+                    {!lead.intake_id && !lead.client_id && !lead.project_id && !lead.gmail_draft_id && <span style={{ color: colors.dim, fontSize: '12px' }}>No related records yet</span>}
                   </div>
                   {!locked && (
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -361,6 +400,16 @@ export default function AdminLeadsPage() {
                         <button onClick={() => prepareProposal(lead)} disabled={busyId === lead.id} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(110,231,183,0.3)', background: 'rgba(110,231,183,0.1)', color: colors.green, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
                           {busyId === lead.id ? 'Preparing…' : 'Prepare proposal'}
                         </button>
+                      )}
+                      {lead.email && !lead.gmail_draft_id && !lead.gmail_draft_created_at && (
+                        <button onClick={() => draftEmail(lead)} disabled={busyId === lead.id} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(251,191,36,0.35)', background: 'rgba(251,191,36,0.1)', color: colors.amber, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
+                          {busyId === lead.id ? 'Drafting…' : 'Draft email'}
+                        </button>
+                      )}
+                      {!lead.gmail_draft_id && lead.gmail_draft_created_at && (
+                        <span style={{ padding: '9px 13px', color: colors.dim, fontSize: '12px', fontStyle: 'italic' }}>
+                          Draft in progress -- refresh in a moment
+                        </span>
                       )}
                       <button onClick={() => saveLead(lead)} disabled={busyId === lead.id} style={{ padding: '9px 15px', borderRadius: '8px', border: 'none', background: busyId === lead.id ? 'rgba(91,168,217,0.4)' : colors.blue, color: colors.bg, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 800, fontSize: '12px' }}>
                         {busyId === lead.id ? 'Saving…' : 'Save lead'}

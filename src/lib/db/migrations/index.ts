@@ -5,6 +5,7 @@ import { depositLifecycleMigration } from './003_deposit_lifecycle'
 import { invoiceDeliveryMigration } from './004_invoice_delivery'
 import { contactVerificationMigration } from './005_contact_verification'
 import { govconLeadsMigration } from './006_govcon_leads'
+import { gmailDraftsMigration } from './007_gmail_drafts'
 import { buildGuardedMigrationSql } from './execution'
 import type { DatabaseMigration } from './types'
 
@@ -15,6 +16,7 @@ const migrations: readonly DatabaseMigration[] = [
   invoiceDeliveryMigration,
   contactVerificationMigration,
   govconLeadsMigration,
+  gmailDraftsMigration,
 ]
 
 const requiredColumns = [
@@ -56,6 +58,9 @@ const requiredColumns = [
   'invoices.purpose',
   'invoices.notification_idempotency_key',
   'invoices.notification_sent_at',
+  'oauth_tokens.scopes',
+  'leads.gmail_draft_id',
+  'leads.gmail_draft_created_at',
 ] as const
 
 const requiredIndexes = [
@@ -174,7 +179,8 @@ export async function verifyCrmSchema(): Promise<MigrationVerification> {
           'contact_verification_challenges',
           'projects',
           'intake_submissions',
-          'invoices'
+          'invoices',
+          'oauth_tokens'
         )
     `,
     sql`

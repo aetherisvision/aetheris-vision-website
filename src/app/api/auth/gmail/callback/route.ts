@@ -78,12 +78,20 @@ export async function GET(request: NextRequest) {
     email = info.email ?? null
   } catch { /* non-fatal */ }
 
+  // Google returns the space-delimited set of scopes actually granted (which
+  // can be a superset of what was requested, or -- for a pre-existing grant
+  // reused without prompt=consent -- a subset). Recording it lets a consumer
+  // like the draft-email route check the connected mailbox actually covers
+  // gmail.compose instead of failing with an opaque Google 403.
+  const scopes: string | null = typeof tokens.scope === 'string' ? tokens.scope : null
+
   await sql`
-    INSERT INTO oauth_tokens (account, refresh_token, email, updated_at)
-    VALUES (${account}, ${encryptToken(tokens.refresh_token)}, ${email}, NOW())
+    INSERT INTO oauth_tokens (account, refresh_token, email, scopes, updated_at)
+    VALUES (${account}, ${encryptToken(tokens.refresh_token)}, ${email}, ${scopes}, NOW())
     ON CONFLICT (account) DO UPDATE
       SET refresh_token = EXCLUDED.refresh_token,
           email        = EXCLUDED.email,
+          scopes       = EXCLUDED.scopes,
           updated_at   = NOW()
   `
 
