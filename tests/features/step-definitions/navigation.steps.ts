@@ -43,6 +43,12 @@ Given("there are published blog posts", function () {
 
 Then("each blog post entry should match the Insights publication state", function () {
   if (generatedSitemap.length === 0) generatedSitemap = sitemap();
+  // sitemap() returns [] while PREVIEW_PASSWORD is set; fail clearly instead of
+  // throwing a TypeError on generatedSitemap[0] below.
+  assert.ok(
+    generatedSitemap.length > 0,
+    "Sitemap is empty — is PREVIEW_PASSWORD set in the test environment?",
+  );
   const urls = generatedSitemap.map((entry) => entry.url);
   // Derive the origin from the generated sitemap rather than hardcoding it, so
   // the assertion follows SITE.url wherever it points.
