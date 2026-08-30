@@ -46,8 +46,10 @@ not browser-native Basic Auth) when `PREVIEW_PASSWORD` is set, except: `/admin/*
 the admin session itself; Google's OAuth redirect cannot carry the preview cookie).
 Unset `PREVIEW_PASSWORD` = site fully open; this is opt-in, not opt-out.
 
-Re-locked 2026-07-03 while the site is retooled around the consulting-first launch.
-Value lives in Vercel env / `~/.secrets` — not hardcoded in the repo.
+Marston declared the site OPEN on 2026-08-30 — `PREVIEW_PASSWORD` should be
+removed from Vercel production env (removal + redeploy required; the value in
+`~/.secrets` is then only for re-locking). The `/preview` page remains in the
+code, inert while the variable is unset.
 
 ---
 

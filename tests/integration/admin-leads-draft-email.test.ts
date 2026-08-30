@@ -70,18 +70,20 @@ function adminCookie(): string {
   return `av-admin-session=${mintAdminSessionToken(TEST_PASSPHRASE)}`
 }
 
-function request(id: string, authenticated = true): NextRequest {
+function request(id: string, authenticated = true, body?: unknown): NextRequest {
   const headers = new Headers()
   if (authenticated) headers.set('Cookie', adminCookie())
+  if (body !== undefined) headers.set('Content-Type', 'application/json')
   return new NextRequest(`http://localhost/api/admin/leads/${id}/draft-email`, {
     method: 'POST',
     headers,
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   })
 }
 
-async function callRoute(id: string, authenticated = true) {
+async function callRoute(id: string, authenticated = true, body?: unknown) {
   const { POST } = await import('@/app/api/admin/leads/[id]/draft-email/route')
-  return POST(request(id, authenticated), { params: Promise.resolve({ id }) })
+  return POST(request(id, authenticated, body), { params: Promise.resolve({ id }) })
 }
 
 describe('POST /api/admin/leads/[id]/draft-email', () => {
@@ -404,6 +406,55 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     expect(createGmailDraftMock).toHaveBeenCalled()
     const [, rawMessage] = createGmailDraftMock.mock.calls[0] as [string, string]
     expect(decodeHtmlBodyPart(rawMessage)).toContain('<table>AV2 signature</table>')
+  })
+
+  it('regenerate: detaches the existing draft atomically and creates a fresh one', async () => {
+    sqlMock
+      .mockResolvedValueOnce([
+        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: 'old-msg', gmail_draft_created_at: '2026-08-29T00:00:00.000Z' },
+      ])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }]) // regenerate claim
+      .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
+      .mockResolvedValueOnce([]) // final UPDATE
+
+    decryptTokenMock.mockReturnValue('plain-refresh-token')
+    createGmailDraftMock.mockResolvedValue({ draftId: 'draft-456', messageId: 'msg-2' })
+
+    const response = await callRoute('12', true, { regenerate: true })
+    expect(response.status).toBe(200)
+    const data = (await response.json()) as { messageId: string }
+    expect(data.messageId).toBe('msg-2')
+
+    // The claim UPDATE must detach exactly the draft this request saw.
+    const [claimStrings, ...claimParams] = sqlMock.mock.calls[1] as [TemplateStringsArray, ...unknown[]]
+    expect(claimStrings.join(' ')).toContain('gmail_draft_id = NULL')
+    expect(claimParams).toContain('old-msg')
+    expect(draftLeadEmailMock).toHaveBeenCalled()
+  })
+
+  it('regenerate: returns 409 without drafting when another regenerate already detached the draft', async () => {
+    sqlMock
+      .mockResolvedValueOnce([
+        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: 'old-msg', gmail_draft_created_at: '2026-08-29T00:00:00.000Z' },
+      ])
+      .mockResolvedValueOnce([]) // claim race lost
+
+    const response = await callRoute('12', true, { regenerate: true })
+    expect(response.status).toBe(409)
+    expect(draftLeadEmailMock).not.toHaveBeenCalled()
+    expect(createGmailDraftMock).not.toHaveBeenCalled()
+  })
+
+  it('regenerate: a plain POST with regenerate false is still the idempotent path', async () => {
+    sqlMock.mockResolvedValueOnce([
+      { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: 'old-msg', gmail_draft_created_at: '2026-08-29T00:00:00.000Z' },
+    ])
+
+    const response = await callRoute('12', true, { regenerate: false })
+    expect(response.status).toBe(200)
+    const data = (await response.json()) as { messageId: string }
+    expect(data.messageId).toBe('old-msg')
+    expect(sqlMock).toHaveBeenCalledTimes(1)
   })
 
   it('returns 500 without touching the database when AI drafting is not configured', async () => {

@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+import AdminAssistant from '@/components/AdminAssistant'
+
 const PRIMARY_NAV = [
   { href: '/admin/leads', label: 'Leads' },
   { href: '/admin/intake', label: 'Intake & SOWs' },
@@ -146,6 +148,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {children}
 
+      <AdminAssistant />
+
       <style jsx>{`
         .admin-header {
           background: ${dark.surface};
@@ -191,7 +195,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         .admin-nav {
           align-items: center;
           display: flex;
-          gap: 2px;
+          gap: 10px;
           min-width: 0;
         }
         .admin-nav-link {
@@ -204,10 +208,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           font: inherit;
           font-size: 13px;
           font-weight: 500;
-          gap: 4px;
-          padding: 6px 9px;
+          gap: 5px;
+          padding: 6px 12px;
           text-decoration: none;
           white-space: nowrap;
+        }
+        .admin-nav-link:hover {
+          background: rgba(255, 255, 255, 0.05);
+          color: ${dark.text};
         }
         .admin-nav-link.active {
           background: ${dark.activeNav};

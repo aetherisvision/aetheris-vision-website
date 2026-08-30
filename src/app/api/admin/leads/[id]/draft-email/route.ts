@@ -113,12 +113,24 @@ export async function POST(
   const id = parseLeadId(idValue)
   if (id === null) return json({ error: 'Invalid lead ID' }, { status: 400 })
 
+  // Optional JSON body; absent on older callers. regenerate=true asks for a
+  // fresh draft even though one already exists (the old Gmail draft is left
+  // in Gmail for the admin to delete -- we only store its message id, and
+  // deleting mail is a human action anyway).
+  let regenerate = false
+  try {
+    const body = (await request.json()) as { regenerate?: unknown }
+    regenerate = body?.regenerate === true
+  } catch {
+    // No body or invalid JSON: plain draft request.
+  }
+
   const lead = await findLeadForDraft(id)
   if (!lead) return json({ error: 'Lead not found' }, { status: 404 })
 
   // Idempotent: a repeat call (retry, direct API call) for a lead that
   // already has a finished draft returns it instead of creating another.
-  if (lead.gmail_draft_id) {
+  if (lead.gmail_draft_id && !regenerate) {
     return json({
       messageId: lead.gmail_draft_id,
       draftUrl: gmailDraftUrl(lead.gmail_draft_id),
@@ -168,14 +180,27 @@ export async function POST(
   // the function (which now spends up to ~120s drafting with Claude) --
   // raise maxDuration past the claim window and a live request could be
   // taken over mid-flight.
-  const claimRows = await sql`
-    UPDATE leads
-    SET gmail_draft_created_at = now()
-    WHERE id = ${id}
-      AND gmail_draft_id IS NULL
-      AND (gmail_draft_created_at IS NULL OR gmail_draft_created_at < now() - interval '5 minutes')
-    RETURNING gmail_draft_created_at
-  `
+  // A regenerate claims by atomically detaching the exact draft the caller
+  // saw: if another regenerate got there first (gmail_draft_id no longer
+  // matches), this one loses and is told to retry, exactly like the normal
+  // claim race below. From the detach on, the flow is identical to a first
+  // draft -- including the failure modes.
+  const claimRows = lead.gmail_draft_id
+    ? await sql`
+        UPDATE leads
+        SET gmail_draft_id = NULL, gmail_draft_created_at = now()
+        WHERE id = ${id}
+          AND gmail_draft_id = ${lead.gmail_draft_id}
+        RETURNING gmail_draft_created_at
+      `
+    : await sql`
+        UPDATE leads
+        SET gmail_draft_created_at = now()
+        WHERE id = ${id}
+          AND gmail_draft_id IS NULL
+          AND (gmail_draft_created_at IS NULL OR gmail_draft_created_at < now() - interval '5 minutes')
+        RETURNING gmail_draft_created_at
+      `
   const claim = (claimRows as { gmail_draft_created_at: string }[])[0]
   if (!claim) {
     return json(

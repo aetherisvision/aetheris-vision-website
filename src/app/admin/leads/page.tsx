@@ -244,12 +244,19 @@ export default function AdminLeadsPage() {
     }
   }
 
-  async function draftEmail(lead: Lead) {
+  async function draftEmail(lead: Lead, regenerate = false) {
+    if (regenerate && !window.confirm('Write a fresh draft for this lead? The current Gmail draft stays in Gmail until you delete it there.')) {
+      return
+    }
     setBusyId(lead.id)
     setNotice(null)
 
     try {
-      const response = await fetch(`/api/admin/leads/${lead.id}/draft-email`, { method: 'POST' })
+      const response = await fetch(`/api/admin/leads/${lead.id}/draft-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ regenerate }),
+      })
       const data = await response.json()
 
       // The route can fail after the Gmail draft already exists (its DB
@@ -325,22 +332,17 @@ export default function AdminLeadsPage() {
       </div>
 
       <section aria-label="Pipeline summary" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px', marginBottom: '16px' }}>
-        <div style={{ padding: '15px', borderRadius: '10px', border: `1px solid ${colors.border}`, background: colors.surface }}>
-          <span style={{ display: 'block', color: colors.muted, fontSize: '11px', marginBottom: '5px' }}>Open leads</span>
-          <strong style={{ color: colors.text, fontSize: '22px' }}>{openLeads.length}</strong>
-        </div>
-        <div style={{ padding: '15px', borderRadius: '10px', border: `1px solid ${colors.border}`, background: colors.surface }}>
-          <span style={{ display: 'block', color: colors.muted, fontSize: '11px', marginBottom: '5px' }}>Open pipeline</span>
-          <strong style={{ color: colors.text, fontSize: '22px' }}>{formatCurrency(openValue)}</strong>
-        </div>
-        <div style={{ padding: '15px', borderRadius: '10px', border: `1px solid ${colors.border}`, background: colors.surface }}>
-          <span style={{ display: 'block', color: colors.muted, fontSize: '11px', marginBottom: '5px' }}>Proposals</span>
-          <strong style={{ color: colors.text, fontSize: '22px' }}>{counts.proposal}</strong>
-        </div>
-        <div style={{ padding: '15px', borderRadius: '10px', border: `1px solid ${colors.border}`, background: colors.surface }}>
-          <span style={{ display: 'block', color: colors.muted, fontSize: '11px', marginBottom: '5px' }}>Won</span>
-          <strong style={{ color: colors.text, fontSize: '22px' }}>{counts.won}</strong>
-        </div>
+        {([
+          { label: 'Open leads', value: String(openLeads.length), accent: colors.blue },
+          { label: 'Open pipeline', value: formatCurrency(openValue), accent: '#c4b5fd' },
+          { label: 'Proposals', value: String(counts.proposal), accent: colors.amber },
+          { label: 'Won', value: String(counts.won), accent: colors.green },
+        ] as const).map(card => (
+          <div key={card.label} style={{ padding: '15px', borderRadius: '10px', border: `1px solid ${card.accent}30`, borderLeft: `3px solid ${card.accent}`, background: `linear-gradient(135deg, ${card.accent}0d, ${colors.surface} 60%)` }}>
+            <span style={{ display: 'block', color: card.accent, fontSize: '11px', fontWeight: 600, marginBottom: '5px' }}>{card.label}</span>
+            <strong style={{ color: colors.text, fontSize: '22px' }}>{card.value}</strong>
+          </div>
+        ))}
       </section>
 
       <div style={{ display: 'flex', gap: '7px', flexWrap: 'wrap', marginBottom: '24px' }}>
@@ -375,7 +377,7 @@ export default function AdminLeadsPage() {
             const fitReasons = Array.isArray(govcon?.fit_reasons) ? govcon.fit_reasons as string[] : []
             const cautions = Array.isArray(govcon?.cautions) ? govcon.cautions as string[] : []
             return (
-              <article id={`lead-${lead.id}`} key={lead.id} style={{ scrollMarginTop: '76px', background: colors.surface, border: `1px solid ${overdue ? 'rgba(248,113,113,0.35)' : colors.border}`, borderRadius: '12px', padding: '20px' }}>
+              <article id={`lead-${lead.id}`} key={lead.id} style={{ scrollMarginTop: '76px', background: colors.surface, border: `1px solid ${overdue ? 'rgba(248,113,113,0.35)' : colors.border}`, borderLeft: `3px solid ${overdue ? colors.red : stageColors[lead.stage]}`, borderRadius: '12px', padding: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'start', flexWrap: 'wrap' }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '5px' }}>
@@ -417,7 +419,7 @@ export default function AdminLeadsPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                       <span style={{ color: colors.blue, fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Radar analysis</span>
                       {typeof govcon.score === 'number' && (
-                        <span style={{ color: colors.blue, fontSize: '12px', fontWeight: 700 }}>Score {govcon.score}</span>
+                        <span style={{ color: govcon.score >= 70 ? colors.green : govcon.score >= 50 ? colors.amber : colors.red, background: `${govcon.score >= 70 ? colors.green : govcon.score >= 50 ? colors.amber : colors.red}14`, borderRadius: '999px', padding: '2px 9px', fontSize: '12px', fontWeight: 700 }}>Score {govcon.score}</span>
                       )}
                     </div>
                     {typeof govcon.analysis === 'string' && govcon.analysis && (
@@ -506,6 +508,11 @@ export default function AdminLeadsPage() {
                       {lead.email && !lead.gmail_draft_id && !lead.gmail_draft_created_at && (
                         <button onClick={() => draftEmail(lead)} disabled={busyId === lead.id} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(251,191,36,0.35)', background: 'rgba(251,191,36,0.1)', color: colors.amber, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
                           {busyId === lead.id ? 'Drafting…' : 'Draft email'}
+                        </button>
+                      )}
+                      {lead.email && lead.gmail_draft_id && (
+                        <button onClick={() => draftEmail(lead, true)} disabled={busyId === lead.id} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(251,191,36,0.35)', background: 'rgba(251,191,36,0.1)', color: colors.amber, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
+                          {busyId === lead.id ? 'Drafting…' : 'Recreate draft'}
                         </button>
                       )}
                       {!lead.gmail_draft_id && lead.gmail_draft_created_at && (
