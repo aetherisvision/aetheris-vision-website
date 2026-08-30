@@ -138,7 +138,7 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toEqual({
       messageId: 'msg-existing',
-      draftUrl: 'https://mail.google.com/mail/u/0/#drafts?compose=msg-existing',
+      draftUrl: 'https://mail.google.com/mail/#drafts?compose=msg-existing',
       draftedAt: '2026-08-29T00:00:00.000Z',
     })
     expect(sqlMock).toHaveBeenCalledTimes(1)
@@ -234,7 +234,7 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     expect(response.status).toBe(200)
     const data = (await response.json()) as { messageId: string; draftUrl: string; draftedAt: string }
     expect(data.messageId).toBe('msg-1')
-    expect(data.draftUrl).toBe('https://mail.google.com/mail/u/0/#drafts?compose=msg-1')
+    expect(data.draftUrl).toBe('https://mail.google.com/mail/#drafts?compose=msg-1')
     expect(data.draftedAt).toBe('2026-08-30T00:00:00.000Z')
     expect(getGmailAccessTokenMock).toHaveBeenCalledWith('plain-refresh-token')
     expect(createGmailDraftMock).toHaveBeenCalledWith('access-token', expect.any(String))

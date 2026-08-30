@@ -24,6 +24,7 @@ import {
   getGmailAccessToken,
   GmailApiError,
 } from '@/lib/gmail-client'
+import { gmailDraftUrl } from '@/lib/gmail-draft-url'
 import { decryptToken } from '@/lib/token-crypto'
 
 const NO_STORE_HEADERS = { 'Cache-Control': 'no-store' }
@@ -40,13 +41,6 @@ function json(body: unknown, init?: { status?: number }) {
 function parseLeadId(value: string): number | null {
   const id = Number(value)
   return Number.isSafeInteger(id) && id > 0 ? id : null
-}
-
-// Gmail's web UI deep-links an existing draft by its message id via a
-// `compose` query param, not by the Drafts-API resource id -- gmail_draft_id
-// stores that message id (see createGmailDraft's own doc comment).
-function gmailDraftUrl(messageId: string): string {
-  return `https://mail.google.com/mail/u/0/#drafts?compose=${encodeURIComponent(messageId)}`
 }
 
 interface LeadForDraft {

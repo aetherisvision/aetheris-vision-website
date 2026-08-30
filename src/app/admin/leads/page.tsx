@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 
+import { gmailDraftUrl } from '@/lib/gmail-draft-url'
+
 const STAGES = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'] as const
 const MANUAL_STAGES = ['new', 'contacted', 'qualified', 'proposal', 'lost'] as const
 
@@ -377,7 +379,7 @@ export default function AdminLeadsPage() {
                     {lead.client_id && <Link href={`/admin/clients#client-${lead.client_id}`} style={relationLinkStyle}>Client #{lead.client_id}</Link>}
                     {lead.project_id && <Link href={`/admin/projects#project-${lead.project_id}`} style={relationLinkStyle}>Project #{lead.project_id}</Link>}
                     {lead.gmail_draft_id && (
-                      <a href={`https://mail.google.com/mail/u/0/#drafts?compose=${encodeURIComponent(lead.gmail_draft_id)}`} target="_blank" rel="noopener noreferrer" style={relationLinkStyle}>
+                      <a href={gmailDraftUrl(lead.gmail_draft_id)} target="_blank" rel="noopener noreferrer" style={relationLinkStyle}>
                         Gmail draft ready
                       </a>
                     )}
