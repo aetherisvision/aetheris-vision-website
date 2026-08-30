@@ -41,6 +41,24 @@ describe('buildDraftRawMessage', () => {
     expect(message).toContain('ZmFrZS1wZGY=')
   })
 
+  it('wraps a long base64 attachment payload to 76-character lines (RFC 2045)', () => {
+    const longBase64 = 'A'.repeat(200)
+    const raw = buildDraftRawMessage({
+      to: 'lead@example.com',
+      subject: 'x',
+      htmlBody: '<p>y</p>',
+      attachment: { filename: 'x.pdf', mimeType: 'application/pdf', base64Content: longBase64 },
+    })
+
+    const message = decode(raw)
+    const attachmentLines = message
+      .split('\r\n')
+      .filter((line) => line.length > 0 && /^A+$/.test(line))
+    expect(attachmentLines.length).toBeGreaterThan(1)
+    for (const line of attachmentLines) expect(line.length).toBeLessThanOrEqual(76)
+    expect(attachmentLines.join('')).toBe(longBase64)
+  })
+
   it('RFC 2047-encodes a non-ASCII subject instead of embedding raw bytes', () => {
     const raw = buildDraftRawMessage({
       to: 'lead@example.com',

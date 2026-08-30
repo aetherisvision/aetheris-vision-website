@@ -28,6 +28,10 @@ import { decryptToken } from '@/lib/token-crypto'
 
 const NO_STORE_HEADERS = { 'Cache-Control': 'no-store' }
 const GMAIL_ACCOUNT = 'biz'
+// A lead's stored email must be exactly one mailbox -- no comma/semicolon
+// (which Gmail's own To: parsing treats as a recipient list) and no
+// whitespace, so it can never resolve to more than one recipient.
+const SINGLE_EMAIL_PATTERN = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/
 
 function json(body: unknown, init?: { status?: number }) {
   return NextResponse.json(body, { ...init, headers: NO_STORE_HEADERS })
@@ -89,8 +93,8 @@ export async function POST(
   const lead = await findLeadForDraft(id)
   if (!lead) return json({ error: 'Lead not found' }, { status: 404 })
 
-  // Idempotent: a double-click, a retry, or a direct repeat API call must
-  // never silently create a second draft for the same lead.
+  // Idempotent: a repeat call (retry, direct API call) for a lead that
+  // already has a finished draft returns it instead of creating another.
   if (lead.gmail_draft_id) {
     return json({
       draftId: lead.gmail_draft_id,
@@ -102,98 +106,144 @@ export async function POST(
   if (!lead.email.trim()) {
     return json({ error: 'This lead has no contact email on file' }, { status: 400 })
   }
+  const recipient = lead.email.trim()
+  if (!SINGLE_EMAIL_PATTERN.test(recipient)) {
+    return json(
+      { error: "This lead's stored email is not a single valid address" },
+      { status: 400 },
+    )
+  }
 
-  const tokenRows = await sql`
-    SELECT refresh_token, scopes FROM oauth_tokens WHERE account = ${GMAIL_ACCOUNT}
+  // Atomically claim the lead before calling Gmail: two concurrent requests
+  // (two tabs, or a retry racing the first request) would otherwise both
+  // observe gmail_draft_id = null and both create a draft. Only the request
+  // whose UPDATE actually matches a row proceeds; the loser is told to
+  // retry rather than silently duplicating the draft. gmail_draft_created_at
+  // set with gmail_draft_id still null means "claimed, in flight."
+  const claimRows = await sql`
+    UPDATE leads
+    SET gmail_draft_created_at = now()
+    WHERE id = ${id} AND gmail_draft_id IS NULL AND gmail_draft_created_at IS NULL
+    RETURNING gmail_draft_created_at
   `
-  const tokenRow = (tokenRows as { refresh_token: string; scopes: string | null }[])[0]
-  if (!tokenRow?.refresh_token) {
+  const claim = (claimRows as { gmail_draft_created_at: string }[])[0]
+  if (!claim) {
     return json(
-      { error: 'Connect the Aetheris Vision Gmail mailbox at /admin/gmail first' },
+      { error: 'A draft is already being created for this lead -- try again in a moment' },
       { status: 409 },
     )
   }
-  // scopes is only populated from a callback that ran after migration 007 --
-  // a connection made before that has scopes = null and is given the
-  // benefit of the doubt; the Gmail API call below is still the real check.
-  if (tokenRow.scopes && !tokenRow.scopes.includes('gmail.compose')) {
-    return json(
-      {
-        error:
-          'The connected Gmail mailbox needs to be reconnected with drafting permission at /admin/gmail',
-      },
-      { status: 409 },
-    )
-  }
-  const encryptedToken = tokenRow.refresh_token
 
-  let refreshToken: string
-  try {
-    refreshToken = decryptToken(encryptedToken)
-  } catch (error) {
-    console.error(
-      'Unable to decrypt stored Gmail refresh token',
-      error instanceof Error ? error.message : 'Unknown error',
-    )
-    return json(
-      { error: 'The stored Gmail connection is unreadable -- reconnect at /admin/gmail' },
-      { status: 500 },
-    )
-  }
-
-  let pdf: string
-  let signatureHtml: string
-  try {
-    ;[pdf, signatureHtml] = await Promise.all([
-      loadEncodedCapabilityStatement(),
-      loadEmailSignatureHtml(),
-    ])
-  } catch (error) {
-    console.error(
-      'Unable to load draft-email attachments',
-      error instanceof Error ? error.message : 'Unknown error',
-    )
-    return json({ error: 'The draft could not be prepared' }, { status: 500 })
-  }
-
-  const subject = `Aetheris Vision -- following up${lead.organization ? ` with ${lead.organization}` : ''}`
-  const raw = buildDraftRawMessage({
-    to: lead.email,
-    subject,
-    htmlBody: buildEmailBody(lead, signatureHtml),
-    attachment: {
-      filename: CAPABILITY_STATEMENT_FILENAME,
-      mimeType: 'application/pdf',
-      base64Content: pdf,
-    },
-  })
-
-  try {
-    const accessToken = await getGmailAccessToken(refreshToken)
-    const { messageId } = await createGmailDraft(accessToken, raw)
-
-    const draftedAt = new Date().toISOString()
+  // From here on, every exit must release the claim on failure -- otherwise
+  // the lead is stuck permanently "in flight" (gmail_draft_created_at set,
+  // gmail_draft_id still null) and every future attempt hits the 409 above.
+  async function releaseClaim() {
     await sql`
       UPDATE leads
-      SET gmail_draft_id = ${messageId}, gmail_draft_created_at = ${draftedAt}::timestamptz
-      WHERE id = ${id}
+      SET gmail_draft_created_at = NULL
+      WHERE id = ${id} AND gmail_draft_id IS NULL
+    `.catch(() => undefined)
+  }
+
+  class ClaimedRequestError extends Error {
+    readonly status: number
+    constructor(message: string, status: number) {
+      super(message)
+      this.status = status
+    }
+  }
+
+  try {
+    const tokenRows = await sql`
+      SELECT refresh_token, scopes FROM oauth_tokens WHERE account = ${GMAIL_ACCOUNT}
+    `
+    const tokenRow = (tokenRows as { refresh_token: string; scopes: string | null }[])[0]
+    if (!tokenRow?.refresh_token) {
+      throw new ClaimedRequestError('Connect the Aetheris Vision Gmail mailbox at /admin/gmail first', 409)
+    }
+    // scopes is only populated from a callback that ran after migration 007
+    // -- a connection made before that has scopes = null and is given the
+    // benefit of the doubt; the Gmail API call below is still the real check.
+    if (tokenRow.scopes && !tokenRow.scopes.includes('gmail.compose')) {
+      throw new ClaimedRequestError(
+        'The connected Gmail mailbox needs to be reconnected with drafting permission at /admin/gmail',
+        409,
+      )
+    }
+
+    let refreshToken: string
+    try {
+      refreshToken = decryptToken(tokenRow.refresh_token)
+    } catch (error) {
+      console.error(
+        'Unable to decrypt stored Gmail refresh token',
+        error instanceof Error ? error.message : 'Unknown error',
+      )
+      throw new ClaimedRequestError(
+        'The stored Gmail connection is unreadable -- reconnect at /admin/gmail',
+        500,
+      )
+    }
+
+    let pdf: string
+    let signatureHtml: string
+    try {
+      ;[pdf, signatureHtml] = await Promise.all([
+        loadEncodedCapabilityStatement(),
+        loadEmailSignatureHtml(),
+      ])
+    } catch (error) {
+      console.error(
+        'Unable to load draft-email attachments',
+        error instanceof Error ? error.message : 'Unknown error',
+      )
+      throw new ClaimedRequestError('The draft could not be prepared', 500)
+    }
+
+    const subject = `Aetheris Vision -- following up${lead.organization ? ` with ${lead.organization}` : ''}`
+    const raw = buildDraftRawMessage({
+      to: recipient,
+      subject,
+      htmlBody: buildEmailBody(lead, signatureHtml),
+      attachment: {
+        filename: CAPABILITY_STATEMENT_FILENAME,
+        mimeType: 'application/pdf',
+        base64Content: pdf,
+      },
+    })
+
+    let messageId: string
+    try {
+      const accessToken = await getGmailAccessToken(refreshToken)
+      ;({ messageId } = await createGmailDraft(accessToken, raw))
+    } catch (error) {
+      if (error instanceof GmailApiError && error.status === 403) {
+        console.error('Gmail draft creation failed -- insufficient scope', error.message)
+        throw new ClaimedRequestError(
+          'The connected Gmail mailbox needs to be reconnected with drafting permission at /admin/gmail',
+          409,
+        )
+      }
+      console.error(
+        'Unable to create Gmail draft',
+        error instanceof Error ? error.message : 'Unknown error',
+      )
+      throw new ClaimedRequestError('The draft could not be created', 502)
+    }
+
+    await sql`
+      UPDATE leads SET gmail_draft_id = ${messageId} WHERE id = ${id}
     `
 
     return json({
       draftId: messageId,
       draftUrl: gmailDraftUrl(messageId),
-      draftedAt,
+      draftedAt: claim.gmail_draft_created_at,
     })
   } catch (error) {
-    if (error instanceof GmailApiError && error.status === 403) {
-      console.error('Gmail draft creation failed -- insufficient scope', error.message)
-      return json(
-        {
-          error:
-            'The connected Gmail mailbox needs to be reconnected with drafting permission at /admin/gmail',
-        },
-        { status: 409 },
-      )
+    await releaseClaim()
+    if (error instanceof ClaimedRequestError) {
+      return json({ error: error.message }, { status: error.status })
     }
     console.error(
       'Unable to create Gmail draft',

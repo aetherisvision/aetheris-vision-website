@@ -45,6 +45,18 @@ function assertSingleLineHeaderValue(value: string, field: string): string {
   return value
 }
 
+/** RFC 2045 caps base64-encoded body lines at 76 characters -- some MIME
+ * parsers enforce that. A single unbroken line (the HTML part once the
+ * signature is embedded, and any real PDF attachment) is out of spec. */
+function wrapBase64(base64: string): string {
+  const LINE_LENGTH = 76
+  const lines: string[] = []
+  for (let index = 0; index < base64.length; index += LINE_LENGTH) {
+    lines.push(base64.slice(index, index + LINE_LENGTH))
+  }
+  return lines.join('\r\n')
+}
+
 function encodeHeaderValue(value: string): string {
   // Lead titles/org names sourced from SAM.gov etc. are ASCII in practice,
   // but a header carrying a real email must not assume that.
@@ -76,7 +88,7 @@ export function buildDraftRawMessage(options: {
     'Content-Type: text/html; charset="UTF-8"',
     'Content-Transfer-Encoding: base64',
     '',
-    Buffer.from(options.htmlBody, 'utf8').toString('base64'),
+    wrapBase64(Buffer.from(options.htmlBody, 'utf8').toString('base64')),
   ]
 
   if (options.attachment) {
@@ -89,7 +101,7 @@ export function buildDraftRawMessage(options: {
       `Content-Disposition: attachment; filename="${filename}"`,
       'Content-Transfer-Encoding: base64',
       '',
-      options.attachment.base64Content,
+      wrapBase64(options.attachment.base64Content),
     )
   }
 
