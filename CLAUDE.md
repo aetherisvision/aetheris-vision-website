@@ -150,6 +150,18 @@ Remote: `git@github-business:aetherisvision/aetheris-vision-website.git`
 
 DNS: A record `76.76.21.21` (Vercel), www CNAME `cname.vercel-dns.com`.
 
+**A new migration under `src/lib/db/migrations/` does NOT run automatically on
+deploy or on request** -- `runMigrations()` is only ever invoked manually via
+`npm run db:migrate` (`scripts/migrate.ts`), which needs `DATABASE_URL` in the
+environment (`vercel env pull .env.production.local --environment production`,
+then `set -a; source .env.production.local; set +a; npm run db:migrate`).
+Deploying a PR that adds a migration without running this leaves the new
+column/index missing in production -- any INSERT/UPDATE that touches it fails
+closed with a generic 500 (confirmed the hard way 2026-08-29: migration 006
+`leads.govcon` shipped in PR #102 but wasn't applied until caught by the
+first live `av-radar pursue` end-to-end check). Always run `db:migrate`
+against production as part of merging any PR that adds a migration file.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
