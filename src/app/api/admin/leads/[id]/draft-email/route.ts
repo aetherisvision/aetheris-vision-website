@@ -1,9 +1,14 @@
 /**
- * Creates a Gmail draft (never sends -- gmail.compose only, see
- * src/app/api/auth/gmail/start/route.ts) addressed to a lead, with the
- * capability statement attached and the AV signature embedded (the Gmail
- * API does not apply a mailbox's configured signature to drafts it
- * creates). Marston reviews and sends it himself from Gmail.
+ * Creates a Gmail draft (never sends -- gmail.compose technically authorizes
+ * drafts.send, but this app never calls it; draft-then-review stays a human
+ * action taken in Gmail, see src/app/api/auth/gmail/start/route.ts)
+ * addressed to a lead, with the capability statement attached and the
+ * mailbox's own currently-configured default Gmail signature embedded
+ * (fetched live via users.settings.sendAs -- the Gmail API does not apply a
+ * mailbox's signature to drafts it creates itself, only its own compose UI
+ * does that, and a signature fetched fresh per request can never drift out
+ * of sync with whatever the human last edited in Gmail). Marston reviews
+ * and sends it himself from Gmail.
  *
  * Always drafts from the 'biz' mailbox connected at /admin/gmail -- there is
  * no per-lead mailbox choice.
@@ -17,12 +22,12 @@ import {
 } from '@/lib/capability-statement'
 import { SITE } from '@/lib/constants'
 import { sql } from '@/lib/db'
-import { loadEmailSignatureHtml } from '@/lib/email-signature'
 import { escapeHtml } from '@/lib/escape-html'
 import {
   buildDraftRawMessage,
   createGmailDraft,
   getGmailAccessToken,
+  getGmailDefaultSignature,
   GmailApiError,
 } from '@/lib/gmail-client'
 import { gmailDraftUrl } from '@/lib/gmail-draft-url'
@@ -62,7 +67,7 @@ async function findLeadForDraft(id: number): Promise<LeadForDraft | null> {
   return (rows as LeadForDraft[])[0] ?? null
 }
 
-function buildEmailBody(lead: LeadForDraft, signatureHtml: string): string {
+function buildEmailBody(lead: LeadForDraft, signatureHtml: string | null): string {
   const context = lead.organization ? ` at ${escapeHtml(lead.organization)}` : ''
   return `
     <div style="font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #1f2937; line-height: 1.6;">
@@ -71,7 +76,7 @@ function buildEmailBody(lead: LeadForDraft, signatureHtml: string): string {
       <p>Please let me know if you have any questions.</p>
       <p>Best regards,</p>
     </div>
-    ${signatureHtml}
+    ${signatureHtml ?? ''}
   `
 }
 
@@ -110,6 +115,22 @@ export async function POST(
   if (!SINGLE_EMAIL_PATTERN.test(recipient)) {
     return json(
       { error: "This lead's stored email is not a single valid address" },
+      { status: 400 },
+    )
+  }
+  // lead.organization is interpolated raw into the subject line (via
+  // SITE.name + lead.organization -- see below); the recipient (`to`) is
+  // also a header value, but SINGLE_EMAIL_PATTERN above already excludes
+  // CR/LF from it. Checked here, deterministically, before touching Gmail
+  // at all -- buildDraftRawMessage would catch this too, but only after an
+  // avoidable token exchange and live-signature fetch for a request that's
+  // already guaranteed to fail.
+  if (lead.organization && /[\r\n]/.test(lead.organization)) {
+    return json(
+      {
+        error:
+          "This lead's stored data could not be used to build a valid email -- check its name/organization/email for stray line breaks",
+      },
       { status: 400 },
     )
   }
@@ -162,9 +183,9 @@ export async function POST(
 
   try {
     const tokenRows = await sql`
-      SELECT refresh_token, scopes FROM oauth_tokens WHERE account = ${GMAIL_ACCOUNT}
+      SELECT refresh_token, scopes, email FROM oauth_tokens WHERE account = ${GMAIL_ACCOUNT}
     `
-    const tokenRow = (tokenRows as { refresh_token: string; scopes: string | null }[])[0]
+    const tokenRow = (tokenRows as { refresh_token: string; scopes: string | null; email: string | null }[])[0]
     if (!tokenRow?.refresh_token) {
       throw new ClaimedRequestError(`Connect the ${SITE.name} Gmail mailbox at /admin/gmail first`, 409)
     }
@@ -198,19 +219,47 @@ export async function POST(
       )
     }
 
+    // Loaded before the Gmail token exchange: it's a deterministic local
+    // prerequisite (either the file reads or it doesn't), so checking it
+    // first avoids a wasted Gmail call -- and a misleading "reconnect
+    // Gmail" error -- when the real problem is a broken attachment.
     let pdf: string
-    let signatureHtml: string
     try {
-      ;[pdf, signatureHtml] = await Promise.all([
-        loadEncodedCapabilityStatement(),
-        loadEmailSignatureHtml(),
-      ])
+      pdf = await loadEncodedCapabilityStatement()
     } catch (error) {
       console.error(
-        'Unable to load draft-email attachments',
+        'Unable to load the capability statement attachment',
         error instanceof Error ? error.message : 'Unknown error',
       )
       throw new ClaimedRequestError('The draft could not be prepared', 500)
+    }
+
+    let accessToken: string
+    try {
+      accessToken = await getGmailAccessToken(refreshToken)
+    } catch (error) {
+      console.error(
+        'Unable to exchange the stored Gmail refresh token',
+        error instanceof Error ? error.message : 'Unknown error',
+      )
+      throw new ClaimedRequestError(
+        'The stored Gmail connection could not be used -- reconnect at /admin/gmail',
+        500,
+      )
+    }
+
+    // Soft-fail: a signature the mailbox owner reviews and can add himself
+    // in two clicks at send time is a far safer failure mode than a stale
+    // static copy that looks right and silently isn't -- never block draft
+    // creation over this, and never fall back to a cached/static copy.
+    let signatureHtml: string | null = null
+    try {
+      signatureHtml = await getGmailDefaultSignature(accessToken, tokenRow.email)
+    } catch (error) {
+      console.error(
+        'Unable to fetch the live Gmail signature -- drafting without one',
+        error instanceof Error ? error.message : 'Unknown error',
+      )
     }
 
     const subject = `${SITE.name} -- following up${lead.organization ? ` with ${lead.organization}` : ''}`
@@ -241,7 +290,6 @@ export async function POST(
 
     let messageId: string
     try {
-      const accessToken = await getGmailAccessToken(refreshToken)
       ;({ messageId } = await createGmailDraft(accessToken, raw))
     } catch (error) {
       if (error instanceof GmailApiError && error.status === 403) {
