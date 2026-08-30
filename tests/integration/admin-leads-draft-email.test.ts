@@ -9,6 +9,7 @@ const {
   createGmailDraftMock,
   getGmailDefaultSignatureMock,
   loadEncodedCapabilityStatementMock,
+  draftLeadEmailMock,
 } = vi.hoisted(() => ({
   sqlMock: vi.fn(),
   decryptTokenMock: vi.fn(),
@@ -16,10 +17,12 @@ const {
   createGmailDraftMock: vi.fn(),
   getGmailDefaultSignatureMock: vi.fn(),
   loadEncodedCapabilityStatementMock: vi.fn(),
+  draftLeadEmailMock: vi.fn(),
 }))
 
 vi.mock('@/lib/db', () => ({ sql: sqlMock }))
 vi.mock('@/lib/token-crypto', () => ({ decryptToken: decryptTokenMock }))
+vi.mock('@/lib/lead-email-draft', () => ({ draftLeadEmail: draftLeadEmailMock }))
 vi.mock('@/lib/capability-statement', () => ({
   CAPABILITY_STATEMENT_FILENAME: 'Aetheris-Vision-Capability-Statement.pdf',
   loadEncodedCapabilityStatement: loadEncodedCapabilityStatementMock,
@@ -89,12 +92,18 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     createGmailDraftMock.mockReset()
     getGmailDefaultSignatureMock.mockReset()
     loadEncodedCapabilityStatementMock.mockReset()
+    draftLeadEmailMock.mockReset()
     vi.stubEnv('ADMIN_PASSPHRASE', TEST_PASSPHRASE)
     vi.stubEnv('GMAIL_CLIENT_ID', 'client-id')
     vi.stubEnv('GMAIL_CLIENT_SECRET', 'client-secret')
+    vi.stubEnv('ANTHROPIC_API_KEY', 'test-anthropic-key')
     loadEncodedCapabilityStatementMock.mockResolvedValue('ZmFrZS1wZGY=')
     getGmailAccessTokenMock.mockResolvedValue('access-token')
     getGmailDefaultSignatureMock.mockResolvedValue(null)
+    draftLeadEmailMock.mockResolvedValue({
+      subject: 'FERC weather analytics inquiry',
+      bodyText: 'Hello,\n\nDrafted paragraph one.\n\nRespectfully,',
+    })
   })
 
   it('rejects an unauthenticated request before touching the database', async () => {
@@ -395,6 +404,93 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     expect(createGmailDraftMock).toHaveBeenCalled()
     const [, rawMessage] = createGmailDraftMock.mock.calls[0] as [string, string]
     expect(decodeHtmlBodyPart(rawMessage)).toContain('<table>AV2 signature</table>')
+  })
+
+  it('returns 500 without touching the database when AI drafting is not configured', async () => {
+    vi.stubEnv('ANTHROPIC_API_KEY', '')
+    const response = await callRoute('12')
+    expect(response.status).toBe(500)
+    await expect(response.json()).resolves.toEqual({
+      error: 'AI drafting is not configured on this deployment',
+    })
+    expect(sqlMock).not.toHaveBeenCalled()
+  })
+
+  it('fails loudly and releases the claim when the AI draft fails -- never falls back to a generic template', async () => {
+    sqlMock
+      .mockResolvedValueOnce([
+        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+      ])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
+      .mockResolvedValueOnce([]) // releaseClaim
+
+    decryptTokenMock.mockReturnValue('plain-refresh-token')
+    draftLeadEmailMock.mockRejectedValue(new Error('overloaded_error'))
+
+    const response = await callRoute('12')
+
+    expect(response.status).toBe(502)
+    await expect(response.json()).resolves.toEqual({
+      error: 'The email draft could not be written -- try again in a moment',
+    })
+    // The free token exchange runs first (it screens out a revoked Gmail
+    // connection before Fable tokens are spent), but no draft is ever
+    // created from a canned body.
+    expect(getGmailAccessTokenMock).toHaveBeenCalled()
+    expect(createGmailDraftMock).not.toHaveBeenCalled()
+    // findLead, claim, oauth_tokens, releaseClaim.
+    expect(sqlMock).toHaveBeenCalledTimes(4)
+  })
+
+  it('uses the AI-drafted subject and renders the drafted paragraphs into the HTML body', async () => {
+    sqlMock
+      .mockResolvedValueOnce([
+        {
+          id: 12,
+          name: 'FERC lead',
+          email: 'officer@ferc.gov',
+          organization: 'FERC',
+          notes: 'radar note',
+          source: 'opportunity-radar',
+          govcon: { analysis: 'strong fit' },
+          gmail_draft_id: null,
+          gmail_draft_created_at: null,
+        },
+      ])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
+      .mockResolvedValueOnce([])
+
+    decryptTokenMock.mockReturnValue('plain-refresh-token')
+    draftLeadEmailMock.mockResolvedValue({
+      subject: 'Question on the FERC <analytics> program',
+      bodyText: 'Hello,\n\nFirst paragraph & detail.\n\nRespectfully,',
+    })
+    createGmailDraftMock.mockResolvedValue({ draftId: 'draft-123', messageId: 'msg-1' })
+
+    const response = await callRoute('12')
+    expect(response.status).toBe(200)
+
+    // The full lead record (including the radar's govcon analysis) reaches
+    // the drafting model.
+    expect(draftLeadEmailMock).toHaveBeenCalledWith({
+      title: 'FERC lead',
+      organization: 'FERC',
+      notes: 'radar note',
+      source: 'opportunity-radar',
+      govcon: { analysis: 'strong fit' },
+    })
+
+    const [, rawMessage] = createGmailDraftMock.mock.calls[0] as [string, string]
+    const message = decodeRaw(rawMessage)
+    // Subject is the AI's, not a canned "following up" template line.
+    expect(message).toContain('FERC')
+    expect(message).not.toContain('following up')
+    const html = decodeHtmlBodyPart(rawMessage)
+    expect(html).toContain('<p>Hello,</p>')
+    expect(html).toContain('<p>First paragraph &amp; detail.</p>')
+    expect(html).toContain('<p>Respectfully,</p>')
   })
 
   it('drafts without a signature (never blocks, never falls back to a stale copy) when the live signature fetch fails', async () => {

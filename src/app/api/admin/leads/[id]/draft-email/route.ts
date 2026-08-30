@@ -10,6 +10,10 @@
  * of sync with whatever the human last edited in Gmail). Marston reviews
  * and sends it himself from Gmail.
  *
+ * Subject and body are written per-lead by Claude (Fable) from the lead's
+ * radar analysis -- see src/lib/lead-email-draft.ts for why there is no
+ * template fallback when that call fails.
+ *
  * Always drafts from the 'biz' mailbox connected at /admin/gmail -- there is
  * no per-lead mailbox choice.
  */
@@ -31,7 +35,12 @@ import {
   GmailApiError,
 } from '@/lib/gmail-client'
 import { gmailDraftUrl } from '@/lib/gmail-draft-url'
+import { draftLeadEmail } from '@/lib/lead-email-draft'
 import { decryptToken } from '@/lib/token-crypto'
+
+// The Fable drafting call can run tens of seconds; the platform default
+// would cut the function off mid-draft.
+export const maxDuration = 300
 
 const NO_STORE_HEADERS = { 'Cache-Control': 'no-store' }
 const GMAIL_ACCOUNT = 'biz'
@@ -54,27 +63,32 @@ interface LeadForDraft {
   name: string
   email: string
   organization: string | null
+  notes: string | null
+  source: string | null
+  govcon: unknown
   gmail_draft_id: string | null
   gmail_draft_created_at: string | null
 }
 
 async function findLeadForDraft(id: number): Promise<LeadForDraft | null> {
   const rows = await sql`
-    SELECT id, name, email, organization, gmail_draft_id, gmail_draft_created_at
+    SELECT id, name, email, organization, notes, source, govcon, gmail_draft_id, gmail_draft_created_at
     FROM leads
     WHERE id = ${id}
   `
   return (rows as LeadForDraft[])[0] ?? null
 }
 
-function buildEmailBody(lead: LeadForDraft, signatureHtml: string | null): string {
-  const context = lead.organization ? ` at ${escapeHtml(lead.organization)}` : ''
+/** Render the drafted plain-text body as the styled HTML Gmail part:
+ * blank-line-separated paragraphs become <p>, single newlines become <br>. */
+function buildEmailBody(bodyText: string, signatureHtml: string | null): string {
+  const paragraphs = bodyText
+    .split(/\r?\n\s*\r?\n/)
+    .map((paragraph) => `<p>${escapeHtml(paragraph.trim()).replace(/\r?\n/g, '<br>')}</p>`)
+    .join('\n      ')
   return `
     <div style="font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #1f2937; line-height: 1.6;">
-      <p>Hi,</p>
-      <p>Thank you for the opportunity to follow up regarding ${escapeHtml(lead.name)}${context}. I've attached our capability statement for your review.</p>
-      <p>Please let me know if you have any questions.</p>
-      <p>Best regards,</p>
+      ${paragraphs}
     </div>
     ${signatureHtml ?? ''}
   `
@@ -89,6 +103,10 @@ export async function POST(
   if (!process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_CLIENT_SECRET) {
     console.error('GMAIL_CLIENT_ID/GMAIL_CLIENT_SECRET is not configured')
     return json({ error: 'Gmail is not configured on this deployment' }, { status: 500 })
+  }
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.error('ANTHROPIC_API_KEY is not configured')
+    return json({ error: 'AI drafting is not configured on this deployment' }, { status: 500 })
   }
 
   const { id: idValue } = await params
@@ -144,8 +162,12 @@ export async function POST(
   // older than CLAIM_STALE_AFTER can be taken over -- otherwise a process
   // that crashes between the claim and releaseClaim()/the final UPDATE
   // would wedge the lead in "in flight" forever, needing manual DB
-  // intervention to recover. Five minutes is generous headroom over the
-  // whole flow's normal (low-single-digit-second) duration.
+  // intervention to recover. Five minutes of claim headroom and
+  // maxDuration = 300 are a coupled pair: the claim is written after the
+  // function starts, so it can only go stale after the platform has killed
+  // the function (which now spends up to ~120s drafting with Claude) --
+  // raise maxDuration past the claim window and a live request could be
+  // taken over mid-flight.
   const claimRows = await sql`
     UPDATE leads
     SET gmail_draft_created_at = now()
@@ -248,6 +270,31 @@ export async function POST(
       )
     }
 
+    // The one paid step, placed after every check that can fail for free --
+    // including the token exchange above, which is the only way to catch a
+    // revoked Gmail connection before spending Fable tokens on a draft that
+    // could never be delivered. The access token lives ~an hour, far past
+    // the drafting call's 120s cap, so ordering costs nothing in freshness.
+    let drafted: { subject: string; bodyText: string }
+    try {
+      drafted = await draftLeadEmail({
+        title: lead.name,
+        organization: lead.organization,
+        notes: lead.notes,
+        source: lead.source,
+        govcon: lead.govcon,
+      })
+    } catch (error) {
+      console.error(
+        'Unable to draft the email with Claude',
+        error instanceof Error ? error.message : 'Unknown error',
+      )
+      throw new ClaimedRequestError(
+        'The email draft could not be written -- try again in a moment',
+        502,
+      )
+    }
+
     // Soft-fail: a signature the mailbox owner reviews and can add himself
     // in two clicks at send time is a far safer failure mode than a stale
     // static copy that looks right and silently isn't -- never block draft
@@ -262,13 +309,15 @@ export async function POST(
       )
     }
 
-    const subject = `${SITE.name} -- following up${lead.organization ? ` with ${lead.organization}` : ''}`
+    // parseDraftedEmail already strips CR/LF from the subject; the slice is
+    // just a sane header-length cap.
+    const subject = drafted.subject.slice(0, 150)
     let raw: string
     try {
       raw = buildDraftRawMessage({
         to: recipient,
         subject,
-        htmlBody: buildEmailBody(lead, signatureHtml),
+        htmlBody: buildEmailBody(drafted.bodyText, signatureHtml),
         attachment: {
           filename: CAPABILITY_STATEMENT_FILENAME,
           mimeType: 'application/pdf',
