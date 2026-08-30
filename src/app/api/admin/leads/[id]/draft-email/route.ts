@@ -15,6 +15,7 @@ import {
   CAPABILITY_STATEMENT_FILENAME,
   loadEncodedCapabilityStatement,
 } from '@/lib/capability-statement'
+import { SITE } from '@/lib/constants'
 import { sql } from '@/lib/db'
 import { loadEmailSignatureHtml } from '@/lib/email-signature'
 import { escapeHtml } from '@/lib/escape-html'
@@ -158,7 +159,7 @@ export async function POST(
     `
     const tokenRow = (tokenRows as { refresh_token: string; scopes: string | null }[])[0]
     if (!tokenRow?.refresh_token) {
-      throw new ClaimedRequestError('Connect the Aetheris Vision Gmail mailbox at /admin/gmail first', 409)
+      throw new ClaimedRequestError(`Connect the ${SITE.name} Gmail mailbox at /admin/gmail first`, 409)
     }
     // scopes is only populated from a callback that ran after migration 007
     // -- a connection made before that has scopes = null and is given the
@@ -203,7 +204,7 @@ export async function POST(
       throw new ClaimedRequestError('The draft could not be prepared', 500)
     }
 
-    const subject = `Aetheris Vision -- following up${lead.organization ? ` with ${lead.organization}` : ''}`
+    const subject = `${SITE.name} -- following up${lead.organization ? ` with ${lead.organization}` : ''}`
     let raw: string
     try {
       raw = buildDraftRawMessage({
