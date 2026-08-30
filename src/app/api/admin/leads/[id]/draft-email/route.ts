@@ -219,6 +219,21 @@ export async function POST(
       )
     }
 
+    // Loaded before the Gmail token exchange: it's a deterministic local
+    // prerequisite (either the file reads or it doesn't), so checking it
+    // first avoids a wasted Gmail call -- and a misleading "reconnect
+    // Gmail" error -- when the real problem is a broken attachment.
+    let pdf: string
+    try {
+      pdf = await loadEncodedCapabilityStatement()
+    } catch (error) {
+      console.error(
+        'Unable to load the capability statement attachment',
+        error instanceof Error ? error.message : 'Unknown error',
+      )
+      throw new ClaimedRequestError('The draft could not be prepared', 500)
+    }
+
     let accessToken: string
     try {
       accessToken = await getGmailAccessToken(refreshToken)
@@ -231,17 +246,6 @@ export async function POST(
         'The stored Gmail connection could not be used -- reconnect at /admin/gmail',
         500,
       )
-    }
-
-    let pdf: string
-    try {
-      pdf = await loadEncodedCapabilityStatement()
-    } catch (error) {
-      console.error(
-        'Unable to load the capability statement attachment',
-        error instanceof Error ? error.message : 'Unknown error',
-      )
-      throw new ClaimedRequestError('The draft could not be prepared', 500)
     }
 
     // Soft-fail: a signature the mailbox owner reviews and can add himself
