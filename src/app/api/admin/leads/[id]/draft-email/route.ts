@@ -119,11 +119,18 @@ export async function POST(
   // observe gmail_draft_id = null and both create a draft. Only the request
   // whose UPDATE actually matches a row proceeds; the loser is told to
   // retry rather than silently duplicating the draft. gmail_draft_created_at
-  // set with gmail_draft_id still null means "claimed, in flight."
+  // set with gmail_draft_id still null means "claimed, in flight." A claim
+  // older than CLAIM_STALE_AFTER can be taken over -- otherwise a process
+  // that crashes between the claim and releaseClaim()/the final UPDATE
+  // would wedge the lead in "in flight" forever, needing manual DB
+  // intervention to recover. Five minutes is generous headroom over the
+  // whole flow's normal (low-single-digit-second) duration.
   const claimRows = await sql`
     UPDATE leads
     SET gmail_draft_created_at = now()
-    WHERE id = ${id} AND gmail_draft_id IS NULL AND gmail_draft_created_at IS NULL
+    WHERE id = ${id}
+      AND gmail_draft_id IS NULL
+      AND (gmail_draft_created_at IS NULL OR gmail_draft_created_at < now() - interval '5 minutes')
     RETURNING gmail_draft_created_at
   `
   const claim = (claimRows as { gmail_draft_created_at: string }[])[0]
@@ -166,9 +173,11 @@ export async function POST(
     // benefit of the doubt; the Gmail API call below is still the real check.
     // Exact token match, not substring -- a substring check on the raw
     // space-delimited scope string could false-positive on an unrelated
-    // scope that happens to contain "gmail.compose".
-    const grantedScopes = tokenRow.scopes?.split(/\s+/).filter(Boolean) ?? null
-    if (grantedScopes && !grantedScopes.includes('https://www.googleapis.com/auth/gmail.compose')) {
+    // scope that happens to contain "gmail.compose". An empty/whitespace-
+    // only string parses to an empty list, which is "unknown" the same as
+    // null (not "known to lack the scope") -- treat it the same way.
+    const grantedScopes = tokenRow.scopes?.split(/\s+/).filter(Boolean) ?? []
+    if (grantedScopes.length > 0 && !grantedScopes.includes('https://www.googleapis.com/auth/gmail.compose')) {
       throw new ClaimedRequestError(
         'The connected Gmail mailbox needs to be reconnected with drafting permission at /admin/gmail',
         409,

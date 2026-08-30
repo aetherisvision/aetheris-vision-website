@@ -216,6 +216,47 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     expect(getGmailAccessTokenMock).not.toHaveBeenCalled()
   })
 
+  it('treats an empty/whitespace-only stored scopes string as unknown, not as missing gmail.compose', async () => {
+    sqlMock
+      .mockResolvedValueOnce([
+        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+      ])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: '   ' }])
+      .mockResolvedValueOnce([])
+
+    decryptTokenMock.mockReturnValue('plain-refresh-token')
+    getGmailAccessTokenMock.mockResolvedValue('access-token')
+    createGmailDraftMock.mockResolvedValue({ draftId: 'draft-123', messageId: 'msg-1' })
+
+    const response = await callRoute('12')
+
+    // Not blocked by the scope pre-check -- the Gmail API call itself is
+    // what's authoritative when the stored scopes string is empty.
+    expect(response.status).toBe(200)
+    expect(getGmailAccessTokenMock).toHaveBeenCalled()
+  })
+
+  it('allows reclaiming a lead whose claim is older than the stale window (crash recovery)', async () => {
+    sqlMock.mockResolvedValueOnce([
+      { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+    ])
+    sqlMock.mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:10:00.000Z' }])
+    sqlMock
+      .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
+      .mockResolvedValueOnce([])
+
+    decryptTokenMock.mockReturnValue('plain-refresh-token')
+    getGmailAccessTokenMock.mockResolvedValue('access-token')
+    createGmailDraftMock.mockResolvedValue({ draftId: 'draft-123', messageId: 'msg-1' })
+
+    const response = await callRoute('12')
+    expect(response.status).toBe(200)
+
+    const [claimStrings] = sqlMock.mock.calls[1] as [TemplateStringsArray, ...unknown[]]
+    expect(claimStrings.join(' ')).toContain("now() - interval '5 minutes'")
+  })
+
   it('creates a draft, persists the message id, and returns a compose-deep-link URL', async () => {
     sqlMock
       .mockResolvedValueOnce([
