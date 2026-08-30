@@ -69,6 +69,11 @@ export async function getGmailDefaultSignature(
 ): Promise<string | null> {
   const res = await fetch(`${GMAIL_API}/users/me/settings/sendAs`, {
     headers: { Authorization: `Bearer ${accessToken}` },
+    // Next.js's fetch() patches in its own caching/deduping by default --
+    // explicitly opt out. The entire point of fetching this live instead of
+    // reading a static file is to never serve a stale signature; a
+    // route-level or Data Cache hit would silently defeat that.
+    cache: 'no-store',
   })
   const text = await res.text()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Gmail API JSON
