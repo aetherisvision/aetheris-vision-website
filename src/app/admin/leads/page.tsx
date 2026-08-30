@@ -5,8 +5,13 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { gmailDraftUrl } from '@/lib/gmail-draft-url'
 
-const STAGES = ['new', 'contacted', 'qualified', 'proposal', 'won', 'lost'] as const
-const MANUAL_STAGES = ['new', 'contacted', 'qualified', 'proposal', 'lost'] as const
+const STAGES = ['review', 'new', 'contacted', 'qualified', 'proposal', 'won', 'lost', 'declined'] as const
+// Stage dropdown options honor the server's transition table: a review-stage
+// lead can only stay in review or move to new (its other exits are the
+// dedicated Pursue / Not-pursuing buttons); everything else uses the classic
+// funnel stages. Offering review/declined on ordinary leads would just 409.
+const FUNNEL_STAGES = ['new', 'contacted', 'qualified', 'proposal', 'lost'] as const
+const REVIEW_STAGES = ['review', 'new'] as const
 
 type Stage = typeof STAGES[number]
 
@@ -30,6 +35,7 @@ interface Lead {
   project_status: string | null
   gmail_draft_id: string | null
   gmail_draft_created_at: string | null
+  govcon: Record<string, unknown> | null
   created_at: string
 }
 
@@ -48,21 +54,27 @@ const colors = {
 }
 
 const stageLabels: Record<Stage, string> = {
+  review: 'Review',
   new: 'New',
   contacted: 'Contacted',
   qualified: 'Qualified',
   proposal: 'Proposal',
   won: 'Won',
   lost: 'Lost',
+  declined: 'Declined',
 }
 
 const stageColors: Record<Stage, string> = {
+  review: '#5BA8D9',
   new: '#93c5fd',
   contacted: '#67e8f9',
   qualified: '#fcd34d',
   proposal: '#c4b5fd',
   won: '#6ee7b7',
   lost: '#fca5a5',
+  // Must stay a 6-digit hex: the badge/filter styles append hex alpha
+  // suffixes (e.g. `${stageColors[stage]}18`).
+  declined: '#9ca3af',
 }
 
 function dateInputValue(value: string | null) {
@@ -70,7 +82,7 @@ function dateInputValue(value: string | null) {
 }
 
 function isOverdue(value: string | null, stage: Stage) {
-  if (!value || stage === 'won' || stage === 'lost') return false
+  if (!value || stage === 'won' || stage === 'lost' || stage === 'declined' || stage === 'review') return false
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   return new Date(`${value.slice(0, 10)}T00:00:00`) < today
@@ -90,10 +102,15 @@ function titleCase(value: string | null) {
   return value.replaceAll('_', ' ').replace(/\b\w/g, char => char.toUpperCase())
 }
 
+function govconScore(lead: Lead): number {
+  const score = lead.govcon?.score
+  return typeof score === 'number' ? score : -1
+}
+
 export default function AdminLeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<Stage | 'all'>('all')
+  const [filter, setFilter] = useState<Stage | 'all'>('review')
   const [busyId, setBusyId] = useState<number | null>(null)
   const [notice, setNotice] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
 
@@ -115,17 +132,22 @@ export default function AdminLeadsPage() {
     void loadLeads()
   }, [])
 
-  const visible = useMemo(
-    () => filter === 'all' ? leads : leads.filter(lead => lead.stage === filter),
-    [filter, leads]
-  )
+  const visible = useMemo(() => {
+    const scoped = filter === 'all' ? leads : leads.filter(lead => lead.stage === filter)
+    if (filter !== 'review') return scoped
+    return [...scoped].sort((a, b) => {
+      const scoreDiff = govconScore(b) - govconScore(a)
+      if (scoreDiff !== 0) return scoreDiff
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    })
+  }, [filter, leads])
 
   const counts = useMemo(
     () => Object.fromEntries(STAGES.map(stage => [stage, leads.filter(lead => lead.stage === stage).length])) as Record<Stage, number>,
     [leads]
   )
 
-  const openLeads = leads.filter(lead => lead.stage !== 'won' && lead.stage !== 'lost')
+  const openLeads = leads.filter(lead => lead.stage !== 'won' && lead.stage !== 'lost' && lead.stage !== 'review' && lead.stage !== 'declined')
   const openValue = openLeads.reduce((sum, lead) => sum + (lead.estimated_value_cents ?? 0), 0)
 
   function updateLocal(id: number, update: Partial<Lead>) {
@@ -153,6 +175,40 @@ export default function AdminLeadsPage() {
       if (!response.ok) throw new Error(data.error || 'The lead could not be updated')
       updateLocal(lead.id, data.lead)
       setNotice({ tone: 'success', text: `${lead.name} was updated` })
+    } catch (error) {
+      setNotice({ tone: 'error', text: error instanceof Error ? error.message : 'The lead could not be updated' })
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  async function setStage(lead: Lead, stage: Extract<Stage, 'new' | 'declined' | 'review'>) {
+    setBusyId(lead.id)
+    setNotice(null)
+
+    try {
+      const response = await fetch('/api/admin/leads', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: lead.id,
+          stage,
+          estimated_value_cents: lead.estimated_value_cents,
+          next_follow_up: dateInputValue(lead.next_follow_up) || null,
+          notes: lead.notes,
+        }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'The lead could not be updated')
+      updateLocal(lead.id, data.lead)
+      setNotice({
+        tone: 'success',
+        text: stage === 'declined'
+          ? `${lead.name} was marked not pursuing`
+          : stage === 'review'
+            ? `${lead.name} is back in review`
+            : `${lead.name} moved into the pipeline`,
+      })
     } catch (error) {
       setNotice({ tone: 'error', text: error instanceof Error ? error.message : 'The lead could not be updated' })
     } finally {
@@ -314,7 +370,10 @@ export default function AdminLeadsPage() {
         <div style={{ display: 'grid', gap: '14px' }}>
           {visible.map(lead => {
             const overdue = isOverdue(lead.next_follow_up, lead.stage)
-            const locked = lead.stage === 'won'
+            const locked = lead.stage === 'won' || lead.stage === 'declined'
+            const govcon = lead.source === 'opportunity-radar' ? lead.govcon : null
+            const fitReasons = Array.isArray(govcon?.fit_reasons) ? govcon.fit_reasons as string[] : []
+            const cautions = Array.isArray(govcon?.cautions) ? govcon.cautions as string[] : []
             return (
               <article id={`lead-${lead.id}`} key={lead.id} style={{ scrollMarginTop: '76px', background: colors.surface, border: `1px solid ${overdue ? 'rgba(248,113,113,0.35)' : colors.border}`, borderRadius: '12px', padding: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'start', flexWrap: 'wrap' }}>
@@ -353,9 +412,35 @@ export default function AdminLeadsPage() {
                 </div>
                 <p style={{ whiteSpace: 'pre-wrap', color: colors.muted, lineHeight: 1.6, fontSize: '13px', margin: '0 0 18px' }}>{lead.message}</p>
 
+                {govcon && (
+                  <div style={{ padding: '14px 16px', borderRadius: '10px', border: `1px solid rgba(91,168,217,0.25)`, background: 'rgba(91,168,217,0.06)', marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <span style={{ color: colors.blue, fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Radar analysis</span>
+                      {typeof govcon.score === 'number' && (
+                        <span style={{ color: colors.blue, fontSize: '12px', fontWeight: 700 }}>Score {govcon.score}</span>
+                      )}
+                    </div>
+                    {typeof govcon.analysis === 'string' && govcon.analysis && (
+                      <p style={{ whiteSpace: 'pre-wrap', color: colors.text, lineHeight: 1.6, fontSize: '13px', margin: '0 0 10px' }}>{govcon.analysis}</p>
+                    )}
+                    {fitReasons.length > 0 && (
+                      <ul style={{ margin: '0 0 8px', paddingLeft: '18px', color: colors.green, fontSize: '12px', lineHeight: 1.6 }}>
+                        {fitReasons.map((reason, index) => <li key={index}>{reason}</li>)}
+                      </ul>
+                    )}
+                    {cautions.length > 0 && (
+                      <ul style={{ margin: 0, paddingLeft: '18px', color: colors.amber, fontSize: '12px', lineHeight: 1.6 }}>
+                        {cautions.map((caution, index) => <li key={index}>{caution}</li>)}
+                      </ul>
+                    )}
+                  </div>
+                )}
+
                 {locked ? (
-                  <div style={{ padding: '12px 14px', borderRadius: '8px', border: '1px solid rgba(110,231,183,0.2)', background: 'rgba(110,231,183,0.06)', color: colors.green, fontSize: '12px', marginBottom: '14px' }}>
-                    Won was recorded automatically after signature. This lead is read-only.
+                  <div style={{ padding: '12px 14px', borderRadius: '8px', border: `1px solid ${lead.stage === 'won' ? 'rgba(110,231,183,0.2)' : colors.border}`, background: lead.stage === 'won' ? 'rgba(110,231,183,0.06)' : colors.surfaceAlt, color: lead.stage === 'won' ? colors.green : colors.muted, fontSize: '12px', marginBottom: '14px' }}>
+                    {lead.stage === 'won'
+                      ? 'Won was recorded automatically after signature. This lead is read-only.'
+                      : 'Marked not pursuing. This lead is read-only. Reconsider returns it to review.'}
                   </div>
                 ) : (
                   <>
@@ -363,7 +448,7 @@ export default function AdminLeadsPage() {
                       <label>
                         <span style={labelStyle}>Stage</span>
                         <select value={lead.stage} onChange={event => updateLocal(lead.id, { stage: event.target.value as Stage })} style={inputStyle}>
-                          {MANUAL_STAGES.map(stage => <option key={stage} value={stage}>{stageLabels[stage]}</option>)}
+                          {(lead.stage === 'review' ? REVIEW_STAGES : FUNNEL_STAGES).map(stage => <option key={stage} value={stage}>{stageLabels[stage]}</option>)}
                         </select>
                       </label>
                       <label>
@@ -394,9 +479,26 @@ export default function AdminLeadsPage() {
                     )}
                     {!lead.intake_id && !lead.client_id && !lead.project_id && !lead.gmail_draft_id && <span style={{ color: colors.dim, fontSize: '12px' }}>No related records yet</span>}
                   </div>
+                  {lead.stage === 'declined' && (
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <button onClick={() => setStage(lead, 'review')} disabled={busyId === lead.id} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(91,168,217,0.35)', background: 'rgba(91,168,217,0.1)', color: colors.blue, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
+                        Reconsider
+                      </button>
+                    </div>
+                  )}
                   {!locked && (
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      {!lead.project_id && lead.stage !== 'lost' && (
+                      {lead.stage === 'review' && (
+                        <>
+                          <button onClick={() => setStage(lead, 'new')} disabled={busyId === lead.id} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(91,168,217,0.35)', background: 'rgba(91,168,217,0.1)', color: colors.blue, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
+                            Pursue
+                          </button>
+                          <button onClick={() => setStage(lead, 'declined')} disabled={busyId === lead.id} style={{ padding: '9px 13px', borderRadius: '8px', border: `1px solid ${colors.border}`, background: colors.surfaceAlt, color: colors.muted, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
+                            Not pursuing
+                          </button>
+                        </>
+                      )}
+                      {!lead.project_id && lead.stage !== 'lost' && lead.stage !== 'review' && (
                         <button onClick={() => prepareProposal(lead)} disabled={busyId === lead.id} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(110,231,183,0.3)', background: 'rgba(110,231,183,0.1)', color: colors.green, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
                           {busyId === lead.id ? 'Preparing…' : 'Prepare proposal'}
                         </button>

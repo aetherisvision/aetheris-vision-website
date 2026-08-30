@@ -6,6 +6,7 @@ import { invoiceDeliveryMigration } from './004_invoice_delivery'
 import { contactVerificationMigration } from './005_contact_verification'
 import { govconLeadsMigration } from './006_govcon_leads'
 import { gmailDraftsMigration } from './007_gmail_drafts'
+import { reviewDeclinedStagesMigration } from './008_review_declined_stages'
 import { buildGuardedMigrationSql } from './execution'
 import type { DatabaseMigration } from './types'
 
@@ -17,6 +18,7 @@ const migrations: readonly DatabaseMigration[] = [
   contactVerificationMigration,
   govconLeadsMigration,
   gmailDraftsMigration,
+  reviewDeclinedStagesMigration,
 ]
 
 const requiredColumns = [
@@ -213,7 +215,7 @@ export async function verifyCrmSchema(): Promise<MigrationVerification> {
           WHERE status NOT IN ('intake', 'proposal', 'signed', 'active', 'canceled'))
           AS invalid_project_statuses,
         (SELECT count(*)::integer FROM leads
-          WHERE stage NOT IN ('new', 'contacted', 'qualified', 'proposal', 'won', 'lost'))
+          WHERE stage NOT IN ('new', 'contacted', 'qualified', 'proposal', 'won', 'lost', 'review', 'declined'))
           AS invalid_lead_stages,
         (
           SELECT count(*)::integer
