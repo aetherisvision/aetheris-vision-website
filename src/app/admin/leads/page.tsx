@@ -390,10 +390,15 @@ export default function AdminLeadsPage() {
                           {busyId === lead.id ? 'Preparing…' : 'Prepare proposal'}
                         </button>
                       )}
-                      {lead.email && !lead.gmail_draft_id && (
+                      {lead.email && !lead.gmail_draft_id && !lead.gmail_draft_created_at && (
                         <button onClick={() => draftEmail(lead)} disabled={busyId === lead.id} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(251,191,36,0.35)', background: 'rgba(251,191,36,0.1)', color: colors.amber, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
                           {busyId === lead.id ? 'Drafting…' : 'Draft email'}
                         </button>
+                      )}
+                      {!lead.gmail_draft_id && lead.gmail_draft_created_at && (
+                        <span style={{ padding: '9px 13px', color: colors.dim, fontSize: '12px', fontStyle: 'italic' }}>
+                          Draft in progress -- refresh in a moment
+                        </span>
                       )}
                       <button onClick={() => saveLead(lead)} disabled={busyId === lead.id} style={{ padding: '9px 15px', borderRadius: '8px', border: 'none', background: busyId === lead.id ? 'rgba(91,168,217,0.4)' : colors.blue, color: colors.bg, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 800, fontSize: '12px' }}>
                         {busyId === lead.id ? 'Saving…' : 'Save lead'}

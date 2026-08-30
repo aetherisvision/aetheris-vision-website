@@ -206,16 +206,30 @@ export async function POST(
     }
 
     const subject = `Aetheris Vision -- following up${lead.organization ? ` with ${lead.organization}` : ''}`
-    const raw = buildDraftRawMessage({
-      to: recipient,
-      subject,
-      htmlBody: buildEmailBody(lead, signatureHtml),
-      attachment: {
-        filename: CAPABILITY_STATEMENT_FILENAME,
-        mimeType: 'application/pdf',
-        base64Content: pdf,
-      },
-    })
+    let raw: string
+    try {
+      raw = buildDraftRawMessage({
+        to: recipient,
+        subject,
+        htmlBody: buildEmailBody(lead, signatureHtml),
+        attachment: {
+          filename: CAPABILITY_STATEMENT_FILENAME,
+          mimeType: 'application/pdf',
+          base64Content: pdf,
+        },
+      })
+    } catch (error) {
+      // Deterministic bad-data case (e.g. a lead's organization contains a
+      // stray CR/LF) -- admin-actionable, not a Gmail/network failure.
+      console.error(
+        'Unable to build the draft message',
+        error instanceof Error ? error.message : 'Unknown error',
+      )
+      throw new ClaimedRequestError(
+        "This lead's stored data could not be used to build a valid email -- check its name/organization/email for stray line breaks",
+        400,
+      )
+    }
 
     let messageId: string
     try {
