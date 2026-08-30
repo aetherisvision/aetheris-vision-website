@@ -10,14 +10,13 @@ Feature: Site Navigation
       | /             |
       | /about        |
       | /capabilities |
-      | /blog         |
       | /book         |
       | /contact      |
 
-  Scenario: Blog posts appear in sitemap
+  Scenario: Insights articles follow the publication state
     Given there are published blog posts
     When the sitemap is generated
-    Then each blog post slug should have a sitemap entry
+    Then each blog post entry should match the Insights publication state
 
   Scenario: Robots.txt allows all crawlers
     Given the robots.txt is generated

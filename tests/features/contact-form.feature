@@ -30,17 +30,17 @@ Feature: Contact Form
   Scenario: Verified submission shows confirmation
     Given a visitor fills in all required fields correctly
     When the API starts email verification
-    Then they should see "Enter the six-digit code"
-    And they should not see "Message received"
+    Then they should see "Enter the Six-Digit Code"
+    And they should not see "Message Received"
     When they enter confirmation code "123456"
     And the API confirms the verified submission
-    Then they should see "Message received"
+    Then they should see "Message Received"
 
   Scenario: Unexpected successful response fails closed
     Given a visitor fills in all required fields correctly
     When the API responds with an unexpected success payload
     Then they should see "The service returned an unexpected response."
-    And they should not see "Message received"
+    And they should not see "Message Received"
 
   Scenario: API failure shows error message
     Given a visitor fills in all required fields correctly
