@@ -86,6 +86,11 @@ export async function POST(
 ) {
   if (!isAdmin(request)) return json({ error: 'Unauthorized' }, { status: 401 })
 
+  if (!process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_CLIENT_SECRET) {
+    console.error('GMAIL_CLIENT_ID/GMAIL_CLIENT_SECRET is not configured')
+    return json({ error: 'Gmail is not configured on this deployment' }, { status: 500 })
+  }
+
   const { id: idValue } = await params
   const id = parseLeadId(idValue)
   if (id === null) return json({ error: 'Invalid lead ID' }, { status: 400 })

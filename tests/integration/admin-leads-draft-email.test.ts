@@ -76,6 +76,8 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     loadEncodedCapabilityStatementMock.mockReset()
     loadEmailSignatureHtmlMock.mockReset()
     vi.stubEnv('ADMIN_PASSPHRASE', TEST_PASSPHRASE)
+    vi.stubEnv('GMAIL_CLIENT_ID', 'client-id')
+    vi.stubEnv('GMAIL_CLIENT_SECRET', 'client-secret')
     loadEncodedCapabilityStatementMock.mockResolvedValue('ZmFrZS1wZGY=')
     loadEmailSignatureHtmlMock.mockResolvedValue('<table>sig</table>')
   })
@@ -83,6 +85,16 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
   it('rejects an unauthenticated request before touching the database', async () => {
     const response = await callRoute('12', false)
     expect(response.status).toBe(401)
+    expect(sqlMock).not.toHaveBeenCalled()
+  })
+
+  it('returns 500 without touching the database when Gmail is not configured', async () => {
+    vi.stubEnv('GMAIL_CLIENT_ID', '')
+    const response = await callRoute('12')
+    expect(response.status).toBe(500)
+    await expect(response.json()).resolves.toEqual({
+      error: 'Gmail is not configured on this deployment',
+    })
     expect(sqlMock).not.toHaveBeenCalled()
   })
 

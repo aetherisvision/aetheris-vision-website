@@ -14,6 +14,7 @@ describe('getGmailAccessToken', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
   })
 
   it('returns the access token on a successful response', async () => {

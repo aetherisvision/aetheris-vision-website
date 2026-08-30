@@ -113,10 +113,11 @@ export function buildDraftRawMessage(options: {
   if (options.attachment) {
     const filename = assertSingleLineHeaderValue(options.attachment.filename, 'attachment filename')
     if (filename.includes('"')) throw new Error('attachment filename must not contain a quote character')
+    const mimeType = assertSingleLineHeaderValue(options.attachment.mimeType, 'attachment mimeType')
     lines.push(
       '',
       `--${boundary}`,
-      `Content-Type: ${options.attachment.mimeType}; name="${filename}"`,
+      `Content-Type: ${mimeType}; name="${filename}"`,
       `Content-Disposition: attachment; filename="${filename}"`,
       'Content-Transfer-Encoding: base64',
       '',

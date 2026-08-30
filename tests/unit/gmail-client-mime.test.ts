@@ -110,4 +110,19 @@ describe('buildDraftRawMessage', () => {
       }),
     ).toThrow(/must not contain a quote character/)
   })
+
+  it('rejects an attachment mimeType containing a CRLF header-injection attempt', () => {
+    expect(() =>
+      buildDraftRawMessage({
+        to: 'lead@example.com',
+        subject: 'x',
+        htmlBody: '<p>y</p>',
+        attachment: {
+          filename: 'a.pdf',
+          mimeType: 'application/pdf\r\nX-Evil: 1',
+          base64Content: 'AA==',
+        },
+      }),
+    ).toThrow(/attachment mimeType must not contain line breaks/)
+  })
 })
