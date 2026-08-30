@@ -118,11 +118,13 @@ export async function POST(
       { status: 400 },
     )
   }
-  // The only lead field interpolated raw into a MIME header (the subject
-  // line, via SITE.name + lead.organization -- see below) is checked here,
-  // deterministically, before touching Gmail at all. buildDraftRawMessage
-  // would catch this too, but only after an avoidable token exchange and
-  // live-signature fetch for a request that's already guaranteed to fail.
+  // lead.organization is interpolated raw into the subject line (via
+  // SITE.name + lead.organization -- see below); the recipient (`to`) is
+  // also a header value, but SINGLE_EMAIL_PATTERN above already excludes
+  // CR/LF from it. Checked here, deterministically, before touching Gmail
+  // at all -- buildDraftRawMessage would catch this too, but only after an
+  // avoidable token exchange and live-signature fetch for a request that's
+  // already guaranteed to fail.
   if (lead.organization && /[\r\n]/.test(lead.organization)) {
     return json(
       {

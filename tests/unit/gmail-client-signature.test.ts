@@ -86,4 +86,16 @@ describe('getGmailDefaultSignature', () => {
     expect(caught).toBeInstanceOf(GmailApiError)
     expect((caught as GmailApiError).status).toBe(500)
   })
+
+  it('throws (does not silently return null) when a 2xx response body is not valid JSON', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('not json', { status: 200 })))
+    let caught: unknown
+    try {
+      await getGmailDefaultSignature('token')
+    } catch (error) {
+      caught = error
+    }
+    expect(caught).toBeInstanceOf(GmailApiError)
+    expect((caught as GmailApiError).status).toBe(200)
+  })
 })

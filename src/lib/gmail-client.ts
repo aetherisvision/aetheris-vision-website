@@ -81,6 +81,12 @@ export async function getGmailDefaultSignature(
   try {
     data = text ? JSON.parse(text) : {}
   } catch {
+    if (res.ok) {
+      // A 2xx with an unparseable body is a real failure, not "no signature
+      // configured" -- treating it as {} would silently return null and hide
+      // this from the caller's log.
+      throw new GmailApiError('Gmail settings response was not valid JSON', res.status)
+    }
     data = {}
   }
   if (!res.ok) {
