@@ -169,7 +169,11 @@ export async function POST(
     // scopes is only populated from a callback that ran after migration 007
     // -- a connection made before that has scopes = null and is given the
     // benefit of the doubt; the Gmail API call below is still the real check.
-    if (tokenRow.scopes && !tokenRow.scopes.includes('gmail.compose')) {
+    // Exact token match, not substring -- a substring check on the raw
+    // space-delimited scope string could false-positive on an unrelated
+    // scope that happens to contain "gmail.compose".
+    const grantedScopes = tokenRow.scopes?.split(/\s+/).filter(Boolean) ?? null
+    if (grantedScopes && !grantedScopes.includes('https://www.googleapis.com/auth/gmail.compose')) {
       throw new ClaimedRequestError(
         'The connected Gmail mailbox needs to be reconnected with drafting permission at /admin/gmail',
         409,
