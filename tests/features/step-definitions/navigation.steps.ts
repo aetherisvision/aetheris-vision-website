@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import sitemap from "@/app/sitemap";
 import robots from "@/app/robots";
 import { posts } from "@/lib/posts";
+import { INSIGHTS_PUBLIC } from "@/lib/features";
 
 /**
  * Real Cucumber step bindings for navigation.feature.
@@ -40,15 +41,25 @@ Given("there are published blog posts", function () {
   assert.ok(posts.length > 0, "Expected at least one published blog post");
 });
 
-Then("each blog post slug should have a sitemap entry", function () {
+Then("each blog post entry should match the Insights publication state", function () {
   if (generatedSitemap.length === 0) generatedSitemap = sitemap();
   const urls = generatedSitemap.map((entry) => entry.url);
   // Derive the origin from the generated sitemap rather than hardcoding it, so
   // the assertion follows SITE.url wherever it points.
   const origin = new URL(generatedSitemap[0].url).origin;
+  const state = INSIGHTS_PUBLIC ? "present" : "absent";
+  assert.equal(
+    urls.includes(`${origin}/blog`),
+    INSIGHTS_PUBLIC,
+    `Expected the /blog index to be ${state} while INSIGHTS_PUBLIC is ${INSIGHTS_PUBLIC}`,
+  );
   for (const post of posts) {
     const expected = `${origin}/blog/${post.slug}`;
-    assert.ok(urls.includes(expected), `Sitemap is missing blog entry: ${expected}`);
+    assert.equal(
+      urls.includes(expected),
+      INSIGHTS_PUBLIC,
+      `Expected ${expected} to be ${state} while INSIGHTS_PUBLIC is ${INSIGHTS_PUBLIC}`,
+    );
   }
 });
 

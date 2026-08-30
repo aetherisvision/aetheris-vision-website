@@ -159,10 +159,10 @@ Then("they should see an error message with contact instructions", async functio
       "Expected a 'Something went wrong' error message",
     );
   });
-  const consultationLink = form?.container.querySelector('a[href="/book"]');
+  const consultationLink = form?.container.querySelector('a[href="/book#consultation"]');
   assert.ok(
-    consultationLink?.textContent?.includes("book a consultation"),
-    "Expected the error message to offer a consultation",
+    consultationLink?.textContent?.includes("book a free consultation"),
+    "Expected the error message to offer a free consultation",
   );
   assert.equal(form?.container.querySelector('a[href^="mailto:"]'), null);
   assert.equal(form?.container.querySelector('a[href^="tel:"]'), null);
