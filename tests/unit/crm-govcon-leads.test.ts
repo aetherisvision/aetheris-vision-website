@@ -38,10 +38,10 @@ describe('opportunity-radar govcon lead capture', () => {
       ...unknown[],
     ]
     expect(strings.join(' ')).toContain('govcon')
-    // INSERT column order: name, email, organization, phone, service, message,
-    // source, external_id, estimated_value_cents, next_follow_up, notes, govcon.
+    // Bound-parameter order: name, email, organization, phone, message,
+    // source, external_id, ... (service is a literal NULL, not a parameter).
     expect(values[1]).toBe('')
-    expect(values[7]).toBe('SAM.gov:abc123')
+    expect(values[6]).toBe('SAM.gov:abc123')
   })
 
   it('always writes source as opportunity-radar -- callers cannot override it', async () => {
@@ -56,7 +56,6 @@ describe('opportunity-radar govcon lead capture', () => {
       TemplateStringsArray,
       ...unknown[],
     ]
-    // source appears twice in the INSERT (service default + source column).
     expect(values).toContain('opportunity-radar')
   })
 

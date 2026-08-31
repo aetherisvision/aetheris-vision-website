@@ -530,7 +530,10 @@ export async function captureGovconLead(input: GovconLeadInput): Promise<LeadCap
       )
       VALUES (
         ${name}, ${optionalText(input.contactEmail) ?? ''}, ${optionalText(input.agency)},
-        ${optionalText(input.contactPhone)}, ${source}, ${name}, ${source}, ${externalRef},
+        -- service stays NULL: it means "service the visitor asked about" on
+        -- contact-form leads and has no meaning for a scanned opportunity
+        -- (writing the source here doubled the chip in the admin UI).
+        ${optionalText(input.contactPhone)}, NULL, ${name}, ${source}, ${externalRef},
         ${estimatedValueCents}, ${nextFollowUp}::timestamptz,
         ${optionalText(input.notes)}, ${govconJson}::jsonb, 'review'
       )
