@@ -84,7 +84,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div style={{ colorScheme: 'dark', backgroundColor: dark.bg, color: dark.text, minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
       <header className="admin-header">
         <div className="admin-header-inner">
-          <Link href="/admin/leads" className="admin-brand" aria-label="Aetheris Vision admin home">
+          {/* Inline styles on every <Link> in this header on purpose:
+              styled-jsx does not attach its scope class to component JSX,
+              so className-based rules on Links silently never match (only
+              the plain elements -- nav, button, spans -- get scoped). */}
+          <Link
+            href="/admin/leads"
+            aria-label="Aetheris Vision admin home"
+            style={{ alignItems: 'center', color: dark.text, display: 'flex', fontSize: '14px', fontWeight: 700, gap: '8px', textDecoration: 'none', whiteSpace: 'nowrap' }}
+          >
             <span className="admin-mark">AV</span>
             <span>Admin</span>
           </Link>
@@ -99,7 +107,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   : 0
 
               return (
-                <Link key={item.href} href={item.href} className={`admin-nav-link${active ? ' active' : ''}`}>
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  style={{
+                    alignItems: 'center',
+                    background: active ? dark.activeNav : 'transparent',
+                    borderRadius: '6px',
+                    color: active ? dark.blue : dark.textMuted,
+                    display: 'inline-flex',
+                    fontSize: '13px',
+                    fontWeight: active ? 600 : 500,
+                    gap: '5px',
+                    padding: '6px 12px',
+                    textDecoration: 'none',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   {item.label}
                   {count > 0 && <span className="admin-count">{count}</span>}
                 </Link>
@@ -121,17 +145,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </button>
               {moreOpen && (
                 <div className="admin-more-menu" role="menu">
-                  {MORE_NAV.map(item => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`admin-more-link${pathname.startsWith(item.href) ? ' active' : ''}`}
-                      onClick={() => setMoreOpen(false)}
-                      role="menuitem"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
+                  {MORE_NAV.map(item => {
+                    const active = pathname.startsWith(item.href)
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setMoreOpen(false)}
+                        role="menuitem"
+                        // Inline styles on purpose: styled-jsx does not attach
+                        // its scope class to <Link>s rendered in this branch,
+                        // so a className-based rule silently never matches and
+                        // the menu collapses into one inline string.
+                        style={{
+                          display: 'block',
+                          borderRadius: '5px',
+                          color: active ? dark.blue : dark.textMuted,
+                          background: active ? dark.activeNav : 'transparent',
+                          fontSize: '13px',
+                          fontWeight: 500,
+                          padding: '8px 12px',
+                          textDecoration: 'none',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {item.label}
+                      </Link>
+                    )
+                  })}
                 </div>
               )}
             </div>
@@ -168,16 +209,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           margin: 0 auto;
           max-width: 1080px;
           min-height: 56px;
-        }
-        .admin-brand {
-          align-items: center;
-          color: ${dark.text};
-          display: flex;
-          font-size: 14px;
-          font-weight: 700;
-          gap: 8px;
-          text-decoration: none;
-          white-space: nowrap;
         }
         .admin-mark {
           align-items: center;
@@ -256,19 +287,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           position: absolute;
           top: calc(100% + 4px);
           z-index: 100;
-        }
-        .admin-more-link {
-          border-radius: 5px;
-          color: ${dark.textMuted};
-          display: block;
-          font-size: 13px;
-          font-weight: 500;
-          padding: 8px 12px;
-          text-decoration: none;
-        }
-        .admin-more-link.active {
-          background: ${dark.activeNav};
-          color: ${dark.blue};
         }
         .admin-logout {
           align-items: center;
