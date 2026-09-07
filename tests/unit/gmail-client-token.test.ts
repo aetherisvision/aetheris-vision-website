@@ -32,6 +32,7 @@ describe('getGmailAccessToken', () => {
     await expect(getGmailAccessToken('refresh')).rejects.toMatchObject({
       name: 'GmailApiError',
       status: 400,
+      code: 'invalid_grant',
       message: 'Token has been expired or revoked.',
     })
   })

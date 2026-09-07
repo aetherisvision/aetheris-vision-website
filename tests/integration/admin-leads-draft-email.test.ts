@@ -30,10 +30,12 @@ vi.mock('@/lib/capability-statement', () => ({
 
 class MockGmailApiError extends Error {
   status: number
-  constructor(message: string, status: number) {
+  code?: string
+  constructor(message: string, status: number, code?: string) {
     super(message)
     this.name = 'GmailApiError'
     this.status = status
+    this.code = code
   }
 }
 
@@ -220,6 +222,8 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     expect(response.status).toBe(409)
     await expect(response.json()).resolves.toEqual({
       error: 'Connect the Aetheris Vision Gmail mailbox at /admin/gmail first',
+      code: 'GMAIL_RECONNECT_REQUIRED',
+      reconnectUrl: '/admin/gmail',
     })
     expect(sqlMock).toHaveBeenCalledTimes(4)
   })
@@ -238,8 +242,52 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     await expect(response.json()).resolves.toEqual({
       error:
         'The connected Gmail mailbox needs to be reconnected with drafting permission at /admin/gmail',
+      code: 'GMAIL_RECONNECT_REQUIRED',
+      reconnectUrl: '/admin/gmail',
     })
     expect(getGmailAccessTokenMock).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    {
+      failure: new MockGmailApiError('Token has been expired or revoked.', 400, 'invalid_grant'),
+      status: 409,
+      body: {
+        error: 'The business Gmail connection has expired or been revoked. Reconnect Business Gmail, then try drafting again.',
+        code: 'GMAIL_RECONNECT_REQUIRED',
+        reconnectUrl: '/admin/gmail',
+      },
+    },
+    {
+      failure: new MockGmailApiError('Service unavailable', 503),
+      status: 502,
+      body: { error: 'Gmail could not be reached for drafting. Try again in a moment.' },
+    },
+    {
+      failure: new TypeError('fetch failed'),
+      status: 502,
+      body: { error: 'Gmail could not be reached for drafting. Try again in a moment.' },
+    },
+  ])('releases the claim and distinguishes Gmail renewal from retry on $failure.message', async ({ failure, status, body }) => {
+    sqlMock
+      .mockResolvedValueOnce([
+        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+      ])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
+      .mockResolvedValueOnce([])
+    decryptTokenMock.mockReturnValue('plain-refresh-token')
+    getGmailAccessTokenMock.mockRejectedValue(failure)
+
+    const response = await callRoute('12')
+
+    expect(response.status).toBe(status)
+    expect(response.headers.get('Cache-Control')).toBe('no-store')
+    await expect(response.json()).resolves.toEqual(body)
+    expect(sqlMock).toHaveBeenCalledTimes(4)
+    expect(sqlMock.mock.calls[3][0].join(' ')).toContain('SET gmail_draft_created_at = NULL')
+    expect(draftLeadEmailMock).not.toHaveBeenCalled()
+    expect(createGmailDraftMock).not.toHaveBeenCalled()
   })
 
   it('treats an empty/whitespace-only stored scopes string as unknown, not as missing gmail.compose', async () => {
@@ -328,6 +376,8 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     await expect(response.json()).resolves.toEqual({
       error:
         'The connected Gmail mailbox needs to be reconnected with drafting permission at /admin/gmail',
+      code: 'GMAIL_RECONNECT_REQUIRED',
+      reconnectUrl: '/admin/gmail',
     })
   })
 

@@ -222,9 +222,11 @@ export async function POST(
 
   class ClaimedRequestError extends Error {
     readonly status: number
-    constructor(message: string, status: number) {
+    readonly code?: 'GMAIL_RECONNECT_REQUIRED'
+    constructor(message: string, status: number, code?: 'GMAIL_RECONNECT_REQUIRED') {
       super(message)
       this.status = status
+      this.code = code
     }
   }
 
@@ -234,7 +236,7 @@ export async function POST(
     `
     const tokenRow = (tokenRows as { refresh_token: string; scopes: string | null; email: string | null }[])[0]
     if (!tokenRow?.refresh_token) {
-      throw new ClaimedRequestError(`Connect the ${SITE.name} Gmail mailbox at /admin/gmail first`, 409)
+      throw new ClaimedRequestError(`Connect the ${SITE.name} Gmail mailbox at /admin/gmail first`, 409, 'GMAIL_RECONNECT_REQUIRED')
     }
     // scopes is only populated from a callback that ran after migration 007
     // -- a connection made before that has scopes = null and is given the
@@ -249,6 +251,7 @@ export async function POST(
       throw new ClaimedRequestError(
         'The connected Gmail mailbox needs to be reconnected with drafting permission at /admin/gmail',
         409,
+        'GMAIL_RECONNECT_REQUIRED',
       )
     }
 
@@ -263,6 +266,7 @@ export async function POST(
       throw new ClaimedRequestError(
         'The stored Gmail connection is unreadable -- reconnect at /admin/gmail',
         500,
+        'GMAIL_RECONNECT_REQUIRED',
       )
     }
 
@@ -289,10 +293,14 @@ export async function POST(
         'Unable to exchange the stored Gmail refresh token',
         error instanceof Error ? error.message : 'Unknown error',
       )
-      throw new ClaimedRequestError(
-        'The stored Gmail connection could not be used -- reconnect at /admin/gmail',
-        500,
-      )
+      if (error instanceof GmailApiError && error.code === 'invalid_grant') {
+        throw new ClaimedRequestError(
+          'The business Gmail connection has expired or been revoked. Reconnect Business Gmail, then try drafting again.',
+          409,
+          'GMAIL_RECONNECT_REQUIRED',
+        )
+      }
+      throw new ClaimedRequestError('Gmail could not be reached for drafting. Try again in a moment.', 502)
     }
 
     // The one paid step, placed after every check that can fail for free --
@@ -371,6 +379,7 @@ export async function POST(
         throw new ClaimedRequestError(
           'The connected Gmail mailbox needs to be reconnected with drafting permission at /admin/gmail',
           409,
+          'GMAIL_RECONNECT_REQUIRED',
         )
       }
       console.error(
@@ -411,7 +420,10 @@ export async function POST(
   } catch (error) {
     await releaseClaim()
     if (error instanceof ClaimedRequestError) {
-      return json({ error: error.message }, { status: error.status })
+      return json({
+        error: error.message,
+        ...(error.code ? { code: error.code, reconnectUrl: '/admin/gmail' } : {}),
+      }, { status: error.status })
     }
     console.error(
       'Unable to create Gmail draft',

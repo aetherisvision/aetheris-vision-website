@@ -5,10 +5,12 @@ export const GMAIL_API = 'https://gmail.googleapis.com/gmail/v1'
 
 export class GmailApiError extends Error {
   readonly status: number
-  constructor(message: string, status: number) {
+  readonly code?: string
+  constructor(message: string, status: number, code?: string) {
     super(message)
     this.name = 'GmailApiError'
     this.status = status
+    this.code = code
   }
 }
 
@@ -44,7 +46,7 @@ export async function getGmailAccessToken(refreshToken: string): Promise<string>
         : typeof data.error === 'string'
           ? data.error
           : 'Token refresh failed'
-    throw new GmailApiError(message, res.status)
+    throw new GmailApiError(message, res.status, typeof data.error === 'string' ? data.error : undefined)
   }
   return data.access_token
 }

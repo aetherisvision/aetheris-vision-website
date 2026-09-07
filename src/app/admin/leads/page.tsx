@@ -39,6 +39,12 @@ interface Lead {
   created_at: string
 }
 
+interface DraftNotice {
+  tone: 'success' | 'error'
+  text: string
+  reconnectGmail?: boolean
+}
+
 const colors = {
   bg: '#070f1e',
   surface: '#0d1b2e',
@@ -113,6 +119,8 @@ export default function AdminLeadsPage() {
   const [filter, setFilter] = useState<Stage | 'all'>('review')
   const [busyId, setBusyId] = useState<number | null>(null)
   const [notice, setNotice] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
+  const [draftingIds, setDraftingIds] = useState<Set<number>>(() => new Set())
+  const [draftNotices, setDraftNotices] = useState<Record<number, DraftNotice>>({})
 
   async function loadLeads() {
     try {
@@ -248,8 +256,13 @@ export default function AdminLeadsPage() {
     if (regenerate && !window.confirm('Write a fresh draft for this lead? The current Gmail draft stays in Gmail until you delete it there.')) {
       return
     }
-    setBusyId(lead.id)
-    setNotice(null)
+    setDraftingIds(current => new Set(current).add(lead.id))
+    setDraftNotices(current => {
+      const next = { ...current }
+      delete next[lead.id]
+      return next
+    })
+    let reconnectGmail = false
 
     try {
       const response = await fetch(`/api/admin/leads/${lead.id}/draft-email`, {
@@ -257,27 +270,46 @@ export default function AdminLeadsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ regenerate }),
       })
-      const data = await response.json()
+      const data = await response.json().catch(() => null)
+      if (!data || typeof data !== 'object') {
+        throw new Error(response.status === 504 || response.status === 408
+          ? 'The draft request timed out. Check Gmail for a draft before retrying.'
+          : 'The draft request could not be completed. Check Gmail for a draft, then retry if needed.')
+      }
+      reconnectGmail = data.code === 'GMAIL_RECONNECT_REQUIRED'
 
       // The route can fail after the Gmail draft already exists (its DB
       // write failed) -- it still returns messageId/draftUrl on that 500 so
       // the admin isn't stranded looking at "Draft in progress" until a
       // full reload. Record it locally even though this response is an
       // error.
-      if (data.messageId) {
+      if (typeof data.messageId === 'string' && data.messageId) {
         updateLocal(lead.id, {
           gmail_draft_id: data.messageId,
-          gmail_draft_created_at: data.draftedAt ?? new Date().toISOString(),
+          gmail_draft_created_at: typeof data.draftedAt === 'string' ? data.draftedAt : new Date().toISOString(),
         })
       }
 
-      if (!response.ok) throw new Error(data.error || 'The draft could not be created')
+      if (!response.ok) throw new Error(typeof data.error === 'string' ? data.error : 'The draft could not be created')
+      if (typeof data.messageId !== 'string' || !data.messageId) {
+        throw new Error('The draft service did not return a Gmail draft. Check Gmail before retrying.')
+      }
 
-      setNotice({ tone: 'success', text: `A Gmail draft is ready for ${lead.name} -- review and send from Gmail` })
+      setDraftNotices(current => ({
+        ...current,
+        [lead.id]: { tone: 'success', text: 'Your Gmail draft is ready. Open it to review and send from Gmail.' },
+      }))
     } catch (error) {
-      setNotice({ tone: 'error', text: error instanceof Error ? error.message : 'The draft could not be created' })
+      setDraftNotices(current => ({
+        ...current,
+        [lead.id]: { tone: 'error', text: error instanceof Error ? error.message : 'The draft could not be created', reconnectGmail },
+      }))
     } finally {
-      setBusyId(null)
+      setDraftingIds(current => {
+        const next = new Set(current)
+        next.delete(lead.id)
+        return next
+      })
     }
   }
 
@@ -373,6 +405,9 @@ export default function AdminLeadsPage() {
           {visible.map(lead => {
             const overdue = isOverdue(lead.next_follow_up, lead.stage)
             const locked = lead.stage === 'won' || lead.stage === 'declined'
+            const isDrafting = draftingIds.has(lead.id)
+            const isBusy = busyId === lead.id || isDrafting
+            const draftNotice = draftNotices[lead.id]
             const govcon = lead.source === 'opportunity-radar' ? lead.govcon : null
             const fitReasons = Array.isArray(govcon?.fit_reasons) ? govcon.fit_reasons as string[] : []
             const cautions = Array.isArray(govcon?.cautions) ? govcon.cautions as string[] : []
@@ -449,22 +484,22 @@ export default function AdminLeadsPage() {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '12px' }}>
                       <label>
                         <span style={labelStyle}>Stage</span>
-                        <select value={lead.stage} onChange={event => updateLocal(lead.id, { stage: event.target.value as Stage })} style={inputStyle}>
+                        <select disabled={isDrafting} value={lead.stage} onChange={event => updateLocal(lead.id, { stage: event.target.value as Stage })} style={inputStyle}>
                           {(lead.stage === 'review' ? REVIEW_STAGES : FUNNEL_STAGES).map(stage => <option key={stage} value={stage}>{stageLabels[stage]}</option>)}
                         </select>
                       </label>
                       <label>
                         <span style={labelStyle}>Estimated value</span>
-                        <input type="number" min="0" step="100" value={lead.estimated_value_cents === null ? '' : lead.estimated_value_cents / 100} onChange={event => updateLocal(lead.id, { estimated_value_cents: event.target.value ? Math.round(Number(event.target.value) * 100) : null })} placeholder="USD" style={inputStyle} />
+                        <input disabled={isDrafting} type="number" min="0" step="100" value={lead.estimated_value_cents === null ? '' : lead.estimated_value_cents / 100} onChange={event => updateLocal(lead.id, { estimated_value_cents: event.target.value ? Math.round(Number(event.target.value) * 100) : null })} placeholder="USD" style={inputStyle} />
                       </label>
                       <label>
                         <span style={labelStyle}>Next follow-up</span>
-                        <input type="date" value={dateInputValue(lead.next_follow_up)} onChange={event => updateLocal(lead.id, { next_follow_up: event.target.value || null })} style={inputStyle} />
+                        <input disabled={isDrafting} type="date" value={dateInputValue(lead.next_follow_up)} onChange={event => updateLocal(lead.id, { next_follow_up: event.target.value || null })} style={inputStyle} />
                       </label>
                     </div>
                     <label>
                       <span style={labelStyle}>Notes</span>
-                      <textarea rows={3} value={lead.notes || ''} onChange={event => updateLocal(lead.id, { notes: event.target.value })} placeholder="Context, next action, or proposal notes" style={{ ...inputStyle, resize: 'vertical' }} />
+                      <textarea disabled={isDrafting} rows={3} value={lead.notes || ''} onChange={event => updateLocal(lead.id, { notes: event.target.value })} placeholder="Context, next action, or proposal notes" style={{ ...inputStyle, resize: 'vertical' }} />
                     </label>
                   </>
                 )}
@@ -483,7 +518,7 @@ export default function AdminLeadsPage() {
                   </div>
                   {lead.stage === 'declined' && (
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      <button onClick={() => setStage(lead, 'review')} disabled={busyId === lead.id} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(91,168,217,0.35)', background: 'rgba(91,168,217,0.1)', color: colors.blue, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
+                      <button onClick={() => setStage(lead, 'review')} disabled={isBusy} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(91,168,217,0.35)', background: 'rgba(91,168,217,0.1)', color: colors.blue, cursor: isBusy ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
                         Reconsider
                       </button>
                     </div>
@@ -492,40 +527,51 @@ export default function AdminLeadsPage() {
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                       {lead.stage === 'review' && (
                         <>
-                          <button onClick={() => setStage(lead, 'new')} disabled={busyId === lead.id} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(91,168,217,0.35)', background: 'rgba(91,168,217,0.1)', color: colors.blue, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
+                          <button onClick={() => setStage(lead, 'new')} disabled={isBusy} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(91,168,217,0.35)', background: 'rgba(91,168,217,0.1)', color: colors.blue, cursor: isBusy ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
                             Pursue
                           </button>
-                          <button onClick={() => setStage(lead, 'declined')} disabled={busyId === lead.id} style={{ padding: '9px 13px', borderRadius: '8px', border: `1px solid ${colors.border}`, background: colors.surfaceAlt, color: colors.muted, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
+                          <button onClick={() => setStage(lead, 'declined')} disabled={isBusy} style={{ padding: '9px 13px', borderRadius: '8px', border: `1px solid ${colors.border}`, background: colors.surfaceAlt, color: colors.muted, cursor: isBusy ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
                             Not pursuing
                           </button>
                         </>
                       )}
                       {!lead.project_id && lead.stage !== 'lost' && lead.stage !== 'review' && (
-                        <button onClick={() => prepareProposal(lead)} disabled={busyId === lead.id} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(110,231,183,0.3)', background: 'rgba(110,231,183,0.1)', color: colors.green, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
+                        <button onClick={() => prepareProposal(lead)} disabled={isBusy} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(110,231,183,0.3)', background: 'rgba(110,231,183,0.1)', color: colors.green, cursor: isBusy ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
                           {busyId === lead.id ? 'Preparing…' : 'Prepare proposal'}
                         </button>
                       )}
-                      {lead.email && !lead.gmail_draft_id && !lead.gmail_draft_created_at && (
-                        <button onClick={() => draftEmail(lead)} disabled={busyId === lead.id} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(251,191,36,0.35)', background: 'rgba(251,191,36,0.1)', color: colors.amber, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
-                          {busyId === lead.id ? 'Drafting…' : 'Draft email'}
+                      {lead.email && !lead.gmail_draft_id && (
+                        <button onClick={() => draftEmail(lead)} disabled={isBusy} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(251,191,36,0.35)', background: 'rgba(251,191,36,0.1)', color: colors.amber, cursor: isBusy ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
+                          {isDrafting ? 'Drafting…' : lead.gmail_draft_created_at ? 'Retry draft' : 'Draft email'}
                         </button>
                       )}
                       {lead.email && lead.gmail_draft_id && (
-                        <button onClick={() => draftEmail(lead, true)} disabled={busyId === lead.id} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(251,191,36,0.35)', background: 'rgba(251,191,36,0.1)', color: colors.amber, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
-                          {busyId === lead.id ? 'Drafting…' : 'Recreate draft'}
+                        <button onClick={() => draftEmail(lead, true)} disabled={isBusy} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(251,191,36,0.35)', background: 'rgba(251,191,36,0.1)', color: colors.amber, cursor: isBusy ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
+                          {isDrafting ? 'Drafting…' : 'Recreate draft'}
                         </button>
                       )}
-                      {!lead.gmail_draft_id && lead.gmail_draft_created_at && (
+                      {!lead.gmail_draft_id && lead.gmail_draft_created_at && !isDrafting && (
                         <span style={{ padding: '9px 13px', color: colors.dim, fontSize: '12px', fontStyle: 'italic' }}>
-                          Draft in progress -- refresh in a moment
+                          An earlier request may have created a Gmail draft. Check Gmail before retrying to avoid a duplicate.
                         </span>
                       )}
-                      <button onClick={() => saveLead(lead)} disabled={busyId === lead.id} style={{ padding: '9px 15px', borderRadius: '8px', border: 'none', background: busyId === lead.id ? 'rgba(91,168,217,0.4)' : colors.blue, color: colors.bg, cursor: busyId === lead.id ? 'not-allowed' : 'pointer', fontWeight: 800, fontSize: '12px' }}>
+                      <button onClick={() => saveLead(lead)} disabled={isBusy} style={{ padding: '9px 15px', borderRadius: '8px', border: 'none', background: isBusy ? 'rgba(91,168,217,0.4)' : colors.blue, color: colors.bg, cursor: isBusy ? 'not-allowed' : 'pointer', fontWeight: 800, fontSize: '12px' }}>
                         {busyId === lead.id ? 'Saving…' : 'Save lead'}
                       </button>
                     </div>
                   )}
                 </div>
+                {(isDrafting || draftNotice) && (
+                  <div
+                    role={!isDrafting && draftNotice?.tone === 'error' ? 'alert' : 'status'}
+                    style={{ padding: '11px 14px', marginTop: '14px', borderRadius: '8px', border: `1px solid ${!isDrafting && draftNotice?.tone === 'error' ? 'rgba(248,113,113,0.3)' : colors.border}`, background: colors.surfaceAlt, color: !isDrafting && draftNotice?.tone === 'error' ? colors.red : isDrafting ? colors.amber : colors.green, fontSize: '13px', lineHeight: 1.6 }}
+                  >
+                    {isDrafting ? 'Creating Gmail draft…' : draftNotice?.text}
+                    {!isDrafting && draftNotice?.reconnectGmail && (
+                      <> <Link href="/admin/gmail" style={{ color: colors.blue, textDecoration: 'underline', fontWeight: 700 }}>Reconnect Gmail</Link></>
+                    )}
+                  </div>
+                )}
               </article>
             )
           })}
