@@ -13,7 +13,7 @@ function lead(id = 1, overrides: Record<string, unknown> = {}) {
     service: null,
     message: 'A prospective project',
     source: 'contact',
-    stage: 'review',
+    stage: 'new',
     estimated_value_cents: null,
     next_follow_up: null,
     notes: null,
@@ -26,6 +26,10 @@ function lead(id = 1, overrides: Record<string, unknown> = {}) {
     gmail_draft_created_at: null,
     govcon: null,
     created_at: '2026-09-01T12:00:00.000Z',
+    removed_at: null,
+    removal_reason: null,
+    workflow_version: 0,
+    activity_history: [],
     ...overrides,
   }
 }
@@ -41,6 +45,7 @@ function pendingResponse() {
 }
 
 async function renderLeads(leads = [lead()]) {
+  window.location.hash = `#lead-${leads[0].id}`
   const fetchMock = vi.fn().mockResolvedValueOnce(apiResponse({ leads }))
   vi.stubGlobal('fetch', fetchMock)
   render(<AdminLeadsPage />)
@@ -48,55 +53,105 @@ async function renderLeads(leads = [lead()]) {
   return fetchMock
 }
 
-function card(id = 1) {
-  return within(screen.getByRole('heading', { name: `Prospect ${id}` }).closest('article')!)
+function workspace() {
+  return within(screen.getByRole('article', { name: 'Selected opportunity' }))
+}
+
+function opportunity(id: number) {
+  return within(screen.getByRole('complementary', { name: 'Opportunity list' }))
+    .getByRole('button', { name: new RegExp(`Prospect ${id}(?!\\d)`) })
+}
+
+function workflowQueue(name: RegExp) {
+  return within(screen.getByRole('navigation', { name: 'Opportunity workflow' })).getByRole('button', { name })
 }
 
 describe('admin lead email drafting', () => {
   afterEach(() => {
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
+    window.location.hash = ''
   })
 
-  it('tracks simultaneous drafts independently and disables other actions only on the drafting card', async () => {
+  it('locks selection, queues, and other actions while drafting, then reenables them and preserves each opportunity’s result', async () => {
     const fetchMock = await renderLeads([lead(1), lead(2)])
     const first = pendingResponse()
     const second = pendingResponse()
-    fetchMock.mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise)
+    fetchMock.mockReturnValueOnce(first.promise)
 
-    fireEvent.click(card(1).getByRole('button', { name: 'Draft email' }))
+    expect(screen.getAllByRole('article', { name: 'Selected opportunity' })).toHaveLength(1)
+    expect(workflowQueue(/^Active/)).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.change(workspace().getByLabelText('Phone'), { target: { value: '555-0199' } })
+    fireEvent.change(workspace().getByLabelText('Next follow-up'), { target: { value: '2026-12-04' } })
+    fireEvent.click(workspace().getByText('Notes, value & related records'))
+    expect(workspace().getByRole('button', { name: 'Save contact' })).toBeEnabled()
+    expect(workspace().getByRole('button', { name: 'Record outreach sent' })).toBeEnabled()
+    fireEvent.click(workspace().getByRole('button', { name: 'Draft email' }))
 
-    expect(card(1).getByRole('button', { name: 'Drafting…' })).toBeDisabled()
-    expect(card(1).getByRole('button', { name: 'Save lead' })).toBeDisabled()
-    expect(card(1).getByRole('button', { name: 'Pursue' })).toBeDisabled()
-    expect(card(1).getByRole('button', { name: 'Not pursuing' })).toBeDisabled()
-    expect(card(1).getByRole('combobox')).toBeDisabled()
-    expect(card(1).getByRole('spinbutton')).toBeDisabled()
-    expect(card(1).getByRole('textbox')).toBeDisabled()
-    expect(card(1).getByRole('status')).toHaveTextContent('Creating Gmail draft…')
-    expect(card(2).getByRole('button', { name: 'Draft email' })).toBeEnabled()
+    expect(workspace().getByRole('button', { name: 'Drafting…' })).toBeDisabled()
+    for (const name of ['Save contact', 'Save notes & value', 'Save follow-up date', 'Record outreach sent', 'Close as lost', 'Remove from workspace']) {
+      expect(workspace().getByRole('button', { name })).toBeDisabled()
+    }
+    for (const label of ['Email', 'Phone', 'Next follow-up', 'Working notes', 'Estimated value (USD)']) {
+      expect(workspace().getByLabelText(label)).toBeDisabled()
+    }
+    expect(workspace().getByRole('status')).toHaveTextContent('Preparing your draft with Claude. This may take a couple of minutes…')
+    expect(opportunity(2)).toBeDisabled()
+    expect(screen.getByLabelText('Select Prospect 2')).toBeDisabled()
+    expect(screen.getByLabelText('Select all')).toBeDisabled()
+    expect(screen.getByRole('searchbox')).toBeDisabled()
+    expect(workflowQueue(/^Review/)).toBeDisabled()
+    expect(screen.getByRole('button', { name: /^All opportunities/ })).toBeDisabled()
 
-    fireEvent.click(card(2).getByRole('button', { name: 'Draft email' }))
+    fireEvent.click(opportunity(2))
+    fireEvent.click(workflowQueue(/^Review/))
+    fireEvent.click(workspace().getByRole('button', { name: 'Save contact' }))
+    fireEvent.click(workspace().getByRole('button', { name: 'Remove from workspace' }))
+    expect(workspace().getByRole('heading', { name: 'Prospect 1' })).toBeVisible()
+    expect(workflowQueue(/^Active/)).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.queryByRole('region', { name: 'Confirm removal' })).not.toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledTimes(2)
     await act(async () => { first.resolve(apiResponse({ messageId: 'message-1' })) })
 
-    expect(card(1).getByRole('link', { name: 'Gmail draft ready' })).toHaveAttribute(
+    expect(workspace().getByRole('link', { name: 'Gmail draft ready ↗' })).toHaveAttribute(
       'href', 'https://mail.google.com/mail/#drafts?compose=message-1',
     )
-    expect(card(1).getByRole('status')).toHaveTextContent('Your Gmail draft is ready.')
-    expect(card(1).getByRole('button', { name: 'Save lead' })).toBeEnabled()
-    expect(card(2).getByRole('button', { name: 'Drafting…' })).toBeDisabled()
-    expect(card(2).getByRole('button', { name: 'Save lead' })).toBeDisabled()
+    expect(workspace().getByRole('status')).toHaveTextContent('Your Gmail draft is ready.')
+    expect(workspace().getByRole('button', { name: 'Save contact' })).toBeEnabled()
+    expect(workspace().getByRole('button', { name: 'Save notes & value' })).toBeEnabled()
+    expect(workspace().getByRole('button', { name: 'Record outreach sent' })).toBeEnabled()
+    expect(opportunity(2)).toBeEnabled()
+    expect(screen.getByLabelText('Select Prospect 2')).toBeEnabled()
+    expect(screen.getByRole('searchbox')).toBeEnabled()
+    expect(workflowQueue(/^Review/)).toBeEnabled()
+
+    fireEvent.click(opportunity(2))
+    expect(workspace().getByRole('heading', { name: 'Prospect 2' })).toBeVisible()
+    expect(workspace().queryByRole('status')).not.toBeInTheDocument()
+    expect(workspace().queryByRole('link', { name: 'Gmail draft ready ↗' })).not.toBeInTheDocument()
+    fetchMock.mockReturnValueOnce(second.promise)
+    fireEvent.click(workspace().getByRole('button', { name: 'Draft email' }))
+    expect(opportunity(1)).toBeDisabled()
 
     await act(async () => { second.resolve(apiResponse({ messageId: 'message-2' })) })
-    expect(card(2).getByRole('link', { name: 'Gmail draft ready' })).toBeInTheDocument()
+    expect(workspace().getByRole('link', { name: 'Gmail draft ready ↗' })).toHaveAttribute(
+      'href', 'https://mail.google.com/mail/#drafts?compose=message-2',
+    )
+    fireEvent.click(opportunity(1))
+    expect(workspace().getByRole('link', { name: 'Gmail draft ready ↗' })).toHaveAttribute(
+      'href', 'https://mail.google.com/mail/#drafts?compose=message-1',
+    )
     expect(fetchMock).toHaveBeenNthCalledWith(2, '/api/admin/leads/1/draft-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ regenerate: false }),
     })
+    expect(fetchMock).toHaveBeenNthCalledWith(3, '/api/admin/leads/2/draft-email', expect.objectContaining({
+      body: JSON.stringify({ regenerate: false }),
+    }))
   })
 
-  it('shows the Gmail reconnection error and a fixed local recovery link in the affected card', async () => {
+  it('shows the Gmail reconnection error and fixed local recovery link only for the affected opportunity', async () => {
     const fetchMock = await renderLeads([lead(1), lead(2)])
     fetchMock.mockResolvedValueOnce(apiResponse({
       code: 'GMAIL_RECONNECT_REQUIRED',
@@ -104,35 +159,40 @@ describe('admin lead email drafting', () => {
       reconnectUrl: 'https://untrusted.example/redirect',
     }, 409))
 
-    fireEvent.click(card(2).getByRole('button', { name: 'Draft email' }))
+    fireEvent.click(opportunity(2))
+    fireEvent.click(workspace().getByRole('button', { name: 'Draft email' }))
 
-    const alert = await card(2).findByRole('alert')
+    const alert = await workspace().findByRole('alert')
     expect(alert).toHaveTextContent('The Gmail connection has expired.')
     expect(within(alert).getByRole('link', { name: 'Reconnect Gmail' })).toHaveAttribute('href', '/admin/gmail')
-    expect(card(1).queryByRole('alert')).not.toBeInTheDocument()
-    expect(card(2).getByRole('button', { name: 'Draft email' })).toBeEnabled()
+    expect(workspace().getByRole('button', { name: 'Draft email' })).toBeEnabled()
+    fireEvent.click(opportunity(1))
+    expect(workspace().queryByRole('alert')).not.toBeInTheDocument()
+    expect(workspace().getByRole('button', { name: 'Draft email' })).toBeEnabled()
+    fireEvent.click(opportunity(2))
+    expect(workspace().getByRole('alert')).toHaveTextContent('The Gmail connection has expired.')
   })
 
   it('allows a pending claim to be retried and leaves concurrency enforcement to the API', async () => {
     const fetchMock = await renderLeads([lead(1, { gmail_draft_created_at: '2026-09-01T12:00:00.000Z' })])
     fetchMock.mockResolvedValueOnce(apiResponse({ error: 'A draft is already being created for this lead -- try again in a moment' }, 409))
 
-    expect(card().getByText('An earlier request may have created a Gmail draft. Check Gmail before retrying to avoid a duplicate.')).toBeVisible()
-    fireEvent.click(card().getByRole('button', { name: 'Retry draft' }))
-    expect(await card().findByRole('alert')).toHaveTextContent('A draft is already being created')
-    expect(card().getByRole('button', { name: 'Retry draft' })).toBeEnabled()
+    expect(workspace().getByText('An earlier request may have created a Gmail draft. Check Gmail before retrying to avoid a duplicate.')).toBeVisible()
+    fireEvent.click(workspace().getByRole('button', { name: 'Retry draft' }))
+    expect(await workspace().findByRole('alert')).toHaveTextContent('A draft is already being created')
+    expect(workspace().getByRole('button', { name: 'Retry draft' })).toBeEnabled()
     expect(fetchMock).toHaveBeenLastCalledWith('/api/admin/leads/1/draft-email', expect.objectContaining({
       body: JSON.stringify({ regenerate: false }),
     }))
 
     fetchMock.mockResolvedValueOnce(apiResponse({ messageId: 'recovered-message' }))
-    fireEvent.click(card().getByRole('button', { name: 'Retry draft' }))
+    fireEvent.click(workspace().getByRole('button', { name: 'Retry draft' }))
 
-    expect(await card().findByRole('link', { name: 'Gmail draft ready' })).toHaveAttribute(
+    expect(await workspace().findByRole('link', { name: 'Gmail draft ready ↗' })).toHaveAttribute(
       'href', 'https://mail.google.com/mail/#drafts?compose=recovered-message',
     )
-    expect(card().queryByRole('alert')).not.toBeInTheDocument()
-    expect(card().queryByRole('button', { name: 'Retry draft' })).not.toBeInTheDocument()
+    expect(workspace().queryByRole('alert')).not.toBeInTheDocument()
+    expect(workspace().queryByRole('button', { name: 'Retry draft' })).not.toBeInTheDocument()
   })
 
   it('preserves a created Gmail draft link when the API reports that recording it failed', async () => {
@@ -143,14 +203,14 @@ describe('admin lead email drafting', () => {
       error: 'The draft exists in Gmail, but could not be recorded on this lead.',
     }, 500))
 
-    fireEvent.click(card().getByRole('button', { name: 'Draft email' }))
+    fireEvent.click(workspace().getByRole('button', { name: 'Draft email' }))
 
-    expect(await card().findByRole('alert')).toHaveTextContent('The draft exists in Gmail')
-    expect(card().getByRole('link', { name: 'Gmail draft ready' })).toHaveAttribute(
+    expect(await workspace().findByRole('alert')).toHaveTextContent('The draft exists in Gmail')
+    expect(workspace().getByRole('link', { name: 'Gmail draft ready ↗' })).toHaveAttribute(
       'href', 'https://mail.google.com/mail/#drafts?compose=created-but-unrecorded',
     )
-    expect(card().getByRole('button', { name: 'Recreate draft' })).toBeEnabled()
-    expect(card().queryByRole('button', { name: 'Draft email' })).not.toBeInTheDocument()
+    expect(workspace().getByRole('button', { name: 'Recreate draft' })).toBeEnabled()
+    expect(workspace().queryByRole('button', { name: 'Draft email' })).not.toBeInTheDocument()
   })
 
   it('explains non-JSON platform timeouts and restores the draft action', async () => {
@@ -161,10 +221,10 @@ describe('admin lead email drafting', () => {
       json: async () => { throw new SyntaxError('Unexpected token < in JSON') },
     })
 
-    fireEvent.click(card().getByRole('button', { name: 'Draft email' }))
+    fireEvent.click(workspace().getByRole('button', { name: 'Draft email' }))
 
-    expect(await card().findByRole('alert')).toHaveTextContent('The draft request timed out. Check Gmail for a draft before retrying.')
-    expect(card().getByRole('button', { name: 'Draft email' })).toBeEnabled()
+    expect(await workspace().findByRole('alert')).toHaveTextContent('The request timed out. Check Gmail for a draft before retrying.')
+    expect(workspace().getByRole('button', { name: 'Draft email' })).toBeEnabled()
     expect(screen.queryByText(/Unexpected token/)).not.toBeInTheDocument()
   })
 
@@ -175,23 +235,23 @@ describe('admin lead email drafting', () => {
     })])
     const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true)
 
-    fireEvent.click(card().getByRole('button', { name: 'Recreate draft' }))
+    fireEvent.click(workspace().getByRole('button', { name: 'Recreate draft' }))
     expect(fetchMock).toHaveBeenCalledTimes(1)
 
     const pending = pendingResponse()
     fetchMock.mockReturnValueOnce(pending.promise)
-    fireEvent.click(card().getByRole('button', { name: 'Recreate draft' }))
+    fireEvent.click(workspace().getByRole('button', { name: 'Recreate draft' }))
 
     expect(confirm).toHaveBeenCalledTimes(2)
     expect(fetchMock).toHaveBeenLastCalledWith('/api/admin/leads/1/draft-email', expect.objectContaining({
       body: JSON.stringify({ regenerate: true }),
     }))
-    expect(card().getByRole('link', { name: 'Gmail draft ready' })).toHaveAttribute(
+    expect(workspace().getByRole('link', { name: 'Gmail draft ready ↗' })).toHaveAttribute(
       'href', 'https://mail.google.com/mail/#drafts?compose=original-message',
     )
 
     await act(async () => { pending.resolve(apiResponse({ messageId: 'replacement-message' })) })
-    expect(card().getByRole('link', { name: 'Gmail draft ready' })).toHaveAttribute(
+    expect(workspace().getByRole('link', { name: 'Gmail draft ready ↗' })).toHaveAttribute(
       'href', 'https://mail.google.com/mail/#drafts?compose=replacement-message',
     )
   })
@@ -200,9 +260,9 @@ describe('admin lead email drafting', () => {
     const fetchMock = await renderLeads()
     fetchMock.mockResolvedValueOnce(apiResponse({}))
 
-    fireEvent.click(card().getByRole('button', { name: 'Draft email' }))
+    fireEvent.click(workspace().getByRole('button', { name: 'Draft email' }))
 
-    expect(await card().findByRole('alert')).toHaveTextContent('The draft service did not return a Gmail draft.')
-    expect(card().queryByRole('link', { name: 'Gmail draft ready' })).not.toBeInTheDocument()
+    expect(await workspace().findByRole('alert')).toHaveTextContent('The draft service did not return a Gmail draft.')
+    expect(workspace().queryByRole('link', { name: 'Gmail draft ready ↗' })).not.toBeInTheDocument()
   })
 })

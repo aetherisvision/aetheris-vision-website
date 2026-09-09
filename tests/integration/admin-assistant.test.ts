@@ -1,6 +1,7 @@
 import { mintAdminSessionToken } from '../helpers/admin-session'
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ClaudeSubscriptionError } from '@/lib/claude-subscription'
 
 const { sqlMock, askCrmAssistantMock } = vi.hoisted(() => ({
   sqlMock: vi.fn(),
@@ -35,7 +36,8 @@ describe('POST /api/admin/assistant', () => {
     sqlMock.mockReset()
     askCrmAssistantMock.mockReset()
     vi.stubEnv('ADMIN_PASSPHRASE', TEST_PASSPHRASE)
-    vi.stubEnv('ANTHROPIC_API_KEY', 'test-anthropic-key')
+    vi.stubEnv('ADMIN_SESSION_SECRET', '')
+    vi.stubEnv('ANTHROPIC_API_KEY', '')
   })
 
   it('rejects an unauthenticated request before touching anything', async () => {
@@ -43,13 +45,6 @@ describe('POST /api/admin/assistant', () => {
     expect(response.status).toBe(401)
     expect(sqlMock).not.toHaveBeenCalled()
     expect(askCrmAssistantMock).not.toHaveBeenCalled()
-  })
-
-  it('returns 500 when the assistant is not configured', async () => {
-    vi.stubEnv('ANTHROPIC_API_KEY', '')
-    const response = await callRoute({ messages: [{ role: 'user', content: 'hi' }] })
-    expect(response.status).toBe(500)
-    expect(sqlMock).not.toHaveBeenCalled()
   })
 
   it.each([
@@ -77,6 +72,8 @@ describe('POST /api/admin/assistant', () => {
           notes: null,
           source: 'opportunity-radar',
           govcon: { score: 78, deadline: '2026-09-10', recommended_action: 'Line up a flood hydrologist sub' },
+          gmail_draft_id: 'draft-fixture',
+          activity_history: [{ kind: 'outreach', created_at: '2026-09-08T12:00:00Z', note: 'Called the officer; follow up Friday.' }],
         },
       ])
     askCrmAssistantMock.mockResolvedValue('Pursue the FERC lead first.')
@@ -90,6 +87,11 @@ describe('POST /api/admin/assistant', () => {
     expect(snapshot).toContain('review: 3')
     expect(snapshot).toContain('FERC Flood Hydrologist Services')
     expect(snapshot).toContain('deadline 2026-09-10')
+    expect(snapshot).toContain('Gmail draft prepared; sending is not confirmed')
+    expect(snapshot).toContain('Called the officer; follow up Friday.')
+    // Both the totals and recommendations must respect pruning, independent of stage.
+    expect(sqlMock.mock.calls).toHaveLength(2)
+    for (const call of sqlMock.mock.calls) expect(call[0].join('')).toContain('WHERE removed_at IS NULL')
   })
 
   it('maps an assistant failure to a clear 502', async () => {
@@ -102,4 +104,16 @@ describe('POST /api/admin/assistant', () => {
       error: 'Claude could not answer -- try again in a moment',
     })
   })
+
+  it.each(['claude_worker_offline', 'claude_subscription_auth', 'claude_subscription_limit', 'claude_job_failed', 'claude_generation_timeout', 'claude_job_timeout'] as const)(
+    'returns a safe subscription-only %s response without an API fallback', async code => {
+      sqlMock.mockResolvedValueOnce([]).mockResolvedValueOnce([])
+      const error = new ClaudeSubscriptionError(code)
+      askCrmAssistantMock.mockRejectedValue(error)
+      const response = await callRoute({ messages: [{ role: 'user', content: 'What next?' }] })
+      expect(response.status).toBe(503)
+      await expect(response.json()).resolves.toEqual({ error: error.message, code })
+      expect(askCrmAssistantMock).toHaveBeenCalledTimes(1)
+    },
+  )
 })

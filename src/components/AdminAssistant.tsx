@@ -44,6 +44,7 @@ export default function AdminAssistant() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const requestActive = useRef(false)
 
   useEffect(() => {
     setTurns(loadStoredTurns())
@@ -58,12 +59,14 @@ export default function AdminAssistant() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight })
   }, [turns])
 
-  async function send() {
+  async function send(retry = false) {
     const question = input.trim()
-    if (!question || busy) return
-    const nextTurns: Turn[] = [...turns, { role: 'user', content: question }]
+    if (requestActive.current || (!retry && !question)) return
+    if (retry && turns.at(-1)?.role !== 'user') return
+    requestActive.current = true
+    const nextTurns: Turn[] = retry ? turns : [...turns, { role: 'user', content: question }]
     setTurns(nextTurns)
-    setInput('')
+    if (!retry) setInput('')
     setBusy(true)
     setError(null)
 
@@ -79,6 +82,7 @@ export default function AdminAssistant() {
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Claude could not answer')
     } finally {
+      requestActive.current = false
       setBusy(false)
     }
   }
@@ -115,13 +119,14 @@ export default function AdminAssistant() {
     >
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderBottom: `1px solid ${palette.border}`, background: 'rgba(91,168,217,0.08)' }}>
         <div>
-          <strong style={{ color: palette.text, fontSize: '13px' }}>Claude</strong>
+          <strong style={{ color: palette.text, fontSize: '13px' }}>Claude subscription</strong>
           <span style={{ color: palette.muted, fontSize: '12px', marginLeft: '8px' }}>next moves on the pipeline</span>
         </div>
         <div style={{ display: 'flex', gap: '6px' }}>
           <button
             type="button"
             onClick={() => { setTurns([]); setError(null) }}
+            disabled={busy}
             title="Clear the conversation"
             style={{ background: 'transparent', border: 0, color: palette.muted, cursor: 'pointer', fontSize: '12px' }}
           >
@@ -158,8 +163,16 @@ export default function AdminAssistant() {
             {turn.content}
           </div>
         ))}
-        {busy && <p style={{ color: palette.blue, fontSize: '12px', margin: 0 }}>Claude is thinking…</p>}
-        {error && <p role="alert" style={{ color: palette.red, fontSize: '12px', margin: 0 }}>{error}</p>}
+        {busy && <p role="status" style={{ color: palette.blue, fontSize: '12px', margin: 0 }}>Reviewing with your Claude subscription…</p>}
+        {error && (
+          <div role="alert" style={{ color: palette.red, fontSize: '12px' }}>
+            <p style={{ margin: '0 0 8px' }}>{error}</p>
+            <button type="button" onClick={() => void send(true)} disabled={busy}
+              style={{ color: palette.blue, background: 'transparent', border: `1px solid ${palette.border}`, borderRadius: '6px', padding: '6px 10px', cursor: 'pointer' }}>
+              Retry request
+            </button>
+          </div>
+        )}
       </div>
 
       <form
@@ -176,6 +189,7 @@ export default function AdminAssistant() {
             }
           }}
           rows={2}
+          maxLength={4000}
           placeholder="What should I do next?"
           aria-label="Message for Claude"
           style={{

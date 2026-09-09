@@ -9,7 +9,8 @@ const { prepareLeadProposalMock, sqlMock, updateLeadMock } = vi.hoisted(() => ({
 }))
 
 vi.mock('@/lib/db', () => ({ sql: sqlMock }))
-vi.mock('@/lib/crm', () => ({
+vi.mock('@/lib/crm', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/crm')>()),
   prepareLeadProposal: prepareLeadProposalMock,
   updateLead: updateLeadMock,
 }))
@@ -67,6 +68,7 @@ describe('admin leads CRM API contract', () => {
     updateLeadMock.mockReset()
     prepareLeadProposalMock.mockReset()
     vi.stubEnv('ADMIN_PASSPHRASE', TEST_PASSPHRASE)
+    vi.stubEnv('ADMIN_SESSION_SECRET', '')
   })
 
   it('rejects an unauthenticated GET before querying the database', async () => {
@@ -99,6 +101,23 @@ describe('admin leads CRM API contract', () => {
     await expect(response.json()).resolves.toEqual({ leads })
     expectNoStore(response)
     expect(sqlMock).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([['', false], ['?include_removed=true', true]])('filters removal state for GET %s', async (query, includeRemoved) => {
+    sqlMock.mockResolvedValueOnce([])
+    const { GET } = await import('@/app/api/admin/leads/route')
+    const response = await GET(request(`/api/admin/leads${query}`))
+    expect(response.status).toBe(200)
+    const [strings, ...values] = sqlMock.mock.calls[0]
+    expect(strings.join(' ')).toContain('l.removed_at IS NULL')
+    expect(values).toEqual([includeRemoved])
+  })
+
+  it('does not permit an unauthenticated removed-lead listing', async () => {
+    const { GET } = await import('@/app/api/admin/leads/route')
+    const response = await GET(request('/api/admin/leads?include_removed=true', {}, false))
+    expect(response.status).toBe(401)
+    expect(sqlMock).not.toHaveBeenCalled()
   })
 
   it('rejects malformed PATCH JSON without querying or updating', async () => {
@@ -210,6 +229,51 @@ describe('admin leads CRM API contract', () => {
       notes: 'Follow up with the program office',
     })
     expect(sqlMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('passes versioned activity and normalized contact edits to the workflow service', async () => {
+    const lead = { id: 12, stage: 'contacted', workflow_version: 3, activity_history: [] }
+    sqlMock.mockResolvedValueOnce([{ id: 12 }]).mockResolvedValueOnce([lead])
+    const { PATCH } = await import('@/app/api/admin/leads/route')
+    const response = await PATCH(jsonRequest('/api/admin/leads', 'PATCH', {
+      id: 12, stage: 'contacted', notes: null, estimated_value_cents: null, next_follow_up: '2026-09-15',
+      expected_version: 2, email: ' officer@example.com ', phone: '405 555 0100',
+      proposal_brief: 'Scope', activity: { id: 'outreach-12', kind: 'outreach', note: '  Called program office  ' },
+    }))
+    expect(response.status).toBe(200)
+    expect(updateLeadMock).toHaveBeenCalledWith(expect.objectContaining({
+      expectedVersion: 2, email: 'officer@example.com', proposalBrief: 'Scope',
+      activity: { id: 'outreach-12', kind: 'outreach', note: 'Called program office' },
+    }))
+    await expect(response.json()).resolves.toEqual({ lead })
+  })
+
+  it.each([
+    { expected_version: -1 },
+    { expected_version: '2' },
+    { activity: { id: 'touch-1', kind: 'outreach', note: '' } },
+    { expected_version: 0, activity: { id: 'touch-1', kind: 'removed', note: '' } },
+    { expected_version: 0, activity: { id: 'touch-1', kind: 'outreach', note: '', created_at: 'forged' } },
+  ])('rejects malformed workflow metadata %#', async (fields) => {
+    const { PATCH } = await import('@/app/api/admin/leads/route')
+    const response = await PATCH(jsonRequest('/api/admin/leads', 'PATCH', {
+      id: 12, stage: 'contacted', notes: null, estimated_value_cents: null, next_follow_up: null, ...fields,
+    }))
+    expect(response.status).toBe(400)
+    expect(sqlMock).not.toHaveBeenCalled()
+    expect(updateLeadMock).not.toHaveBeenCalled()
+  })
+
+  it('reports a workflow conflict without replacing saved server state', async () => {
+    sqlMock.mockResolvedValueOnce([{ id: 12 }])
+    updateLeadMock.mockRejectedValueOnce(new Error('stale version'))
+    const { PATCH } = await import('@/app/api/admin/leads/route')
+    const response = await PATCH(jsonRequest('/api/admin/leads', 'PATCH', {
+      id: 12, stage: 'contacted', notes: null, estimated_value_cents: null, next_follow_up: null, expected_version: 0,
+    }))
+    expect(response.status).toBe(409)
+    expect((await response.json()).code).toBe('LEAD_CONFLICT')
+    expect(sqlMock).toHaveBeenCalledTimes(1)
   })
 
   it('rejects an unauthenticated proposal preparation before querying', async () => {

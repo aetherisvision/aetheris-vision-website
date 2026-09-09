@@ -10,7 +10,7 @@
  * of sync with whatever the human last edited in Gmail). Marston reviews
  * and sends it himself from Gmail.
  *
- * Subject and body are written per-lead by Claude (Fable) from the lead's
+ * Subject and body are written per-lead by Claude from the lead's
  * radar analysis -- see src/lib/lead-email-draft.ts for why there is no
  * template fallback when that call fails.
  *
@@ -25,6 +25,7 @@ import {
   loadEncodedCapabilityStatement,
 } from '@/lib/capability-statement'
 import { SITE } from '@/lib/constants'
+import { ClaudeSubscriptionError } from '@/lib/claude-subscription'
 import { sql } from '@/lib/db'
 import { escapeHtml } from '@/lib/escape-html'
 import {
@@ -38,7 +39,7 @@ import { gmailDraftUrl } from '@/lib/gmail-draft-url'
 import { draftLeadEmail } from '@/lib/lead-email-draft'
 import { decryptToken } from '@/lib/token-crypto'
 
-// The Fable drafting call can run tens of seconds; the platform default
+// The subscribed Claude drafting worker can run tens of seconds; the platform default
 // would cut the function off mid-draft.
 export const maxDuration = 300
 
@@ -65,6 +66,8 @@ interface LeadForDraft {
   organization: string | null
   notes: string | null
   source: string | null
+  stage: string
+  removed_at: string | null
   govcon: unknown
   gmail_draft_id: string | null
   gmail_draft_created_at: string | null
@@ -72,7 +75,8 @@ interface LeadForDraft {
 
 async function findLeadForDraft(id: number): Promise<LeadForDraft | null> {
   const rows = await sql`
-    SELECT id, name, email, organization, notes, source, govcon, gmail_draft_id, gmail_draft_created_at
+    SELECT id, name, email, organization, notes, source, stage, removed_at, govcon,
+           gmail_draft_id, gmail_draft_created_at
     FROM leads
     WHERE id = ${id}
   `
@@ -104,10 +108,6 @@ export async function POST(
     console.error('GMAIL_CLIENT_ID/GMAIL_CLIENT_SECRET is not configured')
     return json({ error: 'Gmail is not configured on this deployment' }, { status: 500 })
   }
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.error('ANTHROPIC_API_KEY is not configured')
-    return json({ error: 'AI drafting is not configured on this deployment' }, { status: 500 })
-  }
 
   const { id: idValue } = await params
   const id = parseLeadId(idValue)
@@ -127,6 +127,15 @@ export async function POST(
 
   const lead = await findLeadForDraft(id)
   if (!lead) return json({ error: 'Lead not found' }, { status: 404 })
+  if (lead.removed_at) {
+    return json({ error: 'Restore this lead before drafting an email' }, { status: 409 })
+  }
+  if (!['new', 'contacted', 'qualified', 'proposal'].includes(lead.stage)) {
+    return json(
+      { error: 'Pursue this opportunity before drafting an email; closed leads cannot be drafted' },
+      { status: 409 },
+    )
+  }
 
   // Idempotent: a repeat call (retry, direct API call) for a lead that
   // already has a finished draft returns it instead of creating another.
@@ -190,21 +199,27 @@ export async function POST(
         UPDATE leads
         SET gmail_draft_id = NULL, gmail_draft_created_at = now()
         WHERE id = ${id}
+          AND email = ${lead.email}
+          AND removed_at IS NULL
+          AND stage IN ('new', 'contacted', 'qualified', 'proposal')
           AND gmail_draft_id = ${lead.gmail_draft_id}
-        RETURNING gmail_draft_created_at
+        RETURNING gmail_draft_created_at, gmail_draft_created_at::text AS claim_token
       `
     : await sql`
         UPDATE leads
         SET gmail_draft_created_at = now()
         WHERE id = ${id}
+          AND email = ${lead.email}
+          AND removed_at IS NULL
+          AND stage IN ('new', 'contacted', 'qualified', 'proposal')
           AND gmail_draft_id IS NULL
           AND (gmail_draft_created_at IS NULL OR gmail_draft_created_at < now() - interval '5 minutes')
-        RETURNING gmail_draft_created_at
+        RETURNING gmail_draft_created_at, gmail_draft_created_at::text AS claim_token
       `
-  const claim = (claimRows as { gmail_draft_created_at: string }[])[0]
+  const claim = (claimRows as { gmail_draft_created_at: string; claim_token: string }[])[0]
   if (!claim) {
     return json(
-      { error: 'A draft is already being created for this lead -- try again in a moment' },
+      { error: 'This lead changed or a draft is already being created -- refresh the lead and try again' },
       { status: 409 },
     )
   }
@@ -217,13 +232,14 @@ export async function POST(
       UPDATE leads
       SET gmail_draft_created_at = NULL
       WHERE id = ${id} AND gmail_draft_id IS NULL
+        AND gmail_draft_created_at = ${claim.claim_token}::timestamptz
     `.catch(() => undefined)
   }
 
   class ClaimedRequestError extends Error {
     readonly status: number
-    readonly code?: 'GMAIL_RECONNECT_REQUIRED'
-    constructor(message: string, status: number, code?: 'GMAIL_RECONNECT_REQUIRED') {
+    readonly code?: string
+    constructor(message: string, status: number, code?: string) {
       super(message)
       this.status = status
       this.code = code
@@ -303,11 +319,8 @@ export async function POST(
       throw new ClaimedRequestError('Gmail could not be reached for drafting. Try again in a moment.', 502)
     }
 
-    // The one paid step, placed after every check that can fail for free --
-    // including the token exchange above, which is the only way to catch a
-    // revoked Gmail connection before spending Fable tokens on a draft that
-    // could never be delivered. The access token lives ~an hour, far past
-    // the drafting call's 120s cap, so ordering costs nothing in freshness.
+    // Check the connection before queueing Claude work, so a revoked Gmail
+    // grant does not consume subscription capacity for an unusable draft.
     let drafted: { subject: string; bodyText: string }
     try {
       drafted = await draftLeadEmail({
@@ -318,6 +331,9 @@ export async function POST(
         govcon: lead.govcon,
       })
     } catch (error) {
+      if (error instanceof ClaudeSubscriptionError) {
+        throw new ClaimedRequestError(error.message, error.status, error.code)
+      }
       console.error(
         'Unable to draft the email with Claude',
         error instanceof Error ? error.message : 'Unknown error',
@@ -396,7 +412,21 @@ export async function POST(
     // mode here; a human resolves it manually using the message id logged
     // below, rather than the route silently duplicating outbound mail.
     try {
-      await sql`UPDATE leads SET gmail_draft_id = ${messageId} WHERE id = ${id}`
+      // Keep the database's full timestamp precision for ownership checks:
+      // JS Date conversion would discard the microseconds. A delayed request
+      // must never overwrite (or release) a newer request's claim.
+      const savedRows = await sql`
+        UPDATE leads
+        SET gmail_draft_id = ${messageId}, updated_at = now()
+        WHERE id = ${id}
+          AND email = ${lead.email}
+          AND removed_at IS NULL
+          AND stage IN ('new', 'contacted', 'qualified', 'proposal')
+          AND gmail_draft_id IS NULL
+          AND gmail_draft_created_at = ${claim.claim_token}::timestamptz
+        RETURNING id
+      `
+      if (savedRows.length !== 1) throw new Error('Lead changed or the draft claim is no longer owned by this request')
     } catch (error) {
       console.error(
         'Gmail draft was created but could not be recorded on the lead -- do not retry',
@@ -422,7 +452,8 @@ export async function POST(
     if (error instanceof ClaimedRequestError) {
       return json({
         error: error.message,
-        ...(error.code ? { code: error.code, reconnectUrl: '/admin/gmail' } : {}),
+        ...(error.code ? { code: error.code } : {}),
+        ...(error.code === 'GMAIL_RECONNECT_REQUIRED' ? { reconnectUrl: '/admin/gmail' } : {}),
       }, { status: error.status })
     }
     console.error(

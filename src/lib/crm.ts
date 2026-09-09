@@ -1,3 +1,4 @@
+import { createHash, randomUUID } from 'node:crypto'
 import { sql } from '@/lib/db'
 
 // 'review' is the entry stage for an opportunity-radar lead synced from a
@@ -48,6 +49,7 @@ export interface LeadCaptureResult {
   leadId: number
   stage: LeadStage
   created: boolean
+  suppressed?: boolean
 }
 
 /**
@@ -125,6 +127,7 @@ export interface PrepareLeadProposalInput {
   projectName: string
   source?: string
   externalRef?: string
+  expectedVersion?: number
 }
 
 export interface ProposalPreparationResult {
@@ -146,12 +149,47 @@ export interface UpdateLeadInput {
   estimatedValueCents: number | null
   nextFollowUp: Date | string | null
   notes: string | null
+  email?: string
+  phone?: string | null
+  proposalBrief?: string | null
+  expectedVersion?: number
+  activity?: LeadActivityInput
+}
+
+export const LEAD_ACTIVITY_KINDS = ['outreach', 'follow_up', 'note', 'stage_change'] as const
+export interface LeadActivityInput {
+  id: string
+  kind: (typeof LEAD_ACTIVITY_KINDS)[number]
+  note: string
+}
+
+export interface LeadActivity {
+  id: string
+  kind: LeadActivityInput['kind'] | 'removed' | 'restored'
+  note: string
+  created_at: string
+  from_stage?: LeadStage
+  to_stage?: LeadStage
+  /** Server-only retry fingerprint; never accepted from a caller. */
+  request_hash?: string
+}
+
+export interface LeadManagementRecord {
+  id: number
+  stage: LeadStage
+  removed_at: Date | string | null
+  removal_reason: string | null
+  workflow_version: number
+  activity_history: LeadActivity[]
+  [field: string]: unknown
 }
 
 export interface LeadUpdateResult extends LeadStageResult {
   estimatedValueCents: number | null
   nextFollowUp: string | null
   notes: string | null
+  workflowVersion: number
+  activityHistory: LeadActivity[]
 }
 
 export interface ProjectLifecycleResult {
@@ -231,6 +269,7 @@ interface LeadCaptureRow {
   lead_id: number
   stage: LeadStage
   created: boolean
+  suppressed?: boolean
 }
 
 interface IntakeGraphRow {
@@ -260,6 +299,8 @@ interface LeadUpdateRow extends LeadStageRow {
   estimated_value_cents: number | null
   next_follow_up: Date | string | null
   notes: string | null
+  workflow_version: number
+  activity_history: LeadActivity[]
 }
 
 interface ProjectLifecycleRow {
@@ -407,6 +448,33 @@ export class LeadConflictError extends Error {
   }
 }
 
+export class LeadWorkflowConflictError extends Error {
+  constructor(message = 'This opportunity changed or is no longer editable. Refresh it before trying again.') {
+    super(message)
+    this.name = 'LeadWorkflowConflictError'
+  }
+}
+
+function expectedWorkflowVersion(value: number | undefined): number | null {
+  if (value === undefined) return null
+  if (!Number.isSafeInteger(value) || value < 0 || value > 2_147_483_647) {
+    throw new Error('expectedVersion must be a non-negative integer')
+  }
+  return value
+}
+
+export function validateLeadActivity(value: unknown): LeadActivityInput {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('activity must be an object')
+  const activity = value as Record<string, unknown>
+  if (Object.keys(activity).length !== 3 ||
+    typeof activity.id !== 'string' || !/^[a-zA-Z0-9_-]{1,128}$/.test(activity.id) ||
+    !LEAD_ACTIVITY_KINDS.includes(activity.kind as LeadActivityInput['kind']) ||
+    typeof activity.note !== 'string' || activity.note.length > 4000) {
+    throw new Error('activity requires a unique id, a supported kind, and a note of 4,000 characters or fewer')
+  }
+  return { id: activity.id, kind: activity.kind as LeadActivityInput['kind'], note: activity.note.trim() }
+}
+
 /** Thrown only for a bad-input failure caught before any database call --
  * lets route handlers map this to 400 while an unrecognized Error (a DB or
  * runtime failure) maps to a generic 500 instead of leaking its message. */
@@ -500,10 +568,9 @@ const GOVCON_DEFAULT_SOURCE = 'opportunity-radar'
  * opportunity-radar. Mirrors captureContactLead's ON CONFLICT (source,
  * external_id) idempotency key, but without the email-verification/coarse-
  * location semantics that only make sense for a human-submitted web form.
- * A retry with the same externalRef returns the existing row rather than
- * duplicating or overwriting it -- opportunity-radar's own local state
- * (workflow_status, engagement history) stays authoritative for anything
- * finer-grained than this lead's funnel stage.
+ * A retry with the same externalRef returns the existing row. Once pursued,
+ * the CRM owns workflow details; radar may refresh its assessment but must
+ * preserve human decisions, activity, and removed-opportunity tombstones.
  */
 export async function captureGovconLead(input: GovconLeadInput): Promise<LeadCaptureResult> {
   let name: string
@@ -514,7 +581,9 @@ export async function captureGovconLead(input: GovconLeadInput): Promise<LeadCap
   try {
     name = requiredText(input.title, 'title')
     externalRef = requiredText(input.externalRef, 'externalRef')
-    govconJson = input.govcon ? JSON.stringify(input.govcon) : null
+    govconJson = input.govcon
+      ? JSON.stringify(Object.fromEntries(Object.entries(input.govcon).filter(([key]) => key !== 'crm_proposal_brief')))
+      : null
     estimatedValueCents = nullableCurrencyCents(input.estimatedValueCents ?? null)
     nextFollowUp = nullableTimestamp(input.nextFollowUp ?? null, 'nextFollowUp')
   } catch (error) {
@@ -544,27 +613,36 @@ export async function captureGovconLead(input: GovconLeadInput): Promise<LeadCap
         -- which stay human-owned once a lead exists. estimated_value_cents
         -- and next_follow_up are human-editable in the admin form, so they
         -- only refresh while the lead is still in a scan-owned stage
-        -- (review/declined); govcon is purely scan-owned and always
-        -- refreshes. COALESCE keeps a scan that happens to omit a value
+        -- (review/declined); analysis refreshes while the admin's proposal
+        -- brief is retained. COALESCE keeps a scan that omits a value
         -- from blanking a previously-good one.
-        govcon = COALESCE(EXCLUDED.govcon, leads.govcon),
+        govcon = CASE WHEN leads.removed_at IS NOT NULL THEN leads.govcon ELSE
+          COALESCE(EXCLUDED.govcon, leads.govcon, '{}'::jsonb) - 'crm_proposal_brief'
+            || CASE WHEN leads.govcon ? 'crm_proposal_brief'
+              THEN jsonb_build_object('crm_proposal_brief', leads.govcon->'crm_proposal_brief')
+              ELSE '{}'::jsonb END
+          END,
         estimated_value_cents = CASE
-          WHEN leads.stage IN ('review', 'declined')
+          WHEN leads.stage IN ('review', 'declined') AND leads.removed_at IS NULL
             THEN COALESCE(EXCLUDED.estimated_value_cents, leads.estimated_value_cents)
           ELSE leads.estimated_value_cents
         END,
         next_follow_up = CASE
-          WHEN leads.stage IN ('review', 'declined')
+          WHEN leads.stage IN ('review', 'declined') AND leads.removed_at IS NULL
             THEN COALESCE(EXCLUDED.next_follow_up, leads.next_follow_up)
           ELSE leads.next_follow_up
         END,
-        updated_at = now()
-      RETURNING id AS lead_id, stage, (xmax = 0) AS created
+        workflow_version = leads.workflow_version + CASE
+          WHEN leads.stage IN ('review', 'declined') AND leads.removed_at IS NULL THEN 1 ELSE 0 END,
+        updated_at = CASE WHEN leads.removed_at IS NULL THEN now() ELSE leads.updated_at END
+      RETURNING id AS lead_id, stage, (xmax = 0) AS created,
+                (removed_at IS NOT NULL) AS suppressed
     `,
   ])
 
   const row = firstRow<LeadCaptureRow>(rows, 'Failed to capture govcon lead')
-  return { leadId: row.lead_id, stage: row.stage, created: row.created }
+  return { leadId: row.lead_id, stage: row.stage, created: row.created,
+    ...(row.suppressed ? { suppressed: true } : {}) }
 }
 
 /**
@@ -578,7 +656,7 @@ export async function captureGovconLead(input: GovconLeadInput): Promise<LeadCap
  */
 export async function updateGovconLead(
   input: GovconLeadUpdateInput,
-): Promise<{ leadId: number; stage: LeadStage } | null> {
+): Promise<{ leadId: number; stage: LeadStage; suppressed?: boolean } | null> {
   let externalRef: string
   let govconPatchJson: string | null
   let estimatedValueCents: number | null
@@ -606,28 +684,31 @@ export async function updateGovconLead(
         -- still applies. 'won' is never writable from this integration.
         stage = CASE
           WHEN ${stage}::text IS NULL THEN stage
-          WHEN stage <> 'won' AND stage = ANY(${allowedFrom}::text[]) THEN ${stage}
+          WHEN stage <> 'won' AND stage = ANY(${allowedFrom}::text[])
+            AND stage IN ('review', 'declined') AND removed_at IS NULL THEN ${stage}
           ELSE stage
         END,
-        notes = COALESCE(${optionalText(input.notes ?? null)}, notes),
-        next_follow_up = COALESCE(
-          ${nextFollowUp}::timestamptz, next_follow_up
-        ),
-        estimated_value_cents = COALESCE(
-          ${estimatedValueCents}, estimated_value_cents
-        ),
+        notes = CASE WHEN stage IN ('review', 'declined') AND removed_at IS NULL
+          THEN COALESCE(${optionalText(input.notes ?? null)}, notes) ELSE notes END,
+        next_follow_up = CASE WHEN stage IN ('review', 'declined') AND removed_at IS NULL
+          THEN COALESCE(${nextFollowUp}::timestamptz, next_follow_up) ELSE next_follow_up END,
+        estimated_value_cents = CASE WHEN stage IN ('review', 'declined') AND removed_at IS NULL
+          THEN COALESCE(${estimatedValueCents}, estimated_value_cents) ELSE estimated_value_cents END,
         govcon = CASE
-          WHEN ${govconPatchJson}::jsonb IS NULL THEN govcon
-          ELSE COALESCE(govcon, '{}'::jsonb) || ${govconPatchJson}::jsonb
+          WHEN ${govconPatchJson}::jsonb IS NULL OR removed_at IS NOT NULL THEN govcon
+          ELSE COALESCE(govcon, '{}'::jsonb) || (${govconPatchJson}::jsonb - 'crm_proposal_brief')
         END,
-        updated_at = now()
+        workflow_version = workflow_version + CASE
+          WHEN stage IN ('review', 'declined') AND removed_at IS NULL THEN 1 ELSE 0 END,
+        updated_at = CASE WHEN removed_at IS NULL THEN now() ELSE updated_at END
       WHERE source = ${source} AND external_id = ${externalRef}
-      RETURNING id AS lead_id, stage
+      RETURNING id AS lead_id, stage, (removed_at IS NOT NULL) AS suppressed
     `,
   ])
 
-  const row = (rows as { lead_id: number; stage: LeadStage }[])[0]
-  return row ? { leadId: row.lead_id, stage: row.stage } : null
+  const row = (rows as { lead_id: number; stage: LeadStage; suppressed: boolean }[])[0]
+  return row ? { leadId: row.lead_id, stage: row.stage,
+    ...(row.suppressed ? { suppressed: true } : {}) } : null
 }
 
 /**
@@ -963,6 +1044,7 @@ export async function prepareLeadProposal(
   const projectName = requiredText(input.projectName, 'projectName')
   const source = normalizedSource(input.source, 'lead_promotion')
   const externalRef = requiredText(input.externalRef ?? `lead:${leadId}`, 'externalRef')
+  const expectedVersion = expectedWorkflowVersion(input.expectedVersion)
 
   // Govcon leads (e.g. opportunity-radar) can legitimately have no contact
   // email (leads.email is NOT NULL, so a blank string stands in for "none").
@@ -975,6 +1057,10 @@ export async function prepareLeadProposal(
   if (leadEmailRow && leadEmailRow.email.trim() === '') {
     throw new Error('Lead has no contact email on file -- add one before preparing a proposal')
   }
+  if (leadEmailRow && (leadEmailRow.email.trim().length > 254
+    || !/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(leadEmailRow.email.trim()))) {
+    throw new Error('Lead needs one valid contact email before preparing a proposal')
+  }
 
   const [rows] = await sql.transaction(
     (transactionSql) => [
@@ -982,7 +1068,15 @@ export async function prepareLeadProposal(
         WITH selected_lead AS MATERIALIZED (
           SELECT id, name, email, organization, phone, client_id
           FROM leads
-          WHERE id = ${leadId} AND stage NOT IN ('won', 'lost')
+          WHERE id = ${leadId} AND stage IN ('new', 'contacted', 'qualified', 'proposal')
+            AND removed_at IS NULL AND btrim(email) <> ''
+            -- Bind client creation to the address validated above. A contact
+            -- correction between preflight and locking must be retried.
+            AND email = ${leadEmailRow?.email ?? null}::text
+            AND (${expectedVersion}::integer IS NULL OR workflow_version = ${expectedVersion})
+            AND (stage = 'proposal' OR gmail_draft_id IS NOT NULL
+              OR gmail_draft_created_at IS NULL
+              OR gmail_draft_created_at < now() - interval '5 minutes')
           FOR UPDATE
         ),
         existing_client AS MATERIALIZED (
@@ -1038,6 +1132,12 @@ export async function prepareLeadProposal(
           UPDATE leads
           SET client_id = (SELECT id FROM client_record),
               stage = 'proposal',
+              activity_history = activity_history || CASE WHEN stage <> 'proposal'
+                THEN jsonb_build_array(jsonb_build_object(
+                  'id', ${randomUUID()}::text, 'kind', 'stage_change', 'note', 'Proposal project prepared',
+                  'created_at', now(), 'from_stage', stage, 'to_stage', 'proposal'
+                )) ELSE '[]'::jsonb END,
+              workflow_version = workflow_version + 1,
               updated_at = now()
           WHERE id = (SELECT id FROM compatible_lead)
           RETURNING id, stage
@@ -1204,9 +1304,9 @@ async function updateProjectLifecycle(input: {
           WHERE id = (SELECT client_id FROM updated_project)
           RETURNING id, relationship_status
         ),
-        updated_lead AS (
-          UPDATE leads
-          SET stage = CASE
+        lead_transition AS MATERIALIZED (
+          SELECT leads.id, leads.stage AS previous_stage,
+              CASE
                 WHEN ${input.to} IN ('signed', 'active') THEN 'won'
                 WHEN ${input.to} = 'canceled'
                   AND (SELECT previous_status FROM updated_project) = 'proposal'
@@ -1218,10 +1318,29 @@ async function updateProjectLifecycle(input: {
                       AND other_project.status IN ('proposal', 'signed', 'active')
                   ) THEN 'lost'
                 ELSE leads.stage
-              END,
-              updated_at = now()
+              END AS next_stage
+          FROM leads
           WHERE id = (SELECT lead_id FROM updated_project)
-          RETURNING id, stage
+          FOR UPDATE
+        ),
+        updated_lead AS (
+          UPDATE leads
+          SET stage = lead_transition.next_stage,
+              workflow_version = workflow_version
+                + CASE WHEN lead_transition.previous_stage <> lead_transition.next_stage THEN 1 ELSE 0 END,
+              activity_history = activity_history || CASE
+                WHEN lead_transition.previous_stage <> lead_transition.next_stage
+                THEN jsonb_build_array(jsonb_build_object(
+                  'id', ${randomUUID()}::text, 'kind', 'stage_change',
+                  'note', CASE WHEN lead_transition.next_stage = 'won'
+                    THEN 'Engagement signed or activated' ELSE 'Proposal project canceled' END,
+                  'created_at', now(), 'from_stage', lead_transition.previous_stage,
+                  'to_stage', lead_transition.next_stage
+                )) ELSE '[]'::jsonb END,
+              updated_at = now()
+          FROM lead_transition
+          WHERE leads.id = lead_transition.id
+          RETURNING leads.id, leads.stage
         ),
         updated_intake AS (
           UPDATE intake_submissions
@@ -1313,20 +1432,89 @@ export async function updateLead(input: UpdateLeadInput): Promise<LeadUpdateResu
   const estimatedValueCents = nullableCurrencyCents(input.estimatedValueCents)
   const nextFollowUp = nullableTimestamp(input.nextFollowUp, 'nextFollowUp')
   const notes = optionalText(input.notes)
+  const email = input.email?.trim() ?? null
+  if (email !== null && (email.length > 254 || !/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(email))) {
+    throw new Error('Enter one valid contact email address')
+  }
+  const proposalBrief = optionalText(input.proposalBrief)
+  if (proposalBrief && proposalBrief.length > 20_000) throw new Error('Proposal brief is too long')
+  if (notes && notes.length > 10_000) throw new Error('Notes are too long')
+  const phone = optionalText(input.phone)
+  if (phone && (phone.length > 100 || /[\r\n]/.test(phone))) throw new Error('Contact phone is invalid')
+  const expectedVersion = expectedWorkflowVersion(input.expectedVersion)
+  const activity = input.activity === undefined ? null : validateLeadActivity(input.activity)
+  if (activity && expectedVersion === null) throw new Error('Activity updates require expectedVersion')
+  const requestHash = activity ? createHash('sha256').update(JSON.stringify({
+    stage, estimatedValueCents, nextFollowUp, notes, email,
+    phone: input.phone === undefined ? undefined : phone,
+    proposalBrief: input.proposalBrief === undefined ? undefined : proposalBrief,
+    activity,
+  })).digest('hex') : null
+  const automaticActivityId = randomUUID()
 
   const [rows] = await sql.transaction(
     (transactionSql) => [
       transactionSql`
-        WITH updated_lead AS (
-          UPDATE leads
+        WITH selected_lead AS MATERIALIZED (
+          SELECT * FROM leads
+          WHERE id = ${leadId} AND removed_at IS NULL
+          FOR UPDATE
+        ),
+        replay AS (
+          -- A retry of an already committed activity returns the current
+          -- record without replaying its now-stale field edits or stage.
+          SELECT * FROM selected_lead
+          WHERE ${activity?.id ?? null}::text IS NOT NULL
+            AND EXISTS (
+              SELECT 1 FROM jsonb_array_elements(activity_history) event
+              WHERE event->>'id' = ${activity?.id ?? null}
+                AND event->>'request_hash' = ${requestHash}
+            )
+        ),
+        updated_lead AS (
+          UPDATE leads AS lead
           SET stage = ${stage},
               estimated_value_cents = ${estimatedValueCents},
               next_follow_up = ${nextFollowUp}::timestamptz,
               notes = ${notes},
+              email_verified_at = CASE WHEN ${email}::text IS NOT NULL AND lead.email <> ${email}
+                THEN NULL ELSE lead.email_verified_at END,
+              email = COALESCE(${email}::text, lead.email),
+              phone = CASE WHEN ${input.phone !== undefined} THEN ${phone} ELSE lead.phone END,
+              govcon = CASE WHEN ${input.proposalBrief !== undefined}
+                THEN COALESCE(lead.govcon, '{}'::jsonb) || jsonb_build_object('crm_proposal_brief', ${proposalBrief}::text)
+                ELSE lead.govcon END,
+              activity_history = lead.activity_history || CASE
+                WHEN ${activity?.id ?? null}::text IS NOT NULL THEN jsonb_build_array(jsonb_build_object(
+                  'id', ${activity?.id ?? null}::text,
+                  'kind', ${activity?.kind ?? null}::text,
+                  'note', ${activity?.note ?? null}::text,
+                  'created_at', now(), 'from_stage', lead.stage, 'to_stage', ${stage}::text,
+                  'request_hash', ${requestHash}::text
+                ))
+                WHEN lead.stage <> ${stage} THEN jsonb_build_array(jsonb_build_object(
+                  'id', ${automaticActivityId}::text, 'kind', 'stage_change', 'note', '',
+                  'created_at', now(), 'from_stage', lead.stage, 'to_stage', ${stage}::text
+                ))
+                ELSE '[]'::jsonb END,
+              workflow_version = lead.workflow_version + 1,
               updated_at = now()
-          WHERE id = ${leadId}
-            AND stage <> 'won'
-            AND stage = ANY(${allowedFrom}::text[])
+          FROM selected_lead
+          WHERE lead.id = selected_lead.id
+            AND lead.stage <> 'won'
+            AND lead.stage = ANY(${allowedFrom}::text[])
+            AND (${expectedVersion}::integer IS NULL OR lead.workflow_version = ${expectedVersion})
+            AND NOT EXISTS (
+              SELECT 1 FROM jsonb_array_elements(lead.activity_history) event
+              WHERE event->>'id' = ${activity?.id ?? null}
+            )
+            AND (lead.stage = ${stage} OR lead.gmail_draft_id IS NOT NULL
+              OR lead.gmail_draft_created_at IS NULL
+              OR lead.gmail_draft_created_at < now() - interval '5 minutes')
+            AND (${email}::text IS NULL OR lead.email = ${email} OR (
+              lead.client_id IS NULL AND lead.gmail_draft_id IS NULL
+              AND (lead.gmail_draft_created_at IS NULL OR lead.gmail_draft_created_at < now() - interval '5 minutes')
+            ))
             AND (
               ${stage}::text <> 'lost'
               OR NOT EXISTS (
@@ -1334,7 +1522,8 @@ export async function updateLead(input: UpdateLeadInput): Promise<LeadUpdateResu
                 WHERE lead_id = ${leadId} AND status IN ('signed', 'active')
               )
             )
-          RETURNING id, stage, estimated_value_cents, next_follow_up, notes
+          RETURNING lead.id, lead.stage, lead.estimated_value_cents, lead.next_follow_up,
+                    lead.notes, lead.workflow_version, lead.activity_history
         ),
         canceled_projects AS (
           UPDATE projects
@@ -1352,17 +1541,20 @@ export async function updateLead(input: UpdateLeadInput): Promise<LeadUpdateResu
             AND status <> 'won'
           RETURNING id
         )
-        SELECT id AS lead_id, stage, estimated_value_cents, next_follow_up, notes
+        SELECT id AS lead_id, stage, estimated_value_cents, next_follow_up, notes,
+               workflow_version, activity_history
         FROM updated_lead
+        UNION ALL
+        SELECT id AS lead_id, stage, estimated_value_cents, next_follow_up, notes,
+               workflow_version, activity_history
+        FROM replay
       `,
     ],
     { isolationLevel: 'Serializable' },
   )
 
-  const row = firstRow<LeadUpdateRow>(
-    rows,
-    `Lead not found, won, or transition to ${stage} is not allowed`,
-  )
+  const row = (rows as LeadUpdateRow[])[0]
+  if (!row) throw new LeadWorkflowConflictError()
   return {
     leadId: row.lead_id,
     stage: row.stage,
@@ -1372,7 +1564,93 @@ export async function updateLead(input: UpdateLeadInput): Promise<LeadUpdateResu
         ? row.next_follow_up.toISOString()
         : row.next_follow_up,
     notes: row.notes,
+    workflowVersion: row.workflow_version,
+    activityHistory: row.activity_history,
   }
+}
+
+/** Hide or restore a complete selection without changing its sales lifecycle.
+ * The locked selection and eligibility CTE make a missing ID or busy draft
+ * reject the entire batch. Existing tombstones make repeated removals harmless.
+ */
+export async function manageLeads(input: {
+  action: 'remove' | 'restore'
+  ids: number[]
+  reason?: string
+}): Promise<LeadManagementRecord[]> {
+  if (input.action !== 'remove' && input.action !== 'restore') throw new Error('Invalid management action')
+  if (!Array.isArray(input.ids) || input.ids.length < 1 || input.ids.length > 100 ||
+    input.ids.some(id => !Number.isSafeInteger(id) || id < 1) || new Set(input.ids).size !== input.ids.length) {
+    throw new Error('Select between 1 and 100 distinct opportunity IDs')
+  }
+  const ids = [...input.ids].sort((a, b) => a - b)
+  const reason = optionalText(input.reason)
+  if (reason && reason.length > 1000) throw new Error('Removal reason must be 1,000 characters or fewer')
+  const eventId = randomUUID()
+  const [rows] = await sql.transaction((transactionSql) => [
+    transactionSql`
+      WITH selected_leads AS MATERIALIZED (
+        SELECT * FROM leads WHERE id = ANY(${ids}::integer[])
+        ORDER BY id FOR UPDATE
+      ),
+      permitted AS (
+        SELECT 1
+        WHERE (SELECT count(*) FROM selected_leads) = ${ids.length}
+          AND (${input.action}::text <> 'remove' OR NOT EXISTS (
+            SELECT 1 FROM selected_leads
+            WHERE gmail_draft_id IS NULL
+              AND gmail_draft_created_at >= now() - interval '5 minutes'
+          ))
+      ),
+      changed AS (
+        UPDATE leads AS lead
+        SET removed_at = CASE WHEN ${input.action}::text = 'remove' THEN now() ELSE NULL END,
+            removal_reason = CASE WHEN ${input.action}::text = 'remove' THEN ${reason}::text ELSE NULL END,
+            activity_history = lead.activity_history || jsonb_build_array(jsonb_build_object(
+              'id', ${eventId}::text,
+              'kind', CASE WHEN ${input.action}::text = 'remove' THEN 'removed' ELSE 'restored' END,
+              'note', CASE WHEN ${input.action}::text = 'remove' THEN COALESCE(${reason}::text, '') ELSE '' END,
+              'created_at', now(), 'from_stage', lead.stage, 'to_stage', lead.stage
+            )),
+            workflow_version = lead.workflow_version + 1,
+            updated_at = now()
+        FROM permitted
+        WHERE lead.id IN (SELECT id FROM selected_leads)
+          AND CASE WHEN ${input.action}::text = 'remove'
+            THEN lead.removed_at IS NULL ELSE lead.removed_at IS NOT NULL END
+        RETURNING lead.*
+      ),
+      result AS (
+        SELECT * FROM changed
+        UNION ALL
+        SELECT * FROM selected_leads
+        WHERE id NOT IN (SELECT id FROM changed) AND EXISTS (SELECT 1 FROM permitted)
+      )
+      SELECT result.*,
+             recent_project.id AS project_id, recent_project.status AS project_status,
+             recent_intake.id AS intake_id, client.relationship_status
+      FROM result
+      LEFT JOIN clients client ON client.id = result.client_id
+      LEFT JOIN LATERAL (
+        SELECT project.id, project.status FROM projects project
+        WHERE project.lead_id = result.id
+        ORDER BY CASE project.status WHEN 'active' THEN 0 WHEN 'signed' THEN 1
+          WHEN 'proposal' THEN 2 ELSE 3 END, project.created_at DESC, project.id DESC
+        LIMIT 1
+      ) recent_project ON TRUE
+      LEFT JOIN LATERAL (
+        SELECT intake.id FROM intake_submissions intake
+        WHERE intake.lead_id = result.id
+        ORDER BY COALESCE(intake.created_at, intake.submitted_at) DESC, intake.id DESC
+        LIMIT 1
+      ) recent_intake ON TRUE
+      ORDER BY result.id
+    `,
+  ], { isolationLevel: 'Serializable' })
+  if (rows.length !== ids.length) {
+    throw new LeadWorkflowConflictError('No opportunities were changed. Refresh the list; an opportunity may be missing or have a draft in progress.')
+  }
+  return rows as LeadManagementRecord[]
 }
 
 export async function transitionLeadStage(input: {
@@ -1388,10 +1666,14 @@ export async function transitionLeadStage(input: {
       transactionSql`
         WITH updated_lead AS (
           UPDATE leads
-          SET stage = ${stage}, updated_at = now()
+          SET stage = ${stage}, workflow_version = workflow_version + 1, updated_at = now()
           WHERE id = ${leadId}
+            AND removed_at IS NULL
             AND stage <> 'won'
             AND stage = ANY(${allowedFrom}::text[])
+            AND (stage = ${stage} OR gmail_draft_id IS NOT NULL
+              OR gmail_draft_created_at IS NULL
+              OR gmail_draft_created_at < now() - interval '5 minutes')
             AND (
               ${stage}::text <> 'lost'
               OR NOT EXISTS (

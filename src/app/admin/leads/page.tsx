@@ -1,582 +1,350 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
-
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { gmailDraftUrl } from '@/lib/gmail-draft-url'
+import { exportProposalBrief, followUpDue, hasActiveDraftClaim, matchesQueue, nextWeek, opportunityUrl, proposalBrief, QUEUES, queueFor, radarText, workflowStep, type Lead, type LeadActivity, type LeadQueue, type LeadStage } from '@/lib/lead-workflow'
+import styles from './leads.module.css'
 
-const STAGES = ['review', 'new', 'contacted', 'qualified', 'proposal', 'won', 'lost', 'declined'] as const
-// Stage dropdown options honor the server's transition table: a review-stage
-// lead can only stay in review or move to new (its other exits are the
-// dedicated Pursue / Not-pursuing buttons); everything else uses the classic
-// funnel stages. Offering review/declined on ordinary leads would just 409.
-const FUNNEL_STAGES = ['new', 'contacted', 'qualified', 'proposal', 'lost'] as const
-const REVIEW_STAGES = ['review', 'new'] as const
-
-type Stage = typeof STAGES[number]
-
-interface Lead {
-  id: number
-  name: string
-  email: string
-  organization: string | null
-  phone: string | null
-  service: string | null
-  message: string
-  source: string
-  stage: Stage
-  estimated_value_cents: number | null
-  next_follow_up: string | null
-  notes: string | null
-  client_id: number | null
-  project_id: number | null
-  intake_id: number | null
-  relationship_status: string | null
-  project_status: string | null
-  gmail_draft_id: string | null
-  gmail_draft_created_at: string | null
-  govcon: Record<string, unknown> | null
-  created_at: string
+interface Edits { email: string; phone: string; notes: string; followUp: string; value: string; brief: string; activity: string }
+interface Notice { tone: 'success' | 'error'; text: string; reconnect?: boolean; conflict?: boolean }
+const stageLabels: Record<LeadStage, string> = { review: 'In review', new: 'Ready for outreach', contacted: 'Following up', qualified: 'Proposal planning', proposal: 'Proposal in progress', won: 'Won', lost: 'Lost', declined: 'Not pursuing' }
+function initialEdits(lead: Lead): Edits {
+  return { email: lead.email, phone: lead.phone ?? '', notes: lead.notes ?? '', followUp: lead.stage === 'review' ? '' : lead.next_follow_up?.slice(0, 10) ?? '', value: lead.estimated_value_cents === null ? '' : String(lead.estimated_value_cents / 100), brief: proposalBrief(lead), activity: '' }
 }
 
-interface DraftNotice {
-  tone: 'success' | 'error'
-  text: string
-  reconnectGmail?: boolean
+function matchesSearch(lead: Lead, search: string): boolean {
+  return `${lead.name} ${lead.organization ?? ''} ${lead.email} ${radarText(lead, 'source_id')}`.toLowerCase().includes(search.trim().toLowerCase())
 }
 
-const colors = {
-  bg: '#070f1e',
-  surface: '#0d1b2e',
-  surfaceAlt: 'rgba(255,255,255,0.035)',
-  border: 'rgba(255,255,255,0.08)',
-  text: '#f1f5f9',
-  muted: 'rgba(255,255,255,0.56)',
-  dim: 'rgba(255,255,255,0.32)',
-  blue: '#5BA8D9',
-  green: '#6ee7b7',
-  amber: '#fbbf24',
-  red: '#f87171',
-}
-
-const stageLabels: Record<Stage, string> = {
-  review: 'Review',
-  new: 'New',
-  contacted: 'Contacted',
-  qualified: 'Qualified',
-  proposal: 'Proposal',
-  won: 'Won',
-  lost: 'Lost',
-  declined: 'Declined',
-}
-
-const stageColors: Record<Stage, string> = {
-  review: '#5BA8D9',
-  new: '#93c5fd',
-  contacted: '#67e8f9',
-  qualified: '#fcd34d',
-  proposal: '#c4b5fd',
-  won: '#6ee7b7',
-  lost: '#fca5a5',
-  // Must stay a 6-digit hex: the badge/filter styles append hex alpha
-  // suffixes (e.g. `${stageColors[stage]}18`).
-  declined: '#9ca3af',
-}
-
-function dateInputValue(value: string | null) {
-  return value ? value.slice(0, 10) : ''
-}
-
-function isOverdue(value: string | null, stage: Stage) {
-  if (!value || stage === 'won' || stage === 'lost' || stage === 'declined' || stage === 'review') return false
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  return new Date(`${value.slice(0, 10)}T00:00:00`) < today
-}
-
-function formatCurrency(cents: number | null) {
-  if (cents === null) return 'Not estimated'
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(cents / 100)
-}
-
-function titleCase(value: string | null) {
-  if (!value) return null
-  return value.replaceAll('_', ' ').replace(/\b\w/g, char => char.toUpperCase())
-}
-
-function govconScore(lead: Lead): number {
-  const score = lead.govcon?.score
-  return typeof score === 'number' ? score : -1
+async function responseData(response: Response) {
+  const data = await response.json().catch(() => null)
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    throw new Error(response.status === 504 || response.status === 408
+      ? 'The request timed out. Check Gmail for a draft before retrying.'
+      : 'The request could not be completed. Refresh to check its status before retrying.')
+  }
+  return data
 }
 
 export default function AdminLeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState<Stage | 'all'>('review')
-  const [busyId, setBusyId] = useState<number | null>(null)
-  const [notice, setNotice] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
-  const [draftingIds, setDraftingIds] = useState<Set<number>>(() => new Set())
-  const [draftNotices, setDraftNotices] = useState<Record<number, DraftNotice>>({})
+  const [loadError, setLoadError] = useState('')
+  const [queue, setQueue] = useState<LeadQueue>('review')
+  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [search, setSearch] = useState('')
+  const [dueOnly, setDueOnly] = useState(false)
+  const [edits, setEdits] = useState<Record<number, Edits>>({})
+  const [pending, setPending] = useState<Record<number, string>>({})
+  const [notices, setNotices] = useState<Record<number, Notice>>({})
+  const [checked, setChecked] = useState<number[]>([])
+  const [removal, setRemoval] = useState<{ ids: number[]; reason: string } | null>(null)
+  const [managementNotice, setManagementNotice] = useState<Notice | null>(null)
+  const [undoIds, setUndoIds] = useState<number[]>([])
+  const [managing, setManaging] = useState(false)
+  const operation = useRef(false)
+  const activityRetries = useRef(new Map<string, string>())
+  const busy = managing || Object.keys(pending).length > 0
 
   async function loadLeads() {
+    setLoading(true)
+    setLoadError('')
     try {
-      const response = await fetch('/api/admin/leads')
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Leads could not be loaded')
+      const response = await fetch('/api/admin/leads?include_removed=true', { cache: 'no-store' })
+      const data = await responseData(response)
+      if (!response.ok) throw new Error(data.error || 'Opportunities could not be loaded')
       setLeads(data.leads ?? [])
-    } catch (error) {
-      setNotice({ tone: 'error', text: error instanceof Error ? error.message : 'Leads could not be loaded' })
-    } finally {
-      setLoading(false)
-    }
+      const hashId = Number(window.location.hash.match(/^#lead-(\d+)$/)?.[1])
+      if (hashId) {
+        const linked = (data.leads as Lead[]).find(lead => lead.id === hashId)
+        if (linked) { setSelectedId(hashId); setQueue(queueFor(linked)) }
+      }
+    } catch (error) { setLoadError(error instanceof Error ? error.message : 'Opportunities could not be loaded') }
+    finally { setLoading(false) }
   }
+  useEffect(() => { void loadLeads() }, [])
 
-  useEffect(() => {
-    // Initial data hydration for this client-only admin screen.
-    void loadLeads()
-  }, [])
+  const visible = useMemo(() => leads.filter(lead =>
+    matchesQueue(lead, queue) && (!dueOnly || followUpDue(lead)) &&
+    matchesSearch(lead, search)
+  ).sort((a, b) => {
+    if (queue === 'follow-up' || dueOnly) return (a.next_follow_up || '9999').localeCompare(b.next_follow_up || '9999')
+    if (queue === 'review') return Number(b.govcon?.score ?? -1) - Number(a.govcon?.score ?? -1)
+    return b.created_at.localeCompare(a.created_at)
+  }), [leads, queue, search, dueOnly])
+  const selected = visible.find(lead => lead.id === selectedId) ?? visible[0] ?? null
+  const edit = selected ? edits[selected.id] ?? initialEdits(selected) : null
+  const action = selected ? pending[selected.id] : undefined
+  const notice = selected ? notices[selected.id] : undefined
+  const closed = selected ? queueFor(selected) === 'closed' : false
+  const removed = Boolean(selected?.removed_at)
+  const phase = removed ? 'removed' : selected?.stage === 'new' ? 'outreach' : selected ? queueFor(selected) : 'review'
+  const link = selected ? opportunityUrl(selected) : null
 
-  const visible = useMemo(() => {
-    const scoped = filter === 'all' ? leads : leads.filter(lead => lead.stage === filter)
-    if (filter !== 'review') return scoped
-    return [...scoped].sort((a, b) => {
-      const scoreDiff = govconScore(b) - govconScore(a)
-      if (scoreDiff !== 0) return scoreDiff
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  function selectQueue(next: LeadQueue) { setQueue(next); setSelectedId(null); setDueOnly(false); setChecked([]) }
+  function changeEdit(patch: Partial<Edits>) {
+    if (selected) setEdits(current => ({ ...current, [selected.id]: { ...(current[selected.id] ?? initialEdits(selected)), ...patch } }))
+  }
+  function mergeLead(id: number, patch: Partial<Lead>) { setLeads(current => current.map(lead => lead.id === id ? { ...lead, ...patch } : lead)) }
+  function setNotice(id: number, value: Notice) { setNotices(current => ({ ...current, [id]: value })) }
+  function start(id: number, label: string) {
+    if (operation.current) return false
+    operation.current = true
+    setPending(current => ({ ...current, [id]: label }))
+    setNotices(current => { const next = { ...current }; delete next[id]; return next })
+    setSelectedId(id)
+    return true
+  }
+  function finish(id: number) { operation.current = false; setPending(current => { const next = { ...current }; delete next[id]; return next }) }
+
+  async function persistLead(lead: Lead, values: Edits, stage: LeadStage, activity?: string, kind: LeadActivity['kind'] = 'note'): Promise<Lead> {
+    const fingerprint = JSON.stringify({ id: lead.id, version: lead.workflow_version, stage, values, activity, kind })
+    let activityId = activityRetries.current.get(fingerprint)
+    if (activity && !activityId) { activityId = crypto.randomUUID(); activityRetries.current.set(fingerprint, activityId) }
+    const response = await fetch('/api/admin/leads', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: lead.id, stage, expected_version: lead.workflow_version, notes: values.notes || null,
+        estimated_value_cents: values.value ? Math.round(Number(values.value) * 100) : null,
+        next_follow_up: values.followUp || null,
+        ...(values.email.trim() !== lead.email ? { email: values.email.trim() } : {}),
+        ...(values.phone.trim() !== (lead.phone ?? '') ? { phone: values.phone.trim() || null } : {}),
+        ...(values.brief !== proposalBrief(lead) ? { proposal_brief: values.brief || null } : {}),
+        ...(activity ? { activity: { id: activityId, kind, note: [activity, values.activity.trim()].filter(Boolean).join(': ') } } : {}),
+      }),
     })
-  }, [filter, leads])
-
-  const counts = useMemo(
-    () => Object.fromEntries(STAGES.map(stage => [stage, leads.filter(lead => lead.stage === stage).length])) as Record<Stage, number>,
-    [leads]
-  )
-
-  const openLeads = leads.filter(lead => lead.stage !== 'won' && lead.stage !== 'lost' && lead.stage !== 'review' && lead.stage !== 'declined')
-  const openValue = openLeads.reduce((sum, lead) => sum + (lead.estimated_value_cents ?? 0), 0)
-
-  function updateLocal(id: number, update: Partial<Lead>) {
-    setLeads(current => current.map(lead => lead.id === id ? { ...lead, ...update } : lead))
-  }
-
-  async function saveLead(lead: Lead) {
-    if (lead.stage === 'won') return
-    setBusyId(lead.id)
-    setNotice(null)
-
-    try {
-      const response = await fetch('/api/admin/leads', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: lead.id,
-          stage: lead.stage,
-          estimated_value_cents: lead.estimated_value_cents,
-          next_follow_up: dateInputValue(lead.next_follow_up) || null,
-          notes: lead.notes,
-        }),
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'The lead could not be updated')
-      updateLocal(lead.id, data.lead)
-      setNotice({ tone: 'success', text: `${lead.name} was updated` })
-    } catch (error) {
-      setNotice({ tone: 'error', text: error instanceof Error ? error.message : 'The lead could not be updated' })
-    } finally {
-      setBusyId(null)
+    const data = await responseData(response)
+    if (!response.ok) {
+      const error = new Error(data.error || 'Changes could not be saved')
+      if (data.code === 'LEAD_CONFLICT') error.name = 'LeadConflict'
+      throw error
     }
-  }
-
-  async function setStage(lead: Lead, stage: Extract<Stage, 'new' | 'declined' | 'review'>) {
-    setBusyId(lead.id)
-    setNotice(null)
-
-    try {
-      const response = await fetch('/api/admin/leads', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: lead.id,
-          stage,
-          estimated_value_cents: lead.estimated_value_cents,
-          next_follow_up: dateInputValue(lead.next_follow_up) || null,
-          notes: lead.notes,
-        }),
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'The lead could not be updated')
-      updateLocal(lead.id, data.lead)
-      setNotice({
-        tone: 'success',
-        text: stage === 'declined'
-          ? `${lead.name} was marked not pursuing`
-          : stage === 'review'
-            ? `${lead.name} is back in review`
-            : `${lead.name} moved into the pipeline`,
-      })
-    } catch (error) {
-      setNotice({ tone: 'error', text: error instanceof Error ? error.message : 'The lead could not be updated' })
-    } finally {
-      setBusyId(null)
+    const saved = data.lead as Lead
+    mergeLead(lead.id, saved)
+    setEdits(current => ({ ...current, [lead.id]: { ...initialEdits(saved), activity: activity ? '' : values.activity } }))
+    activityRetries.current.delete(fingerprint)
+    if (!matchesQueue(saved, queue) || (dueOnly && !followUpDue(saved))) {
+      setQueue(queueFor(saved)); setDueOnly(false); setChecked([])
     }
+    if (!matchesSearch(saved, search)) setSearch('')
+    setSelectedId(lead.id)
+    return saved
   }
 
-  async function prepareProposal(lead: Lead) {
-    setBusyId(lead.id)
-    setNotice(null)
-
+  async function save(lead: Lead, values: Edits, stage = lead.stage, message = 'Changes saved.', activity?: string, kind: LeadActivity['kind'] = 'note') {
+    if (stage === 'won' || lead.removed_at || !start(lead.id, 'Saving…')) return
     try {
-      const response = await fetch(`/api/admin/leads/${lead.id}/convert`, { method: 'POST' })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'The proposal could not be prepared')
-
-      updateLocal(lead.id, {
-        ...data.lead,
-        client_id: data.clientId ?? data.lead?.client_id ?? lead.client_id,
-        project_id: data.projectId ?? data.lead?.project_id ?? lead.project_id,
-      })
-      setNotice({
-        tone: 'success',
-        text: data.projectCreated
-          ? `A proposal project is ready for ${lead.name}`
-          : `The existing proposal project is linked to ${lead.name}`,
-      })
-      await loadLeads()
+      await persistLead(lead, values, stage, activity, kind)
+      setNotice(lead.id, { tone: 'success', text: message })
     } catch (error) {
-      setNotice({ tone: 'error', text: error instanceof Error ? error.message : 'The proposal could not be prepared' })
-    } finally {
-      setBusyId(null)
-    }
+      setNotice(lead.id, { tone: 'error', text: error instanceof Error ? error.message : 'Changes could not be saved', conflict: error instanceof Error && error.name === 'LeadConflict' })
+    } finally { finish(lead.id) }
   }
+
+  async function reloadSaved(lead: Lead) {
+    if (!start(lead.id, 'Reloading…')) return
+    try {
+      const response = await fetch('/api/admin/leads?include_removed=true', { cache: 'no-store' })
+      const data = await responseData(response)
+      if (!response.ok) throw new Error(data.error || 'Could not reload the saved opportunity')
+      const saved = (data.leads as Lead[]).find(item => item.id === lead.id)
+      if (!saved) throw new Error('This opportunity could not be found')
+      setLeads(data.leads)
+      setEdits(current => ({ ...current, [lead.id]: initialEdits(saved) }))
+      setQueue(queueFor(saved)); setDueOnly(false); setChecked([])
+      setNotice(lead.id, { tone: 'success', text: 'Loaded the latest saved version.' })
+    } catch (error) { setNotice(lead.id, { tone: 'error', text: error instanceof Error ? error.message : 'Could not reload the opportunity' }) }
+    finally { finish(lead.id) }
+  }
+
+  async function manage(action: 'remove' | 'restore', ids: number[], reason = '') {
+    if (!ids.length || operation.current) return
+    operation.current = true; setManaging(true); setManagementNotice(null)
+    try {
+      const response = await fetch('/api/admin/leads/manage', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, ids, ...(action === 'remove' ? { reason } : {}) }),
+      })
+      const data = await responseData(response)
+      if (!response.ok) throw new Error(data.error || 'Opportunities could not be updated')
+      const updated = data.leads as Lead[]
+      setLeads(current => current.map(lead => ({ ...lead, ...updated.find(item => item.id === lead.id) })))
+      setEdits(current => { const next = { ...current }; ids.forEach(id => { delete next[id] }); return next })
+      setChecked([]); setRemoval(null); setSelectedId(null)
+      setUndoIds(action === 'remove' ? ids : [])
+      setManagementNotice({ tone: 'success', text: `${ids.length} ${ids.length === 1 ? 'opportunity' : 'opportunities'} ${action === 'remove' ? 'removed. History and linked records are preserved.' : 'restored to the previous workflow stage.'}` })
+      if (action === 'restore' && ids.length === 1 && updated[0]) { setQueue(queueFor(updated[0])); setDueOnly(false); setSelectedId(ids[0]) }
+    } catch (error) { setManagementNotice({ tone: 'error', text: error instanceof Error ? error.message : 'Opportunities could not be updated' }) }
+    finally { operation.current = false; setManaging(false) }
+  }
+
+  function requestRemoval(ids: number[]) { setRemoval({ ids: [...ids], reason: '' }); setManagementNotice(null) }
 
   async function draftEmail(lead: Lead, regenerate = false) {
-    if (regenerate && !window.confirm('Write a fresh draft for this lead? The current Gmail draft stays in Gmail until you delete it there.')) {
-      return
-    }
-    setDraftingIds(current => new Set(current).add(lead.id))
-    setDraftNotices(current => {
-      const next = { ...current }
-      delete next[lead.id]
-      return next
-    })
-    let reconnectGmail = false
-
+    if (regenerate && !window.confirm('Write a fresh draft? The current draft stays in Gmail until you delete it there.')) return
+    if (!start(lead.id, 'Drafting…')) return
+    let reconnect = false
     try {
-      const response = await fetch(`/api/admin/leads/${lead.id}/draft-email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ regenerate }),
-      })
-      const data = await response.json().catch(() => null)
-      if (!data || typeof data !== 'object') {
-        throw new Error(response.status === 504 || response.status === 408
-          ? 'The draft request timed out. Check Gmail for a draft before retrying.'
-          : 'The draft request could not be completed. Check Gmail for a draft, then retry if needed.')
-      }
-      reconnectGmail = data.code === 'GMAIL_RECONNECT_REQUIRED'
-
-      // The route can fail after the Gmail draft already exists (its DB
-      // write failed) -- it still returns messageId/draftUrl on that 500 so
-      // the admin isn't stranded looking at "Draft in progress" until a
-      // full reload. Record it locally even though this response is an
-      // error.
-      if (typeof data.messageId === 'string' && data.messageId) {
-        updateLocal(lead.id, {
-          gmail_draft_id: data.messageId,
-          gmail_draft_created_at: typeof data.draftedAt === 'string' ? data.draftedAt : new Date().toISOString(),
-        })
-      }
-
-      if (!response.ok) throw new Error(typeof data.error === 'string' ? data.error : 'The draft could not be created')
-      if (typeof data.messageId !== 'string' || !data.messageId) {
-        throw new Error('The draft service did not return a Gmail draft. Check Gmail before retrying.')
-      }
-
-      setDraftNotices(current => ({
-        ...current,
-        [lead.id]: { tone: 'success', text: 'Your Gmail draft is ready. Open it to review and send from Gmail.' },
-      }))
-    } catch (error) {
-      setDraftNotices(current => ({
-        ...current,
-        [lead.id]: { tone: 'error', text: error instanceof Error ? error.message : 'The draft could not be created', reconnectGmail },
-      }))
-    } finally {
-      setDraftingIds(current => {
-        const next = new Set(current)
-        next.delete(lead.id)
-        return next
-      })
-    }
+      const response = await fetch(`/api/admin/leads/${lead.id}/draft-email`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ regenerate }) })
+      const data = await responseData(response)
+      reconnect = data.code === 'GMAIL_RECONNECT_REQUIRED'
+      if (typeof data.messageId === 'string' && data.messageId) mergeLead(lead.id, { gmail_draft_id: data.messageId, gmail_draft_created_at: data.draftedAt ?? new Date().toISOString() })
+      if (!response.ok) throw new Error(data.error || 'The draft could not be created')
+      if (typeof data.messageId !== 'string' || !data.messageId) throw new Error('The draft service did not return a Gmail draft. Check Gmail before retrying.')
+      setNotice(lead.id, { tone: 'success', text: 'Your Gmail draft is ready. Review and send it in Gmail, then record outreach sent here.' })
+    } catch (error) { setNotice(lead.id, { tone: 'error', text: error instanceof Error ? error.message : 'The draft could not be created', reconnect }) }
+    finally { finish(lead.id) }
   }
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    boxSizing: 'border-box',
-    border: `1px solid ${colors.border}`,
-    borderRadius: '8px',
-    background: 'rgba(255,255,255,0.04)',
-    color: colors.text,
-    padding: '9px 11px',
-    fontSize: '13px',
-    colorScheme: 'dark',
+  async function prepareProposal(lead: Lead, values: Edits) {
+    if (!start(lead.id, 'Creating project…')) return
+    try {
+      const saved = await persistLead(lead, values, lead.stage, values.activity.trim() ? 'Proposal update' : undefined)
+      const response = await fetch(`/api/admin/leads/${lead.id}/convert`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ expected_version: saved.workflow_version }) })
+      const data = await responseData(response)
+      if (!response.ok) {
+        const error = new Error(data.error || 'The proposal project could not be created')
+        if (data.code === 'LEAD_CONFLICT') error.name = 'LeadConflict'
+        throw error
+      }
+      mergeLead(lead.id, { ...data.lead, client_id: data.clientId, project_id: data.projectId })
+      if (data.lead) setEdits(current => ({ ...current, [lead.id]: initialEdits(data.lead) }))
+      setNotice(lead.id, { tone: 'success', text: 'Proposal project ready. Continue developing the brief here, or open the project to track delivery.' })
+    } catch (error) { setNotice(lead.id, { tone: 'error', text: error instanceof Error ? error.message : 'The proposal could not be prepared', conflict: error instanceof Error && error.name === 'LeadConflict' }) }
+    finally { finish(lead.id) }
   }
 
-  const labelStyle: React.CSSProperties = {
-    display: 'block',
-    color: colors.dim,
-    fontSize: '10px',
-    fontWeight: 700,
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase',
-    marginBottom: '5px',
-  }
-
-  const relationLinkStyle: React.CSSProperties = {
-    color: colors.blue,
-    fontSize: '12px',
-    textDecoration: 'none',
-    padding: '5px 8px',
-    borderRadius: '6px',
-    border: `1px solid ${colors.border}`,
-    background: colors.surfaceAlt,
+  function downloadBrief(lead: Lead, brief: string) {
+    const url = URL.createObjectURL(new Blob([exportProposalBrief(lead, brief)], { type: 'text/markdown;charset=utf-8' }))
+    const anchor = document.createElement('a')
+    anchor.href = url; anchor.download = `opportunity-${lead.id}-proposal-brief.md`; anchor.click()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
   return (
-    <main style={{ maxWidth: '960px', margin: '0 auto', padding: '40px 24px 72px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px', alignItems: 'end', marginBottom: '24px', flexWrap: 'wrap' }}>
-        <div>
-          <p style={{ color: colors.blue, textTransform: 'uppercase', letterSpacing: '0.12em', fontSize: '11px', fontWeight: 800, margin: '0 0 8px' }}>
-            CRM
-          </p>
-          <h1 style={{ color: colors.text, fontSize: '26px', margin: '0 0 8px' }}>Sales Overview</h1>
-          <p style={{ color: colors.muted, fontSize: '14px', lineHeight: 1.6, margin: 0, maxWidth: '650px' }}>
-            Track each inquiry through follow-up and proposal preparation. A lead is marked won only after the SOW is signed.
-          </p>
-        </div>
-        <select value={filter} onChange={event => setFilter(event.target.value as Stage | 'all')} style={{ ...inputStyle, width: '185px' }} aria-label="Filter leads by stage">
-          <option value="all">All leads</option>
-          {STAGES.map(stage => <option key={stage} value={stage}>{stageLabels[stage]}</option>)}
-        </select>
+    <main id="main" className={styles.page}>
+      <header className={styles.header}>
+        <div><p className={styles.eyebrow}>AETHERIS VISION · CRM</p><h1>Opportunity workspace</h1><p className={styles.subtitle}>Decide what to pursue. Keep the next action in view.</p></div>
+        <Link href="/admin/gmail" className={styles.textLink}>Gmail connection ↗</Link>
+      </header>
+      <nav className={styles.queues} aria-label="Opportunity workflow">
+        {QUEUES.map(item => <button key={item.id} aria-pressed={queue === item.id} disabled={busy} title={item.description} onClick={() => selectQueue(item.id)} className={queue === item.id ? styles.activeQueue : ''}>
+          <span>{item.label}<strong>{leads.filter(lead => matchesQueue(lead, item.id)).length}</strong></span>
+        </button>)}
+      </nav>
+      <div className={styles.toolbar}>
+        <label className={styles.search}><span className={styles.srOnly}>Search opportunities</span><input type="search" disabled={busy} placeholder="Search opportunities, agencies, contacts…" value={search} onChange={event => { setSearch(event.target.value); setChecked([]) }} /></label>
+        <button disabled={busy} className={styles.secondary} aria-pressed={dueOnly} onClick={() => { setDueOnly(!dueOnly); setQueue('all'); setSelectedId(null); setChecked([]) }}>Follow-up due <strong>{leads.filter(followUpDue).length}</strong></button>
+        <button disabled={busy} className={styles.quiet} onClick={() => selectQueue('all')}>All opportunities ({leads.filter(lead => !lead.removed_at).length})</button>
       </div>
-
-      <section aria-label="Pipeline summary" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px', marginBottom: '16px' }}>
-        {([
-          { label: 'Open leads', value: String(openLeads.length), accent: colors.blue },
-          { label: 'Open pipeline', value: formatCurrency(openValue), accent: '#c4b5fd' },
-          { label: 'Proposals', value: String(counts.proposal), accent: colors.amber },
-          { label: 'Won', value: String(counts.won), accent: colors.green },
-        ] as const).map(card => (
-          <div key={card.label} style={{ padding: '15px', borderRadius: '10px', border: `1px solid ${card.accent}30`, borderLeft: `3px solid ${card.accent}`, background: `linear-gradient(135deg, ${card.accent}0d, ${colors.surface} 60%)` }}>
-            <span style={{ display: 'block', color: card.accent, fontSize: '11px', fontWeight: 600, marginBottom: '5px' }}>{card.label}</span>
-            <strong style={{ color: colors.text, fontSize: '22px' }}>{card.value}</strong>
+      {managementNotice && <div className={managementNotice.tone === 'error' ? styles.error : styles.success} role={managementNotice.tone === 'error' ? 'alert' : 'status'}>{managementNotice.text} {undoIds.length > 0 && <button disabled={busy} className={styles.quiet} onClick={() => void manage('restore', undoIds)}>Undo removal</button>}</div>}
+      {removal && <section className={styles.removalPanel} aria-label="Confirm removal">
+        <h2>Remove {removal.ids.length} {removal.ids.length === 1 ? 'opportunity' : 'opportunities'}?</h2>
+        <p>These leave your working queues and stay suppressed when radar scans again. You can restore them from Removed, with their previous stage and history.</p>
+        <ul>{removal.ids.map(id => <li key={id}>{leads.find(lead => lead.id === id)?.name ?? `Opportunity #${id}`}</li>)}</ul>
+        <label>Reason (optional)<input disabled={busy} maxLength={1000} value={removal.reason} onChange={event => setRemoval({ ...removal, reason: event.target.value })} placeholder="Outside our scope, expired, no viable contact…" /></label>
+        <p className={styles.help}>Unsaved edits on these opportunities will be discarded. Existing projects and Gmail drafts stay available.</p>
+        <div className={styles.actions}><button disabled={busy} className={styles.dangerButton} onClick={() => void manage('remove', removal.ids, removal.reason)}>Remove {removal.ids.length}</button><button disabled={busy} className={styles.quiet} onClick={() => setRemoval(null)}>Cancel</button></div>
+      </section>}
+      {loadError && <div role="alert" className={styles.error}>{loadError} <button className={styles.secondary} onClick={() => void loadLeads()}>Retry loading</button></div>}
+      {loading ? <p role="status">Loading opportunities…</p> : <div className={styles.layout}>
+        <aside className={styles.inbox} aria-label="Opportunity list">
+          <div className={styles.listTitle}><strong>{dueOnly ? 'Follow-up due' : QUEUES.find(item => item.id === queue)?.label ?? 'All opportunities'}</strong><span>{visible.length} opportunities</span></div>
+          {!visible.length && <p className={styles.empty}>No opportunities here. Choose another queue or change your search.</p>}
+          {!!visible.length && <div className={styles.bulkBar}>
+            <label><input type="checkbox" disabled={busy} checked={visible.slice(0, 100).every(lead => checked.includes(lead.id))} onChange={event => setChecked(event.target.checked ? visible.slice(0, 100).map(lead => lead.id) : [])} />{checked.length ? `${checked.length} selected` : visible.length > 100 ? 'Select first 100' : 'Select all'}</label>
+            {checked.length > 0 && <button disabled={busy} className={styles.quiet} onClick={() => queue === 'removed' ? void manage('restore', checked) : requestRemoval(checked)}>{queue === 'removed' ? 'Restore' : 'Remove'} {checked.length}</button>}
+          </div>}
+          <div className={styles.list}>
+            {visible.map(lead => <div key={lead.id} className={`${styles.listRow} ${selected?.id === lead.id ? styles.selectedRow : ''}`}>
+              <input className={styles.rowCheck} type="checkbox" aria-label={`Select ${lead.name}`} disabled={busy || (!checked.includes(lead.id) && checked.length >= 100)} checked={checked.includes(lead.id)} onChange={event => setChecked(current => event.target.checked ? [...current, lead.id] : current.filter(id => id !== lead.id))} />
+              <button disabled={busy} onClick={() => setSelectedId(lead.id)} aria-current={selected?.id === lead.id ? 'true' : undefined} className={styles.row}>
+                <span className={styles.rowMeta}>{lead.source === 'opportunity-radar' ? 'RADAR' : 'INQUIRY'}{typeof lead.govcon?.score === 'number' && <span>Fit {lead.govcon.score}</span>}</span>
+                <strong>{lead.name}</strong><span>{lead.organization || lead.email || 'Contact needed'}</span>
+                <span className={followUpDue(lead) ? styles.due : styles.rowStage}>{lead.removed_at ? 'Removed' : followUpDue(lead) ? `Follow-up due ${lead.next_follow_up?.slice(0, 10)}` : stageLabels[lead.stage]}</span>
+              </button>
+            </div>)}
           </div>
-        ))}
-      </section>
+        </aside>
+        {selected && edit ? <article id={`lead-${selected.id}`} className={styles.workspace} aria-label="Selected opportunity">
+          <header className={styles.opportunityHeader}>
+            <div className={styles.rowMeta}><span>{removed ? 'Removed' : stageLabels[selected.stage]}</span><span>Opportunity #{selected.id}</span></div>
+            <div className={styles.actions}>{removed ? <button disabled={busy} className={styles.secondary} onClick={() => void manage('restore', [selected.id])}>Restore opportunity</button> : <button disabled={busy} className={styles.quiet} onClick={() => requestRemoval([selected.id])}>Remove from workspace</button>}</div>
+            <h2>{selected.name}</h2><p>{selected.organization || (selected.source === 'opportunity-radar' ? 'Opportunity radar' : 'Website inquiry')}</p>
+            <div className={styles.facts}>
+              {radarText(selected, 'source_id') && <span>Reference <strong>{radarText(selected, 'source_id')}</strong></span>}
+              {radarText(selected, 'deadline') && <span>Response deadline <strong>{radarText(selected, 'deadline')}</strong></span>}
+              {link && <a href={link} target="_blank" rel="noopener noreferrer" className={styles.textLink}>Open opportunity ↗</a>}
+            </div>
+          </header>
+          {!closed && !removed && <ol className={styles.steps} aria-label="Opportunity progress">{['Review', 'Pursue', 'Outreach', 'Follow-up', 'Proposal'].map((step, index) => <li key={step} aria-current={workflowStep(selected) === step ? 'step' : undefined}><span>{index + 1}</span>{step}</li>)}</ol>}
+          {notice && <div role={notice.tone === 'error' ? 'alert' : 'status'} className={notice.tone === 'error' ? styles.error : styles.success}>{notice.text}{notice.reconnect && <> <Link href="/admin/gmail" className={styles.textLink}>Reconnect Gmail</Link></>}{notice.conflict && <button disabled={busy} className={styles.secondary} onClick={() => void reloadSaved(selected)}>Discard local edits & reload saved version</button>}</div>}
+          {action && <p role="status" className={styles.progress}>{action === 'Drafting…' ? 'Preparing your draft with Claude. This may take a couple of minutes…' : action}</p>}
 
-      <div style={{ display: 'flex', gap: '7px', flexWrap: 'wrap', marginBottom: '24px' }}>
-        <button onClick={() => setFilter('all')} style={{ padding: '6px 11px', borderRadius: '999px', border: `1px solid ${filter === 'all' ? colors.blue : colors.border}`, background: filter === 'all' ? 'rgba(91,168,217,0.14)' : 'transparent', color: filter === 'all' ? colors.blue : colors.muted, cursor: 'pointer', fontSize: '12px' }}>
-          All {leads.length}
-        </button>
-        {STAGES.map(stage => (
-          <button key={stage} onClick={() => setFilter(stage)} style={{ padding: '6px 11px', borderRadius: '999px', border: `1px solid ${filter === stage ? stageColors[stage] : colors.border}`, background: filter === stage ? `${stageColors[stage]}18` : 'transparent', color: filter === stage ? stageColors[stage] : colors.muted, cursor: 'pointer', fontSize: '12px' }}>
-            {stageLabels[stage]} {counts[stage]}
-          </button>
-        ))}
-      </div>
+          <section className={styles.actionPanel} aria-label="Next action">
+            {removed && <><h3>Removed from active work</h3><p>{selected.removal_reason || 'No removal reason recorded.'}</p><p className={styles.help}>Restore this opportunity to resume at its previous stage. Radar will keep it out of your working queues until then.</p></>}
+            {phase === 'review' && <><p className={styles.eyebrow}>DECISION</p><h3>Is this worth pursuing?</h3><p>{radarText(selected, 'recommended_action') || 'Review the opportunity and its fit, then move it into outreach when you are ready.'}</p><div className={styles.actions}><button disabled={busy} className={styles.primary} onClick={() => void save(selected, edit, 'new', 'You are pursuing this opportunity. Start outreach below.', 'Decided to pursue', 'stage_change')}>Pursue</button><button disabled={busy} className={styles.quiet} onClick={() => requestRemoval([selected.id])}>Remove</button></div></>}
+            {phase === 'outreach' && <><p className={styles.eyebrow}>FIRST CONTACT</p><h3>Start the conversation</h3><p>Prepare your message, review and send it in Gmail, then record the contact here.</p></>}
+            {phase === 'follow-up' && <><p className={styles.eyebrow}>FOLLOW-UP</p><h3>{followUpDue(selected) ? 'Your follow-up is due' : 'Keep the conversation moving'}</h3><p>{selected.next_follow_up ? `Next follow-up: ${selected.next_follow_up.slice(0, 10)}.` : 'Set the next date so this opportunity stays on your radar.'}</p></>}
+            {phase === 'proposal' && <><p className={styles.eyebrow}>PROPOSAL</p><h3>Develop the approach and scope</h3><p>Use the opportunity requirements to prepare a working brief. Save it here and download a copy when you need it.</p></>}
+            {closed && <><h3>{stageLabels[selected.stage]}</h3><p>{selected.stage === 'won' ? 'Recorded as won after signature.' : selected.stage === 'declined' ? 'This opportunity was not pursued. You can return it to review.' : 'This opportunity is closed.'}</p>{selected.stage === 'declined' && <button disabled={busy} className={styles.secondary} onClick={() => void save(selected, edit, 'review', 'Returned to review.')}>Reconsider</button>}</>}
 
-      {notice && (
-        <div role="status" style={{ padding: '11px 14px', marginBottom: '16px', borderRadius: '8px', border: `1px solid ${notice.tone === 'error' ? 'rgba(248,113,113,0.3)' : 'rgba(110,231,183,0.28)'}`, background: notice.tone === 'error' ? 'rgba(248,113,113,0.1)' : 'rgba(110,231,183,0.08)', color: notice.tone === 'error' ? colors.red : colors.green, fontSize: '13px' }}>
-          {notice.text}
-        </div>
-      )}
+            {['outreach', 'follow-up', 'proposal'].includes(phase) && <>
+              <fieldset disabled={busy} className={styles.contact}>
+                <legend>Contact</legend>
+                <label>Email<input type="email" value={edit.email} onChange={event => changeEdit({ email: event.target.value })} placeholder="Contact email address" disabled={Boolean(selected.client_id || selected.gmail_draft_id || hasActiveDraftClaim(selected))} /></label>
+                <label>Phone<input type="tel" value={edit.phone} onChange={event => changeEdit({ phone: event.target.value })} /></label>
+                {(edit.email.trim() !== selected.email || edit.phone !== (selected.phone ?? '')) && <button className={styles.secondary} onClick={() => void save(selected, edit, selected.stage, 'Contact details saved.')}>Save contact</button>}
+              </fieldset>
+              {(selected.client_id || selected.gmail_draft_id || hasActiveDraftClaim(selected)) && <p className={styles.help}>{selected.client_id ? 'This email is linked to an existing client and cannot be changed here. Check and correct the recipient in Gmail before sending.' : selected.gmail_draft_id ? 'A draft is already addressed to this contact. Review or correct its recipient in Gmail.' : 'The contact is locked while a draft is being prepared.'}</p>}
+              {!selected.email && <p className={styles.help}>Add and save a contact email to draft outreach or create a proposal project.{link && <> The <a className={styles.textLink} href={link} target="_blank" rel="noopener noreferrer">original listing</a> may name the right contact.</>}</p>}
+              {selected.gmail_draft_id && <a href={gmailDraftUrl(selected.gmail_draft_id)} target="_blank" rel="noopener noreferrer" className={styles.primaryLink}>Gmail draft ready ↗</a>}
+              {selected.gmail_draft_created_at && !selected.gmail_draft_id && <p className={styles.help}>An earlier request may have created a Gmail draft. Check Gmail before retrying to avoid a duplicate.</p>}
+              {selected.email && <div className={styles.actions}><button disabled={busy || edit.email.trim() !== selected.email} className={styles.secondary} onClick={() => void draftEmail(selected, !!selected.gmail_draft_id)}>{action === 'Drafting…' ? 'Drafting…' : selected.gmail_draft_id ? 'Recreate draft' : selected.gmail_draft_created_at ? 'Retry draft' : 'Draft email'}</button><a href={`mailto:${selected.email}`} className={styles.textLink}>Open email app ↗</a></div>}
+            </>}
+            {['outreach', 'follow-up', 'proposal'].includes(phase) && <fieldset disabled={busy} className={styles.followUp}>
+              <legend>{phase === 'outreach' ? 'After you send or call' : 'Record the next step'}</legend>
+              <label>{phase === 'outreach' ? 'Outreach notes' : 'Follow-up notes'}<textarea rows={2} maxLength={3500} value={edit.activity} onChange={event => changeEdit({ activity: event.target.value })} placeholder="Who you contacted, what you discussed, or what you need next" /></label>
+              <label>Next follow-up<input type="date" value={edit.followUp} onChange={event => changeEdit({ followUp: event.target.value })} /></label>
+              <div className={styles.actions}><button className={styles.quiet} onClick={() => changeEdit({ followUp: nextWeek() })}>In one week</button><button className={styles.secondary} onClick={() => void save(selected, edit, selected.stage, 'Follow-up date saved.')}>Save follow-up date</button></div>
+              <div className={styles.actions}>{phase === 'outreach' ? <><button className={styles.primary} disabled={!edit.followUp} onClick={() => void save(selected, edit, 'contacted', 'Outreach recorded. Your next step is follow-up.', 'Outreach email sent', 'outreach')}>Record outreach sent</button><button className={styles.secondary} disabled={!edit.followUp} onClick={() => void save(selected, edit, 'contacted', 'Call recorded. Your next step is follow-up.', 'Call completed', 'outreach')}>Record call</button></> : <><button className={styles.secondary} disabled={!edit.activity.trim() || !edit.followUp} onClick={() => void save(selected, edit, selected.stage, 'Follow-up recorded.', 'Follow-up completed', 'follow_up')}>Record follow-up</button>{phase !== 'proposal' && <button className={styles.primary} onClick={() => void save(selected, edit, 'qualified', 'Ready for proposal planning. Build your brief below.', 'Ready for proposal', 'stage_change')}>Ready for proposal</button>}</>}</div>
+              {phase === 'outreach' && !edit.followUp && <p className={styles.help}>Choose your follow-up date before recording outreach.</p>}
+            </fieldset>}
+            {phase === 'proposal' && <fieldset disabled={busy} className={styles.proposal}>
+              <legend>Proposal brief</legend>
+              <p className={styles.help}>Cover the requested outcome, proposed approach, deliverables, schedule, pricing assumptions, and questions to resolve. This is your working brief, not a submitted proposal.</p>
+              <label><span className={styles.srOnly}>Proposal brief</span><textarea rows={12} maxLength={20000} value={edit.brief} onChange={event => changeEdit({ brief: event.target.value })} placeholder="Outcome and requirements\n\nProposed approach\n\nDeliverables\n\nSchedule and pricing\n\nQuestions to resolve" /></label>
+              <div className={styles.actions}><button className={styles.primary} onClick={() => void save(selected, edit, selected.stage, 'Proposal brief saved.', edit.activity.trim() ? 'Proposal update' : undefined)}>Save proposal brief</button><button className={styles.secondary} disabled={!edit.brief.trim()} onClick={() => downloadBrief(selected, edit.brief)}>Download brief</button></div>
+              <div className={styles.projectHandoff}>{selected.project_id ? <Link className={styles.textLink} href={`/admin/projects#project-${selected.project_id}`}>Open proposal project #{selected.project_id} ↗</Link> : <button className={styles.secondary} disabled={!selected.email || !edit.brief.trim()} onClick={() => void prepareProposal(selected, edit)}>Create proposal project</button>}<p className={styles.help}>The project tracks dates and delivery. Your proposal brief stays attached to this opportunity.</p></div>
+            </fieldset>}
+          </section>
 
-      {loading ? (
-        <p style={{ color: colors.muted }}>Loading leads…</p>
-      ) : visible.length === 0 ? (
-        <div style={{ padding: '36px', textAlign: 'center', background: colors.surface, borderRadius: '12px', border: `1px solid ${colors.border}`, color: colors.muted }}>
-          No leads in this stage
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gap: '14px' }}>
-          {visible.map(lead => {
-            const overdue = isOverdue(lead.next_follow_up, lead.stage)
-            const locked = lead.stage === 'won' || lead.stage === 'declined'
-            const isDrafting = draftingIds.has(lead.id)
-            const isBusy = busyId === lead.id || isDrafting
-            const draftNotice = draftNotices[lead.id]
-            const govcon = lead.source === 'opportunity-radar' ? lead.govcon : null
-            const fitReasons = Array.isArray(govcon?.fit_reasons) ? govcon.fit_reasons as string[] : []
-            const cautions = Array.isArray(govcon?.cautions) ? govcon.cautions as string[] : []
-            return (
-              <article id={`lead-${lead.id}`} key={lead.id} style={{ scrollMarginTop: '76px', background: colors.surface, border: `1px solid ${overdue ? 'rgba(248,113,113,0.35)' : colors.border}`, borderLeft: `3px solid ${overdue ? colors.red : stageColors[lead.stage]}`, borderRadius: '12px', padding: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'start', flexWrap: 'wrap' }}>
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '5px' }}>
-                      <h2 style={{ color: colors.text, fontSize: '17px', margin: 0 }}>
-                        {lead.name}{lead.organization ? ` · ${lead.organization}` : ''}
-                      </h2>
-                      <span style={{ color: stageColors[lead.stage], background: `${stageColors[lead.stage]}16`, border: `1px solid ${stageColors[lead.stage]}35`, borderRadius: '999px', padding: '3px 8px', fontSize: '10px', fontWeight: 700 }}>
-                        {stageLabels[lead.stage]}
-                      </span>
-                    </div>
-                    <p style={{ color: colors.muted, fontSize: '13px', margin: 0 }}>
-                      {lead.email ? (
-                        <a href={`mailto:${lead.email}`} style={{ color: colors.blue }}>{lead.email}</a>
-                      ) : (
-                        <span style={{ color: colors.dim, fontStyle: 'italic' }}>No contact email on file</span>
-                      )}
-                      {lead.phone ? ` · ${lead.phone}` : ''}
-                    </p>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <span style={{ color: colors.dim, fontSize: '11px' }}>Lead #{lead.id}</span>
-                    <p style={{ color: colors.dim, fontSize: '11px', margin: '3px 0 0' }}>
-                      {new Date(lead.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </p>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '7px', margin: '14px 0 10px', flexWrap: 'wrap' }}>
-                  {lead.service && <span style={{ padding: '4px 8px', borderRadius: '999px', background: 'rgba(91,168,217,0.1)', color: colors.blue, fontSize: '11px' }}>{lead.service}</span>}
-                  <span style={{ padding: '4px 8px', borderRadius: '999px', background: colors.surfaceAlt, color: colors.dim, fontSize: '11px' }}>{titleCase(lead.source)}</span>
-                  {lead.relationship_status && <span style={{ padding: '4px 8px', borderRadius: '999px', background: colors.surfaceAlt, color: colors.muted, fontSize: '11px' }}>Relationship: {titleCase(lead.relationship_status)}</span>}
-                  {lead.project_status && <span style={{ padding: '4px 8px', borderRadius: '999px', background: colors.surfaceAlt, color: colors.muted, fontSize: '11px' }}>Project: {titleCase(lead.project_status)}</span>}
-                  {overdue && <span style={{ padding: '4px 8px', borderRadius: '999px', background: 'rgba(248,113,113,0.1)', color: colors.red, fontSize: '11px', fontWeight: 700 }}>Follow-up overdue</span>}
-                </div>
-                <p style={{ whiteSpace: 'pre-wrap', color: colors.muted, lineHeight: 1.6, fontSize: '13px', margin: '0 0 18px' }}>{lead.message}</p>
-
-                {govcon && (
-                  <div style={{ padding: '14px 16px', borderRadius: '10px', border: `1px solid rgba(91,168,217,0.25)`, background: 'rgba(91,168,217,0.06)', marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                      <span style={{ color: colors.blue, fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Radar analysis</span>
-                      {typeof govcon.score === 'number' && (
-                        <span style={{ color: govcon.score >= 70 ? colors.green : govcon.score >= 50 ? colors.amber : colors.red, background: `${govcon.score >= 70 ? colors.green : govcon.score >= 50 ? colors.amber : colors.red}14`, borderRadius: '999px', padding: '2px 9px', fontSize: '12px', fontWeight: 700 }}>Score {govcon.score}</span>
-                      )}
-                    </div>
-                    {typeof govcon.analysis === 'string' && govcon.analysis && (
-                      <p style={{ whiteSpace: 'pre-wrap', color: colors.text, lineHeight: 1.6, fontSize: '13px', margin: '0 0 10px' }}>{govcon.analysis}</p>
-                    )}
-                    {fitReasons.length > 0 && (
-                      <ul style={{ margin: '0 0 8px', paddingLeft: '18px', color: colors.green, fontSize: '12px', lineHeight: 1.6 }}>
-                        {fitReasons.map((reason, index) => <li key={index}>{reason}</li>)}
-                      </ul>
-                    )}
-                    {cautions.length > 0 && (
-                      <ul style={{ margin: 0, paddingLeft: '18px', color: colors.amber, fontSize: '12px', lineHeight: 1.6 }}>
-                        {cautions.map((caution, index) => <li key={index}>{caution}</li>)}
-                      </ul>
-                    )}
-                  </div>
-                )}
-
-                {locked ? (
-                  <div style={{ padding: '12px 14px', borderRadius: '8px', border: `1px solid ${lead.stage === 'won' ? 'rgba(110,231,183,0.2)' : colors.border}`, background: lead.stage === 'won' ? 'rgba(110,231,183,0.06)' : colors.surfaceAlt, color: lead.stage === 'won' ? colors.green : colors.muted, fontSize: '12px', marginBottom: '14px' }}>
-                    {lead.stage === 'won'
-                      ? 'Won was recorded automatically after signature. This lead is read-only.'
-                      : 'Marked not pursuing. This lead is read-only. Reconsider returns it to review.'}
-                  </div>
-                ) : (
-                  <>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '12px' }}>
-                      <label>
-                        <span style={labelStyle}>Stage</span>
-                        <select disabled={isDrafting} value={lead.stage} onChange={event => updateLocal(lead.id, { stage: event.target.value as Stage })} style={inputStyle}>
-                          {(lead.stage === 'review' ? REVIEW_STAGES : FUNNEL_STAGES).map(stage => <option key={stage} value={stage}>{stageLabels[stage]}</option>)}
-                        </select>
-                      </label>
-                      <label>
-                        <span style={labelStyle}>Estimated value</span>
-                        <input disabled={isDrafting} type="number" min="0" step="100" value={lead.estimated_value_cents === null ? '' : lead.estimated_value_cents / 100} onChange={event => updateLocal(lead.id, { estimated_value_cents: event.target.value ? Math.round(Number(event.target.value) * 100) : null })} placeholder="USD" style={inputStyle} />
-                      </label>
-                      <label>
-                        <span style={labelStyle}>Next follow-up</span>
-                        <input disabled={isDrafting} type="date" value={dateInputValue(lead.next_follow_up)} onChange={event => updateLocal(lead.id, { next_follow_up: event.target.value || null })} style={inputStyle} />
-                      </label>
-                    </div>
-                    <label>
-                      <span style={labelStyle}>Notes</span>
-                      <textarea disabled={isDrafting} rows={3} value={lead.notes || ''} onChange={event => updateLocal(lead.id, { notes: event.target.value })} placeholder="Context, next action, or proposal notes" style={{ ...inputStyle, resize: 'vertical' }} />
-                    </label>
-                  </>
-                )}
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', marginTop: '14px', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'flex', gap: '7px', flexWrap: 'wrap' }}>
-                    {lead.intake_id && <Link href={`/admin/intake#intake-${lead.intake_id}`} style={relationLinkStyle}>Intake #{lead.intake_id}</Link>}
-                    {lead.client_id && <Link href={`/admin/clients#client-${lead.client_id}`} style={relationLinkStyle}>Client #{lead.client_id}</Link>}
-                    {lead.project_id && <Link href={`/admin/projects#project-${lead.project_id}`} style={relationLinkStyle}>Project #{lead.project_id}</Link>}
-                    {lead.gmail_draft_id && (
-                      <a href={gmailDraftUrl(lead.gmail_draft_id)} target="_blank" rel="noopener noreferrer" style={relationLinkStyle}>
-                        Gmail draft ready
-                      </a>
-                    )}
-                    {!lead.intake_id && !lead.client_id && !lead.project_id && !lead.gmail_draft_id && <span style={{ color: colors.dim, fontSize: '12px' }}>No related records yet</span>}
-                  </div>
-                  {lead.stage === 'declined' && (
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      <button onClick={() => setStage(lead, 'review')} disabled={isBusy} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(91,168,217,0.35)', background: 'rgba(91,168,217,0.1)', color: colors.blue, cursor: isBusy ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
-                        Reconsider
-                      </button>
-                    </div>
-                  )}
-                  {!locked && (
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                      {lead.stage === 'review' && (
-                        <>
-                          <button onClick={() => setStage(lead, 'new')} disabled={isBusy} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(91,168,217,0.35)', background: 'rgba(91,168,217,0.1)', color: colors.blue, cursor: isBusy ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
-                            Pursue
-                          </button>
-                          <button onClick={() => setStage(lead, 'declined')} disabled={isBusy} style={{ padding: '9px 13px', borderRadius: '8px', border: `1px solid ${colors.border}`, background: colors.surfaceAlt, color: colors.muted, cursor: isBusy ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
-                            Not pursuing
-                          </button>
-                        </>
-                      )}
-                      {!lead.project_id && lead.stage !== 'lost' && lead.stage !== 'review' && (
-                        <button onClick={() => prepareProposal(lead)} disabled={isBusy} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(110,231,183,0.3)', background: 'rgba(110,231,183,0.1)', color: colors.green, cursor: isBusy ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
-                          {busyId === lead.id ? 'Preparing…' : 'Prepare proposal'}
-                        </button>
-                      )}
-                      {lead.email && !lead.gmail_draft_id && (
-                        <button onClick={() => draftEmail(lead)} disabled={isBusy} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(251,191,36,0.35)', background: 'rgba(251,191,36,0.1)', color: colors.amber, cursor: isBusy ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
-                          {isDrafting ? 'Drafting…' : lead.gmail_draft_created_at ? 'Retry draft' : 'Draft email'}
-                        </button>
-                      )}
-                      {lead.email && lead.gmail_draft_id && (
-                        <button onClick={() => draftEmail(lead, true)} disabled={isBusy} style={{ padding: '9px 13px', borderRadius: '8px', border: '1px solid rgba(251,191,36,0.35)', background: 'rgba(251,191,36,0.1)', color: colors.amber, cursor: isBusy ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '12px' }}>
-                          {isDrafting ? 'Drafting…' : 'Recreate draft'}
-                        </button>
-                      )}
-                      {!lead.gmail_draft_id && lead.gmail_draft_created_at && !isDrafting && (
-                        <span style={{ padding: '9px 13px', color: colors.dim, fontSize: '12px', fontStyle: 'italic' }}>
-                          An earlier request may have created a Gmail draft. Check Gmail before retrying to avoid a duplicate.
-                        </span>
-                      )}
-                      <button onClick={() => saveLead(lead)} disabled={isBusy} style={{ padding: '9px 15px', borderRadius: '8px', border: 'none', background: isBusy ? 'rgba(91,168,217,0.4)' : colors.blue, color: colors.bg, cursor: isBusy ? 'not-allowed' : 'pointer', fontWeight: 800, fontSize: '12px' }}>
-                        {busyId === lead.id ? 'Saving…' : 'Save lead'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-                {(isDrafting || draftNotice) && (
-                  <div
-                    role={!isDrafting && draftNotice?.tone === 'error' ? 'alert' : 'status'}
-                    style={{ padding: '11px 14px', marginTop: '14px', borderRadius: '8px', border: `1px solid ${!isDrafting && draftNotice?.tone === 'error' ? 'rgba(248,113,113,0.3)' : colors.border}`, background: colors.surfaceAlt, color: !isDrafting && draftNotice?.tone === 'error' ? colors.red : isDrafting ? colors.amber : colors.green, fontSize: '13px', lineHeight: 1.6 }}
-                  >
-                    {isDrafting ? 'Creating Gmail draft…' : draftNotice?.text}
-                    {!isDrafting && draftNotice?.reconnectGmail && (
-                      <> <Link href="/admin/gmail" style={{ color: colors.blue, textDecoration: 'underline', fontWeight: 700 }}>Reconnect Gmail</Link></>
-                    )}
-                  </div>
-                )}
-              </article>
-            )
-          })}
-        </div>
-      )}
+          <section className={styles.context} aria-label="Opportunity context">
+            <h3>{selected.source === 'opportunity-radar' ? 'Radar assessment' : 'Inquiry details'}</h3>
+            {radarText(selected, 'analysis') ? <p>{radarText(selected, 'analysis')}</p> : selected.message !== selected.name && <p>{selected.message}</p>}
+            {(['fit_reasons', 'cautions'] as const).map(key => { const items = selected.govcon?.[key]; return Array.isArray(items) && items.length ? <div key={key} className={key === 'cautions' ? styles.cautions : styles.fit}><h4>{key === 'cautions' ? 'Watch for' : 'Why it fits'}</h4><ul>{items.filter(item => typeof item === 'string').map((item, index) => <li key={index}>{item}</li>)}</ul></div> : null })}
+            {phase !== 'review' && radarText(selected, 'recommended_action') && <p><strong>Radar recommendation: </strong>{radarText(selected, 'recommended_action')}</p>}
+          </section>
+          <section className={styles.history} aria-label="Activity history">
+            <h3>Activity</h3>
+            {(selected.activity_history ?? []).length ? <ol>{[...selected.activity_history].reverse().map(item => <li key={item.id}><time dateTime={item.created_at}>{new Date(item.created_at).toLocaleString()}</time><p>{item.note}</p>{item.from_stage && item.to_stage && item.from_stage !== item.to_stage && <small>{stageLabels[item.from_stage]} → {stageLabels[item.to_stage]}</small>}</li>)}</ol> : <p className={styles.help}>Actions you record here will appear in this history.</p>}
+          </section>
+          <details className={styles.details}>
+            <summary>Notes, value & related records</summary>
+            <fieldset disabled={busy || closed || removed}>
+              <label>Estimated value (USD)<input type="number" min="0" step="100" value={edit.value} onChange={event => changeEdit({ value: event.target.value })} /></label>
+              <label>Working notes<textarea rows={6} maxLength={10000} value={edit.notes} onChange={event => changeEdit({ notes: event.target.value })} /></label>
+              {!closed && !removed && <button className={styles.secondary} onClick={() => void save(selected, edit)}>Save notes & value</button>}
+            </fieldset>
+            <div className={styles.actions}>
+              {selected.intake_id && <Link className={styles.textLink} href={`/admin/intake#intake-${selected.intake_id}`}>Intake & SOW #{selected.intake_id} ↗</Link>}
+              {selected.client_id && <Link className={styles.textLink} href={`/admin/clients#client-${selected.client_id}`}>Client #{selected.client_id} ↗</Link>}
+              {selected.project_id && <Link className={styles.textLink} href={`/admin/projects#project-${selected.project_id}`}>Project #{selected.project_id} ↗</Link>}
+              {!closed && !removed && phase !== 'review' && <button disabled={busy} className={styles.dangerButton} onClick={() => { if (window.confirm('Close this opportunity as lost? Any open proposal project and intake will also be closed.')) void save(selected, edit, 'lost', 'Opportunity closed as lost.') }}>Close as lost</button>}
+            </div>
+          </details>
+        </article> : <section className={styles.noSelection}><h2>Choose an opportunity</h2><p>Select a queue to review opportunities or continue work already in progress.</p></section>}
+      </div>}
     </main>
   )
 }

@@ -7,7 +7,10 @@ import { sql } from '@/lib/db'
 const NO_STORE_HEADERS = { 'Cache-Control': 'no-store' }
 
 function json(body: unknown, init?: { status?: number }) {
-  return NextResponse.json(body, {
+  const responseBody = init?.status === 409 && body && typeof body === 'object'
+    ? { ...body, code: 'LEAD_CONFLICT' }
+    : body
+  return NextResponse.json(responseBody, {
     ...init,
     headers: NO_STORE_HEADERS,
   })
@@ -33,6 +36,13 @@ async function findLead(id: number) {
       l.estimated_value_cents,
       l.next_follow_up,
       l.notes,
+      l.govcon,
+      l.gmail_draft_id,
+      l.gmail_draft_created_at,
+      l.removed_at,
+      l.removal_reason,
+      l.workflow_version,
+      l.activity_history,
       l.client_id,
       recent_project.id AS project_id,
       recent_intake.id AS intake_id,
@@ -78,6 +88,29 @@ export async function POST(
   const id = parseLeadId(idValue)
   if (id === null) return json({ error: 'Invalid lead ID' }, { status: 400 })
 
+  let expectedVersion: number | undefined
+  try {
+    const text = await request.text()
+    if (text.trim()) {
+      const body: unknown = JSON.parse(text)
+      if (
+        typeof body !== 'object' || body === null || Array.isArray(body)
+        || Object.keys(body).some((key) => key !== 'expected_version')
+      ) {
+        return json({ error: 'Invalid request body' }, { status: 400 })
+      }
+      const value = (body as { expected_version?: unknown }).expected_version
+      if (value !== undefined) {
+        if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 0 || value > 2_147_483_647) {
+          return json({ error: 'expected_version must be a non-negative integer' }, { status: 400 })
+        }
+        expectedVersion = value
+      }
+    }
+  } catch {
+    return json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
   try {
     const beforeRows = await sql`
       SELECT
@@ -86,6 +119,8 @@ export async function POST(
         l.organization,
         l.service,
         l.stage,
+        l.removed_at,
+        l.workflow_version,
         l.client_id,
         matching_client.id AS matching_client_id,
         proposal_project.id AS proposal_project_id
@@ -112,6 +147,8 @@ export async function POST(
           organization: string | null
           service: string | null
           stage: string
+          removed_at: string | null
+          workflow_version: number
           client_id: number | null
           matching_client_id: number | null
           proposal_project_id: number | null
@@ -119,8 +156,17 @@ export async function POST(
       | undefined
 
     if (!before) return json({ error: 'Lead not found' }, { status: 404 })
+    if (before.removed_at) {
+      return json({ error: 'Restore this lead before preparing a proposal' }, { status: 409 })
+    }
+    if (expectedVersion !== undefined && before.workflow_version !== expectedVersion) {
+      return json({ error: 'This lead changed; refresh it before preparing a proposal' }, { status: 409 })
+    }
     if (before.stage === 'won' || before.stage === 'lost') {
       return json({ error: 'A closed lead cannot be prepared for proposal' }, { status: 409 })
+    }
+    if (before.stage === 'review' || before.stage === 'declined') {
+      return json({ error: 'Pursue this opportunity before preparing a proposal' }, { status: 409 })
     }
 
     const accountName = before.organization?.trim() || before.name.trim()
@@ -129,7 +175,14 @@ export async function POST(
       ? `${accountName} — ${serviceName}`
       : `${accountName} project`
 
-    const result = await prepareLeadProposal({ leadId: id, projectName })
+    // The helper locks and checks the current lead in a serializable
+    // transaction before creating either record. These friendly preflight
+    // checks alone cannot protect against removal by another request.
+    const result = await prepareLeadProposal({
+      leadId: id,
+      projectName,
+      ...(expectedVersion !== undefined ? { expectedVersion } : {}),
+    })
     const lead = await findLead(id)
 
     return json({

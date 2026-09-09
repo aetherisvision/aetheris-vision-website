@@ -1,12 +1,13 @@
 /**
  * The CRM's "ask Claude" chat endpoint. Admin-gated; attaches a bounded
  * snapshot of the live pipeline to the caller's chat turns and answers via
- * src/lib/admin-assistant.ts (claude-fable-5). Stateless: conversation
- * history lives in the admin's browser panel, not the database.
+ * src/lib/admin-assistant.ts. The browser supplies conversation history;
+ * the worker queue retains transient requests and results for one day.
  */
 import { NextRequest, NextResponse } from 'next/server'
 
 import { isAdmin } from '@/lib/admin-auth'
+import { ClaudeSubscriptionError } from '@/lib/claude-subscription'
 import {
   askCrmAssistant,
   MAX_TURN_CHARS,
@@ -54,6 +55,8 @@ interface SnapshotLead {
   notes: string | null
   source: string
   govcon: Record<string, unknown> | null
+  gmail_draft_id?: string | null
+  activity_history?: unknown
 }
 
 function dateOnly(value: string | Date | null): string | null {
@@ -87,18 +90,31 @@ function snapshotLine(lead: SnapshotLead): string {
   const analysis = govconField(lead, 'analysis')
   if (analysis) parts.push(`analysis: ${analysis.slice(0, 400)}`)
   if (lead.notes) parts.push(`notes: ${lead.notes.slice(0, 300)}`)
+  if (lead.gmail_draft_id) parts.push('Gmail draft prepared; sending is not confirmed')
+  if (Array.isArray(lead.activity_history)) {
+    const recent = lead.activity_history.slice(-3).flatMap((event: unknown) => {
+      if (!event || typeof event !== 'object') return []
+      const activity = event as Record<string, unknown>
+      if (typeof activity.kind !== 'string') return []
+      const date = typeof activity.created_at === 'string' ? dateOnly(activity.created_at) : null
+      const note = typeof activity.note === 'string' ? activity.note.slice(0, 240) : ''
+      return [`${date || 'undated'} ${activity.kind.slice(0, 40)}${note ? `: ${note}` : ''}`]
+    })
+    if (recent.length) parts.push(`recent activity: ${recent.join('; ')}`)
+  }
   return parts.join(' | ')
 }
 
 async function buildPipelineSnapshot(): Promise<string> {
   const countRows = (await sql`
-    SELECT stage, count(*)::int AS count FROM leads GROUP BY stage
+    SELECT stage, count(*)::int AS count FROM leads WHERE removed_at IS NULL GROUP BY stage
   `) as { stage: string; count: number }[]
 
   const leadRows = (await sql`
-    SELECT id, name, organization, stage, estimated_value_cents, next_follow_up, notes, source, govcon
+    SELECT id, name, organization, stage, estimated_value_cents, next_follow_up, notes, source, govcon,
+      gmail_draft_id, activity_history
     FROM leads
-    WHERE stage = ANY(${ACTIONABLE_STAGES as unknown as string[]}::text[])
+    WHERE removed_at IS NULL AND stage = ANY(${ACTIONABLE_STAGES as unknown as string[]}::text[])
     ORDER BY
       CASE WHEN stage = 'review' THEN 1 ELSE 0 END,
       CASE WHEN govcon->>'score' ~ '^-?[0-9]+(\\.[0-9]+)?$' THEN (govcon->>'score')::numeric ELSE -1 END DESC,
@@ -113,11 +129,6 @@ async function buildPipelineSnapshot(): Promise<string> {
 
 export async function POST(request: NextRequest) {
   if (!isAdmin(request)) return json({ error: 'Unauthorized' }, { status: 401 })
-
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.error('ANTHROPIC_API_KEY is not configured')
-    return json({ error: 'The assistant is not configured on this deployment' }, { status: 500 })
-  }
 
   let turns: AssistantTurn[] | null = null
   try {
@@ -145,6 +156,9 @@ export async function POST(request: NextRequest) {
     const reply = await askCrmAssistant(turns, snapshot)
     return json({ reply })
   } catch (error) {
+    if (error instanceof ClaudeSubscriptionError) {
+      return json({ error: error.message, code: error.code }, { status: error.status })
+    }
     console.error(
       'The CRM assistant could not answer',
       error instanceof Error ? error.message : 'Unknown error',

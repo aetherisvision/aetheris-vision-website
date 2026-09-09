@@ -1,6 +1,7 @@
 import { mintAdminSessionToken } from '../helpers/admin-session'
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ClaudeSubscriptionError } from '@/lib/claude-subscription'
 
 const {
   sqlMock,
@@ -98,6 +99,7 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     loadEncodedCapabilityStatementMock.mockReset()
     draftLeadEmailMock.mockReset()
     vi.stubEnv('ADMIN_PASSPHRASE', TEST_PASSPHRASE)
+    vi.stubEnv('ADMIN_SESSION_SECRET', '')
     vi.stubEnv('GMAIL_CLIENT_ID', 'client-id')
     vi.stubEnv('GMAIL_CLIENT_SECRET', 'client-secret')
     vi.stubEnv('ANTHROPIC_API_KEY', 'test-anthropic-key')
@@ -138,9 +140,121 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     expect(response.status).toBe(404)
   })
 
+  it.each([null, 'existing-message'])('blocks a removed lead before returning or generating draft %s', async (draftId) => {
+    sqlMock.mockResolvedValueOnce([{
+      id: 12, stage: 'qualified', removed_at: '2026-09-08T00:00:00Z',
+      email: 'officer@ferc.gov', gmail_draft_id: draftId,
+    }])
+
+    const response = await callRoute('12')
+
+    expect(response.status).toBe(409)
+    await expect(response.json()).resolves.toEqual({ error: 'Restore this lead before drafting an email' })
+    expect(sqlMock).toHaveBeenCalledTimes(1)
+    expect(createGmailDraftMock).not.toHaveBeenCalled()
+  })
+
+  it.each(['review', 'declined', 'lost', 'won'])('requires an active pursuit before drafting a %s lead', async (stage) => {
+    sqlMock.mockResolvedValueOnce([{
+      id: 12, stage, removed_at: null, email: 'officer@ferc.gov', gmail_draft_id: null,
+    }])
+
+    const response = await callRoute('12')
+
+    expect(response.status).toBe(409)
+    expect((await response.json()).error).toContain('Pursue this opportunity')
+    expect(sqlMock).toHaveBeenCalledTimes(1)
+    expect(getGmailAccessTokenMock).not.toHaveBeenCalled()
+    expect(draftLeadEmailMock).not.toHaveBeenCalled()
+  })
+
+  it.each(['new', 'contacted', 'qualified', 'proposal'])('allows the existing draft to be opened for an active %s lead', async (stage) => {
+    sqlMock.mockResolvedValueOnce([{
+      id: 12, stage, removed_at: null, email: 'officer@ferc.gov',
+      gmail_draft_id: 'existing-message', gmail_draft_created_at: '2026-09-08T00:00:00Z',
+    }])
+
+    const response = await callRoute('12')
+
+    expect(response.status).toBe(200)
+    expect((await response.json()).messageId).toBe('existing-message')
+    expect(createGmailDraftMock).not.toHaveBeenCalled()
+  })
+
+  it.each([null, 'old-message'])('does not draft to the old contact when an edit or removal wins the claim race (%s)', async (draftId) => {
+    sqlMock
+      .mockResolvedValueOnce([{
+        id: 12, name: 'FERC lead', stage: 'new', removed_at: null,
+        email: 'old-contact@ferc.gov', organization: 'FERC',
+        gmail_draft_id: draftId, gmail_draft_created_at: null,
+      }])
+      .mockResolvedValueOnce([])
+
+    const response = await callRoute('12', true, { regenerate: true })
+
+    expect(response.status).toBe(409)
+    const [strings, ...values] = sqlMock.mock.calls[1] as [TemplateStringsArray, ...unknown[]]
+    const claimSql = strings.join('?')
+    expect(claimSql).toContain('AND email = ?')
+    expect(values).toContain('old-contact@ferc.gov')
+    expect(claimSql).toContain('AND removed_at IS NULL')
+    expect(claimSql).toContain("AND stage IN ('new', 'contacted', 'qualified', 'proposal')")
+    expect(createGmailDraftMock).not.toHaveBeenCalled()
+    expect(draftLeadEmailMock).not.toHaveBeenCalled()
+  })
+
+  it('releases only its exact claim after failure, preserving a newer claim and microsecond precision', async () => {
+    const claimToken = '2026-09-08 10:01:02.123456+00'
+    sqlMock
+      .mockResolvedValueOnce([{
+        id: 12, name: 'FERC lead', stage: 'new', removed_at: null,
+        email: 'officer@ferc.gov', organization: 'FERC',
+        gmail_draft_id: null, gmail_draft_created_at: null,
+      }])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-09-08T10:01:02.123Z', claim_token: claimToken }])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+
+    const response = await callRoute('12')
+
+    expect(response.status).toBe(409)
+    const [strings, ...values] = sqlMock.mock.calls[3] as [TemplateStringsArray, ...unknown[]]
+    expect(strings.join('?')).toContain('AND gmail_draft_created_at = ?::timestamptz')
+    expect(values).toEqual([12, claimToken])
+    expect(createGmailDraftMock).not.toHaveBeenCalled()
+  })
+
+  it('does not overwrite or release a newer claim when a completed Gmail draft cannot be attached', async () => {
+    const claimToken = '2026-09-08 10:01:02.123456+00'
+    sqlMock
+      .mockResolvedValueOnce([{
+        id: 12, name: 'FERC lead', stage: 'qualified', removed_at: null,
+        email: 'officer@ferc.gov', organization: 'FERC',
+        gmail_draft_id: null, gmail_draft_created_at: null,
+      }])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-09-08T10:01:02.123Z', claim_token: claimToken }])
+      .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
+      .mockResolvedValueOnce([])
+    decryptTokenMock.mockReturnValue('plain-refresh-token')
+    createGmailDraftMock.mockResolvedValue({ draftId: 'draft-123', messageId: 'msg-1' })
+
+    const response = await callRoute('12')
+
+    expect(response.status).toBe(500)
+    expect(await response.json()).toMatchObject({ messageId: 'msg-1', error: expect.stringContaining('Do not retry') })
+    expect(sqlMock).toHaveBeenCalledTimes(4)
+    const [strings, ...values] = sqlMock.mock.calls[3] as [TemplateStringsArray, ...unknown[]]
+    const persistSql = strings.join('?')
+    expect(persistSql).toContain('AND removed_at IS NULL')
+    expect(persistSql).toContain("AND stage IN ('new', 'contacted', 'qualified', 'proposal')")
+    expect(persistSql).toContain('AND email = ?')
+    expect(persistSql).toContain('AND gmail_draft_created_at = ?::timestamptz')
+    expect(values).toEqual(['msg-1', 12, 'officer@ferc.gov', claimToken])
+  })
+
   it('rejects a lead with no contact email on file', async () => {
     sqlMock.mockResolvedValueOnce([
-      { id: 12, name: 'FERC lead', email: '', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+      { id: 12, stage: 'new', removed_at: null, name: 'FERC lead', email: '', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
     ])
     const response = await callRoute('12')
     expect(response.status).toBe(400)
@@ -154,6 +268,8 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     sqlMock.mockResolvedValueOnce([
       {
         id: 12,
+        stage: 'new',
+        removed_at: null,
         name: 'FERC lead',
         email: 'officer@ferc.gov',
         organization: 'FERC',
@@ -178,6 +294,8 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     sqlMock.mockResolvedValueOnce([
       {
         id: 12,
+        stage: 'new',
+        removed_at: null,
         name: 'FERC lead',
         email: 'officer@ferc.gov,attacker@evil.example',
         organization: 'FERC',
@@ -196,14 +314,14 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
   it('returns 409 without claiming when another request already claimed this lead', async () => {
     sqlMock
       .mockResolvedValueOnce([
-        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+        { id: 12, stage: 'new', removed_at: null, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
       ])
       .mockResolvedValueOnce([]) // claim UPDATE matched no row -- already claimed
 
     const response = await callRoute('12')
     expect(response.status).toBe(409)
     await expect(response.json()).resolves.toEqual({
-      error: 'A draft is already being created for this lead -- try again in a moment',
+      error: 'This lead changed or a draft is already being created -- refresh the lead and try again',
     })
     expect(sqlMock).toHaveBeenCalledTimes(2)
     expect(getGmailAccessTokenMock).not.toHaveBeenCalled()
@@ -212,9 +330,9 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
   it('returns 409 asking to connect Gmail when no biz oauth_tokens row exists, and releases the claim', async () => {
     sqlMock
       .mockResolvedValueOnce([
-        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+        { id: 12, stage: 'new', removed_at: null, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
       ])
-      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z', claim_token: '2026-08-30T00:00:00.000Z' }])
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce([]) // releaseClaim
 
@@ -231,9 +349,9 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
   it('returns 409 without calling Gmail when the stored connection predates gmail.compose, and releases the claim', async () => {
     sqlMock
       .mockResolvedValueOnce([
-        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+        { id: 12, stage: 'new', removed_at: null, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
       ])
-      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z', claim_token: '2026-08-30T00:00:00.000Z' }])
       .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.readonly' }])
       .mockResolvedValueOnce([]) // releaseClaim
 
@@ -271,9 +389,9 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
   ])('releases the claim and distinguishes Gmail renewal from retry on $failure.message', async ({ failure, status, body }) => {
     sqlMock
       .mockResolvedValueOnce([
-        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+        { id: 12, stage: 'new', removed_at: null, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
       ])
-      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z', claim_token: '2026-08-30T00:00:00.000Z' }])
       .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
       .mockResolvedValueOnce([])
     decryptTokenMock.mockReturnValue('plain-refresh-token')
@@ -293,11 +411,11 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
   it('treats an empty/whitespace-only stored scopes string as unknown, not as missing gmail.compose', async () => {
     sqlMock
       .mockResolvedValueOnce([
-        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+        { id: 12, stage: 'new', removed_at: null, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
       ])
-      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z', claim_token: '2026-08-30T00:00:00.000Z' }])
       .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: '   ' }])
-      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ id: 12 }])
 
     decryptTokenMock.mockReturnValue('plain-refresh-token')
     getGmailAccessTokenMock.mockResolvedValue('access-token')
@@ -313,12 +431,12 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
 
   it('allows reclaiming a lead whose claim is older than the stale window (crash recovery)', async () => {
     sqlMock.mockResolvedValueOnce([
-      { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+      { id: 12, stage: 'new', removed_at: null, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
     ])
-    sqlMock.mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:10:00.000Z' }])
+    sqlMock.mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:10:00.000Z', claim_token: '2026-08-30T00:10:00.000Z' }])
     sqlMock
       .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
-      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ id: 12 }])
 
     decryptTokenMock.mockReturnValue('plain-refresh-token')
     getGmailAccessTokenMock.mockResolvedValue('access-token')
@@ -334,11 +452,11 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
   it('creates a draft, persists the message id, and returns a compose-deep-link URL', async () => {
     sqlMock
       .mockResolvedValueOnce([
-        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+        { id: 12, stage: 'new', removed_at: null, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
       ])
-      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z', claim_token: '2026-08-30T00:00:00.000Z' }])
       .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.compose' }])
-      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ id: 12 }])
 
     decryptTokenMock.mockReturnValue('plain-refresh-token')
     getGmailAccessTokenMock.mockResolvedValue('access-token')
@@ -361,9 +479,9 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
   it('maps a 403 from Gmail (insufficient scope) to a clear reconnect message and releases the claim', async () => {
     sqlMock
       .mockResolvedValueOnce([
-        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+        { id: 12, stage: 'new', removed_at: null, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
       ])
-      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z', claim_token: '2026-08-30T00:00:00.000Z' }])
       .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: null }])
       .mockResolvedValueOnce([]) // releaseClaim
 
@@ -384,9 +502,9 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
   it('does NOT release the claim when the Gmail draft succeeds but the DB write fails -- prevents a retry from duplicating the draft', async () => {
     sqlMock
       .mockResolvedValueOnce([
-        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+        { id: 12, stage: 'new', removed_at: null, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
       ])
-      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z', claim_token: '2026-08-30T00:00:00.000Z' }])
       .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
       .mockRejectedValueOnce(new Error('connection terminated unexpectedly')) // the final UPDATE
 
@@ -411,6 +529,8 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     sqlMock.mockResolvedValueOnce([
       {
         id: 12,
+        stage: 'new',
+        removed_at: null,
         name: 'FERC lead',
         email: 'officer@ferc.gov',
         organization: 'FERC\r\nBcc: attacker@evil.example',
@@ -437,13 +557,13 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
   it('embeds the live Gmail signature fetched via the mailbox\'s own default sendAs entry', async () => {
     sqlMock
       .mockResolvedValueOnce([
-        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+        { id: 12, stage: 'new', removed_at: null, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
       ])
-      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z', claim_token: '2026-08-30T00:00:00.000Z' }])
       .mockResolvedValueOnce([
         { refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose', email: 'marston@aetherisvision.com' },
       ])
-      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ id: 12 }])
 
     decryptTokenMock.mockReturnValue('plain-refresh-token')
     getGmailDefaultSignatureMock.mockResolvedValue('<table>AV2 signature</table>')
@@ -461,11 +581,11 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
   it('regenerate: detaches the existing draft atomically and creates a fresh one', async () => {
     sqlMock
       .mockResolvedValueOnce([
-        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: 'old-msg', gmail_draft_created_at: '2026-08-29T00:00:00.000Z' },
+        { id: 12, stage: 'new', removed_at: null, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: 'old-msg', gmail_draft_created_at: '2026-08-29T00:00:00.000Z' },
       ])
-      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }]) // regenerate claim
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z', claim_token: '2026-08-30T00:00:00.000Z' }]) // regenerate claim
       .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
-      .mockResolvedValueOnce([]) // final UPDATE
+      .mockResolvedValueOnce([{ id: 12 }]) // final UPDATE
 
     decryptTokenMock.mockReturnValue('plain-refresh-token')
     createGmailDraftMock.mockResolvedValue({ draftId: 'draft-456', messageId: 'msg-2' })
@@ -485,7 +605,7 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
   it('regenerate: returns 409 without drafting when another regenerate already detached the draft', async () => {
     sqlMock
       .mockResolvedValueOnce([
-        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: 'old-msg', gmail_draft_created_at: '2026-08-29T00:00:00.000Z' },
+        { id: 12, stage: 'new', removed_at: null, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: 'old-msg', gmail_draft_created_at: '2026-08-29T00:00:00.000Z' },
       ])
       .mockResolvedValueOnce([]) // claim race lost
 
@@ -497,7 +617,7 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
 
   it('regenerate: a plain POST with regenerate false is still the idempotent path', async () => {
     sqlMock.mockResolvedValueOnce([
-      { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: 'old-msg', gmail_draft_created_at: '2026-08-29T00:00:00.000Z' },
+      { id: 12, stage: 'new', removed_at: null, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: 'old-msg', gmail_draft_created_at: '2026-08-29T00:00:00.000Z' },
     ])
 
     const response = await callRoute('12', true, { regenerate: false })
@@ -507,22 +627,58 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     expect(sqlMock).toHaveBeenCalledTimes(1)
   })
 
-  it('returns 500 without touching the database when AI drafting is not configured', async () => {
+  it('uses the subscribed Claude worker without an Anthropic API key', async () => {
     vi.stubEnv('ANTHROPIC_API_KEY', '')
+    sqlMock
+      .mockResolvedValueOnce([{
+        id: 12, name: 'FERC lead', stage: 'new', removed_at: null,
+        email: 'officer@ferc.gov', organization: 'FERC',
+        gmail_draft_id: null, gmail_draft_created_at: null,
+      }])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z', claim_token: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
+      .mockResolvedValueOnce([{ id: 12 }])
+    decryptTokenMock.mockReturnValue('plain-refresh-token')
+    createGmailDraftMock.mockResolvedValue({ draftId: 'draft-123', messageId: 'msg-1' })
+
     const response = await callRoute('12')
-    expect(response.status).toBe(500)
-    await expect(response.json()).resolves.toEqual({
-      error: 'AI drafting is not configured on this deployment',
-    })
-    expect(sqlMock).not.toHaveBeenCalled()
+
+    expect(response.status).toBe(200)
+    expect(draftLeadEmailMock).toHaveBeenCalledTimes(1)
+    expect(createGmailDraftMock).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([
+    'claude_worker_offline', 'claude_subscription_auth', 'claude_subscription_limit',
+    'claude_job_failed', 'claude_job_timeout', 'claude_generation_timeout',
+  ] as const)('surfaces actionable subscription error %s and releases its claim', async (code) => {
+    sqlMock
+      .mockResolvedValueOnce([{
+        id: 12, name: 'FERC lead', stage: 'new', removed_at: null,
+        email: 'officer@ferc.gov', organization: 'FERC',
+        gmail_draft_id: null, gmail_draft_created_at: null,
+      }])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z', claim_token: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
+      .mockResolvedValueOnce([])
+    decryptTokenMock.mockReturnValue('plain-refresh-token')
+    draftLeadEmailMock.mockRejectedValue(new ClaudeSubscriptionError(code, 'Reconnect the Claude subscription worker.'))
+
+    const response = await callRoute('12')
+
+    expect(response.status).toBe(503)
+    expect(await response.json()).toEqual({ code, error: 'Reconnect the Claude subscription worker.' })
+    expect(sqlMock).toHaveBeenCalledTimes(4)
+    expect(sqlMock.mock.calls[3][0].join(' ')).toContain('SET gmail_draft_created_at = NULL')
+    expect(createGmailDraftMock).not.toHaveBeenCalled()
   })
 
   it('fails loudly and releases the claim when the AI draft fails -- never falls back to a generic template', async () => {
     sqlMock
       .mockResolvedValueOnce([
-        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+        { id: 12, stage: 'new', removed_at: null, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
       ])
-      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z', claim_token: '2026-08-30T00:00:00.000Z' }])
       .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
       .mockResolvedValueOnce([]) // releaseClaim
 
@@ -549,6 +705,8 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
       .mockResolvedValueOnce([
         {
           id: 12,
+          stage: 'new',
+          removed_at: null,
           name: 'FERC lead',
           email: 'officer@ferc.gov',
           organization: 'FERC',
@@ -559,9 +717,9 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
           gmail_draft_created_at: null,
         },
       ])
-      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z', claim_token: '2026-08-30T00:00:00.000Z' }])
       .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
-      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ id: 12 }])
 
     decryptTokenMock.mockReturnValue('plain-refresh-token')
     draftLeadEmailMock.mockResolvedValue({
@@ -597,11 +755,11 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
   it('drafts without a signature (never blocks, never falls back to a stale copy) when the live signature fetch fails', async () => {
     sqlMock
       .mockResolvedValueOnce([
-        { id: 12, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
+        { id: 12, stage: 'new', removed_at: null, name: 'FERC lead', email: 'officer@ferc.gov', organization: 'FERC', gmail_draft_id: null, gmail_draft_created_at: null },
       ])
-      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z' }])
+      .mockResolvedValueOnce([{ gmail_draft_created_at: '2026-08-30T00:00:00.000Z', claim_token: '2026-08-30T00:00:00.000Z' }])
       .mockResolvedValueOnce([{ refresh_token: 'enc1:stored', scopes: 'https://www.googleapis.com/auth/gmail.compose' }])
-      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ id: 12 }])
 
     decryptTokenMock.mockReturnValue('plain-refresh-token')
     getGmailDefaultSignatureMock.mockRejectedValue(new MockGmailApiError('insufficient scope', 403))

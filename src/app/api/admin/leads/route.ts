@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { isAdmin } from '@/lib/admin-auth'
-import { updateLead, type ManualLeadStage } from '@/lib/crm'
+import { updateLead, validateLeadActivity, type ManualLeadStage, type LeadActivityInput } from '@/lib/crm'
 import { sql } from '@/lib/db'
 
 const MANUAL_STAGES = [
@@ -20,6 +20,7 @@ const ALLOWED_FIELDS = new Set([
   'next_follow_up',
   'notes',
 ])
+const OPTIONAL_FIELDS = new Set(['email', 'phone', 'proposal_brief', 'expected_version', 'activity'])
 
 const NO_STORE_HEADERS = { 'Cache-Control': 'no-store' }
 
@@ -77,6 +78,10 @@ async function findLead(id: number) {
       l.gmail_draft_id,
       l.gmail_draft_created_at,
       l.govcon,
+      l.removed_at,
+      l.removal_reason,
+      l.workflow_version,
+      l.activity_history,
       recent_project.id AS project_id,
       recent_intake.id AS intake_id,
       c.relationship_status,
@@ -114,6 +119,7 @@ async function findLead(id: number) {
 
 export async function GET(request: NextRequest) {
   if (!isAdmin(request)) return json({ error: 'Unauthorized' }, { status: 401 })
+  const includeRemoved = request.nextUrl.searchParams.get('include_removed') === 'true'
 
   try {
     const leads = await sql`
@@ -134,6 +140,10 @@ export async function GET(request: NextRequest) {
         l.gmail_draft_id,
         l.gmail_draft_created_at,
         l.govcon,
+        l.removed_at,
+        l.removal_reason,
+        l.workflow_version,
+        l.activity_history,
         recent_project.id AS project_id,
         recent_intake.id AS intake_id,
         c.relationship_status,
@@ -163,6 +173,7 @@ export async function GET(request: NextRequest) {
         ORDER BY COALESCE(i.created_at, i.submitted_at) DESC, i.id DESC
         LIMIT 1
       ) recent_intake ON TRUE
+      WHERE (${includeRemoved} OR l.removed_at IS NULL)
       ORDER BY l.created_at DESC, l.id DESC
     `
 
@@ -181,8 +192,7 @@ export async function PATCH(request: NextRequest) {
 
   const keys = Object.keys(body)
   if (
-    keys.length !== ALLOWED_FIELDS.size ||
-    keys.some((key) => !ALLOWED_FIELDS.has(key)) ||
+    keys.some((key) => !ALLOWED_FIELDS.has(key) && !OPTIONAL_FIELDS.has(key)) ||
     [...ALLOWED_FIELDS].some((key) => !hasOwn(body, key))
   ) {
     return json(
@@ -233,6 +243,34 @@ export async function PATCH(request: NextRequest) {
     return json({ error: 'notes must be 10,000 characters or fewer' }, { status: 400 })
   }
 
+  const email = hasOwn(body, 'email') ? body.email : undefined
+  if (email !== undefined && (typeof email !== 'string' || email.length > 254 ||
+    !/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(email.trim()))) {
+    return json({ error: 'Enter one valid contact email address' }, { status: 400 })
+  }
+  const phone = hasOwn(body, 'phone') ? body.phone : undefined
+  if (phone !== undefined && phone !== null && (typeof phone !== 'string' || phone.length > 100 || /[\r\n]/.test(phone))) {
+    return json({ error: 'Contact phone must be 100 characters or fewer on one line' }, { status: 400 })
+  }
+  const proposalBrief = hasOwn(body, 'proposal_brief') ? body.proposal_brief : undefined
+  if (proposalBrief !== undefined && proposalBrief !== null &&
+    (typeof proposalBrief !== 'string' || proposalBrief.length > 20_000)) {
+    return json({ error: 'Proposal brief must be 20,000 characters or fewer' }, { status: 400 })
+  }
+  const expectedVersion = hasOwn(body, 'expected_version') ? body.expected_version : undefined
+  if (expectedVersion !== undefined &&
+    (!Number.isSafeInteger(expectedVersion) || (expectedVersion as number) < 0 || (expectedVersion as number) > 2_147_483_647)) {
+    return json({ error: 'expected_version must be a non-negative integer' }, { status: 400 })
+  }
+  let activity: LeadActivityInput | undefined
+  if (hasOwn(body, 'activity')) {
+    if (expectedVersion === undefined) return json({ error: 'Activity updates require expected_version' }, { status: 400 })
+    try { activity = validateLeadActivity(body.activity) }
+    catch (error) {
+      return json({ error: error instanceof Error ? error.message : 'Invalid activity' }, { status: 400 })
+    }
+  }
+
   try {
     const existing = await sql`SELECT id FROM leads WHERE id = ${id}`
     if (!existing[0]) return json({ error: 'Lead not found' }, { status: 404 })
@@ -243,6 +281,11 @@ export async function PATCH(request: NextRequest) {
       estimatedValueCents: estimatedValue as number | null,
       nextFollowUp,
       notes,
+      ...(email !== undefined ? { email: (email as string).trim() } : {}),
+      ...(phone !== undefined ? { phone: phone as string | null } : {}),
+      ...(proposalBrief !== undefined ? { proposalBrief: proposalBrief as string | null } : {}),
+      ...(expectedVersion !== undefined ? { expectedVersion: expectedVersion as number } : {}),
+      ...(activity ? { activity } : {}),
     })
 
     const lead = await findLead(id)
@@ -251,7 +294,7 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     console.error('Unable to update CRM lead', error instanceof Error ? error.message : 'Unknown error')
     return json(
-      { error: 'The lead could not be updated in its current stage' },
+      { error: 'This opportunity changed or is no longer editable. Refresh it before trying again.', code: 'LEAD_CONFLICT' },
       { status: 409 },
     )
   }

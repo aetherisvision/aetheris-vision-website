@@ -147,8 +147,10 @@ describe('opportunity-radar govcon lead capture', () => {
     // Human-editable fields refresh only in review/declined; a lead a human
     // has advanced keeps its edited value and follow-up date.
     expect(text).toContain("WHEN leads.stage IN ('review', 'declined')")
-    // govcon itself stays scan-owned and always refreshes.
-    expect(text).toContain('govcon = COALESCE(EXCLUDED.govcon, leads.govcon)')
+    // Removal suppresses updates and the admin proposal brief survives a rescan.
+    expect(text).toContain('CASE WHEN leads.removed_at IS NOT NULL THEN leads.govcon')
+    expect(text).toContain("leads.govcon->'crm_proposal_brief'")
+    expect(text).toContain('AND leads.removed_at IS NULL')
   })
 
   it('rejects preparing a proposal for a govcon lead with no contact email, without opening a transaction', async () => {
@@ -186,5 +188,12 @@ describe('opportunity-radar govcon lead capture', () => {
       leadStage: 'proposal',
       projectStatus: 'proposal',
     })
+  })
+
+  it.each(['not-an-email', 'one@example.com,two@example.com', 'officer@example'])('rejects malformed proposal contact %s before creating a client', async email => {
+    mocks.sql.mockResolvedValueOnce([{ email }])
+    await expect(prepareLeadProposal({ leadId: 12, projectName: 'Response' }))
+      .rejects.toThrow(/one valid contact email/)
+    expect(mocks.sql.transaction).not.toHaveBeenCalled()
   })
 })

@@ -7,6 +7,8 @@ import { contactVerificationMigration } from './005_contact_verification'
 import { govconLeadsMigration } from './006_govcon_leads'
 import { gmailDraftsMigration } from './007_gmail_drafts'
 import { reviewDeclinedStagesMigration } from './008_review_declined_stages'
+import { leadWorkspaceMigration } from './009_lead_workspace'
+import { adminAiJobsMigration } from './010_admin_ai_jobs'
 import { buildGuardedMigrationSql } from './execution'
 import type { DatabaseMigration } from './types'
 
@@ -19,6 +21,8 @@ const migrations: readonly DatabaseMigration[] = [
   govconLeadsMigration,
   gmailDraftsMigration,
   reviewDeclinedStagesMigration,
+  leadWorkspaceMigration,
+  adminAiJobsMigration,
 ]
 
 const requiredColumns = [
@@ -35,6 +39,10 @@ const requiredColumns = [
   'leads.email_verified_at',
   'leads.updated_at',
   'leads.govcon',
+  'leads.removed_at',
+  'leads.removal_reason',
+  'leads.workflow_version',
+  'leads.activity_history',
   'contact_verification_challenges.id',
   'contact_verification_challenges.purpose',
   'contact_verification_challenges.submission_id',
@@ -63,6 +71,23 @@ const requiredColumns = [
   'oauth_tokens.scopes',
   'leads.gmail_draft_id',
   'leads.gmail_draft_created_at',
+  'admin_ai_jobs.id',
+  'admin_ai_jobs.dedupe_key',
+  'admin_ai_jobs.kind',
+  'admin_ai_jobs.input',
+  'admin_ai_jobs.status',
+  'admin_ai_jobs.result',
+  'admin_ai_jobs.error_code',
+  'admin_ai_jobs.attempts',
+  'admin_ai_jobs.claim_token',
+  'admin_ai_jobs.queued_at',
+  'admin_ai_jobs.claimed_at',
+  'admin_ai_jobs.completed_at',
+  'admin_ai_jobs.updated_at',
+  'admin_ai_workers.id',
+  'admin_ai_workers.state',
+  'admin_ai_workers.auth_method',
+  'admin_ai_workers.last_seen_at',
 ] as const
 
 const requiredIndexes = [
@@ -71,6 +96,7 @@ const requiredIndexes = [
   'leads_source_external_uidx',
   'leads_stage_follow_up_idx',
   'leads_govcon_idx',
+  'leads_visible_stage_follow_up_idx',
   'contact_verification_purpose_submission_uidx',
   'contact_verification_expires_at_idx',
   'projects_lead_id_idx',
@@ -82,6 +108,7 @@ const requiredIndexes = [
   'invoices_project_purpose_uidx',
   'invoices_number_uidx',
   'invoices_notification_idempotency_uidx',
+  'admin_ai_jobs_pending',
 ] as const
 
 const requiredConstraints = [
@@ -90,6 +117,9 @@ const requiredConstraints = [
   'leads_stage_check',
   'leads_source_check',
   'leads_external_key_check',
+  'leads_workflow_version_check',
+  'leads_activity_history_check',
+  'leads_removal_state_check',
   'projects_external_key_check',
   'intake_external_key_check',
   'projects_deposit_amount_check',
@@ -102,6 +132,10 @@ const requiredConstraints = [
   'contact_verification_attempts_check',
   'contact_verification_expiry_check',
   'contact_verification_state_check',
+  'admin_ai_jobs_kind_check',
+  'admin_ai_jobs_status_check',
+  'admin_ai_jobs_attempts_check',
+  'admin_ai_workers_state_check',
 ] as const
 
 interface MigrationRow {
@@ -130,6 +164,7 @@ interface IntegrityRow {
   invalid_client_statuses: number
   invalid_project_statuses: number
   invalid_lead_stages: number
+  invalid_lead_workspace_states: number
   duplicate_lead_external_keys: number
   duplicate_project_external_keys: number
   duplicate_intake_external_keys: number
@@ -182,7 +217,9 @@ export async function verifyCrmSchema(): Promise<MigrationVerification> {
           'projects',
           'intake_submissions',
           'invoices',
-          'oauth_tokens'
+          'oauth_tokens',
+          'admin_ai_jobs',
+          'admin_ai_workers'
         )
     `,
     sql`
@@ -217,6 +254,11 @@ export async function verifyCrmSchema(): Promise<MigrationVerification> {
         (SELECT count(*)::integer FROM leads
           WHERE stage NOT IN ('new', 'contacted', 'qualified', 'proposal', 'won', 'lost', 'review', 'declined'))
           AS invalid_lead_stages,
+        (SELECT count(*)::integer FROM leads
+          WHERE workflow_version < 0 OR jsonb_typeof(activity_history) <> 'array'
+            OR (removed_at IS NULL AND removal_reason IS NOT NULL)
+            OR char_length(removal_reason) > 1000)
+          AS invalid_lead_workspace_states,
         (
           SELECT count(*)::integer
           FROM (
@@ -320,6 +362,18 @@ export async function verifyCrmSchema(): Promise<MigrationVerification> {
   const presentConstraints = new Set(constraints.map((row) => row.conname))
   const appliedIds = new Set(applied.map((row) => row.id))
   const errors: string[] = []
+
+  for (const [name, type, nullable] of [
+    ['removed_at', 'timestamp with time zone', 'YES'],
+    ['removal_reason', 'text', 'YES'],
+    ['workflow_version', 'integer', 'NO'],
+    ['activity_history', 'jsonb', 'NO'],
+  ]) {
+    const column = columns.find(row => row.table_name === 'leads' && row.column_name === name)
+    if (!column || column.data_type !== type || column.is_nullable !== nullable) {
+      errors.push(`leads.${name} must be ${type} with is_nullable=${nullable}`)
+    }
+  }
 
   for (const column of requiredColumns) {
     if (!presentColumns.has(column)) errors.push(`missing column ${column}`)

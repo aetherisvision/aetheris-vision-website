@@ -1,23 +1,8 @@
-/**
- * Drafts the outreach email for a CRM lead with Claude (Fable).
- *
- * Marston's standing instruction (2026-08-30): outreach drafts from the web
- * CRM are written by claude-fable-5 specifically -- the draft must read like
- * he wrote it himself, and the model must actually understand the situation
- * (grant vs. contract solicitation vs. forecast) from the lead's radar
- * analysis and adapt the ask accordingly. Cost per draft (well under a
- * dime at expected volume) was accepted as worth it.
- *
- * There is deliberately NO fallback to a generic template on failure: a
- * boilerplate email that "seems automated" is exactly the failure mode this
- * exists to eliminate, so the route fails loudly and the admin retries.
- * Prompt caching is also deliberately absent -- drafts are sporadic single
- * calls, so a cache write (1.25x) would almost never be read back inside
- * its 5-minute TTL.
- */
-import Anthropic from '@anthropic-ai/sdk'
+/** Outreach text runs through the owner's subscribed Claude Code worker. */
+import { runClaudeSubscription } from '@/lib/claude-subscription'
+import { CLAUDE_SUBSCRIPTION_MODEL } from '@/lib/claude-subscription-limits'
 
-export const LEAD_DRAFT_MODEL = 'claude-fable-5'
+export const LEAD_DRAFT_MODEL = CLAUDE_SUBSCRIPTION_MODEL
 
 export interface LeadDraftInput {
   /** Lead name -- for radar-synced leads this is the opportunity title. */
@@ -138,33 +123,10 @@ export function parseDraftedEmail(text: string): DraftedLeadEmail {
 }
 
 export async function draftLeadEmail(lead: LeadDraftInput): Promise<DraftedLeadEmail> {
-  // maxRetries 0: the route releases its claim on failure and the admin can
-  // simply click again, which beats stacking SDK retries under the
-  // function's execution deadline.
-  const client = new Anthropic({ timeout: 120_000, maxRetries: 0 })
-  // 16000 is a ceiling, not a spend: Fable's always-on thinking counts
-  // against max_tokens, and a cut-off reply bills the whole ceiling AND
-  // forces a paid retry, so thin headroom is the expensive option.
-  const response = await client.messages.create({
+  const text = await runClaudeSubscription('lead_email', {
     model: LEAD_DRAFT_MODEL,
-    max_tokens: 16000,
     system: SYSTEM_PROMPT,
-    messages: [{ role: 'user', content: buildLeadPrompt(lead) }],
+    prompt: buildLeadPrompt(lead),
   })
-  if (response.stop_reason === 'refusal') {
-    const details = response.stop_details
-    console.error('Lead draft refused', {
-      category: details?.category ?? null,
-      explanation: details?.explanation ?? null,
-    })
-    throw new LeadDraftError('The model declined to draft this email')
-  }
-  if (response.stop_reason === 'max_tokens') {
-    throw new LeadDraftError('The model reply was cut off before it finished')
-  }
-  const text = response.content
-    .filter((block): block is Anthropic.TextBlock => block.type === 'text')
-    .map((block) => block.text)
-    .join('')
   return parseDraftedEmail(text)
 }
