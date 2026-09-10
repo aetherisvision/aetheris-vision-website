@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import AdminAssistant from '@/components/AdminAssistant'
 
 const PRIMARY_NAV = [
+  { href: '/admin/vendor-events', label: 'Vendor Events' },
   { href: '/admin/leads', label: 'Leads' },
   { href: '/admin/intake', label: 'Intake & SOWs' },
   { href: '/admin/clients', label: 'Clients' },
