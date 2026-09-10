@@ -194,6 +194,24 @@ export default function AboutPage() {
                   <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-gray-500">
                     Credentials &amp; Registrations
                   </p>
+                  <a
+                    href={AMS_PROFILE_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mb-5 block rounded-xl border border-white/10 bg-white p-4 transition hover:border-blue-400/50"
+                    aria-label="Verify Marston Ward's Certified Consulting Meteorologist credential in the AMS directory"
+                  >
+                    <Image
+                      src="/images/credentials/ams-ccm-logo.png"
+                      alt="American Meteorological Society Certified Consulting Meteorologist logo"
+                      width={672}
+                      height={391}
+                      className="h-auto w-full"
+                    />
+                    <span className="sr-only">
+                      Marston Ward has been granted the Certified Consulting Meteorologist designation by the American Meteorological Society.
+                    </span>
+                  </a>
                   <dl className="divide-y divide-white/10 border-y border-white/10">
                     {credentials.map((item) => (
                       <div key={item.label} className="py-3">
