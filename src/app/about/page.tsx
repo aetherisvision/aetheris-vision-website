@@ -198,14 +198,14 @@ export default function AboutPage() {
                     href={AMS_PROFILE_URL}
                     target="_blank"
                     rel="noreferrer"
-                    className="mb-5 block rounded-xl border border-white/10 bg-white p-4 transition hover:border-blue-400/50"
+                    className="mb-5 block rounded-xl p-1 transition hover:bg-white/5"
                     aria-label="Verify Marston Ward's Certified Consulting Meteorologist credential in the AMS directory"
                   >
                     <Image
                       src="/images/credentials/ams-ccm-logo.png"
                       alt="American Meteorological Society Certified Consulting Meteorologist logo"
-                      width={672}
-                      height={391}
+                      width={535}
+                      height={333}
                       className="h-auto w-full"
                     />
                     <span className="sr-only">
