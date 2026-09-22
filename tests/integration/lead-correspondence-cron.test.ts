@@ -17,7 +17,7 @@ function request(query='',auth=false) {
   })
 }
 function lead() {
-  return {id:10,name:'NAWCAD Long Range Acquisition Forecast',email:'officer@navy.mil',
+  return {id:10,stage:'new',name:'NAWCAD Long Range Acquisition Forecast',email:'officer@navy.mil',
     source:'opportunity-radar',created_at:'2026-09-01T00:00:00Z',
     gmail_draft_id:'old-draft',gmail_draft_created_at:'2026-09-10T00:00:00Z',
     gmail_draft_subject:'NAWCAD forecast question',gmail_thread_id:null,source_id:null}
@@ -71,5 +71,29 @@ describe('GET /api/cron/lead-correspondence', () => {
     expect(parts.join('?')).toContain("'id', ?::text")
     expect(parts.join('?')).toContain("'gmail_message_id', ?::text")
     expect(values).toContain('sent-1')
+  })
+
+  it('keeps contacted duplicate cards in the candidate set so a rerun cannot move their twin', async () => {
+    sqlMock.mockResolvedValueOnce([{refresh_token:'encrypted',scopes:'https://www.googleapis.com/auth/gmail.readonly'}])
+      .mockResolvedValueOnce([{...lead(),stage:'contacted',gmail_draft_id:null,
+        gmail_draft_created_at:null,gmail_draft_subject:null},{...lead(),id:11,
+        gmail_draft_id:null,gmail_draft_created_at:null,gmail_draft_subject:null}])
+    vi.stubGlobal('fetch',gmailFetch())
+    const response=await GET(request('',true))
+    await expect(response.json()).resolves.toMatchObject({ok:true,matched:0,moved:0})
+    expect(sqlMock).toHaveBeenCalledTimes(2)
+    expect((sqlMock.mock.calls[1][0] as TemplateStringsArray).join(' '))
+      .toContain("FROM leads WHERE trim(email) <> ''")
+  })
+
+  it('never assigns a Gmail message that an earlier CRM sync already recorded', async () => {
+    sqlMock.mockResolvedValueOnce([{refresh_token:'encrypted',scopes:'https://www.googleapis.com/auth/gmail.readonly'}])
+      .mockResolvedValueOnce([{...lead(),id:11,gmail_draft_id:null,
+        gmail_draft_created_at:null,gmail_draft_subject:null},
+        {...lead(),id:10,stage:'contacted',last_sent_message_id:'sent-1'}])
+    vi.stubGlobal('fetch',gmailFetch())
+    const response=await GET(request('',true))
+    await expect(response.json()).resolves.toMatchObject({ok:true,matched:0,moved:0})
+    expect(sqlMock).toHaveBeenCalledTimes(2)
   })
 })

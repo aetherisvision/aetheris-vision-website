@@ -4,7 +4,7 @@ import { matchSentMessage, type CorrespondenceLead, type SentMessage } from '@/l
 const sentAt = Date.parse('2026-09-22T12:00:00Z')
 function lead(id: number, patch: Partial<CorrespondenceLead> = {}): CorrespondenceLead {
   return {
-    id, name:'NAWCAD Long Range Acquisition Forecast', email:'officer@navy.mil',
+    id, stage:'new', name:'NAWCAD Long Range Acquisition Forecast', email:'officer@navy.mil',
     source:'opportunity-radar', created_at:'2026-09-01T00:00:00Z',
     gmail_draft_id:null, gmail_draft_created_at:null, gmail_draft_subject:null,
     gmail_thread_id:null, source_id:null, ...patch,
@@ -24,6 +24,7 @@ describe('sent correspondence matching', () => {
 
   it('refuses a shared agency address when two opportunities fit the subject equally', () => {
     expect(matchSentMessage([lead(1),lead(2)],message())).toBeNull()
+    expect(matchSentMessage([lead(1,{stage:'contacted'}),lead(2)],message())).toBeNull()
   })
 
   it('uses a unique opportunity reference rather than a shared address or similar title', () => {

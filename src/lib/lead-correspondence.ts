@@ -2,6 +2,9 @@
  * opportunity both match. Agency mailboxes are often shared by many leads. */
 export interface CorrespondenceLead {
   id: number
+  stage: string
+  removed_at?: string | Date | null
+  last_sent_message_id?: string | null
   name: string
   email: string
   source: string

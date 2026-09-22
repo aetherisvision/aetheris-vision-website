@@ -83,17 +83,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({error:'Reconnect business Gmail with read access'}, {status:409,headers:NO_STORE})
     }
     const leads = await sql`
-      SELECT id,name,email,source,created_at,gmail_draft_id,gmail_draft_created_at,
+      SELECT id,stage,name,email,source,created_at,removed_at,last_sent_message_id,
+             gmail_draft_id,gmail_draft_created_at,
              gmail_draft_subject,gmail_thread_id,govcon->>'source_id' AS source_id
-      FROM leads WHERE removed_at IS NULL AND stage IN ('review','new') AND trim(email) <> ''
+      FROM leads WHERE trim(email) <> ''
     ` as CorrespondenceLead[]
     if (!leads.length) return NextResponse.json({ok:true,checked:0,matched:0,moved:0}, {headers:NO_STORE})
     const token = await getGmailAccessToken(decryptToken(connection.refresh_token))
     const messages = await sentMessages(token, days)
+    const alreadyRecorded = new Set(leads.map(lead => lead.last_sent_message_id).filter(Boolean))
     const matches = new Map<number, SentMessage>()
     for (const message of messages) {
+      if (alreadyRecorded.has(message.id)) continue
       const lead = matchSentMessage(leads, message)
-      if (lead && (!matches.has(lead.id) || message.sentAt < matches.get(lead.id)!.sentAt)) {
+      if (lead && !lead.removed_at && (lead.stage === 'review' || lead.stage === 'new') &&
+        (!matches.has(lead.id) || message.sentAt < matches.get(lead.id)!.sentAt)) {
         matches.set(lead.id, message)
       }
     }
