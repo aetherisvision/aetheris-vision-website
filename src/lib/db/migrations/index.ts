@@ -10,6 +10,7 @@ import { reviewDeclinedStagesMigration } from './008_review_declined_stages'
 import { leadWorkspaceMigration } from './009_lead_workspace'
 import { adminAiJobsMigration } from './010_admin_ai_jobs'
 import { documentProjectLinkMigration } from './011_document_project_link'
+import { leadCorrespondenceMigration } from './012_lead_correspondence'
 import { buildGuardedMigrationSql } from './execution'
 import type { DatabaseMigration } from './types'
 
@@ -25,6 +26,7 @@ const migrations: readonly DatabaseMigration[] = [
   leadWorkspaceMigration,
   adminAiJobsMigration,
   documentProjectLinkMigration,
+  leadCorrespondenceMigration,
 ]
 
 const requiredColumns = [
@@ -74,6 +76,9 @@ const requiredColumns = [
   'oauth_tokens.scopes',
   'leads.gmail_draft_id',
   'leads.gmail_draft_created_at',
+  'leads.gmail_draft_subject',
+  'leads.gmail_thread_id',
+  'leads.last_sent_message_id',
   'admin_ai_jobs.id',
   'admin_ai_jobs.dedupe_key',
   'admin_ai_jobs.kind',

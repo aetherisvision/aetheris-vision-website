@@ -73,6 +73,18 @@ describe('admin lead email drafting', () => {
     window.location.hash = ''
   })
 
+  it('refreshes the queues after an authorized sent-mail sync', async () => {
+    const original = lead(1, {stage:'review',source:'opportunity-radar'})
+    const fetchMock = await renderLeads([original])
+    fetchMock.mockResolvedValueOnce(apiResponse({ok:true,moved:1}))
+      .mockResolvedValueOnce(apiResponse({leads:[lead(1,{stage:'contacted',source:'opportunity-radar'})]}))
+    fireEvent.click(screen.getByRole('button',{name:'Sync sent mail'}))
+    expect(await screen.findByText('1 opportunity moved to Follow-ups from sent mail.')).toBeVisible()
+    expect(workflowQueue(/^Review/)).toHaveTextContent('0')
+    expect(workflowQueue(/^Follow-ups/)).toHaveTextContent('1')
+    expect(fetchMock).toHaveBeenNthCalledWith(2,'/api/cron/lead-correspondence?days=90', {cache:'no-store'})
+  })
+
   it('locks selection, queues, and other actions while drafting, then reenables them and preserves each opportunity’s result', async () => {
     const fetchMock = await renderLeads([lead(1), lead(2)])
     const first = pendingResponse()

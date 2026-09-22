@@ -202,7 +202,7 @@ export function buildDraftRawMessage(options: {
 export async function createGmailDraft(
   accessToken: string,
   rawMessage: string,
-): Promise<{ draftId: string; messageId: string }> {
+): Promise<{ draftId: string; messageId: string; threadId: string | null }> {
   const res = await fetch(`${GMAIL_API}/users/me/drafts`, {
     method: 'POST',
     headers: {
@@ -226,5 +226,6 @@ export async function createGmailDraft(
   if (!data.id || !data.message?.id) {
     throw new Error('Gmail draft creation returned an unexpected response shape')
   }
-  return { draftId: data.id, messageId: data.message.id }
+  return { draftId: data.id, messageId: data.message.id,
+    threadId: typeof data.message.threadId === 'string' ? data.message.threadId : null }
 }

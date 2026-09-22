@@ -197,7 +197,8 @@ export async function POST(
   const claimRows = lead.gmail_draft_id
     ? await sql`
         UPDATE leads
-        SET gmail_draft_id = NULL, gmail_draft_created_at = now()
+        SET gmail_draft_id = NULL, gmail_draft_subject = NULL,
+            gmail_thread_id = NULL, gmail_draft_created_at = now()
         WHERE id = ${id}
           AND email = ${lead.email}
           AND removed_at IS NULL
@@ -207,7 +208,8 @@ export async function POST(
       `
     : await sql`
         UPDATE leads
-        SET gmail_draft_created_at = now()
+        SET gmail_draft_subject = NULL, gmail_thread_id = NULL,
+            gmail_draft_created_at = now()
         WHERE id = ${id}
           AND email = ${lead.email}
           AND removed_at IS NULL
@@ -387,8 +389,9 @@ export async function POST(
     }
 
     let messageId: string
+    let threadId: string | null
     try {
-      ;({ messageId } = await createGmailDraft(accessToken, raw))
+      ;({ messageId, threadId } = await createGmailDraft(accessToken, raw))
     } catch (error) {
       if (error instanceof GmailApiError && error.status === 403) {
         console.error('Gmail draft creation failed -- insufficient scope', error.message)
@@ -417,7 +420,8 @@ export async function POST(
       // must never overwrite (or release) a newer request's claim.
       const savedRows = await sql`
         UPDATE leads
-        SET gmail_draft_id = ${messageId}, updated_at = now()
+        SET gmail_draft_id = ${messageId}, gmail_draft_subject = ${subject},
+            gmail_thread_id = ${threadId}, updated_at = now()
         WHERE id = ${id}
           AND email = ${lead.email}
           AND removed_at IS NULL

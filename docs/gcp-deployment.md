@@ -69,6 +69,16 @@ database connection from Secret Manager at startup; Claude subscription
 authentication remains on the Mac. Radar continues using the authenticated
 website API and does not receive direct database credentials.
 
+The `av-crm-lead-correspondence` Cloud Run job calls
+`/api/cron/lead-correspondence` hourly using `crm-cron-secret`; the
+`av-crm-hourly-lead-correspondence` Scheduler job invokes it with the dedicated
+scheduler identity. It reads business Gmail Sent metadata only. A lead moves
+from Review or Active to Follow-ups only when the recipient and an opportunity
+identifier, a tracked draft subject/thread, or a distinctive title match.
+Shared agency contacts without a unique match are skipped. `/admin/leads` also
+offers **Sync sent mail** for immediate checks. The `days=90&dry_run=1` query
+previews matched lead IDs without changing the CRM; normal runs scan 30 days.
+
 Run `npm run ci` using Node 24.15. If the shell injects production credentials,
 remove `ADMIN_SESSION_SECRET` from the test process; auth fixtures intentionally
 use their own signing keys. Never print or commit production secrets.

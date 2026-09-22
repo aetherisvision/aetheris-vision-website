@@ -249,7 +249,8 @@ describe('POST /api/admin/leads/[id]/draft-email', () => {
     expect(persistSql).toContain("AND stage IN ('new', 'contacted', 'qualified', 'proposal')")
     expect(persistSql).toContain('AND email = ?')
     expect(persistSql).toContain('AND gmail_draft_created_at = ?::timestamptz')
-    expect(values).toEqual(['msg-1', 12, 'officer@ferc.gov', claimToken])
+    expect(values).toEqual(['msg-1', 'FERC weather analytics inquiry', undefined,
+      12, 'officer@ferc.gov', claimToken])
   })
 
   it('rejects a lead with no contact email on file', async () => {

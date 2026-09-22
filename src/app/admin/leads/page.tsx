@@ -43,9 +43,10 @@ export default function AdminLeadsPage() {
   const [managementNotice, setManagementNotice] = useState<Notice | null>(null)
   const [undoIds, setUndoIds] = useState<number[]>([])
   const [managing, setManaging] = useState(false)
+  const [syncingMail, setSyncingMail] = useState(false)
   const operation = useRef(false)
   const activityRetries = useRef(new Map<string, string>())
-  const busy = managing || Object.keys(pending).length > 0
+  const busy = managing || syncingMail || Object.keys(pending).length > 0
 
   async function loadLeads() {
     setLoading(true)
@@ -64,6 +65,23 @@ export default function AdminLeadsPage() {
     finally { setLoading(false) }
   }
   useEffect(() => { void loadLeads() }, [])
+
+  async function syncSentMail() {
+    if (busy) return
+    setSyncingMail(true)
+    setManagementNotice(null)
+    try {
+      const response = await fetch('/api/cron/lead-correspondence?days=90', {cache:'no-store'})
+      const data = await responseData(response)
+      if (!response.ok) throw new Error(data.error || 'Sent mail could not be checked')
+      await loadLeads()
+      setManagementNotice({tone:'success',text:data.moved
+        ? `${data.moved} ${data.moved === 1 ? 'opportunity' : 'opportunities'} moved to Follow-ups from sent mail.`
+        : 'Sent mail checked. No new opportunities matched.'})
+    } catch (error) {
+      setManagementNotice({tone:'error',text:error instanceof Error ? error.message : 'Sent mail could not be checked'})
+    } finally {setSyncingMail(false)}
+  }
 
   const visible = useMemo(() => leads.filter(lead =>
     matchesQueue(lead, queue) && (!dueOnly || followUpDue(lead)) &&
@@ -191,7 +209,7 @@ export default function AdminLeadsPage() {
       if (typeof data.messageId === 'string' && data.messageId) mergeLead(lead.id, { gmail_draft_id: data.messageId, gmail_draft_created_at: data.draftedAt ?? new Date().toISOString() })
       if (!response.ok) throw new Error(data.error || 'The draft could not be created')
       if (typeof data.messageId !== 'string' || !data.messageId) throw new Error('The draft service did not return a Gmail draft. Check Gmail before retrying.')
-      setNotice(lead.id, { tone: 'success', text: 'Your Gmail draft is ready. Review and send it in Gmail, then record outreach sent here.' })
+      setNotice(lead.id, { tone: 'success', text: 'Your Gmail draft is ready. Review and send it in Gmail. Sent mail sync will move this opportunity to Follow-ups.' })
     } catch (error) { setNotice(lead.id, { tone: 'error', text: error instanceof Error ? error.message : 'The draft could not be created', reconnect }) }
     finally { finish(lead.id) }
   }
@@ -236,6 +254,7 @@ export default function AdminLeadsPage() {
         <label className={styles.search}><span className={styles.srOnly}>Search opportunities</span><input type="search" disabled={busy} placeholder="Search opportunities, agencies, contacts…" value={search} onChange={event => { setSearch(event.target.value); setChecked([]) }} /></label>
         <button disabled={busy} className={styles.secondary} aria-pressed={dueOnly} onClick={() => { setDueOnly(!dueOnly); setQueue('all'); setSelectedId(null); setChecked([]) }}>Follow-up due <strong>{leads.filter(followUpDue).length}</strong></button>
         <button disabled={busy} className={styles.quiet} onClick={() => selectQueue('all')}>All opportunities ({leads.filter(lead => !lead.removed_at).length})</button>
+        <button disabled={busy} className={styles.secondary} onClick={() => void syncSentMail()}>{syncingMail ? 'Checking Gmail…' : 'Sync sent mail'}</button>
       </div>
       {managementNotice && <div className={managementNotice.tone === 'error' ? styles.error : styles.success} role={managementNotice.tone === 'error' ? 'alert' : 'status'}>{managementNotice.text} {undoIds.length > 0 && <button disabled={busy} className={styles.quiet} onClick={() => void manage('restore', undoIds)}>Undo removal</button>}</div>}
       {removal && <section className={styles.removalPanel} aria-label="Confirm removal">
@@ -284,7 +303,7 @@ export default function AdminLeadsPage() {
           <section className={styles.actionPanel} aria-label="Next action">
             {removed && <><h3>Removed from active work</h3><p>{selected.removal_reason || 'No removal reason recorded.'}</p><p className={styles.help}>Restore this opportunity to resume at its previous stage. Radar will keep it out of your working queues until then.</p></>}
             {phase === 'review' && <><p className={styles.eyebrow}>DECISION</p><h3>Is this worth pursuing?</h3><p>{radarText(selected, 'recommended_action') || 'Review the opportunity and its fit, then move it into outreach when you are ready.'}</p><div className={styles.actions}><button disabled={busy} className={styles.primary} onClick={() => void save(selected, edit, 'new', 'You are pursuing this opportunity. Start outreach below.', 'Decided to pursue', 'stage_change')}>Pursue</button><button disabled={busy} className={styles.quiet} onClick={() => requestRemoval([selected.id])}>Remove</button></div></>}
-            {phase === 'outreach' && <><p className={styles.eyebrow}>FIRST CONTACT</p><h3>Start the conversation</h3><p>Prepare your message, review and send it in Gmail, then record the contact here.</p></>}
+            {phase === 'outreach' && <><p className={styles.eyebrow}>FIRST CONTACT</p><h3>Start the conversation</h3><p>Prepare your message, then review and send it in Gmail. Sent mail sync moves matching opportunities to Follow-ups automatically.</p></>}
             {phase === 'follow-up' && <><p className={styles.eyebrow}>FOLLOW-UP</p><h3>{followUpDue(selected) ? 'Your follow-up is due' : 'Keep the conversation moving'}</h3><p>{selected.next_follow_up ? `Next follow-up: ${selected.next_follow_up.slice(0, 10)}.` : 'Set the next date so this opportunity stays on your radar.'}</p></>}
             {phase === 'proposal' && <><p className={styles.eyebrow}>PROPOSAL</p><h3>Develop the approach and scope</h3><p>Use the opportunity requirements to prepare a working brief. Save it here and download a copy when you need it.</p></>}
             {closed && <><h3>{stageLabels[selected.stage]}</h3><p>{selected.stage === 'won' ? 'Recorded as won after signature.' : selected.stage === 'declined' ? 'This opportunity was not pursued. You can return it to review.' : 'This opportunity is closed.'}</p>{selected.stage === 'declined' && <button disabled={busy} className={styles.secondary} onClick={() => void save(selected, edit, 'review', 'Returned to review.')}>Reconsider</button>}</>}
