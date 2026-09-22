@@ -1,5 +1,20 @@
 export type LeadStage = 'review' | 'new' | 'contacted' | 'qualified' | 'proposal' | 'won' | 'lost' | 'declined'
-export type LeadQueue = 'review' | 'active' | 'follow-up' | 'proposal' | 'closed' | 'removed' | 'all'
+export type LeadQueue = 'review' | 'active' | 'follow-up' | 'proposal' | 'closed' | 'removed' | 'research' | 'all'
+export interface ResearchProfile {
+  rank: number
+  tier: string
+  score: number
+  type: string
+  state: string
+  contact_role: string
+  email_route: string
+  why_fit: string
+  opener: string
+  wave: string
+  next_step: string
+  source_url: string
+  verified_at: string
+}
 export interface LeadActivity {
   id: string
   kind: 'outreach' | 'follow_up' | 'note' | 'stage_change' | 'removed' | 'restored'
@@ -28,6 +43,7 @@ export interface Lead {
   gmail_draft_id: string | null
   gmail_draft_created_at: string | null
   govcon: Record<string, unknown> | null
+  research_profile?: ResearchProfile | null
   created_at: string
   removed_at: string | null
   removal_reason: string | null
@@ -62,6 +78,7 @@ export function isActiveLead(lead: Pick<Lead, 'stage' | 'removed_at'>): boolean 
 export function matchesQueue(lead: Lead, queue: LeadQueue): boolean {
   if (queue === 'removed') return Boolean(lead.removed_at)
   if (lead.removed_at) return false
+  if (queue === 'research') return Boolean(lead.research_profile)
   if (queue === 'all') return true
   if (queue === 'active') return isActiveLead(lead)
   if (queue === 'follow-up') return isActiveLead(lead) && (lead.stage === 'contacted' || Boolean(lead.next_follow_up))

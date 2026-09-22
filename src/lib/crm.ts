@@ -617,9 +617,12 @@ export async function captureGovconLead(input: GovconLeadInput): Promise<LeadCap
         -- brief is retained. COALESCE keeps a scan that omits a value
         -- from blanking a previously-good one.
         govcon = CASE WHEN leads.removed_at IS NOT NULL THEN leads.govcon ELSE
-          COALESCE(EXCLUDED.govcon, leads.govcon, '{}'::jsonb) - 'crm_proposal_brief'
+          COALESCE(EXCLUDED.govcon, leads.govcon, '{}'::jsonb) - 'crm_proposal_brief' - 'research_profile'
             || CASE WHEN leads.govcon ? 'crm_proposal_brief'
               THEN jsonb_build_object('crm_proposal_brief', leads.govcon->'crm_proposal_brief')
+              ELSE '{}'::jsonb END
+            || CASE WHEN leads.govcon ? 'research_profile'
+              THEN jsonb_build_object('research_profile', leads.govcon->'research_profile')
               ELSE '{}'::jsonb END
           END,
         estimated_value_cents = CASE

@@ -44,9 +44,10 @@ export default function AdminLeadsPage() {
   const [undoIds, setUndoIds] = useState<number[]>([])
   const [managing, setManaging] = useState(false)
   const [syncingMail, setSyncingMail] = useState(false)
+  const [importingResearch, setImportingResearch] = useState(false)
   const operation = useRef(false)
   const activityRetries = useRef(new Map<string, string>())
-  const busy = managing || syncingMail || Object.keys(pending).length > 0
+  const busy = managing || syncingMail || importingResearch || Object.keys(pending).length > 0
 
   async function loadLeads() {
     setLoading(true)
@@ -83,10 +84,30 @@ export default function AdminLeadsPage() {
     } finally {setSyncingMail(false)}
   }
 
+  async function importResearch(file: File) {
+    if (busy) return
+    setImportingResearch(true)
+    setManagementNotice(null)
+    try {
+      const payload = JSON.parse(await file.text())
+      const response = await fetch('/api/admin/leads/research-prospects', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+      })
+      const data = await responseData(response)
+      if (!response.ok) throw new Error(data.error || 'Research prospects could not be imported')
+      await loadLeads()
+      setSearch(''); setDueOnly(false); setQueue('research'); setSelectedId(null); setChecked([])
+      setManagementNotice({ tone: 'success', text: `${data.count} research prospects are ready in the CRM (${data.created} new records).` })
+    } catch (error) {
+      setManagementNotice({ tone: 'error', text: error instanceof Error ? error.message : 'Research prospects could not be imported' })
+    } finally { setImportingResearch(false) }
+  }
+
   const visible = useMemo(() => leads.filter(lead =>
     matchesQueue(lead, queue) && (!dueOnly || followUpDue(lead)) &&
     matchesSearch(lead, search)
   ).sort((a, b) => {
+    if (queue === 'research') return (a.research_profile?.rank ?? 9999) - (b.research_profile?.rank ?? 9999)
     if (queue === 'follow-up' || dueOnly) return (a.next_follow_up || '9999').localeCompare(b.next_follow_up || '9999')
     if (queue === 'review') return Number(b.govcon?.score ?? -1) - Number(a.govcon?.score ?? -1)
     return b.created_at.localeCompare(a.created_at)
@@ -254,6 +275,8 @@ export default function AdminLeadsPage() {
         <label className={styles.search}><span className={styles.srOnly}>Search opportunities</span><input type="search" disabled={busy} placeholder="Search opportunities, agencies, contacts…" value={search} onChange={event => { setSearch(event.target.value); setChecked([]) }} /></label>
         <button disabled={busy} className={styles.secondary} aria-pressed={dueOnly} onClick={() => { setDueOnly(!dueOnly); setQueue('all'); setSelectedId(null); setChecked([]) }}>Follow-up due <strong>{leads.filter(followUpDue).length}</strong></button>
         <button disabled={busy} className={styles.quiet} onClick={() => selectQueue('all')}>All opportunities ({leads.filter(lead => !lead.removed_at).length})</button>
+        <button disabled={busy} className={styles.secondary} aria-pressed={queue === 'research'} onClick={() => selectQueue('research')}>Research prospects ({leads.filter(lead => !lead.removed_at && lead.research_profile).length})</button>
+        <label className={styles.importLabel}>Import research list <input type="file" accept="application/json,.json" disabled={busy} onChange={event => { const file = event.target.files?.[0]; if (file) void importResearch(file); event.target.value = '' }} /></label>
         <button disabled={busy} className={styles.secondary} onClick={() => void syncSentMail()}>{syncingMail ? 'Checking Gmail…' : 'Sync sent mail'}</button>
       </div>
       {managementNotice && <div className={managementNotice.tone === 'error' ? styles.error : styles.success} role={managementNotice.tone === 'error' ? 'alert' : 'status'}>{managementNotice.text} {undoIds.length > 0 && <button disabled={busy} className={styles.quiet} onClick={() => void manage('restore', undoIds)}>Undo removal</button>}</div>}
@@ -268,7 +291,7 @@ export default function AdminLeadsPage() {
       {loadError && <div role="alert" className={styles.error}>{loadError} <button className={styles.secondary} onClick={() => void loadLeads()}>Retry loading</button></div>}
       {loading ? <p role="status">Loading opportunities…</p> : <div className={styles.layout}>
         <aside className={styles.inbox} aria-label="Opportunity list">
-          <div className={styles.listTitle}><strong>{dueOnly ? 'Follow-up due' : QUEUES.find(item => item.id === queue)?.label ?? 'All opportunities'}</strong><span>{visible.length} opportunities</span></div>
+          <div className={styles.listTitle}><strong>{dueOnly ? 'Follow-up due' : queue === 'research' ? 'Research prospects' : QUEUES.find(item => item.id === queue)?.label ?? 'All opportunities'}</strong><span>{visible.length} opportunities</span></div>
           {!visible.length && <p className={styles.empty}>No opportunities here. Choose another queue or change your search.</p>}
           {!!visible.length && <div className={styles.bulkBar}>
             <label><input type="checkbox" disabled={busy} checked={visible.slice(0, 100).every(lead => checked.includes(lead.id))} onChange={event => setChecked(event.target.checked ? visible.slice(0, 100).map(lead => lead.id) : [])} />{checked.length ? `${checked.length} selected` : visible.length > 100 ? 'Select first 100' : 'Select all'}</label>
@@ -278,7 +301,7 @@ export default function AdminLeadsPage() {
             {visible.map(lead => <div key={lead.id} className={`${styles.listRow} ${selected?.id === lead.id ? styles.selectedRow : ''}`}>
               <input className={styles.rowCheck} type="checkbox" aria-label={`Select ${lead.name}`} disabled={busy || (!checked.includes(lead.id) && checked.length >= 100)} checked={checked.includes(lead.id)} onChange={event => setChecked(current => event.target.checked ? [...current, lead.id] : current.filter(id => id !== lead.id))} />
               <button disabled={busy} onClick={() => setSelectedId(lead.id)} aria-current={selected?.id === lead.id ? 'true' : undefined} className={styles.row}>
-                <span className={styles.rowMeta}>{lead.source === 'opportunity-radar' ? 'RADAR' : 'INQUIRY'}{typeof lead.govcon?.score === 'number' && <span>Fit {lead.govcon.score}</span>}</span>
+                <span className={styles.rowMeta}>{lead.research_profile ? `RESEARCH #${lead.research_profile.rank}` : lead.source === 'opportunity-radar' ? 'RADAR' : 'INQUIRY'}{lead.research_profile ? <span>Score {lead.research_profile.score} · Tier {lead.research_profile.tier}</span> : typeof lead.govcon?.score === 'number' && <span>Fit {lead.govcon.score}</span>}</span>
                 <strong>{lead.name}</strong><span>{lead.organization || lead.email || 'Contact needed'}</span>
                 <span className={followUpDue(lead) ? styles.due : styles.rowStage}>{lead.removed_at ? 'Removed' : followUpDue(lead) ? `Follow-up due ${lead.next_follow_up?.slice(0, 10)}` : stageLabels[lead.stage]}</span>
               </button>
@@ -338,8 +361,18 @@ export default function AdminLeadsPage() {
             </fieldset>}
           </section>
 
+          {selected.research_profile && <section className={styles.context} aria-label="Research prospect profile">
+            <h3>Research prospect profile</h3>
+            <p><strong>Rank {selected.research_profile.rank} · Score {selected.research_profile.score} · Tier {selected.research_profile.tier} · {selected.research_profile.wave}</strong></p>
+            <p>{selected.research_profile.why_fit}</p>
+            <h4>Discussion opener</h4><p>{selected.research_profile.opener}</p>
+            <h4>Next action</h4><p>{selected.research_profile.next_step}</p>
+            <p className={styles.help}>Contact route: {selected.research_profile.email_route} · {selected.research_profile.contact_role} · {selected.research_profile.state}</p>
+            <a href={selected.research_profile.source_url} target="_blank" rel="noopener noreferrer" className={styles.textLink}>Official source ↗</a>
+          </section>}
+
           <section className={styles.context} aria-label="Opportunity context">
-            <h3>{selected.source === 'opportunity-radar' ? 'Radar assessment' : 'Inquiry details'}</h3>
+            <h3>{selected.source === 'opportunity-radar' ? 'Radar assessment' : selected.research_profile ? 'Background' : 'Inquiry details'}</h3>
             {radarText(selected, 'analysis') ? <p>{radarText(selected, 'analysis')}</p> : selected.message !== selected.name && <p>{selected.message}</p>}
             {(['fit_reasons', 'cautions'] as const).map(key => { const items = selected.govcon?.[key]; return Array.isArray(items) && items.length ? <div key={key} className={key === 'cautions' ? styles.cautions : styles.fit}><h4>{key === 'cautions' ? 'Watch for' : 'Why it fits'}</h4><ul>{items.filter(item => typeof item === 'string').map((item, index) => <li key={index}>{item}</li>)}</ul></div> : null })}
             {phase !== 'review' && radarText(selected, 'recommended_action') && <p><strong>Radar recommendation: </strong>{radarText(selected, 'recommended_action')}</p>}

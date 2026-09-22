@@ -128,6 +128,8 @@
 .history time,.history small { color:var(--muted); font-size:12px; }
 .history p { font-size:14px; margin:5px 0; white-space:pre-wrap; overflow-wrap:anywhere; }
 .page>.success,.page>.error { margin:14px 0; }
+.importLabel { display:inline-flex; align-items:center; gap:8px; padding:7px 10px; border:1px solid var(--line); border-radius:7px; color:#becbdd; font-size:12px; cursor:pointer; }
+.importLabel input { max-width:150px; font-size:11px; }
 .noSelection { min-height:450px; }
 @media(max-width:1000px) { .layout { grid-template-columns:280px minmax(0,1fr); gap:0; } .steps { padding-inline:22px; gap:12px; } }
 @media(max-width:760px) {
