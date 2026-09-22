@@ -68,6 +68,8 @@ describe('GET /api/cron/lead-correspondence', () => {
     const [parts,...values]=sqlMock.mock.calls[2] as [TemplateStringsArray,...unknown[]]
     expect(parts.join('?')).toContain("SET stage = 'contacted'")
     expect(parts.join('?')).toContain('last_sent_message_id')
+    expect(parts.join('?')).toContain("'id', ?::text")
+    expect(parts.join('?')).toContain("'gmail_message_id', ?::text")
     expect(values).toContain('sent-1')
   })
 })

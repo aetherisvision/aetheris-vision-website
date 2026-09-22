@@ -114,11 +114,11 @@ export async function GET(request: NextRequest) {
               gmail_draft_created_at <= to_timestamp(${message.sentAt / 1000}) THEN NULL ELSE gmail_draft_created_at END,
             last_sent_message_id = ${message.id},
             activity_history = activity_history || jsonb_build_array(jsonb_build_object(
-              'id', ${'gmail:' + message.id}, 'kind', 'outreach',
+              'id', ${'gmail:' + message.id}::text, 'kind', 'outreach',
               'note', 'Email sent in business Gmail', 'created_at', now(),
               'sent_at', to_timestamp(${message.sentAt / 1000}),
               'from_stage', stage, 'to_stage', 'contacted',
-              'gmail_message_id', ${message.id}
+              'gmail_message_id', ${message.id}::text
             )),
             workflow_version = workflow_version + 1,
             updated_at = now()
