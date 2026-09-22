@@ -99,6 +99,22 @@ describe('request security helpers', () => {
     expect(getTrustedClientIp(request(null, { 'x-forwarded-for': 'not-an-ip' }))).toBeNull()
   })
 
+  it('requires configured GCP ingress and a single valid load-balancer address', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('VERCEL', '')
+    vi.stubEnv('K_SERVICE', 'av-crm-web')
+    vi.stubEnv('GCP_LOAD_BALANCER', '')
+    const headers = { 'x-av-client-ip': '203.0.113.7', 'x-forwarded-for': '198.51.100.44' }
+    expect(getTrustedClientIp(request(null, headers))).toBeNull()
+    vi.stubEnv('GCP_LOAD_BALANCER', 'true')
+    expect(getTrustedClientIp(request(null, headers))).toBe('203.0.113.7')
+    expect(getTrustedClientIp(request(null, { 'x-av-client-ip': '2001:db8::1' }))).toBe('2001:db8::1')
+    expect(getTrustedClientIp(request(null, { 'x-av-client-ip': '203.0.113.7, 10.0.0.1' }))).toBeNull()
+    expect(getTrustedClientIp(request(null, { 'x-forwarded-for': '198.51.100.44' }))).toBeNull()
+    vi.stubEnv('K_SERVICE', '')
+    expect(getTrustedClientIp(request(null, headers))).toBeNull()
+  })
+
   it('creates stable, scoped, non-reversible identifiers', () => {
     const first = createOpaqueRateLimitKey('contact', '203.0.113.7')
     expect(first).toBe(createOpaqueRateLimitKey('contact', '203.0.113.7'))

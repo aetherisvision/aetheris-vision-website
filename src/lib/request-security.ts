@@ -161,11 +161,14 @@ function firstValidIp(value: string | null): string | null {
 }
 
 /**
- * Resolve a client address only from a header replaced by Vercel's trusted
- * ingress. Local/test fallback exists solely to make request defenses testable;
- * generic non-Vercel production deployments deliberately return null.
+ * Trust only headers replaced by the configured ingress. GCP deployments must
+ * restrict Cloud Run ingress to the load balancer before enabling this option.
  */
 export function getTrustedClientIp(request: Request): string | null {
+  if (process.env.K_SERVICE && process.env.GCP_LOAD_BALANCER === 'true') {
+    const address = request.headers.get('x-av-client-ip')?.trim()
+    return address && isIP(address) !== 0 ? address : null
+  }
   if (process.env.VERCEL === '1') {
     return firstValidIp(request.headers.get('x-vercel-forwarded-for'))
   }

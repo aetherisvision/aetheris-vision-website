@@ -1,0 +1,14 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --tag
+      - us-central1-docker.pkg.dev/$PROJECT_ID/av-crm/website:$_TAG
+      - --build-arg
+      - NEXT_PUBLIC_TURNSTILE_SITE_KEY=$_TURNSTILE_SITE_KEY
+      - .
+images:
+  - us-central1-docker.pkg.dev/$PROJECT_ID/av-crm/website:$_TAG
+options:
+  logging: CLOUD_LOGGING_ONLY
+timeout: 1200s

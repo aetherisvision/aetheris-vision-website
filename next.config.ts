@@ -19,6 +19,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   // Security-First Configuration
   poweredByHeader: false, // Hide Next.js signature
   compress: true, // Enable gzip compression

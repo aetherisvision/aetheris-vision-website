@@ -1,7 +1,7 @@
 /** Local-only queue worker. The hosted website never receives Claude OAuth credentials. */
 import { randomUUID } from 'node:crypto'
 import { pathToFileURL } from 'node:url'
-import { neon } from '@neondatabase/serverless'
+import { sql } from '../src/lib/db'
 import { isClaudeSubscriptionInput } from '../src/lib/claude-subscription-limits'
 import {
   checkSubscriptionAuth, invokeSubscriptionClaude, SubscriptionCliError,
@@ -27,7 +27,7 @@ export function parseJobInput(job: Job): { model: string; system: string; prompt
 export async function runWorker(): Promise<void> {
   const databaseUrl = process.env.DATABASE_URL
   if (!databaseUrl) throw new Error('DATABASE_URL is required for the local worker')
-  const db = neon(databaseUrl)
+  const db = sql
   const binary = process.env.CLAUDE_SUBSCRIPTION_BINARY || '/opt/homebrew/bin/claude'
   const workerId = `av-claude-subscription-${randomUUID()}`
   let stopped = false

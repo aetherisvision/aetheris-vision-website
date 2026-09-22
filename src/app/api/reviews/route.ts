@@ -15,8 +15,6 @@ import {
 import { TURNSTILE_ACTIONS, verifyTurnstileToken } from '@/lib/turnstile'
 import { escapeHtml } from '@/lib/escape-html'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 const POST_RATE_LIMIT = 3
 const POST_WINDOW_MS = 10 * 60 * 1000
 const GET_RATE_LIMIT = 60
@@ -215,6 +213,7 @@ export async function POST(request: NextRequest) {
     })
 
     try {
+      const resend = new Resend(process.env.RESEND_API_KEY)
       const stars = '★'.repeat(rating as number) + '☆'.repeat(5 - (rating as number))
       const adminUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? SITE.url}/admin/reviews`
       const clientDetails = [clientRole || null, clientCompany || null]

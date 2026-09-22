@@ -1,12 +1,9 @@
-import type {
-  NeonQueryFunctionInTransaction,
-  NeonQueryInTransaction,
-} from '@neondatabase/serverless'
+import type { DatabaseQuery, QuerySql } from '../types'
 
-export type MigrationSql = NeonQueryFunctionInTransaction<false, false>
+export type MigrationSql = QuerySql
 
 export interface DatabaseMigration {
   id: string
   description: string
-  up: (sql: MigrationSql) => NeonQueryInTransaction[]
+  up: (sql: MigrationSql) => DatabaseQuery[]
 }

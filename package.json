@@ -34,6 +34,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.102.0",
     "@calcom/embed-react": "^1.5.3",
+    "@google-cloud/storage": "^8.2.0",
     "@heroicons/react": "^2.2.0",
     "@neondatabase/serverless": "^1.0.2",
     "@react-three/drei": "^10.7.7",
@@ -55,6 +56,7 @@
     "marked": "^17.0.4",
     "next": "16.3.1",
     "next-auth": "5.0.0-beta.32",
+    "pg": "^8.23.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-markdown": "^10.1.0",
@@ -87,7 +89,6 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
     "jsdom": "^28.1.0",
-    "pg": "^8.23.0",
     "tailwindcss": "^4",
     "tinyglobby": "^0.2.15",
     "tsx": "^4.22.4",

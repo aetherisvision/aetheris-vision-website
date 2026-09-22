@@ -1,0 +1,14 @@
+.git
+.next
+node_modules
+.env*
+!.env.example
+.vercel
+coverage
+test-results
+playwright-report
+*.log
+*.tsbuildinfo
+work
+outputs
+gha-creds-*.json

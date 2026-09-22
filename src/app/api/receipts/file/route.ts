@@ -1,6 +1,7 @@
 import { get } from '@vercel/blob'
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
+import { getGcsReceipt } from '@/lib/receipt-gcs'
 
 // Only blobs this application wrote, and only inside the receipts prefix.
 const RECEIPT_PATHNAME = /^receipts\/[A-Za-z0-9._/-]{1,200}$/
@@ -17,9 +18,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid receipt path' }, { status: 400 })
   }
 
-  let result: Awaited<ReturnType<typeof get>>
+  let result: Awaited<ReturnType<typeof get>> | Awaited<ReturnType<typeof getGcsReceipt>>
   try {
-    result = await get(pathname, { access: 'private' })
+    result = process.env.GCS_RECEIPT_BUCKET
+      ? await getGcsReceipt(pathname)
+      : await get(pathname, { access: 'private' })
   } catch (error) {
     console.error('Receipt fetch failed', {
       error: error instanceof Error ? error.name : 'UnknownError',

@@ -10,6 +10,7 @@ import {
   BlobStoreSuspendedError,
   type PutBlobResult,
 } from '@vercel/blob'
+import { putGcsReceipt } from './receipt-gcs'
 
 /**
  * Receipts are financial records. They are stored private so that possession of
@@ -72,6 +73,13 @@ export async function putReceipt(
   body: Parameters<typeof put>[1],
   contentType?: string,
 ): Promise<ReceiptUploadResult> {
+  if (process.env.GCS_RECEIPT_BUCKET) {
+    if (!(typeof body === 'string' || body instanceof Uint8Array || body instanceof Blob)) {
+      throw new Error('Unsupported receipt body')
+    }
+    await putGcsReceipt(pathname, body, contentType)
+    return { reference: receiptViewUrl(pathname), isPrivate: true }
+  }
   const contentTypeOption = contentType ? { contentType } : {}
 
   try {

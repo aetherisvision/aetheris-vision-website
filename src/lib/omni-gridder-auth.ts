@@ -1,5 +1,5 @@
 import { getVercelOidcToken } from '@vercel/oidc'
-import { ExternalAccountClient, type BaseExternalAccountClient } from 'google-auth-library'
+import { ExternalAccountClient, GoogleAuth, type BaseExternalAccountClient } from 'google-auth-library'
 
 /**
  * Builds the WIF-federated auth client used to impersonate
@@ -55,6 +55,10 @@ function buildWifAuthClient(): BaseExternalAccountClient {
 }
 
 export async function getOgServerIdToken(audience: string): Promise<string> {
+  if (process.env.K_SERVICE) {
+    const client = await new GoogleAuth().getIdTokenClient(audience)
+    return client.idTokenProvider.fetchIdToken(audience)
+  }
   const serviceAccountEmail = requireEnv('GCP_SERVICE_ACCOUNT_EMAIL')
   const authClient = buildWifAuthClient()
 
@@ -97,6 +101,11 @@ export async function getOgServerIdToken(audience: string): Promise<string> {
  * triggerWorkerRun() in omni-gridder-client.ts.
  */
 export async function getOgWorkerAccessToken(): Promise<string> {
+  if (process.env.K_SERVICE) {
+    const token = await new GoogleAuth({ scopes: ['https://www.googleapis.com/auth/cloud-platform'] }).getAccessToken()
+    if (!token) throw new Error('Cloud Run identity returned no access token')
+    return token
+  }
   const authClient = buildWifAuthClient()
   const accessTokenResponse = await authClient.getAccessToken()
   const accessToken = accessTokenResponse.token

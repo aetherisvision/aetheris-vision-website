@@ -50,3 +50,5 @@ test-results/
 playwright-report/
 # Local overrides only — tracked .envrc is the AV/personal split (see scripts/bw-envrc-*.sh)
 .envrc.local
+# Short-lived GitHub federation credentials must never enter source control.
+gha-creds-*.json

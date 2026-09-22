@@ -2,8 +2,7 @@ name: CI
 
 on:
   push:
-    branches-ignore:
-      - main        # feature/fix branches only — Vercel owns the main deploy pipeline
+  workflow_dispatch:
   pull_request:
     branches:
       - main        # every PR targeting main runs all checks
@@ -115,3 +114,53 @@ jobs:
           STRIPE_WEBHOOK_SECRET: whsec_placeholder
           ANTHROPIC_API_KEY: sk-ant-placeholder
 
+  deploy-gcp:
+    name: Deploy GCP production
+    needs: build
+    if: github.ref == 'refs/heads/main' && vars.GCP_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: gcp-production
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      CLOUDSDK_CORE_PROJECT: lucid-loader-493512-g1
+      CLOUDSDK_BILLING_QUOTA_PROJECT: lucid-loader-493512-g1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v3
+        with:
+          project_id: lucid-loader-493512-g1
+          workload_identity_provider: projects/169759401670/locations/global/workloadIdentityPools/av-crm-github/providers/github
+          service_account: av-crm-deploy@lucid-loader-493512-g1.iam.gserviceaccount.com
+      - uses: google-github-actions/setup-gcloud@v3
+      - name: Build production image without application secrets
+        id: image
+        env:
+          TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$TURNSTILE_SITE_KEY"
+          build_id=$(gcloud builds submit . --config=cloudbuild.yaml --ignore-file=.dockerignore \
+            --region=us-central1 --suppress-logs --quiet --format='value(id)' \
+            --service-account=projects/lucid-loader-493512-g1/serviceAccounts/av-crm-build@lucid-loader-493512-g1.iam.gserviceaccount.com \
+            --substitutions="_TAG=$GITHUB_SHA,_TURNSTILE_SITE_KEY=$TURNSTILE_SITE_KEY")
+          digest=$(gcloud builds describe "$build_id" --region=us-central1 --format='value(results.images[0].digest)')
+          test -n "$digest"
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+      - name: Refresh deployment identity
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: lucid-loader-493512-g1
+          workload_identity_provider: projects/169759401670/locations/global/workloadIdentityPools/av-crm-github/providers/github
+          service_account: av-crm-deploy@lucid-loader-493512-g1.iam.gserviceaccount.com
+      - name: Deploy verified image
+        env:
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+        run: |
+          gcloud run services update av-crm-web --region=us-central1 --quiet \
+            --image="us-central1-docker.pkg.dev/lucid-loader-493512-g1/av-crm/website@$IMAGE_DIGEST"
+          test "$(curl -sS -o /dev/null -w '%{http_code}' https://aetherisvision.com/)" = 200
+          test "$(curl -sS -o /dev/null -w '%{http_code}' https://aetherisvision.com/api/admin/leads)" = 401

@@ -9,6 +9,7 @@ import { gmailDraftsMigration } from './007_gmail_drafts'
 import { reviewDeclinedStagesMigration } from './008_review_declined_stages'
 import { leadWorkspaceMigration } from './009_lead_workspace'
 import { adminAiJobsMigration } from './010_admin_ai_jobs'
+import { documentProjectLinkMigration } from './011_document_project_link'
 import { buildGuardedMigrationSql } from './execution'
 import type { DatabaseMigration } from './types'
 
@@ -23,9 +24,11 @@ const migrations: readonly DatabaseMigration[] = [
   reviewDeclinedStagesMigration,
   leadWorkspaceMigration,
   adminAiJobsMigration,
+  documentProjectLinkMigration,
 ]
 
 const requiredColumns = [
+  'documents.project_id',
   'clients.relationship_status',
   'clients.next_touch',
   'clients.notes',
@@ -215,6 +218,7 @@ export async function verifyCrmSchema(): Promise<MigrationVerification> {
           'leads',
           'contact_verification_challenges',
           'projects',
+          'documents',
           'intake_submissions',
           'invoices',
           'oauth_tokens',
