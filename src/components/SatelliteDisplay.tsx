@@ -36,11 +36,15 @@ export default function SatelliteDisplay({ sources }: { sources: SatelliteSource
               </div>
             ) : (
               // NOAA publishes its latest full-disk image at a stable URL.
+              // loading="lazy" also keeps React from promoting these below-the-fold
+              // frames into the homepage Link preload header.
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={`${source.url}&revision=${revision}`}
                 alt={`Current ${source.label} full-disk satellite view`}
                 className="h-full w-full object-contain"
+                loading="lazy"
+                decoding="async"
                 onError={() => {
                   setFailed((current) => new Set(current).add(index));
                 }}

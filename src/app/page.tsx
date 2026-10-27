@@ -61,6 +61,13 @@ export default function Home() {
     <div className="flex min-h-[100dvh] flex-col bg-[#f4f1ea] text-[#17252f]">
       <link
         rel="preload"
+        href="/earth-textures/hero-poster.webp"
+        as="image"
+        type="image/webp"
+        fetchPriority="high"
+      />
+      <link
+        rel="preload"
         href="/earth-textures/day-2k.webp"
         as="image"
         type="image/webp"
