@@ -34,23 +34,28 @@ export default function HeroGlobe() {
   const handleReady = useCallback(() => setReady(true), []);
 
   useEffect(() => {
-    // Preserve the static hero for smaller screens, reduced-motion users,
-    // data-saver clients, and browsers without the WebGL2 required by Three.js.
+    // Phone width, save-data, and missing WebGL2 are read once. Reduced motion
+    // stays live: turning it on after the globe is ready must take the canvas
+    // down and bring the poster back, and turning it off mounts a new canvas.
     const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     const saveData = (navigator as NavigatorWithConnection).connection?.saveData === true;
+    const webgl2 = supportsWebGL2();
 
-    if (
-      shouldMountHeroCanvas({
+    const applyGate = () => {
+      const mount = shouldMountHeroCanvas({
         isDesktop,
-        reducedMotion,
+        reducedMotion: motionQuery.matches,
         saveData,
-        webgl2: supportsWebGL2(),
-      })
-    ) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setShowCanvas(true);
-    }
+        webgl2,
+      });
+      setShowCanvas(mount);
+      if (!mount) setReady(false);
+    };
+
+    applyGate();
+    motionQuery.addEventListener("change", applyGate);
+    return () => motionQuery.removeEventListener("change", applyGate);
   }, []);
 
   return (

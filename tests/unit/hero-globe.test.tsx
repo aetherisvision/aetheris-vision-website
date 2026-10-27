@@ -1,11 +1,15 @@
 import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { shouldMountHeroCanvas } from "@/components/hero-globe-config";
+import { attachHeroVisibilityObserver, restoreHeroStarTime } from "@/components/hero-globe-visibility";
 import SatelliteDisplay from "@/components/SatelliteDisplay";
+import type { Clock } from "three";
 
 vi.mock("@/components/RotatingEarth", () => {
+  // Vitest hoists this factory above imports, so the module is loaded with require.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require("react") as typeof import("react");
   return {
     default: function MockEarth({ onReady }: { onReady?: () => void }) {
@@ -21,17 +25,48 @@ import HeroGlobe from "@/components/HeroGlobe";
 
 const root = process.cwd();
 
-function installMatchMedia(matches: (query: string) => boolean) {
-  window.matchMedia = ((query: string) => ({
-    matches: matches(query),
-    media: query,
-    onchange: null,
-    addEventListener: () => undefined,
-    removeEventListener: () => undefined,
-    addListener: () => undefined,
-    removeListener: () => undefined,
-    dispatchEvent: () => false,
-  })) as typeof window.matchMedia;
+type MediaListener = (event: MediaQueryListEvent) => void;
+
+function installMatchMedia(initial: (query: string) => boolean) {
+  let matches = initial;
+  const listeners = new Map<string, Set<MediaListener>>();
+
+  window.matchMedia = ((query: string) => {
+    let bucket = listeners.get(query);
+    if (!bucket) {
+      bucket = new Set();
+      listeners.set(query, bucket);
+    }
+    const queryListeners = bucket;
+    return {
+      get matches() {
+        return matches(query);
+      },
+      media: query,
+      onchange: null,
+      addEventListener: (_type: string, listener: MediaListener) => {
+        queryListeners.add(listener);
+      },
+      removeEventListener: (_type: string, listener: MediaListener) => {
+        queryListeners.delete(listener);
+      },
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      dispatchEvent: () => false,
+    };
+  }) as typeof window.matchMedia;
+
+  return {
+    setMatches(next: (query: string) => boolean) {
+      matches = next;
+    },
+    emit(query: string) {
+      const media = window.matchMedia(query);
+      for (const listener of listeners.get(query) ?? []) {
+        listener({ matches: media.matches, media } as unknown as MediaQueryListEvent);
+      }
+    },
+  };
 }
 
 function installConnection(saveData: boolean) {
@@ -97,6 +132,30 @@ describe("HeroGlobe", () => {
     const poster = document.querySelector("img");
     expect(poster?.closest("div")?.className).toContain("opacity-0");
   });
+
+  it("shows the poster again when reduced motion turns on after the globe is ready", async () => {
+    const media = installMatchMedia((query) => query === "(min-width: 1024px)");
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(((type: string) =>
+      type === "webgl2" ? ({} as WebGL2RenderingContext) : null) as typeof HTMLCanvasElement.prototype.getContext);
+
+    render(<HeroGlobe />);
+
+    expect(await screen.findByTestId("rotating-earth")).toBeInTheDocument();
+    expect(document.querySelector("img")?.closest("div")?.className).toContain("opacity-0");
+
+    media.setMatches(
+      (query) => query === "(min-width: 1024px)" || query === "(prefers-reduced-motion: reduce)",
+    );
+    act(() => media.emit("(prefers-reduced-motion: reduce)"));
+
+    expect(screen.queryByTestId("rotating-earth")).toBeNull();
+    expect(document.querySelector("img")?.closest("div")?.className).toContain("opacity-100");
+
+    media.setMatches((query) => query === "(min-width: 1024px)");
+    act(() => media.emit("(prefers-reduced-motion: reduce)"));
+
+    expect(await screen.findByTestId("rotating-earth")).toBeInTheDocument();
+  });
 });
 
 describe("hero globe source", () => {
@@ -121,6 +180,9 @@ describe("hero globe source", () => {
   it("pauses drawing off screen without switching to a demand loop", () => {
     expect(earth).toContain('frameloop={inView ? "always" : "never"}');
     expect(earth).not.toContain('frameloop="demand"');
+    expect(earth).toContain("bindVisibilityTarget");
+    expect(earth).toContain("restoreHeroStarTime");
+    expect(earth).not.toContain("discardPausedFrameTime");
   });
 
   it("code-splits the 3D stack and shows the poster first", () => {
@@ -140,6 +202,92 @@ describe("hero globe source", () => {
     const stat = statSync(join(root, "public/earth-textures/hero-poster.webp"));
     expect(stat.size).toBeGreaterThan(20_000);
     expect(stat.size).toBeLessThan(800_000);
+  });
+});
+
+describe("hero visibility and star time", () => {
+  class FakeObserver implements IntersectionObserver {
+    static records: FakeObserver[] = [];
+    readonly callback: IntersectionObserverCallback;
+    target: Element | null = null;
+    disconnected = false;
+    readonly root = null;
+    readonly rootMargin = "";
+    readonly thresholds: readonly number[] = [];
+
+    constructor(callback: IntersectionObserverCallback) {
+      this.callback = callback;
+      FakeObserver.records.push(this);
+    }
+
+    observe(target: Element) {
+      this.target = target;
+    }
+
+    unobserve() {
+      this.target = null;
+    }
+
+    disconnect() {
+      this.disconnected = true;
+      this.target = null;
+    }
+
+    takeRecords(): IntersectionObserverEntry[] {
+      return [];
+    }
+  }
+
+  beforeEach(() => {
+    FakeObserver.records = [];
+    vi.stubGlobal("IntersectionObserver", FakeObserver);
+  });
+
+  it("drops the previous canvas and observes the next one", () => {
+    const first = document.createElement("div");
+    const second = document.createElement("div");
+    let visible = true;
+    const onChange = (next: boolean) => {
+      visible = next;
+    };
+    let observer = attachHeroVisibilityObserver(first, null, onChange);
+
+    expect(FakeObserver.records[0]?.target).toBe(first);
+
+    observer = attachHeroVisibilityObserver(null, observer, onChange);
+    expect(observer).toBeNull();
+    expect(FakeObserver.records[0]?.disconnected).toBe(true);
+    expect(FakeObserver.records[0]?.target).toBeNull();
+
+    observer = attachHeroVisibilityObserver(second, observer, onChange);
+    expect(observer?.observe).toBeTypeOf("function");
+    expect(FakeObserver.records[1]?.target).toBe(second);
+    expect(FakeObserver.records[0]?.target).toBeNull();
+
+    FakeObserver.records[1]?.callback(
+      [{ isIntersecting: false, target: second } as unknown as IntersectionObserverEntry],
+      FakeObserver.records[1] as IntersectionObserver,
+    );
+    expect(visible).toBe(false);
+  });
+
+  it("keeps star time across a frameloop reset", () => {
+    const clock = {
+      elapsedTime: 0,
+      oldTime: 0,
+    } as Clock;
+    const stamped = performance.now();
+    clock.elapsedTime = 0;
+    clock.oldTime = 10;
+    restoreHeroStarTime(clock, 12.5, true);
+
+    expect(clock.elapsedTime).toBe(12.5);
+    expect(clock.oldTime).toBeGreaterThanOrEqual(stamped);
+
+    clock.oldTime = 10;
+    restoreHeroStarTime(clock, 12.5, false);
+    expect(clock.elapsedTime).toBe(12.5);
+    expect(clock.oldTime).toBe(10);
   });
 });
 

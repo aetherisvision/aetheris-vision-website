@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Stars, useTexture } from "@react-three/drei";
 import { AdditiveBlending, SRGBColorSpace, Vector3 } from "three";
@@ -25,6 +25,7 @@ import {
   NIGHT_FRAGMENT_SHADER,
   NIGHT_VERTEX_SHADER,
 } from "@/components/hero-globe-config";
+import { attachHeroVisibilityObserver, restoreHeroStarTime } from "@/components/hero-globe-visibility";
 
 const EARTH_RADIUS = HERO_GLOBE_EARTH_RADIUS;
 const NIGHT_RADIUS = EARTH_RADIUS * HERO_GLOBE_NIGHT_SCALE;
@@ -167,17 +168,11 @@ function supportsWebGL2() {
   }
 }
 
-function discardPausedFrameTime(clock: Clock) {
-  // Drop the gap without adding it to elapsedTime, so the earth and the
-  // starfield continue from the frame where drawing stopped.
-  if (!clock.running) return;
-  clock.oldTime = performance.now();
-}
-
 export default function RotatingEarth({ onReady }: { onReady?: () => void }) {
-  const rootRef = useRef<HTMLDivElement>(null);
   const inViewRef = useRef(true);
   const clockRef = useRef<Clock | null>(null);
+  const starTimeRef = useRef(0);
+  const visibilityObserverRef = useRef<IntersectionObserver | null>(null);
   const [inView, setInView] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [hasWebGL, setHasWebGL] = useState(true);
@@ -195,20 +190,25 @@ export default function RotatingEarth({ onReady }: { onReady?: () => void }) {
     return () => media.removeEventListener("change", onChange);
   }, []);
 
-  useEffect(() => {
-    const node = rootRef.current;
-    if (!node || typeof IntersectionObserver === "undefined") return;
-
-    const observer = new IntersectionObserver(([entry]) => {
-      const visible = entry.isIntersecting;
-      if (visible === inViewRef.current) return;
-      if (visible && clockRef.current) discardPausedFrameTime(clockRef.current);
-      inViewRef.current = visible;
-      setInView(visible);
-    });
-    observer.observe(node);
-    return () => observer.disconnect();
+  const bindVisibilityTarget = useCallback((node: HTMLDivElement | null) => {
+    visibilityObserverRef.current = attachHeroVisibilityObserver(
+      node,
+      visibilityObserverRef.current,
+      (visible) => {
+        if (visible === inViewRef.current) return;
+        // Save the star clock before setFrameloop zeros it on the frameloop switch.
+        if (clockRef.current) starTimeRef.current = clockRef.current.elapsedTime;
+        inViewRef.current = visible;
+        setInView(visible);
+      },
+    );
   }, []);
+
+  useLayoutEffect(() => {
+    const clock = clockRef.current;
+    if (!clock) return;
+    restoreHeroStarTime(clock, starTimeRef.current, inView);
+  }, [inView]);
 
   if (typeof window === "undefined" || reducedMotion || !hasWebGL) return null;
 
@@ -216,7 +216,7 @@ export default function RotatingEarth({ onReady }: { onReady?: () => void }) {
   const pixelRatio = Math.min(HERO_GLOBE_MAX_PIXEL_RATIO, Math.max(1, deviceRatio));
 
   return (
-    <div ref={rootRef} className="relative h-full w-full" aria-hidden="true">
+    <div ref={bindVisibilityTarget} className="relative h-full w-full" aria-hidden="true">
       <Canvas
         orthographic
         camera={{ position: [0, 0, CAMERA_DISTANCE], zoom: CAMERA_ZOOM }}
