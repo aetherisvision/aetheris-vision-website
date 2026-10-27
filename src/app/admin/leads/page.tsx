@@ -72,7 +72,7 @@ export default function AdminLeadsPage() {
     setSyncingMail(true)
     setManagementNotice(null)
     try {
-      const response = await fetch('/api/cron/lead-correspondence?days=90', {cache:'no-store'})
+      const response = await fetch('/api/cron/lead-correspondence?days=90', { method: 'POST', cache: 'no-store' })
       const data = await responseData(response)
       if (!response.ok) throw new Error(data.error || 'Sent mail could not be checked')
       await loadLeads()

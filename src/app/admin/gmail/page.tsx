@@ -66,7 +66,7 @@ function GmailPageInner() {
     setRunning(true)
     setRunResult(null)
     setRunData(null)
-    const res = await fetch('/api/cron/receipts', { credentials: 'include' })
+    const res = await fetch('/api/cron/receipts', { method: 'POST', credentials: 'include' })
     const data = await res.json()
     setRunData(data)
     setRunResult(JSON.stringify(data, null, 2))

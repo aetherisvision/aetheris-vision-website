@@ -9,7 +9,7 @@ vi.mock('@/lib/admin-auth', () => ({isAdmin:isAdminMock}))
 vi.mock('@/lib/token-crypto', () => ({decryptToken:decryptMock}))
 vi.mock('@/lib/gmail-client', () => ({GMAIL_API:'https://gmail.googleapis.com/gmail/v1',getGmailAccessToken:accessMock}))
 
-import { GET } from '@/app/api/cron/lead-correspondence/route'
+import { GET, POST } from '@/app/api/cron/lead-correspondence/route'
 
 function request(query='',auth=false) {
   return new NextRequest(`http://localhost/api/cron/lead-correspondence${query}`, {
@@ -46,6 +46,35 @@ describe('GET /api/cron/lead-correspondence', () => {
   it('rejects unauthenticated callers before database or Gmail access', async () => {
     expect((await GET(request())).status).toBe(401)
     expect(sqlMock).not.toHaveBeenCalled()
+  })
+
+  it('does not let an admin session run the job with GET', async () => {
+    isAdminMock.mockReturnValue(true)
+    expect((await GET(request())).status).toBe(401)
+    expect(sqlMock).not.toHaveBeenCalled()
+  })
+
+  it('rejects an admin POST from another origin before database access', async () => {
+    isAdminMock.mockReturnValue(true)
+    const response = await POST(new NextRequest('http://localhost/api/cron/lead-correspondence', {
+      method: 'POST',
+      headers: { origin: 'https://evil.example', 'sec-fetch-site': 'cross-site' },
+    }))
+    expect(response.status).toBe(403)
+    expect(sqlMock).not.toHaveBeenCalled()
+  })
+
+  it('lets an admin POST from this origin preview sent mail', async () => {
+    isAdminMock.mockReturnValue(true)
+    sqlMock.mockResolvedValueOnce([{refresh_token:'encrypted',scopes:'https://www.googleapis.com/auth/gmail.readonly'}])
+      .mockResolvedValueOnce([lead()])
+    vi.stubGlobal('fetch', gmailFetch())
+    const response = await POST(new NextRequest('http://localhost/api/cron/lead-correspondence?dry_run=1&days=90', {
+      method: 'POST',
+      headers: { origin: 'http://localhost', 'sec-fetch-site': 'same-origin' },
+    }))
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({ dryRun: true, leadIds: [10] })
   })
 
   it('previews a verified sent message without changing the lead', async () => {

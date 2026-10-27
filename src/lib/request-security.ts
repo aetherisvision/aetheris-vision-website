@@ -2,6 +2,7 @@ import { createHmac } from 'node:crypto'
 import { isIP } from 'node:net'
 
 import { isRateLimitDistributed } from '@/lib/rate-limit'
+import { isSameOriginMutation } from '@/lib/same-origin'
 
 export type RequestSecurityErrorCode =
   | 'invalid-origin'
@@ -49,28 +50,7 @@ function requestSecurityError(
  * represented by the Request URL. Missing Origin headers fail closed.
  */
 export function assertSameOrigin(request: Request): void {
-  const origin = request.headers.get('origin')
-  let expectedOrigin: string
-
-  try {
-    expectedOrigin = new URL(request.url).origin
-  } catch {
-    throw requestSecurityError('invalid-origin', 403)
-  }
-
-  if (!origin) throw requestSecurityError('invalid-origin', 403)
-
-  try {
-    if (new URL(origin).origin !== expectedOrigin || origin !== new URL(origin).origin) {
-      throw requestSecurityError('invalid-origin', 403)
-    }
-  } catch (error) {
-    if (error instanceof RequestSecurityError) throw error
-    throw requestSecurityError('invalid-origin', 403)
-  }
-
-  const fetchSite = request.headers.get('sec-fetch-site')
-  if (fetchSite && fetchSite !== 'same-origin') {
+  if (!isSameOriginMutation(request)) {
     throw requestSecurityError('invalid-origin', 403)
   }
 }

@@ -1,10 +1,21 @@
+import { createHash, createHmac, randomBytes } from "node:crypto";
 import { NextRequest } from "next/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { proxy } from "@/proxy";
+import { __resetInMemoryRateLimit } from "@/lib/rate-limit";
 
 afterEach(() => {
   vi.unstubAllEnvs();
+  __resetInMemoryRateLimit();
 });
+
+function sessionCookie(passphrase: string): string {
+  const key = createHash("sha256").update(`av-admin-session-key|${passphrase}`).digest("hex");
+  const sid = randomBytes(16).toString("hex");
+  const exp = Math.floor(Date.now() / 1000) + 3600;
+  const sig = createHmac("sha256", key).update(`${sid}.${exp}`).digest("hex");
+  return `av-admin-session=${sid}.${exp}.${sig}`;
+}
 
 describe("proxy Content Security Policy", () => {
   it("allows every Cloudflare Turnstile resource type", async () => {
@@ -21,6 +32,7 @@ describe("proxy Content Security Policy", () => {
     expect(csp).toMatch(/script-src[^;]*https:\/\/challenges\.cloudflare\.com/);
     expect(csp).toMatch(/connect-src[^;]*https:\/\/challenges\.cloudflare\.com/);
     expect(csp).toMatch(/frame-src[^;]*https:\/\/challenges\.cloudflare\.com/);
+    expect(response.headers.get("X-CSP-Nonce")).toBeNull();
   });
 });
 
@@ -30,6 +42,134 @@ describe("proxy Insights publication lock", () => {
 
     expect(response.status).toBe(404);
     expect(response.headers.get("X-Robots-Tag")).toBe("noindex, nofollow");
+    expect(response.headers.get("Content-Security-Policy")).toMatch(
+      /script-src[^;]*'nonce-[0-9a-f-]{36}'/,
+    );
+    expect(response.headers.get("X-CSP-Nonce")).toBeNull();
     await expect(response.text()).resolves.toBe("Not Found");
+  });
+});
+
+describe("proxy cron and admin mutation guards", () => {
+  const passphrase = "proxy-test-passphrase";
+
+  function apiRequest(
+    path: string,
+    init?: { method?: string; headers?: Record<string, string>; admin?: boolean },
+  ) {
+    const headers = new Headers(init?.headers);
+    if (!headers.has("x-forwarded-for")) headers.set("x-forwarded-for", "203.0.113.44");
+    if (init?.admin) headers.set("cookie", sessionCookie(passphrase));
+    return new NextRequest(`https://aetherisvision.com${path}`, {
+      method: init?.method ?? "GET",
+      headers,
+    });
+  }
+
+  it("rate limits cron calls and still accepts the bearer secret", async () => {
+    vi.stubEnv("PREVIEW_PASSWORD", "preview-secret");
+    vi.stubEnv("CRON_SECRET", "test-cron-secret");
+    vi.stubEnv("ADMIN_PASSPHRASE", passphrase);
+    vi.stubEnv("ADMIN_SESSION_SECRET", "");
+
+    const headers = { "x-forwarded-for": "203.0.113.10" };
+    for (let attempt = 0; attempt < 100; attempt++) {
+      const denied = await proxy(apiRequest("/api/cron/receipts", { headers }));
+      expect(denied.status).toBe(401);
+    }
+    const limited = await proxy(apiRequest("/api/cron/receipts", { headers }));
+    expect(limited.status).toBe(429);
+
+    const scheduled = await proxy(
+      apiRequest("/api/cron/lead-correspondence", {
+        headers: {
+          "x-forwarded-for": "203.0.113.10",
+          authorization: "Bearer test-cron-secret",
+        },
+      }),
+    );
+    expect(scheduled.status).toBe(200);
+    expect(scheduled.headers.get("location")).toBeNull();
+    expect(scheduled.headers.get("X-Rate-Limit-Remaining")).toBeTruthy();
+  });
+
+  it("rejects a signed-in GET and accepts a same-origin admin POST", async () => {
+    vi.stubEnv("CRON_SECRET", "test-cron-secret");
+    vi.stubEnv("ADMIN_PASSPHRASE", passphrase);
+    vi.stubEnv("ADMIN_SESSION_SECRET", "");
+
+    const clicked = await proxy(
+      apiRequest("/api/cron/receipts", { admin: true, headers: { "x-forwarded-for": "203.0.113.12" } }),
+    );
+    expect(clicked.status).toBe(401);
+
+    const manual = await proxy(
+      apiRequest("/api/cron/receipts", {
+        method: "POST",
+        admin: true,
+        headers: {
+          "x-forwarded-for": "203.0.113.13",
+          origin: "https://aetherisvision.com",
+          "sec-fetch-site": "same-origin",
+        },
+      }),
+    );
+    expect(manual.status).toBe(200);
+
+    const crossSite = await proxy(
+      apiRequest("/api/cron/lead-correspondence", {
+        method: "POST",
+        admin: true,
+        headers: {
+          "x-forwarded-for": "203.0.113.14",
+          origin: "https://evil.example",
+          "sec-fetch-site": "cross-site",
+        },
+      }),
+    );
+    expect(crossSite.status).toBe(403);
+  });
+
+  it("requires the same origin on admin mutations", async () => {
+    vi.stubEnv("ADMIN_PASSPHRASE", passphrase);
+    vi.stubEnv("ADMIN_SESSION_SECRET", "");
+
+    const missing = await proxy(
+      apiRequest("/api/admin/leads", {
+        method: "PATCH",
+        admin: true,
+        headers: { "x-forwarded-for": "203.0.113.15" },
+      }),
+    );
+    expect(missing.status).toBe(403);
+
+    const foreign = await proxy(
+      apiRequest("/api/expenses", {
+        method: "POST",
+        admin: true,
+        headers: {
+          "x-forwarded-for": "203.0.113.16",
+          origin: "https://evil.example",
+        },
+      }),
+    );
+    expect(foreign.status).toBe(403);
+
+    const allowed = await proxy(
+      apiRequest("/api/admin/auth", {
+        method: "POST",
+        headers: {
+          "x-forwarded-for": "203.0.113.17",
+          origin: "https://aetherisvision.com",
+          "sec-fetch-site": "same-origin",
+        },
+      }),
+    );
+    expect(allowed.status).toBe(200);
+
+    const read = await proxy(
+      apiRequest("/api/admin/leads", { headers: { "x-forwarded-for": "203.0.113.18" } }),
+    );
+    expect(read.status).toBe(401);
   });
 });

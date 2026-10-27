@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { hasCronSecret } from '@/lib/cron-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { hasPreviewSession } from '@/lib/preview-auth'
+import { isSameOriginMutation } from '@/lib/same-origin'
 import { INSIGHTS_PUBLIC } from '@/lib/features'
 
 const hex = (bytes: ArrayBuffer) =>
@@ -73,9 +75,13 @@ export async function proxy(request: NextRequest) {
   // Enforce this at the request boundary so App Router streaming cannot turn a
   // notFound() result into a soft 200 response.
   if (!INSIGHTS_PUBLIC && (pathname === '/blog' || pathname.startsWith('/blog/'))) {
+    const nonce = crypto.randomUUID()
     return new NextResponse('Not Found', {
       status: 404,
-      headers: { 'X-Robots-Tag': 'noindex, nofollow' },
+      headers: {
+        'X-Robots-Tag': 'noindex, nofollow',
+        'Content-Security-Policy': buildCsp(nonce),
+      },
     })
   }
 
@@ -91,12 +97,6 @@ export async function proxy(request: NextRequest) {
 
   // Webhooks must be reachable by external services regardless of site-lock state
   if (pathname.startsWith('/api/webhooks/')) {
-    return NextResponse.next()
-  }
-
-  // Vercel Cron must reach /api/cron/* without site lock.
-  // Cron routes enforce their own auth (e.g. CRON_SECRET) at the handler level.
-  if (pathname.startsWith('/api/cron/')) {
     return NextResponse.next()
   }
 
@@ -123,9 +123,14 @@ export async function proxy(request: NextRequest) {
     pathname === '/robots.txt' ||
     pathname === '/sitemap.xml' ||
     pathname === '/manifest.json'
+  // Scheduled callers have no preview cookie and no admin session. They stay
+  // inside this function so the rate limit below still applies, and they pass
+  // the cron guard with Authorization: Bearer <CRON_SECRET>.
+  const isCronRoute = pathname.startsWith('/api/cron/')
   if (
     process.env.PREVIEW_PASSWORD &&
     !pathname.startsWith('/admin') &&
+    !isCronRoute &&
     !isPreviewAccessRoute &&
     !isCrawlerMetaRoute &&
     !(await hasPreviewSession(request))
@@ -160,15 +165,23 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/api/receipts/')
   // Verify once; both the rate-limit tier and the guard below reuse the result.
   const hasAdminSession =
-    isAdminApiPath || pathname.startsWith('/admin') ? await isAdminSession(request) : false
+    isAdminApiPath || isCronRoute || pathname.startsWith('/admin')
+      ? await isAdminSession(request)
+      : false
   const isAuthedAdminApi = isApiRoute && pathname.startsWith('/api/admin/') && hasAdminSession
+  // Bearer-authenticated cron is still limited, on its own counter, so a
+  // scheduled run does not share the anonymous API budget.
+  const cronSecretOk = isCronRoute && hasCronSecret(request)
   const maxRequests = isAuthedAdminApi ? 2000 : 100
+  let ratePrefix = 'proxy-api'
+  if (isAuthedAdminApi) ratePrefix = 'proxy-api-admin'
+  else if (cronSecretOk) ratePrefix = 'proxy-api-cron'
   let rateRemaining = maxRequests - 1
   if (isApiRoute) {
     const result = await rateLimit(ip, {
       limit: maxRequests,
       windowMs: 15 * 60 * 1000, // 15 minutes
-      prefix: isAuthedAdminApi ? 'proxy-api-admin' : 'proxy-api',
+      prefix: ratePrefix,
     })
     rateRemaining = result.remaining
     if (!result.success) {
@@ -176,6 +189,32 @@ export async function proxy(request: NextRequest) {
         status: 429,
         headers: { 'Retry-After': result.retryAfterSeconds.toString() },
       })
+    }
+  }
+
+  // Same Origin check public form handlers use, applied to every admin
+  // mutation (and to manual cron runs, which are POST). Scheduled cron calls
+  // carry the bearer secret and no browser Origin, so they skip this check.
+  const method = request.method.toUpperCase()
+  const isUnsafeMethod = method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS'
+  const isAdminMutation =
+    isUnsafeMethod &&
+    (pathname.startsWith('/api/admin/') ||
+      pathname.startsWith('/api/expenses') ||
+      pathname.startsWith('/api/receipts/'))
+  if (
+    (isAdminMutation || (isCronRoute && isUnsafeMethod && !cronSecretOk)) &&
+    !isSameOriginMutation(request)
+  ) {
+    return NextResponse.json({ error: 'Request origin is not allowed' }, { status: 403 })
+  }
+
+  // GET stays reserved for the bearer secret. An admin session cookie is sent
+  // on a top-level navigation, so a link click must not start a cron job.
+  if (isCronRoute && !cronSecretOk) {
+    const navigation = method === 'GET' || method === 'HEAD'
+    if (navigation || !hasAdminSession) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
   }
 
@@ -213,7 +252,6 @@ export async function proxy(request: NextRequest) {
 
   // Security headers
   response.headers.set('Content-Security-Policy', csp)
-  response.headers.set('X-CSP-Nonce', nonce)
   response.headers.set('X-Request-ID', crypto.randomUUID())
 
   // API routes report remaining rate-limit budget

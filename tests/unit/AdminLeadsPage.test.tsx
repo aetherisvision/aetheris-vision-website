@@ -82,7 +82,7 @@ describe('admin lead email drafting', () => {
     expect(await screen.findByText('1 opportunity moved to Follow-ups from sent mail.')).toBeVisible()
     expect(workflowQueue(/^Review/)).toHaveTextContent('0')
     expect(workflowQueue(/^Follow-ups/)).toHaveTextContent('1')
-    expect(fetchMock).toHaveBeenNthCalledWith(2,'/api/cron/lead-correspondence?days=90', {cache:'no-store'})
+    expect(fetchMock).toHaveBeenNthCalledWith(2,'/api/cron/lead-correspondence?days=90', { method: 'POST', cache: 'no-store' })
   })
 
   it('locks selection, queues, and other actions while drafting, then reenables them and preserves each opportunity’s result', async () => {
