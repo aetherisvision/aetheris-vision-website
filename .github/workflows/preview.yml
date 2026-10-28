@@ -193,7 +193,12 @@ jobs:
     name: Remove PR preview
     # Runs on every close (merged or not) regardless of the current labels, so
     # a label removed before closing cannot leave a tagged revision behind.
-    if: vars.GCP_PREVIEW_ENABLED == 'true' && github.event_name == 'pull_request' && github.event.action == 'closed'
+    # Fork PRs never had a preview and cannot authenticate, so they skip.
+    if: >-
+      vars.GCP_PREVIEW_ENABLED == 'true' &&
+      github.event_name == 'pull_request' &&
+      github.event.action == 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       contents: read

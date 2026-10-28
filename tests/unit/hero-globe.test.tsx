@@ -139,7 +139,8 @@ describe("HeroGlobe", () => {
     const picture = frame.querySelector("picture");
     const sources = Array.from(picture?.querySelectorAll("source") ?? []);
     expect(sources).toHaveLength(2);
-    // Phones get an inline transparent SVG so no poster bytes are requested.
+    // Phones get an inline 1x1 transparent GIF (base64 data URI, no whitespace
+    // so the srcset parser keeps it) so no poster bytes are requested.
     expect(sources[0].getAttribute("media")).toBe("not all and (min-width: 1024px)");
     expect(sources[0].getAttribute("srcset")).toBe(HERO_POSTER_SKIP_SRC);
     expect(sources[1].getAttribute("media")).toBe("(min-width: 1024px)");

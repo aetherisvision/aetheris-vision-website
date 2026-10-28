@@ -115,7 +115,7 @@ export async function proxy(request: NextRequest) {
 
   // Webhooks must be reachable by external services regardless of site-lock state
   if (pathname.startsWith('/api/webhooks/')) {
-    return NextResponse.next()
+    return withNoindex(NextResponse.next())
   }
 
   // Site lock: the public site remains gated while the new consulting site is
