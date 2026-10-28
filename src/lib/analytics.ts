@@ -7,7 +7,7 @@
  *
  *  1. consultation_booked          A scheduled call. Highest intent: a named
  *                                  person has committed time.
- *  2. capability_statement_sent    The federal track. Someone is filing us
+ *  2. capability_statement_requested    The federal track. Someone is filing us
  *                                  against a requirement.
  *  3. contact_submitted            Verified inbound message. Real, but the
  *                                  broadest and least qualified of the three.
@@ -16,7 +16,7 @@
  */
 export const CONVERSIONS = {
   consultationBooked: "consultation_booked",
-  capabilityStatementSent: "capability_statement_sent",
+  capabilityStatementRequested: "capability_statement_requested",
   contactSubmitted: "contact_submitted",
 } as const;
 
@@ -25,7 +25,7 @@ export type ConversionName = (typeof CONVERSIONS)[keyof typeof CONVERSIONS];
 /** Conversion rank, 1 being the strongest signal. Sent as the event value. */
 const RANK: Record<ConversionName, number> = {
   [CONVERSIONS.consultationBooked]: 1,
-  [CONVERSIONS.capabilityStatementSent]: 2,
+  [CONVERSIONS.capabilityStatementRequested]: 2,
   [CONVERSIONS.contactSubmitted]: 3,
 };
 

@@ -31,14 +31,10 @@ const nextConfig: NextConfig = {
   // into individual server bundles. The PDF route still sanitizes with DOMPurify.
   serverExternalPackages: ["isomorphic-dompurify"],
 
-  // The capability statement is deliberately stored outside public/ so it is
-  // never directly fetchable — it is delivered by email from the API route.
-  // Tracing has to be told about it because nothing imports the file. The
-  // Gmail draft-email route reuses the same PDF (its signature is fetched
-  // live from Gmail instead of a static file, so nothing to trace there).
+  // Keep the statement private and available only to the authenticated Gmail
+  // draft route. Use a wildcard because tracing patterns treat [id] as a glob.
   outputFileTracingIncludes: {
-    "/api/capability-statement": ["./private/capability-statement.pdf"],
-    "/api/admin/leads/[id]/draft-email": ["./private/capability-statement.pdf"],
+    "/api/admin/leads/*/draft-email": ["./private/capability-statement.pdf"],
   },
   
   images: {

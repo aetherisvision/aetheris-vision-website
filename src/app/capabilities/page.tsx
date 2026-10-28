@@ -317,9 +317,9 @@ export default function CapabilitiesPage() {
                   Get the Capability Statement
                 </h2>
                 <p className="font-light leading-relaxed text-gray-400">
-                  Enter an address and the current one-page statement arrives as a PDF
-                  attachment, ready to file or forward. It carries our UEI, CAGE code,
-                  NAICS and PSC codes, core competencies, and points of contact.
+                  Request the current one-page capability statement. We review each request
+                  before responding. The PDF includes our UEI, CAGE code, NAICS codes,
+                  core competencies, contact details, and insurance coverage.
                 </p>
                 <p className="mt-4 text-xs font-light leading-relaxed text-gray-500">
                   Updated {CAPABILITY_STATEMENT_REVISION}.

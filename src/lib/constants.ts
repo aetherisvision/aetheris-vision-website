@@ -87,18 +87,11 @@ export const CREDENTIAL_SEO_KEYWORDS = [
   "weather consulting",
 ] as const;
 
-/**
- * Where visitors go to receive the capability statement.
- *
- * The PDF is emailed on request rather than linked directly: contracting
- * officers expect to receive and forward the document by email, and keeping it
- * off the public path means the address stays with us instead of being
- * harvested from a static file listing.
- */
+/** Request form for owner-reviewed capability statement requests. */
 export const CAPABILITY_STATEMENT_REQUEST_HREF = "/capabilities#capability-statement";
 
 /** Revision date of private/capability-statement.pdf. Update both together. */
-export const CAPABILITY_STATEMENT_REVISION = "September 2026";
+export const CAPABILITY_STATEMENT_REVISION = "October 2026";
 
 /** Public AMS Weather and Climate Directory listing for Aetheris Vision LLC. */
 export const AMS_PROFILE_URL =

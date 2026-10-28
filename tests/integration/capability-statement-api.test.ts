@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { SITE } from "@/lib/constants";
 
 const mocks = vi.hoisted(() => ({
   rateLimit: vi.fn(),
@@ -79,23 +80,40 @@ beforeEach(async () => {
 });
 
 describe("POST /api/capability-statement", () => {
-  it("emails the statement as an attachment to the address supplied", async () => {
+  it("only notifies the principal and never sends the requester a statement", async () => {
     const response = await POST(requestFor(valid));
     expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
     await expect(response.json()).resolves.toEqual({ ok: true });
-
-    const delivery = mocks.send.mock.calls[0][0];
-    expect(delivery.to).toEqual(["contracting.officer@example.com"]);
-    expect(delivery.attachments).toHaveLength(1);
-    expect(delivery.attachments[0].filename).toMatch(/\.pdf$/);
-    expect(delivery.attachments[0].content).toBe(Buffer.from("%PDF-1.7 test").toString("base64"));
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+    const notification = mocks.send.mock.calls[0][0];
+    expect(notification.to).toEqual([SITE.email]);
+    expect(notification.replyTo).toBe("contracting.officer@example.com");
+    expect(notification.attachments).toBeUndefined();
+    expect(notification.subject).toContain("review required");
+    expect(notification.text).toContain("Example Agency");
+    expect(notification.text).toContain("No capability statement or confirmation email has been sent");
+    expect(notification.text).toContain("unsent Gmail draft");
+    expect(mocks.readFile).not.toHaveBeenCalled();
   });
 
-  it("notifies the principal with the requester as reply-to", async () => {
-    await POST(requestFor(valid));
-    const notification = mocks.send.mock.calls[1][0];
-    expect(notification.replyTo).toBe("contracting.officer@example.com");
-    expect(notification.text).toContain("Example Agency");
+  it("reports a provider rejection instead of claiming the request was received", async () => {
+    mocks.send.mockResolvedValue({ data: null, error: { message: "rejected" } });
+    const response = await POST(requestFor(valid));
+    expect(response.status).toBe(502);
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+  });
+
+  it("reports a notification exception instead of claiming success", async () => {
+    mocks.send.mockRejectedValue(new Error("unavailable"));
+    expect((await POST(requestFor(valid))).status).toBe(502);
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+  });
+
+  it("fails closed when notification is not configured", async () => {
+    vi.stubEnv("RESEND_API_KEY", "");
+    expect((await POST(requestFor(valid))).status).toBe(503);
+    expect(mocks.send).not.toHaveBeenCalled();
   });
 
   it("rejects a cross-origin submission", async () => {
@@ -128,13 +146,6 @@ describe("POST /api/capability-statement", () => {
 
   it("fails closed when the shared rate limiter is unreachable", async () => {
     mocks.rateLimit.mockRejectedValue(new Error("redis down"));
-    const response = await POST(requestFor(valid));
-    expect(response.status).toBe(503);
-    expect(mocks.send).not.toHaveBeenCalled();
-  });
-
-  it("does not send when the document cannot be read", async () => {
-    mocks.readFile.mockRejectedValue(new Error("ENOENT"));
     const response = await POST(requestFor(valid));
     expect(response.status).toBe(503);
     expect(mocks.send).not.toHaveBeenCalled();

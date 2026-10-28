@@ -152,3 +152,19 @@ Before handing off a change:
 6. Verify the matching `deploy-gcp` run succeeds (smoke test passed, no
    rollback) and the new Cloud Run revision is serving.
 7. Confirm `git status --short --branch` is clean and synchronized.
+
+## Capability statement — standing owner rule (October 28, 2026)
+
+- Whenever the canonical capability statement is updated, update this website's
+  `private/capability-statement.pdf` in the same release process, update
+  `CAPABILITY_STATEMENT_REVISION`, and refresh the asset integrity test digest.
+- Use the current PDF exported from Figma file `USnql3F5jVZdVg8mxfawam`, frame
+  `4:3`; the business repository copy is
+  `../aetherisvision/pdfs/Aetheris-Vision-Capability-Statement.pdf`.
+  Preserve the generic attachment name `Aetheris-Vision-Capability-Statement.pdf`
+  and verify that the current insurance coverage is included.
+- The public request form must only notify Marston for review. Never automatically
+  send the statement or a confirmation email to the requester. Do not introduce an
+  approval button that sends email. Responses must be unsent Gmail drafts in the
+  correct account with its configured signature; check Sent and the conversation
+  first. Marston reviews the request and is the only person who may press Send.

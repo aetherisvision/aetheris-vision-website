@@ -9,14 +9,7 @@ type Status = "idle" | "sending" | "sent" | "error";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/**
- * Emails the current capability statement to the address supplied.
- *
- * The PDF is never exposed as a static file — delivery runs through
- * /api/capability-statement so the document stays off the public path and the
- * request is recorded. Contracting officers expect to receive and forward the
- * document by email, so an inbox copy is the useful outcome, not a download.
- */
+/** Submits a capability statement request for the principal to review. */
 export default function CapabilityStatementForm() {
   const emailId = useId();
   const orgId = useId();
@@ -69,7 +62,7 @@ export default function CapabilityStatementForm() {
       }
 
       setStatus("sent");
-      trackConversion(CONVERSIONS.capabilityStatementSent);
+      trackConversion(CONVERSIONS.capabilityStatementRequested);
     } catch {
       setStatus("error");
       setError("Network error. Please try again.");
@@ -85,11 +78,10 @@ export default function CapabilityStatementForm() {
         role="status"
       >
         <CheckCircleIcon className="mb-3 h-6 w-6 text-emerald-400" aria-hidden="true" />
-        <p className="font-medium text-white">On its way.</p>
+        <p className="font-medium text-white">Request received.</p>
         <p className="mt-2 text-sm leading-6 text-white/70">
-          The capability statement is being delivered to{" "}
-          <span className="text-white">{email.trim()}</span>. If it has not arrived in a
-          few minutes, check the spam folder — it carries a PDF attachment.
+          We will review your request and follow up at{" "}
+          <span className="text-white">{email.trim()}</span>. The capability statement is provided after review.
         </p>
       </div>
     );
@@ -143,7 +135,7 @@ export default function CapabilityStatementForm() {
         disabled={status === "sending"}
         className="inline-flex min-h-12 w-full items-center justify-center gap-2 bg-white px-6 text-sm font-semibold text-black transition hover:bg-white/85 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
-        {status === "sending" ? "Sending…" : "Email me the capability statement"}
+        {status === "sending" ? "Sending…" : "Request the capability statement"}
         {status !== "sending" && <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />}
       </button>
 
@@ -151,7 +143,7 @@ export default function CapabilityStatementForm() {
         {status === "error" && error ? (
           <span className="text-red-300">{error}</span>
         ) : (
-          "One PDF, sent once. We use the address only to send the document and to reply if you write back."
+          "We use your address to review and respond to your request."
         )}
       </p>
     </form>
