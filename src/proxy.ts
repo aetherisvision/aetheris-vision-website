@@ -175,13 +175,15 @@ export async function proxy(request: NextRequest) {
       ? await isAdminSession(request)
       : false
   const isAuthedAdminApi = isApiRoute && pathname.startsWith('/api/admin/') && hasAdminSession
+  const isPublicShowcaseApi = isApiRoute && pathname.startsWith('/api/omni-gridder/')
   // Bearer-authenticated cron is still limited, on its own counter, so a
   // scheduled run does not share the anonymous API budget.
   const cronSecretOk = isCronRoute && hasCronSecret(request)
-  const maxRequests = isAuthedAdminApi ? 2000 : 100
+  const maxRequests = isAuthedAdminApi ? 2000 : isPublicShowcaseApi ? 300 : 100
   let ratePrefix = 'proxy-api'
   if (isAuthedAdminApi) ratePrefix = 'proxy-api-admin'
   else if (cronSecretOk) ratePrefix = 'proxy-api-cron'
+  else if (isPublicShowcaseApi) ratePrefix = 'proxy-api-og-showcase'
   let rateRemaining = maxRequests - 1
   if (isApiRoute) {
     const result = await rateLimit(ip, {

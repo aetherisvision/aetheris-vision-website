@@ -3,6 +3,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import OmniGridderComparison from "@/components/OmniGridderComparison";
+import OmniGridderShowcase from "@/components/OmniGridderShowcase";
 import { GEOSPATIAL_SEO_KEYWORDS } from "@/lib/constants";
 import { createPageMetadata } from "@/lib/seo";
 
@@ -103,6 +104,9 @@ export default function OmniGridderPage() {
             </div>
             <div className="mt-10">
               <OmniGridderComparison />
+            </div>
+            <div className="mt-14">
+              <OmniGridderShowcase mode="public" />
             </div>
           </div>
         </section>
