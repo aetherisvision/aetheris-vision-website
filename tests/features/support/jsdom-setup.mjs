@@ -40,6 +40,10 @@ const nodeKeepKeys = new Set([
   "TextEncoder", "TextDecoder", "TextEncoderStream", "TextDecoderStream",
   "AbortController", "AbortSignal", "structuredClone", "crypto", "performance",
   "URL", "URLSearchParams", "MessageChannel", "MessagePort", "WebSocket",
+  "btoa", "atob", "ArrayBuffer", "SharedArrayBuffer", "DataView",
+  "Uint8Array", "Uint8ClampedArray", "Int8Array", "Uint16Array", "Int16Array",
+  "Uint32Array", "Int32Array", "Float32Array", "Float64Array",
+  "BigInt64Array", "BigUint64Array",
 ]);
 
 const isClassLike = (name) => name[0] === name[0].toUpperCase();
