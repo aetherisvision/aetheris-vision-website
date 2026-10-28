@@ -37,3 +37,9 @@ Feature: Email Anti-Scraping Security
     Then the rendered HTML should contain "Global Privacy Control"
     And the rendered HTML should contain "Sec-GPC: 1"
     And the rendered HTML should contain "DNT: 1"
+
+  Scenario: Privacy page names the current hosting provider and analytics tool only
+    Given the privacy page content is rendered
+    Then the rendered HTML should contain "Google Cloud"
+    And the rendered HTML should contain "Google Analytics"
+    And the rendered HTML should not contain "Vercel"
