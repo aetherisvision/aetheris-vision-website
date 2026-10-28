@@ -207,4 +207,19 @@ describe("RotatingEarth visibility", () => {
     act(() => secondObserver?.emit(true));
     expect(screen.getByTestId("canvas")).toHaveAttribute("data-frameloop", "always");
   });
+
+  it("drops the canvas and notifies onContextLost when webglcontextlost fires", async () => {
+    installMatchMedia(false);
+    const onContextLost = vi.fn();
+    render(<RotatingEarth onContextLost={onContextLost} />);
+
+    const canvas = await screen.findByTestId("canvas");
+    act(() => {
+      const event = new Event("webglcontextlost", { cancelable: true });
+      canvas.dispatchEvent(event);
+    });
+
+    expect(onContextLost).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId("canvas")).toBeNull();
+  });
 });

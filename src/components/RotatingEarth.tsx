@@ -24,6 +24,7 @@ import {
   HERO_GLOBE_SPHERE_SEGMENTS,
   NIGHT_FRAGMENT_SHADER,
   NIGHT_VERTEX_SHADER,
+  probeWebGL2Support,
 } from "@/components/hero-globe-config";
 import { attachHeroVisibilityObserver, restoreHeroStarTime } from "@/components/hero-globe-visibility";
 
@@ -62,7 +63,9 @@ function EarthMesh({ animate, onReady }: { animate: boolean; onReady?: () => voi
     HERO_EARTH_NIGHT_TEXTURE,
     HERO_EARTH_CLOUD_TEXTURE,
   ]);
-  const anisotropy = Math.min(16, gl.capabilities.getMaxAnisotropy());
+  const rawAnisotropy = Number(gl.capabilities?.getMaxAnisotropy?.());
+  const anisotropy =
+    Number.isFinite(rawAnisotropy) && rawAnisotropy > 0 ? Math.min(16, rawAnisotropy) : 1;
 
   useLayoutEffect(() => {
     configureTexture(dayTexture, anisotropy);
@@ -161,18 +164,21 @@ function Scene({ animate, onReady }: { animate: boolean; onReady?: () => void })
 }
 
 function supportsWebGL2() {
-  try {
-    return !!document.createElement("canvas").getContext("webgl2");
-  } catch {
-    return false;
-  }
+  return probeWebGL2Support();
 }
 
-export default function RotatingEarth({ onReady }: { onReady?: () => void }) {
+export default function RotatingEarth({
+  onReady,
+  onContextLost,
+}: {
+  onReady?: () => void;
+  onContextLost?: () => void;
+}) {
   const inViewRef = useRef(true);
   const clockRef = useRef<Clock | null>(null);
   const starTimeRef = useRef(0);
   const visibilityObserverRef = useRef<IntersectionObserver | null>(null);
+  const contextLossCleanupRef = useRef<(() => void) | null>(null);
   const [inView, setInView] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [hasWebGL, setHasWebGL] = useState(true);
@@ -190,19 +196,37 @@ export default function RotatingEarth({ onReady }: { onReady?: () => void }) {
     return () => media.removeEventListener("change", onChange);
   }, []);
 
-  const bindVisibilityTarget = useCallback((node: HTMLDivElement | null) => {
-    visibilityObserverRef.current = attachHeroVisibilityObserver(
-      node,
-      visibilityObserverRef.current,
-      (visible) => {
-        if (visible === inViewRef.current) return;
-        // Save the star clock before setFrameloop zeros it on the frameloop switch.
-        if (clockRef.current) starTimeRef.current = clockRef.current.elapsedTime;
-        inViewRef.current = visible;
-        setInView(visible);
-      },
-    );
-  }, []);
+  const bindVisibilityTarget = useCallback(
+    (node: HTMLDivElement | null) => {
+      contextLossCleanupRef.current?.();
+      contextLossCleanupRef.current = null;
+
+      if (node) {
+        const handleContextLost = (event: Event) => {
+          event.preventDefault();
+          setHasWebGL(false);
+          onContextLost?.();
+        };
+        node.addEventListener("webglcontextlost", handleContextLost, true);
+        contextLossCleanupRef.current = () => {
+          node.removeEventListener("webglcontextlost", handleContextLost, true);
+        };
+      }
+
+      visibilityObserverRef.current = attachHeroVisibilityObserver(
+        node,
+        visibilityObserverRef.current,
+        (visible) => {
+          if (visible === inViewRef.current) return;
+          // Save the star clock before setFrameloop zeros it on the frameloop switch.
+          if (clockRef.current) starTimeRef.current = clockRef.current.elapsedTime;
+          inViewRef.current = visible;
+          setInView(visible);
+        },
+      );
+    },
+    [onContextLost],
+  );
 
   useLayoutEffect(() => {
     const clock = clockRef.current;

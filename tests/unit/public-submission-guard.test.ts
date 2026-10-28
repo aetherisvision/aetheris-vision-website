@@ -58,6 +58,29 @@ describe("evaluatePublicSubmissionGuard", () => {
   });
 
   it.each([
+    [
+      "Brave on macOS",
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+    ],
+    [
+      "Opera on desktop",
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 OPR/114.0.0.0",
+    ],
+    [
+      "Firefox on Linux",
+      "Mozilla/5.0 (X11; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0",
+    ],
+    [
+      "Open-source Chromium on Linux",
+      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chromium/130.0.6723.58 Safari/537.36",
+    ],
+  ])("accepts real %s user agent strings", (_browser, userAgent) => {
+    expect(
+      evaluatePublicSubmissionGuard(requestFor(userAgent), validSignals()),
+    ).toEqual({ automated: false });
+  });
+
+  it.each([
     ["missing attestation", { humanAttestation: undefined }],
     ["false attestation", { humanAttestation: false }],
     ["fractional duration", { interactionDurationMs: 2_000.5 }],

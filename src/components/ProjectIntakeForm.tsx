@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 import EmailVerificationStep from "@/components/EmailVerificationStep";
 import LocationAutocomplete from "@/components/LocationAutocomplete";
 import TurnstileWidget from "@/components/TurnstileWidget";
@@ -237,13 +238,11 @@ export default function ProjectIntakeForm() {
       setChallengeId(body.challengeId);
       setStep("verification");
 
-      if (typeof window !== "undefined" && window.gtag) {
-        window.gtag("event", "form_submit", {
-          event_category: "engagement",
-          event_label: "project_intake_verification_requested",
-          value: 0,
-        });
-      }
+      trackAnalyticsEvent("form_submit", {
+        event_category: "engagement",
+        event_label: "project_intake_verification_requested",
+        value: 0,
+      });
     } catch {
       setSubmitStatus("error");
       setErrorDetail("We could not reach the verification service. Check your connection and try again.");
@@ -286,12 +285,10 @@ export default function ProjectIntakeForm() {
       setSubmitStatus("success");
       submissionIdRef.current = null;
 
-      if (typeof window !== "undefined" && window.gtag) {
-        window.gtag("event", "conversion", {
-          event_category: "lead_generation",
-          event_label: "project_intake_completed",
-        });
-      }
+      trackAnalyticsEvent("conversion", {
+        event_category: "lead_generation",
+        event_label: "project_intake_completed",
+      });
     } catch {
       setSubmitStatus("error");
       setErrorDetail("We could not reach the submission service. Check your connection and try again.");

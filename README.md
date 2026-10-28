@@ -212,6 +212,13 @@ npm run test:watch    # Watch mode — re-runs tests automatically when you save
 | **Input Validation** | Checks that the name, email, and message are the right format and length before processing. | Prevents garbage data and potential injection attacks. |
 | **Basic Auth** | Preview deployments (test versions) require a password. | Keeps unfinished work private so only the team can see it. |
 
+### Browser Privacy & Cross-Browser Resilience (Brave, Opera, Firefox, Linux Chromium)
+
+- **Global Privacy Control (`Sec-GPC: 1`) & Do Not Track (`DNT: 1`)**: `hasServerPrivacySignal()` in `src/lib/analytics.ts` is shared by `src/proxy.ts` and `src/app/layout.tsx` to detect `Sec-GPC: 1` (sent by default in Brave and supported in Firefox ETP) and `DNT: 1`, suppressing Vercel Analytics and Google Analytics on the server. Client-side event helpers (`isClientPrivacySignalActive()` and `trackAnalyticsEvent()`) likewise check `navigator.globalPrivacyControl` and `doNotTrack`.
+- **Cloudflare Turnstile under content blockers & VPN/Tor**: `TurnstileWidget` (`src/components/TurnstileWidget.tsx`) runs a 12-second script-load watchdog (`TURNSTILE_LOAD_TIMEOUT_MS`) that clears as soon as `window.turnstile.render()` mounts the widget so interactive challenge solving is never cut short, detects blocker-shimmed scripts when `window.turnstile` is absent, and surfaces an alert with a **Retry verification** button.
+- **Hero globe WebGL2 & power-saving fallback**: `HeroGlobe.tsx`, `RotatingEarth.tsx`, `hero-globe-config.ts`, and `hero-globe-visibility.ts` short-circuit WebGL2 probing on phones, reduced-motion, and save-data clients, fall back to `hero-poster.webp` on CPU software rasterizers (`SwiftShader` on Linux Chromium, `llvmpipe`/`lavapipe` on Linux Mesa/Firefox), tolerate Brave WebGL farbling and Firefox disabled `WEBGL_debug_renderer_info`, recover cleanly from `webglcontextlost`, and pause the render loop when the tab is hidden (`document.visibilitychange`).
+- **CSP & Permissions-Policy**: `src/proxy.ts` and `next.config.ts` include `worker-src 'self' blob:` for WebGL/Turnstile blob workers and opt out of `browsing-topics=()` and `interest-cohort=()`.
+
 ---
 
 ## Services Setup — How Each Feature Works

@@ -7,6 +7,7 @@ import {
   HERO_GLOBE_DIAMETER_RATIO,
   HERO_GLOBE_OBSCURED_TOP_PX,
   HERO_POSTER_SRC,
+  probeWebGL2Support,
   shouldMountHeroCanvas,
 } from "@/components/hero-globe-config";
 
@@ -19,11 +20,7 @@ type NavigatorWithConnection = Navigator & {
 };
 
 function supportsWebGL2(): boolean {
-  try {
-    return !!document.createElement("canvas").getContext("webgl2");
-  } catch {
-    return false;
-  }
+  return probeWebGL2Support();
 }
 
 const POSTER_WIDTH = `min(calc(${HERO_GLOBE_DIAMETER_RATIO * 100}cqw * ${HERO_GLOBE_CLOUD_SCALE}), calc((100cqh - ${HERO_GLOBE_OBSCURED_TOP_PX}px) * ${HERO_GLOBE_DIAMETER_RATIO} * ${HERO_GLOBE_CLOUD_SCALE}))`;
@@ -32,6 +29,10 @@ export default function HeroGlobe() {
   const [showCanvas, setShowCanvas] = useState(false);
   const [ready, setReady] = useState(false);
   const handleReady = useCallback(() => setReady(true), []);
+  const handleContextLost = useCallback(() => {
+    setReady(false);
+    setShowCanvas(false);
+  }, []);
 
   useEffect(() => {
     // Phone width, save-data, and missing WebGL2 are read once. Reduced motion
@@ -40,12 +41,18 @@ export default function HeroGlobe() {
     const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     const saveData = (navigator as NavigatorWithConnection).connection?.saveData === true;
-    const webgl2 = supportsWebGL2();
+    let webgl2Checked = false;
+    let webgl2 = false;
 
     const applyGate = () => {
+      const reducedMotion = motionQuery.matches;
+      if (isDesktop && !reducedMotion && !saveData && !webgl2Checked) {
+        webgl2Checked = true;
+        webgl2 = supportsWebGL2();
+      }
       const mount = shouldMountHeroCanvas({
         isDesktop,
-        reducedMotion: motionQuery.matches,
+        reducedMotion,
         saveData,
         webgl2,
       });
@@ -86,7 +93,7 @@ export default function HeroGlobe() {
         <div
           className={`absolute inset-0 transition-opacity duration-100 ${ready ? "opacity-100" : "opacity-0"}`}
         >
-          <RotatingEarth onReady={handleReady} />
+          <RotatingEarth onReady={handleReady} onContextLost={handleContextLost} />
         </div>
       ) : null}
     </div>

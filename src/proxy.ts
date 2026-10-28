@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { hasServerPrivacySignal, PRIVACY_OPT_OUT_HEADER } from '@/lib/analytics'
 import { hasCronSecret } from '@/lib/cron-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { hasPreviewSession } from '@/lib/preview-auth'
@@ -43,11 +44,15 @@ async function isAdminSession(request: NextRequest): Promise<boolean> {
 }
 
 
+const PERMISSIONS_POLICY =
+  'camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=(), interest-cohort=()'
+
 function buildCsp(nonce: string): string {
   const allowEval = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
   const directives = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}'${allowEval} https://analytics.google.com https://www.googletagmanager.com https://js.stripe.com https://giscus.app https://cal.com https://app.cal.com https://challenges.cloudflare.com`,
+    "worker-src 'self' blob:",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://giscus.app",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob: https://avatars.githubusercontent.com https://github.githubassets.com",
@@ -81,6 +86,7 @@ export async function proxy(request: NextRequest) {
       headers: {
         'X-Robots-Tag': 'noindex, nofollow',
         'Content-Security-Policy': buildCsp(nonce),
+        'Permissions-Policy': PERMISSIONS_POLICY,
       },
     })
   }
@@ -243,6 +249,9 @@ export async function proxy(request: NextRequest) {
 
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-nonce', nonce)
+  if (hasServerPrivacySignal(request.headers)) {
+    requestHeaders.set(PRIVACY_OPT_OUT_HEADER, '1')
+  }
   // Next.js reads the nonce from the request CSP while rendering server and
   // framework scripts. Keep the same policy on the request and response so
   // Turnstile can load without weakening script-src with unsafe-inline.
@@ -252,6 +261,7 @@ export async function proxy(request: NextRequest) {
 
   // Security headers
   response.headers.set('Content-Security-Policy', csp)
+  response.headers.set('Permissions-Policy', PERMISSIONS_POLICY)
   response.headers.set('X-Request-ID', crypto.randomUUID())
 
   // API routes report remaining rate-limit budget
