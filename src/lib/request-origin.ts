@@ -10,12 +10,19 @@ import { SITE } from '@/lib/constants'
  * the origin here instead of from `request.url` / `request.nextUrl.origin`.
  *
  * Resolution order:
- *  1. `X-Forwarded-Host` / `Host` + `X-Forwarded-Proto`, only when the ingress
- *     is trusted (`GCP_LOAD_BALANCER=true` or `TRUSTED_PROXY=true`). Cloud Run
- *     ingress must be restricted to the load balancer before enabling either,
- *     otherwise a direct caller could inject a host.
- *  2. `NEXT_PUBLIC_SITE_URL`, then `SITE.url`, in production builds.
- *  3. `request.url`'s origin — correct for `next dev` / `next start` locally.
+ *  1. Forwarded request headers, only from a trusted ingress AND only when the
+ *     resulting host is on the allowlist ({@link allowedPublicHosts}):
+ *     - Cloud Run behind the GCP load balancer (`K_SERVICE` set and
+ *       `GCP_LOAD_BALANCER=true`): the LB preserves the client `Host` header
+ *       and sets `X-Forwarded-Proto`, but it neither sets nor strips
+ *       `X-Forwarded-Host`, so that header is ignored on this path.
+ *     - `TRUSTED_PROXY=true`: an explicit opt-in for a reverse proxy that does
+ *       rewrite `X-Forwarded-Host`; it is read before `Host`.
+ *     In production the forwarded scheme must be `https`.
+ *  2. `NEXT_PUBLIC_SITE_URL` when it parses, else `SITE.url`. Production
+ *     always ends here when step 1 rejects the request; the listener address
+ *     is never used.
+ *  3. `request.url`'s origin — only outside production (`next dev`/`next start`).
  *
  * This module is imported by `src/proxy.ts`, so it must stay free of
  * Node-only imports.
@@ -24,9 +31,81 @@ import { SITE } from '@/lib/constants'
 const HOSTNAME_PATTERN = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*(?::\d{1,5})?$/
 const IPV6_HOST_PATTERN = /^\[[0-9a-f:.]+\](?::\d{1,5})?$/
 
+/** Cloud Run origin hostname fronted by the GCP load balancer. */
+export const GCP_ORIGIN_HOST = 'gcp-origin.aetherisvision.com'
+
+/** Hosts accepted (on any port) outside production builds only. */
+const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '[::1]'])
+
+function isProduction(): boolean {
+  return process.env.NODE_ENV === 'production'
+}
+
+function isWellFormedHost(host: string): boolean {
+  return HOSTNAME_PATTERN.test(host) || IPV6_HOST_PATTERN.test(host)
+}
+
+/** `host[:port]` of a URL string with default ports dropped, or null. */
+function hostFromUrl(value: string | undefined): string | null {
+  const candidate = value?.trim()
+  if (!candidate) return null
+  try {
+    const url = new URL(candidate)
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return null
+    return url.host.toLowerCase() || null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Lowercased `host[:port]` values a forwarded request may claim as its public
+ * host. Anything else is treated as an injection attempt and ignored.
+ */
+export function allowedPublicHosts(): Set<string> {
+  const hosts = new Set<string>()
+
+  const site = hostFromUrl(SITE.url)
+  if (site) {
+    hosts.add(site)
+    hosts.add(site.startsWith('www.') ? site.slice('www.'.length) : `www.${site}`)
+  }
+  hosts.add(GCP_ORIGIN_HOST)
+
+  const configured = hostFromUrl(process.env.NEXT_PUBLIC_SITE_URL)
+  if (configured) hosts.add(configured)
+
+  // Comma-separated extra hosts, e.g. a preview service's public hostname.
+  for (const entry of (process.env.ALLOWED_PUBLIC_HOSTS ?? '').split(',')) {
+    const host = entry.trim().toLowerCase()
+    if (host && isWellFormedHost(host)) hosts.add(host)
+  }
+
+  if (!isProduction()) {
+    for (const host of LOCAL_HOSTNAMES) hosts.add(host)
+  }
+  return hosts
+}
+
+function isAllowedPublicHost(url: URL): boolean {
+  const allowed = allowedPublicHosts()
+  if (allowed.has(url.host)) return true
+  return !isProduction() && LOCAL_HOSTNAMES.has(url.hostname)
+}
+
+/** Cloud Run (`K_SERVICE`) with ingress restricted to the GCP load balancer. */
+function isGcpLoadBalancerIngress(): boolean {
+  return Boolean(process.env.K_SERVICE) && process.env.GCP_LOAD_BALANCER === 'true'
+}
+
+/** Explicit opt-in for a reverse proxy that rewrites `X-Forwarded-Host`. */
+function isExplicitTrustedProxy(): boolean {
+  return process.env.TRUSTED_PROXY === 'true'
+}
+
 /** True when forwarded host/proto headers were set by a trusted ingress. */
 export function isForwardedOriginTrusted(): boolean {
-  return process.env.GCP_LOAD_BALANCER === 'true' || process.env.TRUSTED_PROXY === 'true'
+  return isGcpLoadBalancerIngress() || isExplicitTrustedProxy()
 }
 
 function firstHeaderValue(value: string | null): string | null {
@@ -35,39 +114,42 @@ function firstHeaderValue(value: string | null): string | null {
   return first ? first : null
 }
 
-function forwardedOrigin(request: Request): string | null {
-  const host =
-    firstHeaderValue(request.headers.get('x-forwarded-host')) ??
-    firstHeaderValue(request.headers.get('host'))
-  if (!host || !(HOSTNAME_PATTERN.test(host) || IPV6_HOST_PATTERN.test(host))) return null
+function forwardedHost(request: Request): string | null {
+  const host = firstHeaderValue(request.headers.get('host'))
+  if (!isExplicitTrustedProxy()) return host
+  return firstHeaderValue(request.headers.get('x-forwarded-host')) ?? host
+}
 
-  let proto = firstHeaderValue(request.headers.get('x-forwarded-proto'))
-  if (!proto) {
-    try {
-      proto = new URL(request.url).protocol.replace(/:$/, '')
-    } catch {
-      return null
-    }
-  }
-  if (proto !== 'https' && proto !== 'http') return null
+function forwardedOrigin(request: Request): string | null {
+  const host = forwardedHost(request)
+  if (!host || !isWellFormedHost(host)) return null
+
+  // Never inferred from `request.url`: that is the container listener.
+  const proto = firstHeaderValue(request.headers.get('x-forwarded-proto'))
+  if (proto !== 'https' && !(proto === 'http' && !isProduction())) return null
 
   try {
     // URL normalizes default ports (`https://host:443` -> `https://host`) so
     // the result compares exactly against a browser-supplied Origin header.
-    return new URL(`${proto}://${host}`).origin
+    const url = new URL(`${proto}://${host}`)
+    return isAllowedPublicHost(url) ? url.origin : null
   } catch {
     return null
   }
 }
 
-function configuredOrigin(): string | null {
-  const candidate = process.env.NEXT_PUBLIC_SITE_URL?.trim() || SITE.url
-  try {
-    const origin = new URL(candidate).origin
-    return origin === 'null' ? null : origin
-  } catch {
-    return null
+/** `NEXT_PUBLIC_SITE_URL` when it parses, else the canonical `SITE.url`. */
+function configuredOrigin(): string {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+  if (configured) {
+    try {
+      const origin = new URL(configured).origin
+      if (origin !== 'null') return origin
+    } catch {
+      // fall through to the canonical site
+    }
   }
+  return new URL(SITE.url).origin
 }
 
 /**
@@ -80,15 +162,13 @@ export function getPublicOrigin(request: Request): string {
     if (origin) return origin
   }
 
-  if (process.env.NODE_ENV === 'production') {
-    const origin = configuredOrigin()
-    if (origin) return origin
-  }
+  if (isProduction()) return configuredOrigin()
 
   try {
-    return new URL(request.url).origin
+    const origin = new URL(request.url).origin
+    return origin === 'null' ? configuredOrigin() : origin
   } catch {
-    return configuredOrigin() ?? SITE.url
+    return configuredOrigin()
   }
 }
 

@@ -12,25 +12,32 @@ const CONTAINER = 'https://0.0.0.0:8080'
 const PUBLIC_HOST = 'aetherisvision.com'
 const ADMIN_PASSPHRASE = 'public-origin-test-passphrase'
 
+// The GCP external HTTPS load balancer preserves the client Host and sets
+// X-Forwarded-Proto; X-Forwarded-Host passes through from the client untouched.
 function cloudRunRequest(path: string, init: { method?: string; body?: BodyInit; headers?: Record<string, string> } = {}) {
   return new NextRequest(`${CONTAINER}${path}`, {
     method: init.method ?? 'GET',
     body: init.body,
     headers: {
       host: PUBLIC_HOST,
-      'x-forwarded-host': PUBLIC_HOST,
       'x-forwarded-proto': 'https',
       ...init.headers,
     },
   })
 }
 
+const SPOOFED_HEADERS = { host: 'evil.example', 'x-forwarded-host': 'evil.example' }
+
 describe('absolute URLs behind the GCP load balancer', () => {
   beforeEach(() => {
     vi.resetModules()
     mocks.sql.mockReset()
     vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('K_SERVICE', 'av-crm-web')
     vi.stubEnv('GCP_LOAD_BALANCER', 'true')
+    vi.stubEnv('TRUSTED_PROXY', '')
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', '')
+    vi.stubEnv('ALLOWED_PUBLIC_HOSTS', '')
     vi.stubEnv('NEXTAUTH_SECRET', 'test-authjs-v5-secret-at-least-32-characters-long')
     vi.stubEnv('ADMIN_PASSPHRASE', ADMIN_PASSPHRASE)
     vi.stubEnv('ADMIN_SESSION_SECRET', '')
@@ -55,6 +62,26 @@ describe('absolute URLs behind the GCP load balancer', () => {
     expect(mocks.sql).not.toHaveBeenCalled()
   })
 
+  it('keeps magic-link redirects on the site when a trusted request carries a spoofed host', async () => {
+    const { POST } = await import('@/app/api/auth/magic/route')
+    const spoofs: Record<string, string>[] = [
+      SPOOFED_HEADERS,
+      { 'x-forwarded-host': 'evil.example' },
+      { host: '0.0.0.0:8080' },
+    ]
+    for (const headers of spoofs) {
+      const response = await POST(
+        cloudRunRequest('/api/auth/magic', {
+          method: 'POST',
+          body: new URLSearchParams({ token: '', email: '' }),
+          headers: { 'content-type': 'application/x-www-form-urlencoded', ...headers },
+        }),
+      )
+      expect(response.status).toBe(303)
+      expect(response.headers.get('location')).toBe(`https://${PUBLIC_HOST}/client/login?error=1`)
+    }
+  })
+
   it('builds the Gmail OAuth redirect_uri from the public origin', async () => {
     const { GET } = await import('@/app/api/auth/gmail/start/route')
     const response = await GET(
@@ -68,6 +95,18 @@ describe('absolute URLs behind the GCP load balancer', () => {
     expect(body.redirectUri).toBe(`https://${PUBLIC_HOST}/api/auth/gmail/callback`)
     expect(new URL(body.authUrl).searchParams.get('redirect_uri')).toBe(body.redirectUri)
     expect(body.authUrl).not.toContain('0.0.0.0')
+  })
+
+  it('cannot have its Gmail OAuth redirect_uri poisoned through X-Forwarded-Host', async () => {
+    const { GET } = await import('@/app/api/auth/gmail/start/route')
+    const response = await GET(
+      cloudRunRequest('/api/auth/gmail/start?account=biz&debug=1', {
+        headers: { ...SPOOFED_HEADERS, cookie: `av-admin-session=${mintAdminSessionToken(ADMIN_PASSPHRASE)}` },
+      }),
+    )
+    expect(response.status).toBe(200)
+    const body = (await response.json()) as { redirectUri: string }
+    expect(body.redirectUri).toBe(`https://${PUBLIC_HOST}/api/auth/gmail/callback`)
   })
 
   it('redirects the Gmail OAuth callback errors to the public host', async () => {

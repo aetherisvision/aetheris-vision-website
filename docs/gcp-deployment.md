@@ -46,14 +46,25 @@ Neon/Vercel configuration until cutover is verified.
   caller input). Restrict Cloud Run ingress to `internal-and-cloud-load-balancing`
   before setting `GCP_LOAD_BALANCER=true`; public-form rate limits then use the
   verified visitor address. Never enable this flag on an unrestricted service.
-- The same flag (or `TRUSTED_PROXY=true` behind another reverse proxy) makes
-  `X-Forwarded-Host`/`Host` plus `X-Forwarded-Proto` the source of the public
-  origin (`src/lib/request-origin.ts`). Next.js standalone builds `request.url`
-  from `HOSTNAME`/`PORT` (`https://0.0.0.0:8080` in the container), so
-  same-origin checks, absolute redirects (magic link, preview, admin), the
-  Gmail OAuth `redirect_uri`, and the Turnstile hostname check all read
-  `getPublicOrigin()` instead. Without a trusted flag, production falls back to
-  `NEXT_PUBLIC_SITE_URL`/`SITE.url`; local `next dev` uses the request URL.
+- Public origin (`src/lib/request-origin.ts`): Next.js standalone builds
+  `request.url` from `HOSTNAME`/`PORT` (`https://0.0.0.0:8080` in the
+  container), so same-origin checks, absolute redirects (magic link, preview,
+  admin), the Gmail OAuth `redirect_uri`, and the Turnstile hostname check all
+  read `getPublicOrigin()` instead. On Cloud Run (`K_SERVICE` set) with
+  `GCP_LOAD_BALANCER=true` it uses the client `Host` header, which the global
+  external HTTPS load balancer preserves, plus `X-Forwarded-Proto` (must be
+  `https`). `X-Forwarded-Host` is ignored on that path: the GCP load balancer
+  neither sets nor strips it, so a client could inject it. Only
+  `TRUSTED_PROXY=true` (a non-GCP proxy that rewrites the header) opts into
+  reading `X-Forwarded-Host`.
+- The forwarded host must also be allowlisted: the `SITE.url` apex and `www`,
+  `gcp-origin.aetherisvision.com`, the host of `NEXT_PUBLIC_SITE_URL`, and any
+  comma-separated `ALLOWED_PUBLIC_HOSTS` entries (add a preview service's
+  hostname there; `localhost`/`127.0.0.1` are accepted only outside
+  production). Any other host, a non-`https` scheme, or an untrusted ingress
+  falls back to `NEXT_PUBLIC_SITE_URL` (when it parses) and then `SITE.url`.
+  Production never derives the origin or scheme from `request.url`; only local
+  `next dev`/`next start` does.
 
 ## Cutover requirements
 
@@ -87,8 +98,9 @@ identity must be explicitly provisioned before enabling it; no service-account
 key or application secret belongs in GitHub. `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
 is the only required public build variable. Cloud Build uses `cloudbuild.yaml`.
 After the image is deployed, the job smoke-tests the public origin (`/` is
-200, `/api/admin/leads` is 401, a same-origin `POST /api/contact` is not 403,
-and `POST /api/auth/magic` redirects within `https://aetherisvision.com`). If
+200, `/api/admin/leads` is 401, a same-origin `POST /api/contact` with an empty
+body is exactly 400 (validation, not a 403 origin rejection), and
+`POST /api/auth/magic` redirects within `https://aetherisvision.com`). If
 the smoke test fails, traffic is moved back to the previously serving revision;
 the next successful deploy runs `update-traffic --to-latest` so the pin does
 not outlive the rollback.

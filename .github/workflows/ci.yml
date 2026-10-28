@@ -178,14 +178,14 @@ jobs:
           origin=https://aetherisvision.com
           test "$(curl -sS -o /dev/null -w '%{http_code}' "$origin/")" = 200
           test "$(curl -sS -o /dev/null -w '%{http_code}' "$origin/api/admin/leads")" = 401
-          # Same-origin browser POST must not be rejected as cross-origin. An
-          # empty JSON body fails validation (400) before any side effect, so
-          # anything other than 403 proves the origin check sees the public host.
+          # Same-origin browser POST must not be rejected as cross-origin (403).
+          # An empty JSON body fails validation with exactly 400 before any
+          # side effect, which proves the origin check saw the public host.
           code=$(curl -sS -o /dev/null -w '%{http_code}' -X POST "$origin/api/contact" \
             -H "Origin: $origin" -H 'Sec-Fetch-Site: same-origin' \
             -H 'Content-Type: application/json' --data '{}')
           echo "POST /api/contact -> $code"
-          test "$code" != 403
+          test "$code" = 400
           # Route-handler redirects must carry the public host, not the
           # container listener address. An empty form never touches the database.
           location=$(curl -sS -o /dev/null -w '%{redirect_url}' -X POST "$origin/api/auth/magic" \
