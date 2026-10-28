@@ -1,3 +1,4 @@
+import ServiceBreadcrumbs from "@/components/ServiceBreadcrumbs";
 import Link from "next/link";
 import { ArrowRightIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import Footer from "@/components/Footer";
@@ -84,6 +85,7 @@ export default function GeospatialRegriddingPage() {
       <Navbar />
 
       <main id="main" className="flex-1 pt-24 sm:pt-28">
+        <ServiceBreadcrumbs name="Geospatial Regridding" path="/services/geospatial-regridding" />
         <header className="border-b border-white/10">
           <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-400">

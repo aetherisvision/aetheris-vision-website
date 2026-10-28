@@ -1,3 +1,4 @@
+import ServiceBreadcrumbs from "@/components/ServiceBreadcrumbs";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRightIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
@@ -42,6 +43,7 @@ export default function WebServicesPage() {
       <Navbar />
 
       <main id="main" className="flex-1 pb-20 pt-24 sm:pt-28">
+        <ServiceBreadcrumbs name="Web & Application Development" path="/services/web" />
         {/* Hero */}
         <section className="mx-auto max-w-5xl px-4 pb-16 sm:px-6">
           <FadeIn>

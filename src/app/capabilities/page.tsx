@@ -11,9 +11,9 @@ import {
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata = createPageMetadata({
-  title: `Capability Statement | ${SITE.name}`,
+  title: `SDVOSB & HUBZone Capability Statement | ${SITE.name}`,
   description:
-    "Aetheris Vision registration data, contracting codes, core competencies, and differentiators for state and federal procurement.",
+    "SBA-certified SDVOSB, VOSB, and HUBZone firm for weather AI and geospatial consulting. Review capabilities, UEI, CAGE, NAICS codes, and insurance coverage.",
   path: "/capabilities",
 });
 

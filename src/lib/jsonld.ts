@@ -1,5 +1,18 @@
 import { AMS_PROFILE_URL, CCM_CREDENTIAL, GITHUB_ORG_URL, SITE } from "./constants";
 
+/** Matches the visible navigation on each focused service page. */
+export function serviceBreadcrumbJsonLd(name: string, path: `/services/${string}`) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: `${SITE.url}/` },
+      { "@type": "ListItem", position: 2, name: "Services", item: `${SITE.url}/services` },
+      { "@type": "ListItem", position: 3, name, item: `${SITE.url}${path}` },
+    ],
+  };
+}
+
 /**
  * Same-entity profiles Google uses to reconcile the site with the Google
  * Business Profile and other listings. Add the GBP/LinkedIn URLs when live.
