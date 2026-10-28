@@ -22,6 +22,8 @@ beforeEach(() => {
   vi.stubEnv('OG_GCS_STAGING_BUCKET', TEST_BUCKET)
   vi.stubEnv('CONTACT_VERIFICATION_SECRET', 'test-contact-verification-secret-32-bytes')
   vi.stubEnv('OG_PUBLIC_DAILY_JOB_BUDGET', '4')
+  vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '')
+  vi.stubEnv('TURNSTILE_SECRET_KEY', '')
   submitJobMock.mockReset()
   submitJobMock.mockResolvedValue(undefined)
   getJobStatusMock.mockReset()
@@ -168,6 +170,56 @@ describe('POST /api/omni-gridder/submit — spend control, IP spoofing protectio
     const body = await v2.json()
     expect(body.budgetExhausted).toBe(true)
     expect(body.error).toMatch(/daily|compute budget/i)
+  })
+
+  it('requires and verifies a Turnstile token when NEXT_PUBLIC_TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY are configured', async () => {
+    vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '1x00000000000000000000AA')
+    vi.stubEnv('TURNSTILE_SECRET_KEY', 'turnstile-prod-secret')
+    const fetchSpy = vi.spyOn(global, 'fetch')
+    const { POST } = await import('@/app/api/omni-gridder/submit/route')
+
+    // 1. Missing token -> 400 before siteverify or submitJob
+    const missingRes = await POST(submitRequest({ methods: ['bilinear'] }, '198.51.100.30'))
+    expect(missingRes.status).toBe(400)
+    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(submitJobMock).not.toHaveBeenCalled()
+
+    // 2. Rejected token -> 403 before submitJob
+    fetchSpy.mockResolvedValueOnce(
+      new Response(JSON.stringify({ success: false }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      }),
+    )
+    const invalidRes = await POST(
+      submitRequest(
+        { methods: ['bilinear'], turnstileToken: 'bad-token' },
+        '198.51.100.31',
+      ),
+    )
+    expect(invalidRes.status).toBe(403)
+    expect(submitJobMock).not.toHaveBeenCalled()
+
+    // 3. Valid token for omni-gridder-showcase action -> 200
+    fetchSpy.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          success: true,
+          action: 'omni-gridder-showcase',
+          hostname: 'localhost',
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      ),
+    )
+    const validRes = await POST(
+      submitRequest(
+        { methods: ['bilinear'], turnstileToken: 'valid-token' },
+        '198.51.100.32',
+      ),
+    )
+    expect(validRes.status).toBe(200)
+    expect(submitJobMock).toHaveBeenCalledTimes(1)
+    fetchSpy.mockRestore()
   })
 })
 

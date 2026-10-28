@@ -13,8 +13,11 @@ export async function POST(request: NextRequest) {
     ? new Set(body.methods).size
     : 1
 
+  const turnstileToken =
+    typeof body.turnstileToken === 'string' ? body.turnstileToken : null
+
   const outcome = await submitRegridBatch(body, () =>
-    checkPublicShowcaseBudget(request, requestedCount),
+    checkPublicShowcaseBudget(request, requestedCount, turnstileToken),
   )
 
   if (!outcome.ok) return publicProxyErrorResponse(outcome)

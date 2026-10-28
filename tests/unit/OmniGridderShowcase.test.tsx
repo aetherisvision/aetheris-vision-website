@@ -34,12 +34,14 @@ describe('OmniGridderShowcase component (#89)', () => {
   const fetchMock = vi.fn()
 
   beforeEach(() => {
+    vi.stubEnv('NEXT_PUBLIC_TURNSTILE_SITE_KEY', '')
     fetchMock.mockReset()
     vi.stubGlobal('fetch', fetchMock)
   })
 
   afterEach(() => {
     vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
   })
 
   it('loads the public dataset catalog, renders the compatibility matrix, and surfaces the daily budget-exhausted notice', async () => {

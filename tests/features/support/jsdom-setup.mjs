@@ -93,3 +93,9 @@ if (globalThis.document?.defaultView) {
 
 // React 19 / testing-library run in an "act" environment for predictable updates.
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+// Keep Cucumber scenarios hermetic even when developer shell secrets are loaded.
+delete process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+delete process.env.TURNSTILE_SECRET_KEY;
+delete process.env.ADMIN_SESSION_SECRET;
+delete process.env.PREVIEW_PASSWORD;

@@ -1,9 +1,11 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import TurnstileWidget from '@/components/TurnstileWidget'
 import type { OmniGridderJobStatus } from '@/lib/omni-gridder-client'
 import type { RegridMethod } from '@/lib/omni-gridder-proxy'
 import { METHOD_LABELS, type DatasetView } from '@/lib/showcase-catalog-view'
+import { TURNSTILE_ACTIONS } from '@/lib/turnstile'
 
 type Provenance = 'live' | 'verified'
 type RowStatus =
@@ -238,6 +240,10 @@ export default function OmniGridderShowcase({ mode }: OmniGridderShowcaseProps) 
   const [queuedLongNotice, setQueuedLongNotice] = useState(false)
   const [workerTriggered, setWorkerTriggered] = useState<boolean | null>(null)
   const [runHistory, setRunHistory] = useState<RunHistory>({})
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0)
+  const requiresTurnstile =
+    mode === 'public' && Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
 
   const runDatasetIdRef = useRef<string | null>(null)
   const runStartRef = useRef<Map<RegridMethod, number>>(new Map())
@@ -656,6 +662,10 @@ export default function OmniGridderShowcase({ mode }: OmniGridderShowcaseProps) 
         setGlobalError('Catalog is still loading — select a dataset first')
         return
       }
+      if (requiresTurnstile && !turnstileToken) {
+        setGlobalError('Please complete the human verification before starting a live run.')
+        return
+      }
       stopAllPolling()
       setGlobalError(null)
       setBudgetExhausted(false)
@@ -677,12 +687,22 @@ export default function OmniGridderShowcase({ mode }: OmniGridderShowcaseProps) 
           : `Submitting ${METHOD_LABELS[methods[0]]} regrid job to og-server`,
       )
 
+      const submittedToken = turnstileToken
+      if (requiresTurnstile) {
+        setTurnstileToken(null)
+        setTurnstileResetKey((key) => key + 1)
+      }
+
       let res: Response
       try {
         res = await fetch(`${apiBase}/submit`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ methods, datasetId: selectedDatasetId }),
+          body: JSON.stringify({
+            methods,
+            datasetId: selectedDatasetId,
+            ...(mode === 'public' && submittedToken ? { turnstileToken: submittedToken } : {}),
+          }),
         })
       } catch {
         setGlobalError('Network error submitting job')
@@ -760,7 +780,17 @@ export default function OmniGridderShowcase({ mode }: OmniGridderShowcaseProps) 
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [apiBase, log, mode, primaryMethod, selectedDatasetId, stopAllPolling, updateRow],
+    [
+      apiBase,
+      log,
+      mode,
+      primaryMethod,
+      requiresTurnstile,
+      selectedDatasetId,
+      stopAllPolling,
+      turnstileToken,
+      updateRow,
+    ],
   )
 
   const runSingle = useCallback(() => runJobs([selectedMethod]), [runJobs, selectedMethod])
@@ -853,6 +883,16 @@ export default function OmniGridderShowcase({ mode }: OmniGridderShowcaseProps) 
         </div>
       )}
 
+      {mode === 'public' && (
+        <div className="mb-6">
+          <TurnstileWidget
+            action={TURNSTILE_ACTIONS.omniGridderShowcase}
+            onTokenChange={setTurnstileToken}
+            resetKey={turnstileResetKey}
+          />
+        </div>
+      )}
+
       <div className="mb-8 flex flex-wrap items-center gap-4">
         <select
           aria-label="Regridding method"
@@ -870,7 +910,7 @@ export default function OmniGridderShowcase({ mode }: OmniGridderShowcaseProps) 
         <button
           type="button"
           onClick={runSingle}
-          disabled={isRunning}
+          disabled={isRunning || (requiresTurnstile && !turnstileToken)}
           className="inline-flex h-11 items-center gap-2 rounded-md border border-white/20 px-6 text-sm font-medium text-white hover:bg-white/10 transition disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {isRunning ? 'Running…' : 'Run Single Job'}
@@ -878,7 +918,7 @@ export default function OmniGridderShowcase({ mode }: OmniGridderShowcaseProps) 
         <button
           type="button"
           onClick={runComparison}
-          disabled={isRunning}
+          disabled={isRunning || (requiresTurnstile && !turnstileToken)}
           className="inline-flex h-11 items-center gap-2 rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {isRunning ? 'Running…' : 'Run Method Comparison'}

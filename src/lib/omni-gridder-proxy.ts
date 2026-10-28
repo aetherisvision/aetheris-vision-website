@@ -23,6 +23,7 @@ import {
   getTrustedClientIp,
 } from './request-security'
 import { isSameOriginMutation } from './same-origin'
+import { TURNSTILE_ACTIONS, verifyTurnstileToken } from './turnstile'
 
 // Shared, framework-light omni-gridder proxy logic — the single home for the
 // og-server orchestration that previously lived inline in the three
@@ -110,6 +111,8 @@ export interface SubmitRequestBody {
    * catalog by URI and rejected if it does not match a catalogued dataset.
    */
   inputUri?: string
+  /** Optional Cloudflare Turnstile token required on public showcase submissions when Turnstile is configured. */
+  turnstileToken?: string | null
 }
 
 export interface SubmittedJob {
@@ -625,20 +628,32 @@ export function getPublicDailyJobBudget(env: NodeJS.ProcessEnv = process.env): n
   return Number.isFinite(parsed) && parsed > 0 ? Math.min(500, parsed) : DEFAULT_PUBLIC_DAILY_JOB_BUDGET
 }
 
+export function isPublicShowcaseTurnstileConfigured(
+  env: NodeJS.ProcessEnv = process.env,
+): boolean {
+  return Boolean(
+    env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || env.TURNSTILE_SECRET_KEY?.trim(),
+  )
+}
+
 /**
  * Spend-control policy hook for `POST /api/omni-gridder/submit` (#89):
  * 1. Rejects cross-origin mutations (`403`).
  * 2. Requires distributed rate limiting in production (`503` if Upstash/Vercel
  *    KV is missing so per-instance memory cannot be bypassed).
- * 3. Enforces a per-IP submission limit (`2 / 10 min`) using `getTrustedClientIp`
+ * 3. When Turnstile is configured (`NEXT_PUBLIC_TURNSTILE_SITE_KEY` /
+ *    `TURNSTILE_SECRET_KEY`), verifies `turnstileToken` against
+ *    `TURNSTILE_ACTIONS.omniGridderShowcase` before consuming any budget.
+ * 4. Enforces a per-IP submission limit (`2 / 10 min`) using `getTrustedClientIp`
  *    and `createOpaqueRateLimitKey` (never raw `X-Forwarded-For` in production).
- * 4. Enforces a global daily job budget (`OG_PUBLIC_DAILY_JOB_BUDGET`, default
+ * 5. Enforces a global daily job budget (`OG_PUBLIC_DAILY_JOB_BUDGET`, default
  *    `40` jobs / 24h) across all visitors, returning `budgetExhausted: true`
  *    when the daily demo cap is reached.
  */
 export async function checkPublicShowcaseBudget(
   request: NextRequest,
   jobCount = 1,
+  turnstileToken?: string | null,
 ): Promise<ProxyError | null> {
   if (!isSameOriginMutation(request)) {
     return { status: 403, error: 'Request origin is not allowed' }
@@ -654,6 +669,32 @@ export async function checkPublicShowcaseBudget(
       }
     }
     throw error
+  }
+
+  if (isPublicShowcaseTurnstileConfigured()) {
+    const verification = await verifyTurnstileToken({
+      token: turnstileToken,
+      expectedAction: TURNSTILE_ACTIONS.omniGridderShowcase,
+      expectedHostname: new URL(request.url).hostname,
+    })
+    if (!verification.ok) {
+      if (verification.reason === 'missing') {
+        return {
+          status: 400,
+          error: 'Please complete the human verification before starting a live run.',
+        }
+      }
+      const unavailable =
+        verification.reason === 'unavailable' ||
+        verification.reason === 'timeout' ||
+        verification.reason === 'misconfigured'
+      return {
+        status: unavailable ? 503 : 403,
+        error: unavailable
+          ? 'Human verification is temporarily unavailable. Please try again shortly.'
+          : 'Human verification could not be confirmed. Please refresh and try again.',
+      }
+    }
   }
 
   const requireDistributed = process.env.NODE_ENV === 'production'
