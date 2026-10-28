@@ -1,103 +1,89 @@
 import {
-  put,
-  BlobAccessError,
-  BlobClientTokenExpiredError,
-  BlobPreconditionFailedError,
-  BlobRequestAbortedError,
-  BlobServiceNotAvailable,
-  BlobServiceRateLimited,
-  BlobStoreNotFoundError,
-  BlobStoreSuspendedError,
-  type PutBlobResult,
-} from '@vercel/blob'
-import { putGcsReceipt } from './receipt-gcs'
+  isFirestoreExpenseStoreConfigured,
+  recordFirestoreReceiptMetadata,
+} from './expense-firestore'
+import {
+  isValidReceiptPathname,
+  putGcsReceipt,
+  type GcsReceiptObjectMetadata,
+} from './receipt-gcs'
 
 /**
- * Receipts are financial records. They are stored private so that possession of
- * a URL is not itself authorization to read one — the only way in is through
- * the admin-gated streaming route at /api/receipts/file.
+ * Receipts are financial records. They are stored privately in Google Cloud
+ * Storage (`GCS_RECEIPT_BUCKET`) so that possession of a URL is not itself
+ * authorization to read one — the only way in is through the admin-gated
+ * streaming route at /api/receipts/file.
  *
- * Private blob stores are not available on every plan. A store that genuinely
- * cannot accept a private write falls back to a public write with an
- * unguessable name rather than dropping the receipt on the floor. Every other
- * failure — a transient outage, rate limiting, an expired token, a pathname
- * collision — is rethrown: silently downgrading a financial record to
- * world-readable because the service blipped for thirty seconds would defeat
- * the entire point of this module.
+ * When Firestore metadata storage is configured (`FIRESTORE_PROJECT_ID`),
+ * each uploaded receipt object is also indexed in the Firestore `receipts`
+ * collection with its GCS URI, SHA-256 digest, byte size, and content type.
  */
 export const RECEIPT_VIEW_PATH = '/api/receipts/file'
+
+export interface ReceiptUploadOptions {
+  source?: 'admin-upload' | 'gmail-cron' | 'migration'
+  gmailMessageId?: string | null
+}
 
 export interface ReceiptUploadResult {
   /** What to persist in expenses.receipt_url and render as an href. */
   reference: string
-  isPrivate: boolean
+  isPrivate: true
+  object?: GcsReceiptObjectMetadata
 }
 
-/** Internal viewer URL for a private blob pathname. */
+/** Internal viewer URL for a private receipt pathname. */
 export function receiptViewUrl(pathname: string): string {
   return `${RECEIPT_VIEW_PATH}?path=${encodeURIComponent(pathname)}`
 }
 
-/**
- * True only for the one condition the public fallback exists to handle: the
- * store does not offer private blobs at all. Anything transient or unrelated
- * must surface instead.
- */
-function isPrivateAccessUnsupported(error: unknown): boolean {
-  // These are outages, quota, auth, and collision failures — never a reason to
-  // publish a receipt. Checked first so a stray word in a message cannot match.
-  if (
-    error instanceof BlobServiceNotAvailable ||
-    error instanceof BlobServiceRateLimited ||
-    error instanceof BlobStoreSuspendedError ||
-    error instanceof BlobStoreNotFoundError ||
-    error instanceof BlobClientTokenExpiredError ||
-    error instanceof BlobPreconditionFailedError ||
-    error instanceof BlobRequestAbortedError
-  ) {
-    return false
-  }
-
-  const message = error instanceof Error ? error.message.toLowerCase() : ''
-  if (!message.includes('private')) return false
-  return (
-    error instanceof BlobAccessError ||
-    /not\s+(?:supported|enabled|available)|unsupported|invalid\s+access|requires?\s+.*plan/.test(
-      message,
-    )
-  )
-}
-
 export async function putReceipt(
   pathname: string,
-  body: Parameters<typeof put>[1],
+  body: Buffer | Uint8Array | Blob | string,
   contentType?: string,
+  options: ReceiptUploadOptions = {},
 ): Promise<ReceiptUploadResult> {
-  if (process.env.GCS_RECEIPT_BUCKET) {
-    if (!(typeof body === 'string' || body instanceof Uint8Array || body instanceof Blob)) {
-      throw new Error('Unsupported receipt body')
-    }
-    await putGcsReceipt(pathname, body, contentType)
-    return { reference: receiptViewUrl(pathname), isPrivate: true }
+  if (!isValidReceiptPathname(pathname)) {
+    throw new Error('Invalid receipt path')
   }
-  const contentTypeOption = contentType ? { contentType } : {}
+  if (
+    !(
+      typeof body === 'string' ||
+      Buffer.isBuffer(body) ||
+      body instanceof Uint8Array ||
+      ArrayBuffer.isView(body) ||
+      body instanceof Blob
+    )
+  ) {
+    throw new Error('Unsupported receipt body')
+  }
 
-  try {
-    await put(pathname, body, { access: 'private', ...contentTypeOption })
-    return { reference: receiptViewUrl(pathname), isPrivate: true }
-  } catch (error) {
-    if (!isPrivateAccessUnsupported(error)) throw error
+  const objectMeta = await putGcsReceipt(pathname, body, contentType)
+  const reference = receiptViewUrl(pathname)
 
-    // The full message matters here: it is the evidence for the decision above,
-    // and the only signal that this store never accepts private writes.
-    console.warn('Blob store rejected a private receipt write; storing it public with an unguessable name', {
-      error: error instanceof Error ? `${error.name}: ${error.message}` : 'UnknownError',
-    })
-    const blob: PutBlobResult = await put(pathname, body, {
-      access: 'public',
-      addRandomSuffix: true,
-      ...contentTypeOption,
-    })
-    return { reference: blob.url, isPrivate: false }
+  if (isFirestoreExpenseStoreConfigured()) {
+    try {
+      await recordFirestoreReceiptMetadata({
+        object_path: objectMeta.objectPath,
+        bucket: objectMeta.bucket,
+        gcs_uri: objectMeta.gcsUri,
+        view_url: reference,
+        content_type: objectMeta.contentType,
+        size_bytes: objectMeta.sizeBytes,
+        sha256: objectMeta.sha256,
+        source: options.source ?? 'admin-upload',
+        gmail_message_id: options.gmailMessageId ?? null,
+      })
+    } catch (error) {
+      console.warn('Receipt uploaded to GCS, but Firestore metadata indexing failed', {
+        error: error instanceof Error ? error.name : 'UnknownError',
+      })
+    }
+  }
+
+  return {
+    reference,
+    isPrivate: true,
+    object: objectMeta,
   }
 }

@@ -1,5 +1,6 @@
-import { sql } from '@/lib/db'
 import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
+import { FirestoreExpenseStoreError } from '@/lib/expense-firestore'
+import { createExpenseRecord, listExpensesByTaxYear } from '@/lib/expense-store'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
@@ -7,33 +8,54 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const taxYear = searchParams.get('tax_year') || new Date().getFullYear()
 
-  const expenses = await sql`
-    SELECT * FROM expenses
-    WHERE tax_year = ${taxYear}
-    ORDER BY date DESC
-  `
-
-  const totals = await sql`
-    SELECT category, SUM(amount) as total
-    FROM expenses
-    WHERE tax_year = ${taxYear}
-    GROUP BY category
-    ORDER BY total DESC
-  `
-
-  return NextResponse.json({ expenses, totals })
+  try {
+    const { expenses, totals } = await listExpensesByTaxYear(taxYear)
+    return NextResponse.json({ expenses, totals })
+  } catch (error) {
+    if (error instanceof FirestoreExpenseStoreError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
+    throw error
+  }
 }
 
 export async function POST(request: NextRequest) {
   if (!isAdmin(request)) return unauthorizedResponse()
   const body = await request.json()
-  const { date, vendor, description, category, amount, tax_year, receipt_url } = body
+  const {
+    date,
+    vendor,
+    description,
+    category,
+    amount,
+    tax_year,
+    receipt_url,
+    receipt_gcs_uri,
+    receipt_sha256,
+    receipt_content_type,
+    receipt_size_bytes,
+  } = body
 
-  const result = await sql`
-    INSERT INTO expenses (date, vendor, description, category, amount, tax_year, receipt_url)
-    VALUES (${date}, ${vendor}, ${description}, ${category}, ${amount}, ${tax_year}, ${receipt_url || null})
-    RETURNING *
-  `
-
-  return NextResponse.json(result[0], { status: 201 })
+  try {
+    const { record } = await createExpenseRecord({
+      date,
+      vendor,
+      description,
+      category,
+      amount,
+      tax_year,
+      receipt_url: receipt_url || null,
+      receipt_gcs_uri: receipt_gcs_uri || null,
+      receipt_sha256: receipt_sha256 || null,
+      receipt_content_type: receipt_content_type || null,
+      receipt_size_bytes: receipt_size_bytes ?? null,
+      source: 'manual',
+    })
+    return NextResponse.json(record, { status: 201 })
+  } catch (error) {
+    if (error instanceof FirestoreExpenseStoreError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
+    throw error
+  }
 }

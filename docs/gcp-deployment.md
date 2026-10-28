@@ -18,6 +18,14 @@ Neon/Vercel configuration until cutover is verified.
 - Set `GCS_RECEIPT_BUCKET` only after existing receipt objects and references have
   been copied and checked. The bucket must use uniform access and public access
   prevention. Grant the runtime only bucket-scoped object access.
+- When `FIRESTORE_PROJECT_ID` (and optional `FIRESTORE_DATABASE_ID`, defaulting
+  to `(default)`) is set, structured bill, expense, tax, and receipt object
+  metadata is stored in Firestore (`expenses` and `receipts` collections) while
+  receipt PDFs and images remain in `GCS_RECEIPT_BUCKET`. Run
+  `npm run db:migrate:expenses-firestore` to idempotently backfill existing
+  PostgreSQL `expenses` rows and any legacy Vercel Blob URLs into Firestore and
+  GCS. Set `EXPENSE_DUAL_WRITE_POSTGRES=true` or
+  `EXPENSE_FALLBACK_READ_POSTGRES=true` during cutover if needed.
 - Cloud Run uses its attached identity for Omni-Gridder calls. Grant invocation
   permission on the exact backend service/job; do not grant project-wide admin.
 - Existing Upstash rate-limiting remains required. Do not remove distributed

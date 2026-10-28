@@ -2,12 +2,15 @@
  * /api/cron/receipts
  *
  * Daily cron job — scans Gmail for receipts from known vendors and logs them
- * as expenses. Runs at 6:00 AM Central via Vercel Cron (see vercel.json).
+ * as expenses in Firestore (with PostgreSQL fallback) and private GCS
+ * (`GCS_RECEIPT_BUCKET`).
  *
- * Requires these env vars in Vercel:
+ * Requires these env vars:
  *   GMAIL_CLIENT_ID          — OAuth2 client ID from Google Cloud Console
  *   GMAIL_CLIENT_SECRET      — OAuth2 client secret
- *   CRON_SECRET              — Random string; Vercel Cron sends Authorization: Bearer <CRON_SECRET>
+ *   CRON_SECRET              — Random string; Cloud Run / Scheduler sends Authorization: Bearer <CRON_SECRET>
+ *   GCS_RECEIPT_BUCKET       — Private GCS bucket for receipt PDFs/images
+ *   FIRESTORE_PROJECT_ID     — Optional GCP project ID for Firestore expense/receipt metadata
  *   GMAIL_RECEIPT_LOOKBACK_DAYS — optional; default 30 (how far back to search Gmail)
  *
  * Gmail refresh tokens are stored in oauth_tokens (rows biz / per) via /admin/gmail — not in env.
@@ -17,13 +20,14 @@
  *   2. Create project → Enable Gmail API
  *   3. OAuth2 credentials (Desktop app) → get client ID + secret
  *   4. Run scripts/gmail-auth.ts once per account to get refresh tokens
- *   5. Add all vars to Vercel project settings
+ *   5. Add all vars to runtime secret settings
  */
 
 import { sql } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdmin } from '@/lib/admin-auth'
 import { hasCronSecret } from '@/lib/cron-auth'
+import { createExpenseRecord, hasExpenseForGmailMessageId } from '@/lib/expense-store'
 import { RequestSecurityError, assertSameOrigin } from '@/lib/request-security'
 import { decryptToken } from '@/lib/token-crypto'
 import { putReceipt } from '@/lib/receipt-blob'
@@ -57,8 +61,8 @@ const VENDORS: [string, string, string][] = [
   // Extra common sender domains / brands
   ['PayPal',     'paypal.com',          'Banking & Financial Fees'],
   ['PayPal',     'mail.paypal.com',     'Banking & Financial Fees'],
-  ['Best Buy',   'bestbuy.com',         'Office & Equipment'],
-  ['Best Buy',   'emails.bestbuy.com',  'Office & Equipment'],
+  ['Best Buy',   'bestbuy.com',         'Equipment & Hardware'],
+  ['Best Buy',   'emails.bestbuy.com',  'Equipment & Hardware'],
   ['Sanity',       'sanity.io',               'Cloud Services'],
   ['Sanity',       'sanity-mail.com',         'Cloud Services'],
   ['GitLab',       'gitlab.com',              'Cloud Services'],
@@ -173,8 +177,7 @@ async function processAccount(
 
   for (const { id: msgId } of list.messages) {
     // Check if already logged
-    const existing = await sql`SELECT id FROM expenses WHERE gmail_message_id = ${msgId} LIMIT 1`
-    if (existing.length > 0) { skipped++; continue }
+    if (await hasExpenseForGmailMessageId(msgId)) { skipped++; continue }
 
     const msg = await gmailGet(token, `/users/me/messages/${msgId}?format=full`)
     const headers: { name: string; value: string }[] = msg.payload?.headers ?? []
@@ -195,46 +198,53 @@ async function processAccount(
 
     // Upload PDF attachment if present (first PDF attachment wins)
     let receiptUrl: string | null = null
+    let receiptGcsUri: string | null = null
+    let receiptSha256: string | null = null
+    let receiptContentType: string | null = null
+    let receiptSizeBytes: number | null = null
     const parts: GmailPayload[] = msg.payload?.parts ?? []
     for (const part of parts) {
       if (part.filename?.toLowerCase().endsWith('.pdf') && part.body?.attachmentId) {
         try {
           const att = await gmailGetAttachment(token, 'me', msgId, part.body.attachmentId)
           const bytes = Buffer.from(att.data.replace(/-/g, '+').replace(/_/g, '/'), 'base64')
-          // Stored private where the blob store allows it, so possession of a
-          // URL is not authorization; putReceipt falls back to an unguessable
-          // public name when private writes are unavailable.
+          // Stored privately in GCS and indexed in Firestore so possession of
+          // a URL is not authorization; only /api/receipts/file streams it.
           const stored = await putReceipt(
             `receipts/gmail/${Date.now()}-${crypto.randomUUID()}.pdf`,
             bytes,
             'application/pdf',
+            { source: 'gmail-cron', gmailMessageId: msgId },
           )
           receiptUrl = stored.reference
+          receiptGcsUri = stored.object?.gcsUri ?? null
+          receiptSha256 = stored.object?.sha256 ?? null
+          receiptContentType = stored.object?.contentType ?? null
+          receiptSizeBytes = stored.object?.sizeBytes ?? null
         } catch { /* attachment upload optional — proceed without */ }
         break
       }
     }
 
-    const inserted = await sql`
-      INSERT INTO expenses (date, vendor, description, category, amount, tax_year, receipt_url, gmail_message_id, source)
-      VALUES (
-        ${date},
-        ${vendorName},
-        ${subject.slice(0, 200)},
-        ${category},
-        ${amount},
-        ${taxYear},
-        ${receiptUrl},
-        ${msgId},
-        ${'gmail-' + accountLabel}
-      )
-      ON CONFLICT (gmail_message_id) DO NOTHING
-      RETURNING id
-    `
-    if (inserted.length > 0) {
+    const { created } = await createExpenseRecord({
+      date,
+      vendor: vendorName,
+      description: subject.slice(0, 200),
+      category,
+      amount,
+      tax_year: taxYear,
+      receipt_url: receiptUrl,
+      receipt_gcs_uri: receiptGcsUri,
+      receipt_sha256: receiptSha256,
+      receipt_content_type: receiptContentType,
+      receipt_size_bytes: receiptSizeBytes,
+      gmail_message_id: msgId,
+      source: 'gmail-' + accountLabel,
+    })
+    if (created) {
       logged++
     } else {
-      // Rare: two overlapping runs raced on the same message id after the SELECT check.
+      // Rare: two overlapping runs raced on the same message id after the initial check.
       skipped++
     }
   }
