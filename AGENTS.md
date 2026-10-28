@@ -10,7 +10,9 @@ otherwise.
 - Public site: `https://aetherisvision.com`
 - Repository: `github.com/aetherisvision/aetheris-vision-website`
 - Stack: Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4
-- Hosting: Vercel project `aetheris-vision-website` in the Aetheris Vision team
+- Hosting: Google Cloud Run service `av-crm-web` (`us-central1`) behind a
+  global external HTTPS load balancer with Cloud CDN; see
+  `docs/gcp-deployment.md`
 - Database: Neon Postgres
 - Integrations: Resend, Cloudflare Turnstile, Upstash Redis/Vercel KV,
   Docuseal, Stripe, Gmail OAuth, Cal.com, and Vercel Blob
@@ -62,7 +64,8 @@ npm run ci
 ## Git and Deployment
 
 - Work on and push to `main` unless the user explicitly requests a branch or
-  pull request. A push to `main` triggers the Vercel production deployment.
+  pull request. A push to `main` triggers the `deploy-gcp` job in
+  `.github/workflows/ci.yml` (Cloud Run production deployment).
 - Use the business SSH remote:
   `git@github-business:aetherisvision/aetheris-vision-website.git`.
 - Repository-local commit identity must remain:
@@ -146,5 +149,6 @@ Before handing off a change:
 3. Confirm the repository-local business Git identity.
 4. Commit with a signed, descriptive commit.
 5. Push to `main` when the requested change is ready for production.
-6. Verify the matching Vercel deployment reaches `Ready`.
+6. Verify the matching `deploy-gcp` run succeeds (smoke test passed, no
+   rollback) and the new Cloud Run revision is serving.
 7. Confirm `git status --short --branch` is clean and synchronized.

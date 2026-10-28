@@ -140,7 +140,10 @@ export default function SecurityPage() {
                   <ul className="space-y-3 text-gray-400 text-sm">
                     <li className="flex items-start gap-2">
                       <span className="text-green-400 mt-1">✓</span>
-                      <span>The application is hosted on Vercel</span>
+                      <span>
+                        The application is hosted on Google Cloud Run behind Cloud Load
+                        Balancing and Cloud CDN
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-green-400 mt-1">✓</span>

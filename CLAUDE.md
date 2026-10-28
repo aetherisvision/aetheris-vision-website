@@ -10,7 +10,7 @@ Root manifest at `~/Developer/CLAUDE.md` has the full business identity, secrets
 **aetherisvision.com** — primary marketing and client portal for Aetheris Vision LLC.
 - Repo: github.com/aetherisvision/aetheris-vision-website
 - Stack: Next.js 16 App Router, TypeScript, Tailwind CSS 4
-- Deploy: push to `main` → Vercel auto-deploys (Aetheris Vision team)
+- Deploy: push to `main` → GitHub Actions `deploy-gcp` → Cloud Run `av-crm-web` (`docs/gcp-deployment.md`)
 
 ---
 
@@ -18,7 +18,7 @@ Root manifest at `~/Developer/CLAUDE.md` has the full business identity, secrets
 
 | Service | Details |
 |---|---|
-| Hosting | Vercel — Aetheris Vision team — project: `aetheris-vision-website` |
+| Hosting | Google Cloud Run `av-crm-web` (`us-central1`, project `lucid-loader-493512-g1`) behind a global external HTTPS LB with Cloud CDN; PR previews on `av-crm-web-preview` behind IAP (label `preview`) |
 | Database | Neon (serverless Postgres) — `ep-frosty-sound-a8jtvtas` (Azure East US 2) |
 | DNS | Cloudflare — zone `b9d0a69c7ec514834569aa2fd524f0bf` — DNS only (no proxy) |
 | Auth | NextAuth.js custom magic-link flow |
@@ -105,7 +105,7 @@ NEXTAUTH_URL=
 NEXTAUTH_SECRET=
 ADMIN_PASSPHRASE=       # /admin/* protection
 PREVIEW_PASSWORD=       # Site lock (value in ~/.secrets / Vercel env; rotate to a long random string)
-CRON_SECRET=            # Vercel cron auth
+CRON_SECRET=            # Cloud Scheduler / Cloud Run Job bearer for /api/cron/*
 ADMIN_SESSION_SECRET=   # Signs admin session cookies (32-byte hex); derived from ADMIN_PASSPHRASE if unset
 TOKEN_ENCRYPTION_KEY=   # AES-256-GCM key for stored Gmail refresh tokens; derived from NEXTAUTH_SECRET if unset
 STRIPE_SECRET_KEY=      # Stripe dashboard → Developers → API keys
@@ -144,13 +144,13 @@ npm run monitor:business  # Neon ping + Vercel logs (secrets from ~/.secrets)
 ## Deploy
 
 ```bash
-git push origin main  # Vercel auto-deploys
+git push origin main  # GitHub Actions deploy-gcp → Cloud Run (smoke test + auto rollback)
 ```
 
 Commits must use AV identity (`user.name = "Aetheris Vision"`, `user.email = "marston@aetherisvision.com"`).
 Remote: `git@github-business:aetherisvision/aetheris-vision-website.git`
 
-DNS: A record `76.76.21.21` (Vercel), www CNAME `cname.vercel-dns.com`.
+DNS: apex A record points at the GCP global load balancer (`34.149.81.66` as of 2026-10-28); the Vercel records (`76.76.21.21`, `cname.vercel-dns.com`) are retired.
 
 **A new migration under `src/lib/db/migrations/` does NOT run automatically on
 deploy or on request** -- `runMigrations()` is only ever invoked manually via

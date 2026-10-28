@@ -22,7 +22,7 @@ Every tool we use was chosen for a reason. Here's what's in the toolbox:
 | **Tailwind CSS 4** | A styling system that lets you design directly in your HTML instead of separate style files. | Much faster than writing traditional CSS. You add classes like `text-blue-500` right on the element. |
 | **Framer Motion** | Adds smooth animations (fade-ins, slide-ups). | Makes the site feel polished and professional instead of static. |
 | **Heroicons v2** | A set of pre-made icons (checkmarks, arrows, phones, etc.). | Consistent, sharp icons without hiring a designer. |
-| **Vercel** | The hosting service that puts our website on the internet. | Built by the same team that makes Next.js, so they work perfectly together. Free for small sites. Deploys automatically when we push code. |
+| **Google Cloud Run** | The hosting service that puts our website on the internet (behind Cloud Load Balancing and Cloud CDN). | Scales to zero when idle, runs the same container we test in CI, and sits next to the Firestore/GCS/Cloud SQL data it uses. GitHub Actions deploys it automatically when we push code. See `docs/gcp-deployment.md`. |
 | **Vitest** | Runs automated tests to make sure nothing is broken. | Like a robot that checks every page and feature for you, every time you change something. |
 | **ESLint 9** | A linter that checks your code for common mistakes and style issues. | Catches problems before they reach users — like having a proofreader for your code. |
 | **GitHub Actions** | Runs our tests and builds automatically when code is pushed. | No human has to remember to run tests. The computer does it for us every time. |
@@ -56,7 +56,7 @@ npm run dev
 npm test
 
 # Step 5: Build the production version (optional, for deployment checks)
-# WHY: This creates the optimized version of the site that Vercel actually serves.
+# WHY: This creates the optimized version of the site that the Cloud Run container actually serves.
 #       If this fails, the website won't deploy.
 npm run build
 
@@ -216,7 +216,7 @@ npm run test:watch    # Watch mode — re-runs tests automatically when you save
 
 ### Browser Privacy & Cross-Browser Resilience (Brave, Opera, Firefox, Linux Chromium)
 
-- **Global Privacy Control (`Sec-GPC: 1`) & Do Not Track (`DNT: 1`)**: `hasServerPrivacySignal()` in `src/lib/analytics.ts` is shared by `src/proxy.ts` and `src/app/layout.tsx` to detect `Sec-GPC: 1` (sent by default in Brave and supported in Firefox ETP) and `DNT: 1`, suppressing Vercel Analytics and Google Analytics on the server. Client-side event helpers (`isClientPrivacySignalActive()` and `trackAnalyticsEvent()`) likewise check `navigator.globalPrivacyControl` and `doNotTrack`.
+- **Global Privacy Control (`Sec-GPC: 1`) & Do Not Track (`DNT: 1`)**: `hasServerPrivacySignal()` in `src/lib/analytics.ts` is shared by `src/proxy.ts` and `src/app/layout.tsx` to detect `Sec-GPC: 1` (sent by default in Brave and supported in Firefox ETP) and `DNT: 1`, suppressing Google Analytics on the server. Client-side event helpers (`isClientPrivacySignalActive()` and `trackAnalyticsEvent()`) likewise check `navigator.globalPrivacyControl` and `doNotTrack`.
 - **Cloudflare Turnstile under content blockers & VPN/Tor**: `TurnstileWidget` (`src/components/TurnstileWidget.tsx`) runs a 12-second script-load watchdog (`TURNSTILE_LOAD_TIMEOUT_MS`) that clears as soon as `window.turnstile.render()` mounts the widget so interactive challenge solving is never cut short, detects blocker-shimmed scripts when `window.turnstile` is absent, and surfaces an alert with a **Retry verification** button.
 - **Hero globe WebGL2 & power-saving fallback**: `HeroGlobe.tsx`, `RotatingEarth.tsx`, `hero-globe-config.ts`, and `hero-globe-visibility.ts` short-circuit WebGL2 probing on phones, reduced-motion, and save-data clients, fall back to `hero-poster.webp` on CPU software rasterizers (`SwiftShader` on Linux Chromium, `llvmpipe`/`lavapipe` on Linux Mesa/Firefox), tolerate Brave WebGL farbling and Firefox disabled `WEBGL_debug_renderer_info`, recover cleanly from `webglcontextlost`, and pause the render loop when the tab is hidden (`document.visibilitychange`).
 - **CSP & Permissions-Policy**: `src/proxy.ts` and `next.config.ts` include `worker-src 'self' blob:` for WebGL/Turnstile blob workers and opt out of `browsing-topics=()` and `interest-cohort=()`.
@@ -333,7 +333,20 @@ Upgrade to the Cal.com **Teams plan** ($12/month) in your Cal.com account settin
 
 ## Deployment — How the Website Goes Live
 
-### Vercel CLI Setup
+Production runs on **Google Cloud Run** (`av-crm-web`, `us-central1`) behind a
+global external HTTPS load balancer with Cloud CDN. A push to `main` runs the
+`deploy-gcp` job in `.github/workflows/ci.yml` (Cloud Build → Artifact
+Registry → `gcloud run services update` → smoke test → automatic rollback on
+failure). Opt-in pull-request previews deploy to `av-crm-web-preview` behind
+IAP when a PR carries the `preview` label (`.github/workflows/preview.yml`).
+Details, the CDN cache policy, and the environment contract live in
+`docs/gcp-deployment.md`.
+
+The Vercel sections below are kept for the transition period only: the Vercel
+project no longer serves `aetherisvision.com` and remains connected to GitHub
+solely for its PR integration until it is removed.
+
+### Vercel CLI Setup (legacy)
 
 **What:** The Vercel CLI is a command-line tool that lets you manage your website deployment from the Terminal.
 
@@ -346,7 +359,7 @@ vercel link --project aetheris-vision-website  # link this directory to the corr
 
 The `.vercel/` directory is gitignored. Re-run `vercel link` on any new machine or after deleting `.vercel/`.
 
-### Vercel Management
+### Vercel Management (legacy)
 
 **What:** A Python script (`scripts/vercel.py`) that lets you pause or resume the live website with one command.
 
@@ -365,7 +378,7 @@ python3 scripts/vercel.py resume
 
 ### How Deployment Works
 
-**What:** Every time we push code to the `main` branch on GitHub, Vercel automatically builds and publishes the new version of the website.
+**What:** Every time we push code to the `main` branch on GitHub, GitHub Actions builds the container with Cloud Build and publishes the new revision to Cloud Run (when the repository variable `GCP_DEPLOY_ENABLED` is `true`).
 
 **Why automatic deployment?** No human has to remember to "upload the website." Push your code, and within a couple of minutes, the live site is updated. If the build fails (tests don't pass, code has errors), the old version stays live — nothing breaks.
 
@@ -375,22 +388,22 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ### Deployment Checklist
 
-**Why a checklist?** Environment variables (secret values stored on Vercel) must be set for certain features to work. If you forget to set one, that feature silently won't appear — no error, it just vanishes. This checklist prevents that.
+**Why a checklist?** Environment variables (set on the Cloud Run service, secrets via Secret Manager) must be set for certain features to work. If you forget to set one, that feature silently won't appear — no error, it just vanishes. This checklist prevents that.
 
 Before pushing changes that affect blog subscription, comments, or booking:
 
-1. Confirm Vercel environment variables are set (if using blog features):
+1. Confirm the Cloud Run service environment variables are set (if using blog features):
    - `NEXT_PUBLIC_BLOG_SUBSCRIBE_URL`
    - `NEXT_PUBLIC_GISCUS_REPO`
    - `NEXT_PUBLIC_GISCUS_REPO_ID`
    - `NEXT_PUBLIC_GISCUS_CATEGORY`
    - `NEXT_PUBLIC_GISCUS_CATEGORY_ID`
-2. Ensure the variables are added to the correct Vercel environments (`Production`, `Preview`, and/or `Development`).
-3. Deploy to Vercel and verify:
+2. Ensure the variables are present on both `av-crm-web` (production) and `av-crm-web-preview` (PR previews) as needed.
+3. Deploy and verify:
    - The subscription block appears on `/blog` and submits to the expected endpoint.
    - The comments section loads on blog post pages.
    - The `/book` page loads and displays the Cal.com calendar embed.
-4. If values were changed in Vercel, trigger a redeploy so static pages pick up updated `NEXT_PUBLIC_*` values.
+4. `NEXT_PUBLIC_*` values are inlined at image build time; after changing one, rebuild and redeploy so pages pick it up.
 
 ## Environment Health Check
 

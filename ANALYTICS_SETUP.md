@@ -69,10 +69,14 @@ https://drive.google.com/drive/folders/[FOLDER_ID_HERE]
 
 ## 📊 Analytics Configuration
 
-### Current Setup: Vercel Analytics
-✅ **Already Active** - Basic page views and performance metrics
+### Current Setup: Google Analytics 4
 
-### Enhanced Analytics: Google Analytics 4
+Google Analytics is the only analytics tool on the site (Vercel Analytics was
+removed with the move to Cloud Run). It loads only when
+`NEXT_PUBLIC_GA_MEASUREMENT_ID` is set and is suppressed for visitors sending
+`Sec-GPC: 1` or `DNT: 1`.
+
+### Google Analytics 4 Setup
 
 Add comprehensive behavior tracking:
 
@@ -82,12 +86,8 @@ Add comprehensive behavior tracking:
 
 ### Analytics Data Captured
 
-#### Automatic (Vercel Analytics):
-- Page views and unique visitors
-- Performance metrics (Core Web Vitals)
-- Geographic data and referrer sources
-
-#### Enhanced (Google Analytics 4):
+#### Google Analytics 4:
+- Page views, unique visitors, geographic data, and referrer sources
 - **Form Interactions**: Intake form submissions, field completion rates
 - **Conversion Tracking**: Discovery call bookings, quote requests
 - **Portfolio Engagement**: Which demos are viewed most
