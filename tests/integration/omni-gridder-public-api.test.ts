@@ -143,14 +143,18 @@ describe('POST /api/omni-gridder/submit — spend control, IP spoofing protectio
 
     const { POST } = await import('@/app/api/omni-gridder/submit/route')
 
+    // In production without a trusted ingress the expected origin is the
+    // configured site, so the browser Origin must be the public one.
+    const publicOrigin = 'https://aetherisvision.com'
+
     // Caller rotates X-Forwarded-For on every request, but in production without
     // trusted ingress headers getTrustedClientIp returns null -> all three share
     // the single 'no-trusted-client-ip' bucket.
-    const r1 = await POST(submitRequest({ methods: ['bilinear'] }, '203.0.113.1'))
+    const r1 = await POST(submitRequest({ methods: ['bilinear'] }, '203.0.113.1', publicOrigin))
     expect(r1.status).toBe(200)
-    const r2 = await POST(submitRequest({ methods: ['nearest'] }, '203.0.113.2'))
+    const r2 = await POST(submitRequest({ methods: ['nearest'] }, '203.0.113.2', publicOrigin))
     expect(r2.status).toBe(200)
-    const r3 = await POST(submitRequest({ methods: ['conservative'] }, '203.0.113.3'))
+    const r3 = await POST(submitRequest({ methods: ['conservative'] }, '203.0.113.3', publicOrigin))
     expect(r3.status).toBe(429)
   })
 

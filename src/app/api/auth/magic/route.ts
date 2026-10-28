@@ -10,14 +10,16 @@ import { encode } from 'next-auth/jwt'
 import { sql } from '@/lib/db'
 import { isSecureRequest, requireAuthSecret, sessionCookieName } from '@/lib/auth-cookie'
 import { hashMagicLinkToken } from '@/lib/magic-link-token'
+import { publicUrl } from '@/lib/request-origin'
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData()
   const token = String(formData.get('token') ?? '').trim()
   const email = String(formData.get('email') ?? '').trim().toLowerCase()
 
-  const errorUrl = new URL('/client/login?error=1', request.url)
-  const dashboardUrl = new URL('/client/dashboard', request.url)
+  // Absolute redirects must carry the public host, not the container address.
+  const errorUrl = publicUrl(request, '/client/login?error=1')
+  const dashboardUrl = publicUrl(request, '/client/dashboard')
 
   if (!token || !email) {
     return NextResponse.redirect(errorUrl, { status: 303 })

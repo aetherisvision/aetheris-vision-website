@@ -3,6 +3,7 @@ import { hasServerPrivacySignal, PRIVACY_OPT_OUT_HEADER } from '@/lib/analytics'
 import { hasCronSecret } from '@/lib/cron-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { hasPreviewSession } from '@/lib/preview-auth'
+import { publicUrl } from '@/lib/request-origin'
 import { getTrustedClientIp } from '@/lib/request-security'
 import { isSameOriginMutation } from '@/lib/same-origin'
 import { INSIGHTS_PUBLIC } from '@/lib/features'
@@ -142,7 +143,7 @@ export async function proxy(request: NextRequest) {
     !isCrawlerMetaRoute &&
     !(await hasPreviewSession(request))
   ) {
-    const loginUrl = new URL('/preview', request.url)
+    const loginUrl = publicUrl(request, '/preview')
     loginUrl.searchParams.set('next', `${pathname}${request.nextUrl.search}`)
     return NextResponse.redirect(loginUrl)
   }
@@ -237,13 +238,13 @@ export async function proxy(request: NextRequest) {
     const hasSession = hasAdminSession
 
     if (!isLoginPage && !hasSession) {
-      const loginUrl = new URL('/admin/login', request.url)
+      const loginUrl = publicUrl(request, '/admin/login')
       loginUrl.searchParams.set('next', pathname)
       return NextResponse.redirect(loginUrl)
     }
 
     if (isLoginPage && hasSession) {
-      return NextResponse.redirect(new URL('/admin/leads', request.url))
+      return NextResponse.redirect(publicUrl(request, '/admin/leads'))
     }
   }
 

@@ -14,6 +14,7 @@ import {
 import { SITE } from "@/lib/constants";
 import { createOrLinkIntakeGraph } from "@/lib/crm";
 import { rateLimit } from "@/lib/rate-limit";
+import { getPublicHostname } from "@/lib/request-origin";
 import {
   assertDistributedRateLimitAvailable,
   assertSameOrigin,
@@ -575,7 +576,7 @@ export async function POST(request: NextRequest) {
       turnstile = await verifyTurnstileToken({
         token: submission.turnstileToken,
         expectedAction: TURNSTILE_ACTIONS.intake,
-        expectedHostname: new URL(request.url).hostname,
+        expectedHostname: getPublicHostname(request),
       });
     } catch (error) {
       console.error("Intake anti-spam verification failed", {

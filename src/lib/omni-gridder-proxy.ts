@@ -16,6 +16,7 @@ import {
   type OmniGridderJobStatus,
 } from './omni-gridder-client'
 import { rateLimit } from './rate-limit'
+import { getPublicHostname } from './request-origin'
 import {
   RequestSecurityError,
   assertDistributedRateLimitAvailable,
@@ -675,7 +676,7 @@ export async function checkPublicShowcaseBudget(
     const verification = await verifyTurnstileToken({
       token: turnstileToken,
       expectedAction: TURNSTILE_ACTIONS.omniGridderShowcase,
-      expectedHostname: new URL(request.url).hostname,
+      expectedHostname: getPublicHostname(request),
     })
     if (!verification.ok) {
       if (verification.reason === 'missing') {

@@ -7,6 +7,7 @@ import {
 import { SAM, SITE } from "@/lib/constants";
 import { escapeHtml } from "@/lib/escape-html";
 import { rateLimit } from "@/lib/rate-limit";
+import { getPublicHostname } from "@/lib/request-origin";
 import {
   assertSameOrigin,
   createOpaqueAbuseKey,
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
   const verification = await verifyTurnstileToken({
     token: turnstileToken,
     expectedAction: TURNSTILE_ACTIONS.capabilityStatement,
-    expectedHostname: new URL(request.url).hostname,
+    expectedHostname: getPublicHostname(request),
   });
   if (!verification.ok) {
     const status = verification.reason === "misconfigured" ? 503 : 403;

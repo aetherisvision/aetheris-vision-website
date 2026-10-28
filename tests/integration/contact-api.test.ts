@@ -180,6 +180,68 @@ describe("POST /api/contact", () => {
     expect(mocks.complete).not.toHaveBeenCalled();
   });
 
+  it("accepts the public origin behind the Cloud Run load balancer and verifies Turnstile against it", async () => {
+    // On Cloud Run the request URL is the container listener, not the site.
+    // The GCP load balancer preserves Host and sets X-Forwarded-Proto only.
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("K_SERVICE", "av-crm-web");
+    vi.stubEnv("GCP_LOAD_BALANCER", "true");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "");
+    const headers = new Headers({
+      "Sec-Fetch-Site": "same-origin",
+      "User-Agent": "Mozilla/5.0 Chrome/127.0.0.0 Safari/537.36",
+      "Content-Type": "application/json",
+      Origin: "https://aetherisvision.com",
+      host: "aetherisvision.com",
+      "x-forwarded-proto": "https",
+      "x-av-client-ip": "198.51.100.10",
+    });
+    const cloudRun = (origin: string, overrides: Record<string, string> = {}) => {
+      const requestHeaders = new Headers(headers);
+      requestHeaders.set("Origin", origin);
+      for (const [name, value] of Object.entries(overrides)) requestHeaders.set(name, value);
+      return new Request("https://0.0.0.0:8080/api/contact", {
+        method: "POST",
+        body: JSON.stringify(validPayload()),
+        headers: requestHeaders,
+      });
+    };
+
+    const response = await POST(cloudRun("https://aetherisvision.com"));
+    expect(response.status).toBe(202);
+    expect(mocks.turnstile).toHaveBeenCalledWith(
+      expect.objectContaining({ expectedHostname: "aetherisvision.com" }),
+    );
+
+    // The container address must never pass as "same origin".
+    expect((await POST(cloudRun("https://0.0.0.0:8080"))).status).toBe(403);
+
+    // Trusted ingress, spoofed X-Forwarded-Host (passes through the GCP LB):
+    // it is ignored, so the attacker's Origin is rejected and Turnstile still
+    // verifies against the apex.
+    const spoofedXfh = { "x-forwarded-host": "evil.example" };
+    expect((await POST(cloudRun("https://evil.example", spoofedXfh))).status).toBe(403);
+    mocks.turnstile.mockClear();
+    expect((await POST(cloudRun("https://aetherisvision.com", spoofedXfh))).status).toBe(202);
+    expect(mocks.turnstile).toHaveBeenCalledWith(
+      expect.objectContaining({ expectedHostname: "aetherisvision.com" }),
+    );
+
+    // Trusted ingress, unallowlisted Host: falls back to the configured site.
+    const spoofedHost = { host: "evil.example", "x-forwarded-host": "evil.example" };
+    expect((await POST(cloudRun("https://evil.example", spoofedHost))).status).toBe(403);
+    mocks.turnstile.mockClear();
+    expect((await POST(cloudRun("https://aetherisvision.com", spoofedHost))).status).toBe(202);
+    expect(mocks.turnstile).toHaveBeenCalledWith(
+      expect.objectContaining({ expectedHostname: "aetherisvision.com" }),
+    );
+
+    // Untrusted ingress (no K_SERVICE): forwarded headers are ignored entirely.
+    vi.stubEnv("K_SERVICE", "");
+    expect((await POST(cloudRun("https://evil.example", spoofedHost))).status).toBe(403);
+    expect((await POST(cloudRun("https://aetherisvision.com", spoofedHost))).status).toBe(202);
+  });
+
   it("uses opaque rate-limit keys rather than raw IP or email", async () => {
     await POST(requestFor(validPayload()));
 

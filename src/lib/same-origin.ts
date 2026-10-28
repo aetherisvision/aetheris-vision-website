@@ -1,9 +1,13 @@
+import { getPublicOrigin } from '@/lib/request-origin'
+
 /**
  * Shared same-origin check for browser mutations.
  *
  * Public form handlers call this through `assertSameOrigin`. The proxy uses
  * it directly so the helper stays free of Node-only imports.
  * Missing Origin fails closed. A present Sec-Fetch-Site must be same-origin.
+ * The expected origin is the public one (see request-origin.ts), never the
+ * container listener address that `request.url` carries on Cloud Run.
  */
 export function isSameOriginMutation(request: Request): boolean {
   const origin = request.headers.get('origin')
@@ -11,7 +15,7 @@ export function isSameOriginMutation(request: Request): boolean {
 
   let expectedOrigin: string
   try {
-    expectedOrigin = new URL(request.url).origin
+    expectedOrigin = getPublicOrigin(request)
   } catch {
     return false
   }

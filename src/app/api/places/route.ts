@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { rateLimit } from '@/lib/rate-limit'
+import { getPublicOrigin } from '@/lib/request-origin'
 import {
   assertDistributedRateLimitAvailable,
   createOpaqueRateLimitKey,
@@ -100,7 +101,7 @@ function assertAllowedReadContext(request: NextRequest): void {
   }
 
   const origin = request.headers.get('origin')
-  if (origin && origin !== request.nextUrl.origin) {
+  if (origin && origin !== getPublicOrigin(request)) {
     throw new RequestSecurityError('invalid-origin', 403, 'Request origin is not allowed')
   }
 }
