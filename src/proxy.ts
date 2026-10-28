@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { hasServerPrivacySignal, PRIVACY_OPT_OUT_HEADER } from '@/lib/analytics'
+import { isStaticAssetPath } from '@/lib/cache-headers'
 import { hasCronSecret } from '@/lib/cron-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { hasPreviewSession } from '@/lib/preview-auth'
@@ -93,13 +94,9 @@ export async function proxy(request: NextRequest) {
     })
   }
 
-  // Skip processing for static assets
-  if (
-    pathname.startsWith('/_next/') ||
-    pathname.startsWith('/favicon') ||
-    pathname.startsWith('/logo/') ||
-    pathname.startsWith('/images/')
-  ) {
+  // Pure static files (public/ prefixes, build output) get no nonce, no
+  // CSP, and no rate-limit round-trip; next.config.ts sets their cache policy.
+  if (isStaticAssetPath(pathname)) {
     return NextResponse.next()
   }
 

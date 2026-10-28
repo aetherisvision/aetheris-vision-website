@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { cacheControlHeaderRules } from "./src/lib/cache-headers";
 
 // Security headers applied to all responses
 const securityHeaders = [
@@ -99,15 +100,9 @@ const nextConfig: NextConfig = {
 
   async headers() {
     return [
-      {
-        source: "/earth-textures/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=604800, stale-while-revalidate=31536000",
-          },
-        ],
-      },
+      // CDN cache policy (src/lib/cache-headers.ts). HTML is not listed on
+      // purpose: the per-request CSP nonce keeps every page `no-store`.
+      ...cacheControlHeaderRules(),
       {
         source: "/(.*)",
         headers: securityHeaders,

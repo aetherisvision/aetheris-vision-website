@@ -57,6 +57,38 @@ describe("proxy Content Security Policy", () => {
   });
 });
 
+describe("proxy static asset bypass", () => {
+  it.each([
+    "/earth-textures/hero-poster-512.webp",
+    "/earth-textures/hero-poster.webp",
+    "/logo/av-logo-horizontal-dark.png",
+    "/images/book/plans-review.webp",
+    "/favicon.ico",
+    "/_next/image?url=%2Flogo%2Fav-logo.png&w=64&q=75",
+  ])("skips the nonce, CSP, and rate limit for %s even while site-locked", async (path) => {
+    vi.stubEnv("PREVIEW_PASSWORD", "preview-secret");
+
+    const response = await proxy(new NextRequest(`https://aetherisvision.com${path}`));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
+    expect(response.headers.get("Content-Security-Policy")).toBeNull();
+    expect(response.headers.get("x-middleware-request-x-nonce")).toBeNull();
+    expect(response.headers.get("X-Request-ID")).toBeNull();
+    expect(response.headers.get("X-Rate-Limit-Remaining")).toBeNull();
+  });
+
+  it("still applies the nonce path to pages and crawler meta files", async () => {
+    vi.stubEnv("PREVIEW_PASSWORD", "");
+
+    for (const path of ["/about", "/manifest.json", "/robots.txt"]) {
+      const response = await proxy(new NextRequest(`https://aetherisvision.com${path}`));
+      expect(response.headers.get("Content-Security-Policy")).toMatch(/'nonce-[0-9a-f-]{36}'/);
+      expect(response.headers.get("X-Request-ID")).toBeTruthy();
+    }
+  });
+});
+
 describe("proxy Insights publication lock", () => {
   it.each(["/blog", "/blog/graphcast"])("hard-blocks %s", async (path) => {
     const response = await proxy(new NextRequest(`https://aetherisvision.com${path}`));

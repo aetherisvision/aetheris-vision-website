@@ -12,6 +12,11 @@ import { INSIGHTS_PUBLIC } from "@/lib/features";
 import { AMS_PROFILE_URL, BRAND_POSITIONING, CORE_SEO_KEYWORDS, SITE } from "@/lib/constants";
 import { createPageMetadata } from "@/lib/seo";
 
+// Ineffective for the HTML itself and kept only for any `fetch()` done while
+// rendering: the root layout reads `headers()` for the CSP nonce, so every
+// page is rendered per request and served `private, no-store` (see
+// docs/gcp-deployment.md, "CDN cache policy"). Making the home page
+// shareable would require moving the nonce out of the layout.
 export const revalidate = 3600;
 
 export const metadata = createPageMetadata({
