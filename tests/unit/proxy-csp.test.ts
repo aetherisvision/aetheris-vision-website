@@ -89,6 +89,26 @@ describe("proxy static asset bypass", () => {
   });
 });
 
+describe("proxy SITE_NOINDEX (preview service)", () => {
+  it("adds X-Robots-Tag to pages, APIs, and static files only when enabled", async () => {
+    vi.stubEnv("PREVIEW_PASSWORD", "");
+
+    vi.stubEnv("SITE_NOINDEX", "true");
+    for (const path of ["/about", "/api/omni-gridder/datasets", "/earth-textures/hero-poster-512.webp"]) {
+      const response = await proxy(
+        new NextRequest(`https://pr-12.preview.aetherisvision.com${path}`, {
+          headers: { "x-forwarded-for": "203.0.113.70" },
+        }),
+      );
+      expect(response.headers.get("X-Robots-Tag")).toBe("noindex, nofollow");
+    }
+
+    vi.stubEnv("SITE_NOINDEX", "");
+    const production = await proxy(new NextRequest("https://aetherisvision.com/about"));
+    expect(production.headers.get("X-Robots-Tag")).toBeNull();
+  });
+});
+
 describe("proxy Insights publication lock", () => {
   it.each(["/blog", "/blog/graphcast"])("hard-blocks %s", async (path) => {
     const response = await proxy(new NextRequest(`https://aetherisvision.com${path}`));

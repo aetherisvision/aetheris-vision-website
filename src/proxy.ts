@@ -76,6 +76,19 @@ function buildCsp(nonce: string): string {
   return directives.join('; ')
 }
 
+/**
+ * Preview deployments (`av-crm-web-preview`) run the production image, so the
+ * build-time PREVIEW_PASSWORD/robots.ts switches do not apply there. The
+ * service sets SITE_NOINDEX=true instead and every response, including static
+ * files, carries the crawler opt-out header.
+ */
+function withNoindex<T extends NextResponse>(response: T): T {
+  if (process.env.SITE_NOINDEX === 'true') {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+  }
+  return response
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -97,7 +110,7 @@ export async function proxy(request: NextRequest) {
   // Pure static files (public/ prefixes, build output) get no nonce, no
   // CSP, and no rate-limit round-trip; next.config.ts sets their cache policy.
   if (isStaticAssetPath(pathname)) {
-    return NextResponse.next()
+    return withNoindex(NextResponse.next())
   }
 
   // Webhooks must be reachable by external services regardless of site-lock state
@@ -267,7 +280,7 @@ export async function proxy(request: NextRequest) {
     response.headers.set('X-Rate-Limit-Remaining', Math.max(0, rateRemaining).toString())
   }
 
-  return response
+  return withNoindex(response)
 }
 
 export const config = {
