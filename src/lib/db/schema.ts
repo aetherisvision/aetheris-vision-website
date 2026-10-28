@@ -110,7 +110,9 @@ export async function createTables() {
       docuseal_submission_id   TEXT,
       proposal_sent_at         TIMESTAMPTZ,
       signed_pdf_base64        TEXT,
+      signed_doc_url           TEXT,
       signed_at                TIMESTAMPTZ,
+      preview_url              TEXT,
       deposit_amount_cents     INTEGER,
       start_date               DATE,
       end_date                 DATE,
@@ -237,7 +239,9 @@ export async function createTables() {
     ADD COLUMN IF NOT EXISTS phase_design_date      DATE,
     ADD COLUMN IF NOT EXISTS phase_development_date DATE,
     ADD COLUMN IF NOT EXISTS phase_review_date      DATE,
-    ADD COLUMN IF NOT EXISTS phase_launched_date    DATE
+    ADD COLUMN IF NOT EXISTS phase_launched_date    DATE,
+    ADD COLUMN IF NOT EXISTS signed_doc_url         TEXT,
+    ADD COLUMN IF NOT EXISTS preview_url            TEXT
   `
 
   // platform_preference on intake_submissions
