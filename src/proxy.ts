@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { hasServerPrivacySignal, PRIVACY_OPT_OUT_HEADER } from '@/lib/analytics'
 import { hasCronSecret } from '@/lib/cron-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { hasPreviewSession } from '@/lib/preview-auth'
@@ -248,11 +249,8 @@ export async function proxy(request: NextRequest) {
 
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-nonce', nonce)
-  if (
-    request.headers.get('sec-gpc')?.trim() === '1' ||
-    request.headers.get('dnt')?.trim() === '1'
-  ) {
-    requestHeaders.set('x-privacy-opt-out', '1')
+  if (hasServerPrivacySignal(request.headers)) {
+    requestHeaders.set(PRIVACY_OPT_OUT_HEADER, '1')
   }
   // Next.js reads the nonce from the request CSP while rendering server and
   // framework scripts. Keep the same policy on the request and response so

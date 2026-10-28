@@ -280,4 +280,37 @@ describe("TurnstileWidget resilience under Brave Shields, Opera Ad Blocker, Fire
     expect(screen.getByRole("alert")).toHaveTextContent(/Verification could not load/);
     expect(onTokenChange).toHaveBeenLastCalledWith(null);
   });
+
+  it("clears the 12s script-load watchdog once render() succeeds so slow interactive solving does not error", () => {
+    vi.useFakeTimers();
+    let solveCallback: ((token: string) => void) | undefined;
+    const renderSpy = vi.fn().mockImplementation((_container, options: { callback: (token: string) => void }) => {
+      solveCallback = options.callback;
+      return "widget-interactive";
+    });
+    window.turnstile = {
+      render: renderSpy,
+      remove: vi.fn(),
+    };
+
+    const onTokenChange = vi.fn();
+    render(<TurnstileWidget action="contact" onTokenChange={onTokenChange} />);
+    expect(renderSpy).toHaveBeenCalledTimes(1);
+
+    // Advance well past the 12s script-load timeout while the user is solving
+    // an interactive challenge.
+    act(() => {
+      vi.advanceTimersByTime(TURNSTILE_LOAD_TIMEOUT_MS * 3);
+    });
+
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getByRole("status")).toHaveTextContent("Human verification is loading");
+
+    act(() => {
+      solveCallback?.("solved-after-36s");
+    });
+
+    expect(screen.getByRole("status")).toHaveTextContent("Human verification complete");
+    expect(onTokenChange).toHaveBeenLastCalledWith("solved-after-36s");
+  });
 });

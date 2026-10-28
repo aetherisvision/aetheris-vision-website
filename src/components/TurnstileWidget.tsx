@@ -51,6 +51,8 @@ export default function TurnstileWidget({
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const containerRef = useRef<HTMLDivElement>(null);
   const callbackRef = useRef(onTokenChange);
+  const loadTimerRef = useRef<number | null>(null);
+  const renderedCycleRef = useRef<string | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const cycleKey = `${String(resetKey)}:${retryCount}`;
@@ -65,15 +67,21 @@ export default function TurnstileWidget({
   }, [onTokenChange]);
 
   useEffect(() => {
-    if (!siteKey || status !== "loading") return;
+    if (!siteKey || status !== "loading" || renderedCycleRef.current === cycleKey) {
+      return;
+    }
 
-    const timer = window.setTimeout(() => {
+    loadTimerRef.current = window.setTimeout(() => {
+      loadTimerRef.current = null;
       setStatusState({ cycleKey, value: "error" });
       callbackRef.current(null);
     }, TURNSTILE_LOAD_TIMEOUT_MS);
 
     return () => {
-      window.clearTimeout(timer);
+      if (loadTimerRef.current !== null) {
+        window.clearTimeout(loadTimerRef.current);
+        loadTimerRef.current = null;
+      }
     };
   }, [cycleKey, siteKey, status]);
 
@@ -122,8 +130,21 @@ export default function TurnstileWidget({
       return;
     }
 
+    if (!widgetId) {
+      setStatusState({ cycleKey, value: "error" });
+      callbackRef.current(null);
+      return;
+    }
+
+    // The script loaded and the challenge mounted; clear the script-load
+    // watchdog so interactive challenge solving can take longer than 12s.
+    renderedCycleRef.current = cycleKey;
+    if (loadTimerRef.current !== null) {
+      window.clearTimeout(loadTimerRef.current);
+      loadTimerRef.current = null;
+    }
+
     return () => {
-      if (!widgetId) return;
       try {
         window.turnstile?.remove(widgetId);
       } catch {

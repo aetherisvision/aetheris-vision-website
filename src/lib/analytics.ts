@@ -42,14 +42,17 @@ type HeaderReader = {
   get(name: string): string | null;
 };
 
+export const PRIVACY_OPT_OUT_HEADER = "x-privacy-opt-out";
+
 /**
  * True when request headers carry Global Privacy Control (`Sec-GPC: 1`, sent by
- * default in Brave and supported in Firefox ETP) or Do Not Track (`DNT: 1`).
+ * default in Brave and supported in Firefox ETP), Do Not Track (`DNT: 1`), or
+ * the proxy-forwarded `x-privacy-opt-out: 1` header.
  */
 export function hasServerPrivacySignal(headers: HeaderReader): boolean {
   const gpc = headers.get("sec-gpc")?.trim();
   const dnt = headers.get("dnt")?.trim();
-  const forwarded = headers.get("x-privacy-opt-out")?.trim();
+  const forwarded = headers.get(PRIVACY_OPT_OUT_HEADER)?.trim();
   return gpc === "1" || dnt === "1" || forwarded === "1";
 }
 
