@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 
 type TurnstileStatus = "loading" | "verified" | "expired" | "error";
 
+export const TURNSTILE_LOAD_TIMEOUT_MS = 12_000;
+
 interface TurnstileApi {
   render: (
     container: HTMLElement,
@@ -50,49 +52,85 @@ export default function TurnstileWidget({
   const containerRef = useRef<HTMLDivElement>(null);
   const callbackRef = useRef(onTokenChange);
   const [scriptReady, setScriptReady] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const cycleKey = `${String(resetKey)}:${retryCount}`;
   const [statusState, setStatusState] = useState<{
-    resetKey: string | number;
+    cycleKey: string;
     value: TurnstileStatus;
-  }>({ resetKey, value: "loading" });
-  const status = statusState.resetKey === resetKey ? statusState.value : "loading";
+  }>({ cycleKey, value: "loading" });
+  const status = statusState.cycleKey === cycleKey ? statusState.value : "loading";
 
   useEffect(() => {
     callbackRef.current = onTokenChange;
   }, [onTokenChange]);
 
   useEffect(() => {
-    if (!siteKey || !scriptReady || !containerRef.current || !window.turnstile) {
+    if (!siteKey || status !== "loading") return;
+
+    const timer = window.setTimeout(() => {
+      setStatusState({ cycleKey, value: "error" });
+      callbackRef.current(null);
+    }, TURNSTILE_LOAD_TIMEOUT_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [cycleKey, siteKey, status]);
+
+  useEffect(() => {
+    if (!siteKey || !scriptReady || !containerRef.current) {
+      return;
+    }
+
+    if (typeof window.turnstile?.render !== "function") {
+      // Content blockers (Brave Shields, Opera Ad Blocker, Firefox ETP) can
+      // shim third-party scripts so onReady fires without window.turnstile.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setStatusState({ cycleKey, value: "error" });
+      callbackRef.current(null);
       return;
     }
 
     callbackRef.current(null);
-    const widgetId = window.turnstile.render(containerRef.current, {
-      sitekey: siteKey,
-      action,
-      theme: "dark",
-      size: "flexible",
-      callback: (token) => {
-        setStatusState({ resetKey, value: "verified" });
-        callbackRef.current(token);
-      },
-      "expired-callback": () => {
-        setStatusState({ resetKey, value: "expired" });
-        callbackRef.current(null);
-      },
-      "error-callback": () => {
-        setStatusState({ resetKey, value: "error" });
-        callbackRef.current(null);
-      },
-      "timeout-callback": () => {
-        setStatusState({ resetKey, value: "expired" });
-        callbackRef.current(null);
-      },
-    });
+    let widgetId: string | null = null;
+    try {
+      widgetId = window.turnstile.render(containerRef.current, {
+        sitekey: siteKey,
+        action,
+        theme: "dark",
+        size: "flexible",
+        callback: (token) => {
+          setStatusState({ cycleKey, value: "verified" });
+          callbackRef.current(token);
+        },
+        "expired-callback": () => {
+          setStatusState({ cycleKey, value: "expired" });
+          callbackRef.current(null);
+        },
+        "error-callback": () => {
+          setStatusState({ cycleKey, value: "error" });
+          callbackRef.current(null);
+        },
+        "timeout-callback": () => {
+          setStatusState({ cycleKey, value: "expired" });
+          callbackRef.current(null);
+        },
+      });
+    } catch {
+      setStatusState({ cycleKey, value: "error" });
+      callbackRef.current(null);
+      return;
+    }
 
     return () => {
-      window.turnstile?.remove(widgetId);
+      if (!widgetId) return;
+      try {
+        window.turnstile?.remove(widgetId);
+      } catch {
+        /* ignore cleanup errors when widget iframe was blocked */
+      }
     };
-  }, [action, resetKey, scriptReady, siteKey]);
+  }, [action, cycleKey, scriptReady, siteKey]);
 
   // Local development and tests can run without a public site key. Production
   // preflight treats the missing key as a deployment error.
@@ -112,7 +150,7 @@ export default function TurnstileWidget({
       : status === "expired"
         ? "Verification expired. Please complete it again."
         : status === "error"
-          ? "Verification could not load. Refresh the page and try again."
+          ? "Verification could not load. Refresh the page and try again, or allow challenges.cloudflare.com if Brave Shields, Opera Ad Blocker, Firefox Enhanced Tracking Protection, or a VPN is blocking the check."
           : "Human verification is loading";
 
   return (
@@ -123,18 +161,32 @@ export default function TurnstileWidget({
         strategy="afterInteractive"
         onReady={() => setScriptReady(true)}
         onError={() => {
-          setStatusState({ resetKey, value: "error" });
+          setStatusState({ cycleKey, value: "error" });
           callbackRef.current(null);
         }}
       />
       <div ref={containerRef} className="min-h-[65px] w-full" />
-      <p
-        role={status === "error" || status === "expired" ? "alert" : "status"}
-        aria-live="polite"
-        className="text-xs text-white/50"
-      >
-        {statusMessage}
-      </p>
+      <div className="flex flex-wrap items-center gap-3">
+        <p
+          role={status === "error" || status === "expired" ? "alert" : "status"}
+          aria-live="polite"
+          className="text-xs text-white/50"
+        >
+          {statusMessage}
+        </p>
+        {(status === "error" || status === "expired") && (
+          <button
+            type="button"
+            onClick={() => {
+              callbackRef.current(null);
+              setRetryCount((count) => count + 1);
+            }}
+            className="text-xs font-medium text-blue-300 underline underline-offset-4 hover:text-white"
+          >
+            Retry verification
+          </button>
+        )}
+      </div>
     </div>
   );
 }

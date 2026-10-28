@@ -114,11 +114,13 @@ describe("HeroGlobe", () => {
   });
 
   it("shows the poster and skips the canvas for phones, save-data, and missing WebGL2", () => {
+    const getContextSpy = vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
     installMatchMedia(() => false);
     installConnection(true);
     render(<HeroGlobe />);
     expect(document.querySelector("img")?.getAttribute("src")).toBe("/earth-textures/hero-poster.webp");
     expect(screen.queryByTestId("rotating-earth")).toBeNull();
+    expect(getContextSpy).not.toHaveBeenCalled();
   });
 
   it("loads the globe only after the gate passes, then crossfades off the poster", async () => {

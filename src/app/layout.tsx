@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 import { CORE_SEO_KEYWORDS, SITE } from "@/lib/constants";
+import { hasServerPrivacySignal } from "@/lib/analytics";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/jsonld";
 import "./globals.css";
 import BackToTop from "@/components/BackToTop";
@@ -70,8 +71,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
-  void nonce; // available for explicit <Script nonce={nonce}> usage if needed
+  const requestHeaders = await headers();
+  const nonce = requestHeaders.get("x-nonce") ?? undefined;
+  const privacyOptOut = hasServerPrivacySignal(requestHeaders);
   return (
     // Next.js 16 no longer disables `scroll-behavior: smooth` during its own
     // route-transition scroll handling unless told to — without this
@@ -103,26 +105,30 @@ export default async function RootLayout({
         </a>
         {children}
         <BackToTop />
-        <Analytics />
+        {!privacyOptOut && <Analytics />}
 
-        {/* Google Analytics */}
-        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+        {/* Google Analytics — suppressed when Sec-GPC: 1 or DNT: 1 is present */}
+        {!privacyOptOut && process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
           <>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
               strategy="afterInteractive"
+              nonce={nonce}
             />
-            <Script id="google-analytics" strategy="afterInteractive">
+            <Script id="google-analytics" strategy="afterInteractive" nonce={nonce}>
               {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
-                  page_title: document.title,
-                  // Origin + path only: query strings carry magic-link tokens
-                  // on /client/confirm and must never reach analytics.
-                  page_location: window.location.origin + window.location.pathname
-                });
+                if (navigator.globalPrivacyControl !== true && navigator.doNotTrack !== '1' && window.doNotTrack !== '1') {
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  window.gtag = gtag;
+                  gtag('js', new Date());
+                  gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
+                    page_title: document.title,
+                    // Origin + path only: query strings carry magic-link tokens
+                    // on /client/confirm and must never reach analytics.
+                    page_location: window.location.origin + window.location.pathname
+                  });
+                }
               `}
             </Script>
           </>

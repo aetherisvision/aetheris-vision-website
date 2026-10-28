@@ -45,6 +45,56 @@ export const NIGHT_FRAGMENT_SHADER = /* glsl */ `
   }
 `;
 
+const SOFTWARE_WEBGL_RENDERER =
+  /\b(?:swiftshader|llvmpipe|softpipe|lavapipe|software rasterizer|basic render driver)\b/i;
+
+/**
+ * True when a WebGL renderer string identifies a CPU software rasterizer
+ * (such as SwiftShader in Linux Chromium or llvmpipe/lavapipe in Linux Mesa)
+ * rather than hardware acceleration. Privacy-sanitized or farbled strings in
+ * Brave and Firefox return false so valid hardware contexts stay enabled.
+ */
+export function isSoftwareWebGLRenderer(renderer: unknown): boolean {
+  return typeof renderer === "string" && SOFTWARE_WEBGL_RENDERER.test(renderer);
+}
+
+/**
+ * Probes whether hardware-backed WebGL2 is available for the hero globe.
+ * Tolerates Brave WebGL farbling and Firefox's disabled debug-renderer info
+ * while rejecting lost contexts and CPU-only software rasterizers.
+ */
+export function probeWebGL2Support(): boolean {
+  try {
+    const canvas = document.createElement("canvas");
+    const gl = canvas.getContext("webgl2");
+    if (!gl) return false;
+    if (typeof gl.isContextLost === "function" && gl.isContextLost()) {
+      return false;
+    }
+
+    try {
+      if (typeof gl.getParameter === "function") {
+        const renderer = gl.getParameter(gl.RENDERER);
+        if (isSoftwareWebGLRenderer(renderer)) return false;
+
+        if (typeof gl.getExtension === "function") {
+          const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+          if (debugInfo) {
+            const unmasked = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+            if (isSoftwareWebGLRenderer(unmasked)) return false;
+          }
+        }
+      }
+    } catch {
+      /* Brave strict farbling or Firefox privacy hooks may throw on parameter queries */
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function shouldMountHeroCanvas(options: {
   isDesktop: boolean;
   reducedMotion: boolean;

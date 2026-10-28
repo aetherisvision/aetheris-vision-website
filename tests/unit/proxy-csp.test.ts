@@ -30,9 +30,30 @@ describe("proxy Content Security Policy", () => {
     expect(csp).toBeTruthy();
     expect(forwardedCsp).toBe(csp);
     expect(csp).toMatch(/script-src[^;]*https:\/\/challenges\.cloudflare\.com/);
+    expect(csp).toMatch(/worker-src 'self' blob:/);
     expect(csp).toMatch(/connect-src[^;]*https:\/\/challenges\.cloudflare\.com/);
     expect(csp).toMatch(/frame-src[^;]*https:\/\/challenges\.cloudflare\.com/);
+    expect(response.headers.get("Permissions-Policy")).toContain("browsing-topics=()");
+    expect(response.headers.get("Permissions-Policy")).toContain("interest-cohort=()");
     expect(response.headers.get("X-CSP-Nonce")).toBeNull();
+  });
+
+  it("forwards x-privacy-opt-out when Brave Sec-GPC or Firefox DNT is set", async () => {
+    vi.stubEnv("PREVIEW_PASSWORD", "");
+
+    const gpcResponse = await proxy(
+      new NextRequest("https://aetherisvision.com/services", {
+        headers: { "sec-gpc": "1" },
+      }),
+    );
+    expect(gpcResponse.headers.get("x-middleware-request-x-privacy-opt-out")).toBe("1");
+
+    const dntResponse = await proxy(
+      new NextRequest("https://aetherisvision.com/services", {
+        headers: { dnt: "1" },
+      }),
+    );
+    expect(dntResponse.headers.get("x-middleware-request-x-privacy-opt-out")).toBe("1");
   });
 });
 
