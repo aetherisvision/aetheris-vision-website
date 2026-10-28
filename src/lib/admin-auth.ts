@@ -89,6 +89,40 @@ export function isAdmin(request: NextRequest): boolean {
   return verifyAdminSessionToken(request.cookies.get(ADMIN_COOKIE)?.value)
 }
 
+const ADMIN_RETURN_FALLBACK = '/admin/leads'
+const ADMIN_RETURN_PATH = /^\/admin(?:\/[A-Za-z0-9._~-]+)+$/
+const ADMIN_RETURN_SEARCH = /^\?[A-Za-z0-9._~%=&+-]*$/
+const ADMIN_RETURN_HASH = /^#[A-Za-z0-9._~-]*$/
+
+/**
+ * Post-login destination. Parse the value against a fixed origin and accept
+ * only a real `/admin/...` path. A string prefix such as `/admin.example` or
+ * a backslash payload is not a path on this site.
+ */
+export function sanitizeAdminReturnPath(value: unknown): string {
+  if (typeof value !== 'string' || value.length === 0 || value.length > 512) {
+    return ADMIN_RETURN_FALLBACK
+  }
+  if (!value.startsWith('/admin/') || value.startsWith('//') || /[\u0000-\u001F\u007F\\]/.test(value)) {
+    return ADMIN_RETURN_FALLBACK
+  }
+
+  try {
+    const base = new URL('https://aetherisvision.invalid')
+    const target = new URL(value, base)
+    if (target.origin !== base.origin || target.username || target.password) {
+      return ADMIN_RETURN_FALLBACK
+    }
+    if (!ADMIN_RETURN_PATH.test(target.pathname)) return ADMIN_RETURN_FALLBACK
+    if (target.search && !ADMIN_RETURN_SEARCH.test(target.search)) return ADMIN_RETURN_FALLBACK
+    if (target.hash && !ADMIN_RETURN_HASH.test(target.hash)) return ADMIN_RETURN_FALLBACK
+    const rebuilt = `${target.pathname}${target.search}${target.hash}`
+    return rebuilt === value ? rebuilt : ADMIN_RETURN_FALLBACK
+  } catch {
+    return ADMIN_RETURN_FALLBACK
+  }
+}
+
 /** Standard 401 response for unauthenticated admin requests. */
 export function unauthorizedResponse(): NextResponse {
   return NextResponse.json(

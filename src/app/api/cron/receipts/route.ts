@@ -22,8 +22,9 @@
 
 import { sql } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
-import { timingSafeEqual } from 'node:crypto'
 import { isAdmin } from '@/lib/admin-auth'
+import { hasCronSecret } from '@/lib/cron-auth'
+import { RequestSecurityError, assertSameOrigin } from '@/lib/request-security'
 import { decryptToken } from '@/lib/token-crypto'
 import { putReceipt } from '@/lib/receipt-blob'
 import { getGmailAccessToken, GMAIL_API } from '@/lib/gmail-client'
@@ -241,24 +242,41 @@ async function processAccount(
   return { logged, skipped, queried }
 }
 
-function authorizeCron(request: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET
-  const authHeader = request.headers.get('authorization')
-  if (secret && authHeader) {
-    const expected = Buffer.from(`Bearer ${secret}`)
-    const given = Buffer.from(authHeader)
-    if (expected.length === given.length && timingSafeEqual(expected, given)) return true
+function unauthorized() {
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+}
+
+/**
+ * Vercel Cron uses GET with `Authorization: Bearer <CRON_SECRET>`.
+ * /admin/gmail runs the same job with POST plus the admin session. GET plus
+ * the session cookie is rejected so a clicked link cannot start a scan.
+ */
+function authorizeManualRun(request: NextRequest): NextResponse | null {
+  if (hasCronSecret(request)) return null
+  if (!isAdmin(request)) return unauthorized()
+  try {
+    assertSameOrigin(request)
+  } catch (error) {
+    if (error instanceof RequestSecurityError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
+    throw error
   }
-  // Manual runs from /admin/gmail carry the admin session cookie.
-  return isAdmin(request)
+  return null
 }
 
 export async function GET(request: NextRequest) {
-  // Vercel Cron: Authorization: Bearer <CRON_SECRET>. Manual run from /admin/gmail: admin session cookie.
-  if (!authorizeCron(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  if (!hasCronSecret(request)) return unauthorized()
+  return runReceiptScan()
+}
 
+export async function POST(request: NextRequest) {
+  const denied = authorizeManualRun(request)
+  if (denied) return denied
+  return runReceiptScan()
+}
+
+async function runReceiptScan() {
   const missing = ['GMAIL_CLIENT_ID', 'GMAIL_CLIENT_SECRET']
     .filter(k => !process.env[k])
   if (missing.length > 0) {

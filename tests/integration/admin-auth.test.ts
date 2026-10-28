@@ -202,6 +202,39 @@ describe('POST /api/admin/auth', () => {
     const body = await res.json()
     expect(body.redirectTo).toBe('/admin/invoices')
   })
+
+  it('drops a next value that only shares the /admin prefix', async () => {
+    const { POST } = await import('@/app/api/admin/auth/route')
+    const req = new NextRequest('http://localhost/api/admin/auth', {
+      method: 'POST',
+      body: JSON.stringify({ passphrase: TEST_PASSPHRASE, next: '/admin.evil.example' }),
+      headers: { 'Content-Type': 'application/json' },
+    })
+    const res = await POST(req)
+    const body = await res.json()
+    expect(body.redirectTo).toBe('/admin/leads')
+  })
+})
+
+describe('sanitizeAdminReturnPath()', () => {
+  it('accepts admin paths and rejects prefix, backslash, and rewrite payloads', async () => {
+    const { sanitizeAdminReturnPath } = await import('@/lib/admin-auth')
+    expect(sanitizeAdminReturnPath('/admin/invoices')).toBe('/admin/invoices')
+    expect(sanitizeAdminReturnPath('/admin/gmail?connected=1')).toBe('/admin/gmail?connected=1')
+    expect(sanitizeAdminReturnPath('/admin/leads#lead-12')).toBe('/admin/leads#lead-12')
+    for (const value of [
+      '/admin',
+      '/admin.evil.example',
+      '/admin\\@evil.example',
+      '/admin/../leads',
+      '//evil.example',
+      'https://evil.example/admin/leads',
+      '/admin/%2e%2e/leads',
+      '/admin/\n/leads',
+    ]) {
+      expect(sanitizeAdminReturnPath(value)).toBe('/admin/leads')
+    }
+  })
 })
 
 // ---------------------------------------------------------------------------

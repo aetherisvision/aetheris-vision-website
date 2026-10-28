@@ -1,7 +1,8 @@
-import { timingSafeEqual } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdmin } from '@/lib/admin-auth'
+import { hasCronSecret } from '@/lib/cron-auth'
 import { sql } from '@/lib/db'
+import { RequestSecurityError, assertSameOrigin } from '@/lib/request-security'
 import { GMAIL_API, getGmailAccessToken } from '@/lib/gmail-client'
 import { matchSentMessage, type CorrespondenceLead, type SentMessage } from '@/lib/lead-correspondence'
 import { decryptToken } from '@/lib/token-crypto'
@@ -9,15 +10,27 @@ import { decryptToken } from '@/lib/token-crypto'
 export const maxDuration = 300
 const NO_STORE = { 'Cache-Control': 'no-store' }
 
-function authorized(request: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET
-  const header = request.headers.get('authorization')
-  if (secret && header) {
-    const expected = Buffer.from(`Bearer ${secret}`)
-    const actual = Buffer.from(header)
-    if (expected.length === actual.length && timingSafeEqual(expected, actual)) return true
+function unauthorized() {
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401, headers: NO_STORE })
+}
+
+/**
+ * The Cloud Run job uses GET with `Authorization: Bearer <CRON_SECRET>`.
+ * /admin/leads syncs with POST plus the admin session. GET plus the session
+ * cookie is rejected so a clicked link cannot update leads.
+ */
+function authorizeManualRun(request: NextRequest): NextResponse | null {
+  if (hasCronSecret(request)) return null
+  if (!isAdmin(request)) return unauthorized()
+  try {
+    assertSameOrigin(request)
+  } catch (error) {
+    if (error instanceof RequestSecurityError) {
+      return NextResponse.json({ error: error.message }, { status: error.status, headers: NO_STORE })
+    }
+    throw error
   }
-  return isAdmin(request)
+  return null
 }
 
 async function gmailGet(token: string, path: string): Promise<Record<string, unknown>> {
@@ -69,7 +82,17 @@ async function sentMessages(token: string, days: number): Promise<SentMessage[]>
 }
 
 export async function GET(request: NextRequest) {
-  if (!authorized(request)) return NextResponse.json({error:'Unauthorized'}, {status:401,headers:NO_STORE})
+  if (!hasCronSecret(request)) return unauthorized()
+  return runLeadCorrespondence(request)
+}
+
+export async function POST(request: NextRequest) {
+  const denied = authorizeManualRun(request)
+  if (denied) return denied
+  return runLeadCorrespondence(request)
+}
+
+async function runLeadCorrespondence(request: NextRequest) {
   if (!process.env.GMAIL_CLIENT_ID || !process.env.GMAIL_CLIENT_SECRET) {
     return NextResponse.json({error:'Gmail is not configured'}, {status:500,headers:NO_STORE})
   }

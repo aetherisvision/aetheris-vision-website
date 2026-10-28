@@ -5,6 +5,7 @@ import {
   ADMIN_SESSION_TTL_SECONDS,
   createAdminSessionToken,
   safeEqual,
+  sanitizeAdminReturnPath,
 } from '@/lib/admin-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { getTrustedClientIp } from '@/lib/request-security'
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
     return noStoreJson({ error: 'Server misconfiguration' }, { status: 500 })
   }
 
-  const redirectTo = next && next.startsWith('/admin') && next !== '/admin' ? next : '/admin/leads'
+  const redirectTo = sanitizeAdminReturnPath(next)
   const response = noStoreJson({ ok: true, redirectTo })
 
   const useSecure = new URL(request.url).protocol === 'https:'
