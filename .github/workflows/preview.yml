@@ -1,0 +1,267 @@
+name: Preview
+
+# Opt-in Cloud Run previews. Nothing here runs unless the repository variable
+# GCP_PREVIEW_ENABLED is "true" AND the pull request carries the `preview`
+# label (or the workflow is dispatched by hand with a PR number). Routine
+# pushes never build a container.
+#
+# Each preview is a no-traffic, tagged revision (`pr-<N>`) of the dedicated
+# `av-crm-web-preview` service, reached through the production load balancer
+# host rule `*.preview.aetherisvision.com` behind Google Cloud IAP. See
+# docs/gcp-deployment.md, "Pull request previews".
+
+on:
+  pull_request:
+    types: [labeled, synchronize, reopened, closed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to deploy as a preview
+        required: true
+        type: number
+
+permissions:
+  contents: read
+
+env:
+  GCP_PROJECT: lucid-loader-493512-g1
+  GCP_REGION: us-central1
+  PREVIEW_SERVICE: av-crm-web-preview
+  IMAGE_REPO: us-central1-docker.pkg.dev/lucid-loader-493512-g1/av-crm/website
+  WIF_PROVIDER: projects/169759401670/locations/global/workloadIdentityPools/av-crm-github/providers/github
+  DEPLOY_SA: av-crm-deploy@lucid-loader-493512-g1.iam.gserviceaccount.com
+  BUILD_SA: projects/lucid-loader-493512-g1/serviceAccounts/av-crm-build@lucid-loader-493512-g1.iam.gserviceaccount.com
+  # Host suffix served by the load balancer's preview host rule; a PR lands at
+  # https://pr-<N>.<suffix>. Override with the GCP_PREVIEW_HOST_SUFFIX variable.
+  PREVIEW_HOST_SUFFIX: ${{ vars.GCP_PREVIEW_HOST_SUFFIX || 'preview.aetherisvision.com' }}
+  PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
+
+concurrency:
+  group: gcp-preview-${{ github.event.pull_request.number || inputs.pr_number }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-preview:
+    name: Deploy PR preview
+    # Same-repository PRs only: fork PRs cannot mint the OIDC token WIF needs,
+    # and must never reach a service wired to business data.
+    if: >-
+      vars.GCP_PREVIEW_ENABLED == 'true' &&
+      (
+        github.event_name == 'workflow_dispatch' ||
+        (
+          github.event.action != 'closed' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          contains(github.event.pull_request.labels.*.name, 'preview') &&
+          (github.event.action != 'labeled' || github.event.label.name == 'preview')
+        )
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    environment:
+      name: preview
+      url: ${{ steps.url.outputs.preview_url }}
+    steps:
+      - name: Resolve pull request head
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [ -n "$EVENT_SHA" ]; then
+            sha=$EVENT_SHA
+          else
+            sha=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')
+            same_repo=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.repo.full_name')
+            test "$same_repo" = "$GITHUB_REPOSITORY"
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "short=${sha:0:7}" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.sha }}
+      - uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ env.GCP_PROJECT }}
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.DEPLOY_SA }}
+      - uses: google-github-actions/setup-gcloud@v3
+      - name: Build preview image without application secrets
+        id: image
+        env:
+          CLOUDSDK_CORE_PROJECT: ${{ env.GCP_PROJECT }}
+          CLOUDSDK_BILLING_QUOTA_PROJECT: ${{ env.GCP_PROJECT }}
+          TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+          HEAD_SHA: ${{ steps.pr.outputs.sha }}
+        run: |
+          set -euo pipefail
+          test -n "$TURNSTILE_SITE_KEY"
+          tag="pr-$PR_NUMBER-$HEAD_SHA"
+          build_id=$(gcloud builds submit . --config=cloudbuild.yaml --ignore-file=.dockerignore \
+            --region="$GCP_REGION" --suppress-logs --quiet --format='value(id)' \
+            --service-account="$BUILD_SA" \
+            --substitutions="_TAG=$tag,_TURNSTILE_SITE_KEY=$TURNSTILE_SITE_KEY")
+          digest=$(gcloud builds describe "$build_id" --region="$GCP_REGION" --format='value(results.images[0].digest)')
+          test -n "$digest"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+      - name: Refresh deployment identity
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ env.GCP_PROJECT }}
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.DEPLOY_SA }}
+      - name: Deploy tagged no-traffic revision
+        id: url
+        env:
+          CLOUDSDK_CORE_PROJECT: ${{ env.GCP_PROJECT }}
+          CLOUDSDK_BILLING_QUOTA_PROJECT: ${{ env.GCP_PROJECT }}
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+        run: |
+          set -euo pipefail
+          host="pr-$PR_NUMBER.$PREVIEW_HOST_SUFFIX"
+          # Only per-PR values are set here; the service keeps its own baseline
+          # env (preview Firestore collections, preview GCS bucket, preview
+          # DATABASE_URL secret, GCP_LOAD_BALANCER=true). `^|^` makes `|` the
+          # list separator so ALLOWED_PUBLIC_HOSTS may itself contain commas.
+          gcloud run deploy "$PREVIEW_SERVICE" --region="$GCP_REGION" --quiet \
+            --image="$IMAGE_REPO@$IMAGE_DIGEST" \
+            --no-traffic --tag="pr-$PR_NUMBER" \
+            --update-env-vars="^|^NEXT_PUBLIC_SITE_URL=https://$host|ALLOWED_PUBLIC_HOSTS=$host,$PREVIEW_HOST_SUFFIX|SITE_NOINDEX=true"
+          tag_url=$(gcloud run services describe "$PREVIEW_SERVICE" --region="$GCP_REGION" --format=json \
+            | jq -r --arg tag "pr-$PR_NUMBER" '.status.traffic[] | select(.tag == $tag) | .url // empty' | head -n1)
+          echo "preview_url=https://$host" >> "$GITHUB_OUTPUT"
+          echo "tag_url=$tag_url" >> "$GITHUB_OUTPUT"
+      - name: Smoke test through the load balancer
+        env:
+          PREVIEW_URL: ${{ steps.url.outputs.preview_url }}
+        run: |
+          set -euo pipefail
+          # IAP answers an anonymous request with a 302 to Google sign-in; a
+          # 200 means IAP is off for this backend (still gated by the proxy's
+          # own PREVIEW_PASSWORD cookie when set). Anything else is a routing
+          # or revision failure.
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$PREVIEW_URL/")
+          echo "GET $PREVIEW_URL/ -> $code"
+          case "$code" in
+            200|302) ;;
+            *) echo "::error::preview host did not answer through the load balancer"; exit 1 ;;
+          esac
+      - name: Post or update the preview comment
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.url.outputs.preview_url }}
+          TAG_URL: ${{ steps.url.outputs.tag_url }}
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+          HEAD_SHORT: ${{ steps.pr.outputs.short }}
+        with:
+          script: |
+            const marker = '<!-- av-cloud-run-preview -->'
+            const prNumber = Number(process.env.PR_NUMBER)
+            const body = [
+              marker,
+              '### Cloud Run preview',
+              '',
+              `**${process.env.PREVIEW_URL}** (IAP: sign in with an @aetherisvision.com Google account)`,
+              '',
+              '| | |',
+              '|---|---|',
+              `| Commit | \`${process.env.HEAD_SHORT}\` |`,
+              `| Revision tag | \`pr-${prNumber}\` on \`${process.env.PREVIEW_SERVICE}\` |`,
+              `| Image | \`${process.env.IMAGE_TAG}\` (\`${process.env.IMAGE_DIGEST.slice(0, 19)}…\`) |`,
+              `| Tag URL | ${process.env.TAG_URL ? `\`${process.env.TAG_URL}\` (ingress is LB-only; not directly reachable)` : 'n/a'} |`,
+              '',
+              '_Redeploys on every push while the `preview` label is present; removed when the PR closes. Search engines are told `noindex`._',
+            ].join('\n')
+            const { owner, repo } = context.repo
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number: prNumber, per_page: 100,
+            })
+            const existing = comments.find((c) => c.body && c.body.includes(marker))
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body })
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body })
+            }
+
+  remove-preview:
+    name: Remove PR preview
+    # Runs on every close (merged or not) regardless of the current labels, so
+    # a label removed before closing cannot leave a tagged revision behind.
+    # Fork PRs never had a preview and cannot authenticate, so they skip.
+    if: >-
+      vars.GCP_PREVIEW_ENABLED == 'true' &&
+      github.event_name == 'pull_request' &&
+      github.event.action == 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    steps:
+      - uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ env.GCP_PROJECT }}
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.DEPLOY_SA }}
+      - uses: google-github-actions/setup-gcloud@v3
+      - name: Remove the revision tag
+        env:
+          CLOUDSDK_CORE_PROJECT: ${{ env.GCP_PROJECT }}
+          CLOUDSDK_BILLING_QUOTA_PROJECT: ${{ env.GCP_PROJECT }}
+        run: |
+          set -euo pipefail
+          has_tag=$(gcloud run services describe "$PREVIEW_SERVICE" --region="$GCP_REGION" --format=json \
+            | jq -r --arg tag "pr-$PR_NUMBER" '[.status.traffic[]? | select(.tag == $tag)] | length')
+          if [ "$has_tag" = "0" ]; then
+            echo "no pr-$PR_NUMBER tag on $PREVIEW_SERVICE; nothing to remove"
+            exit 0
+          fi
+          gcloud run services update-traffic "$PREVIEW_SERVICE" --region="$GCP_REGION" --quiet \
+            --remove-tags="pr-$PR_NUMBER"
+      - name: Delete preview image tags
+        # av-crm-deploy needs roles/artifactregistry.writer on the av-crm
+        # repository for this; until granted, the step warns instead of failing.
+        continue-on-error: true
+        env:
+          CLOUDSDK_CORE_PROJECT: ${{ env.GCP_PROJECT }}
+          CLOUDSDK_BILLING_QUOTA_PROJECT: ${{ env.GCP_PROJECT }}
+        run: |
+          set -euo pipefail
+          tags=$(gcloud artifacts docker tags list "$IMAGE_REPO" --format='value(tag)' \
+            --filter="tag~^pr-$PR_NUMBER-" 2>/dev/null || true)
+          if [ -z "$tags" ]; then
+            echo "no pr-$PR_NUMBER-* image tags"
+            exit 0
+          fi
+          status=0
+          for tag in $tags; do
+            name=${tag##*/}
+            gcloud artifacts docker tags delete "$IMAGE_REPO:$name" --quiet || status=1
+          done
+          if [ "$status" != 0 ]; then
+            echo "::warning::could not delete every pr-$PR_NUMBER-* image tag (missing artifactregistry.writer?)"
+            exit 1
+          fi
+      - name: Mark the preview comment as removed
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- av-cloud-run-preview -->'
+            const prNumber = Number(process.env.PR_NUMBER)
+            const { owner, repo } = context.repo
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number: prNumber, per_page: 100,
+            })
+            const existing = comments.find((c) => c.body && c.body.includes(marker))
+            if (!existing) return
+            await github.rest.issues.updateComment({
+              owner, repo, comment_id: existing.id,
+              body: `${marker}\n### Cloud Run preview\n\n_Removed: revision tag \`pr-${prNumber}\` was deleted when this pull request closed._`,
+            })

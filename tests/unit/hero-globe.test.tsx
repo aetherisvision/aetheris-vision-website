@@ -2,7 +2,14 @@ import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen } from "@testing-library/react";
-import { shouldMountHeroCanvas } from "@/components/hero-globe-config";
+import {
+  HERO_POSTER_SIZES,
+  HERO_POSTER_SKIP_SRC,
+  HERO_POSTER_SRCSET,
+  HERO_POSTER_WIDTHS,
+  heroPosterSrc,
+  shouldMountHeroCanvas,
+} from "@/components/hero-globe-config";
 import { attachHeroVisibilityObserver, restoreHeroStarTime } from "@/components/hero-globe-visibility";
 import SatelliteDisplay from "@/components/SatelliteDisplay";
 import type { Clock } from "three";
@@ -118,8 +125,36 @@ describe("HeroGlobe", () => {
 
     const poster = document.querySelector("img");
     expect(poster?.getAttribute("src")).toBe("/earth-textures/hero-poster.webp");
-    expect(poster?.closest("div")?.className).toContain("opacity-100");
+    expect(screen.getByTestId("hero-poster").className).toContain("opacity-100");
     expect(screen.queryByTestId("rotating-earth")).toBeNull();
+  });
+
+  it("serves a responsive, desktop-only poster inside a fixed square box", () => {
+    render(<HeroGlobe />);
+
+    const frame = screen.getByTestId("hero-poster");
+    expect(frame.className).toContain("hidden");
+    expect(frame.className).toContain("lg:block");
+
+    const picture = frame.querySelector("picture");
+    const sources = Array.from(picture?.querySelectorAll("source") ?? []);
+    expect(sources).toHaveLength(2);
+    // Phones get an inline 1x1 transparent GIF (base64 data URI, no whitespace
+    // so the srcset parser keeps it) so no poster bytes are requested.
+    expect(sources[0].getAttribute("media")).toBe("not all and (min-width: 1024px)");
+    expect(sources[0].getAttribute("srcset")).toBe(HERO_POSTER_SKIP_SRC);
+    expect(sources[1].getAttribute("media")).toBe("(min-width: 1024px)");
+    expect(sources[1].getAttribute("srcset")).toBe(HERO_POSTER_SRCSET);
+    expect(sources[1].getAttribute("sizes")).toBe(HERO_POSTER_SIZES);
+
+    const img = picture?.querySelector("img");
+    expect(img?.getAttribute("width")).toBe("1800");
+    expect(img?.getAttribute("height")).toBe("1800");
+    expect(img?.getAttribute("fetchpriority")).toBe("high");
+    // The square wrapper, not the image, defines the layout box.
+    const box = picture?.parentElement as HTMLElement;
+    expect(box.style.aspectRatio).toBe("1 / 1");
+    expect(img?.className).toContain("h-full");
   });
 
   it("shows the poster and skips the canvas for phones, save-data, and missing WebGL2", () => {
@@ -140,8 +175,7 @@ describe("HeroGlobe", () => {
     render(<HeroGlobe />);
 
     expect(await screen.findByTestId("rotating-earth")).toBeInTheDocument();
-    const poster = document.querySelector("img");
-    expect(poster?.closest("div")?.className).toContain("opacity-0");
+    expect(screen.getByTestId("hero-poster").className).toContain("opacity-0");
   });
 
   it("shows the poster again when reduced motion turns on after the globe is ready", async () => {
@@ -152,7 +186,7 @@ describe("HeroGlobe", () => {
     render(<HeroGlobe />);
 
     expect(await screen.findByTestId("rotating-earth")).toBeInTheDocument();
-    expect(document.querySelector("img")?.closest("div")?.className).toContain("opacity-0");
+    expect(screen.getByTestId("hero-poster").className).toContain("opacity-0");
 
     media.setMatches(
       (query) => query === "(min-width: 1024px)" || query === "(prefers-reduced-motion: reduce)",
@@ -160,7 +194,7 @@ describe("HeroGlobe", () => {
     act(() => media.emit("(prefers-reduced-motion: reduce)"));
 
     expect(screen.queryByTestId("rotating-earth")).toBeNull();
-    expect(document.querySelector("img")?.closest("div")?.className).toContain("opacity-100");
+    expect(screen.getByTestId("hero-poster").className).toContain("opacity-100");
 
     media.setMatches((query) => query === "(min-width: 1024px)");
     act(() => media.emit("(prefers-reduced-motion: reduce)"));
@@ -179,7 +213,7 @@ describe("HeroGlobe", () => {
     act(() => earth.click());
 
     expect(screen.queryByTestId("rotating-earth")).toBeNull();
-    expect(document.querySelector("img")?.closest("div")?.className).toContain("opacity-100");
+    expect(screen.getByTestId("hero-poster").className).toContain("opacity-100");
 
     // Toggling reduced-motion on and off after context loss must keep the poster.
     media.setMatches(
@@ -190,7 +224,7 @@ describe("HeroGlobe", () => {
     act(() => media.emit("(prefers-reduced-motion: reduce)"));
 
     expect(screen.queryByTestId("rotating-earth")).toBeNull();
-    expect(document.querySelector("img")?.closest("div")?.className).toContain("opacity-100");
+    expect(screen.getByTestId("hero-poster").className).toContain("opacity-100");
   });
 });
 
@@ -226,7 +260,9 @@ describe("hero globe source", () => {
     expect(hero).toContain("ssr: false");
     expect(hero).toContain("{showCanvas ? (");
     expect(hero).toContain("HERO_POSTER_SRC");
-    expect(page).toContain('href="/earth-textures/hero-poster.webp"');
+    expect(page).toContain("imageSrcSet={HERO_POSTER_SRCSET}");
+    expect(page).toContain("media={HERO_POSTER_MEDIA}");
+    expect(page).not.toContain('href="/earth-textures/hero-poster.webp"');
   });
 
   it("uses 64 segments on the sphere geometry", () => {
@@ -234,10 +270,19 @@ describe("hero globe source", () => {
     expect(earth).not.toMatch(/192,\s*192/);
   });
 
-  it("ships a poster still of the earth", () => {
-    const stat = statSync(join(root, "public/earth-textures/hero-poster.webp"));
-    expect(stat.size).toBeGreaterThan(20_000);
-    expect(stat.size).toBeLessThan(800_000);
+  it("ships every responsive poster still of the earth", () => {
+    expect(HERO_POSTER_WIDTHS).toEqual([512, 1024, 1800]);
+    expect(heroPosterSrc(1800)).toBe("/earth-textures/hero-poster.webp");
+    expect(heroPosterSrc(512)).toBe("/earth-textures/hero-poster-512.webp");
+    const budgets: Record<number, number> = { 512: 120_000, 1024: 300_000, 1800: 800_000 };
+    for (const width of HERO_POSTER_WIDTHS) {
+      const stat = statSync(join(root, "public", heroPosterSrc(width)));
+      expect(stat.size).toBeGreaterThan(20_000);
+      expect(stat.size).toBeLessThan(budgets[width]);
+    }
+    expect(HERO_POSTER_SRCSET).toBe(
+      "/earth-textures/hero-poster-512.webp 512w, /earth-textures/hero-poster-1024.webp 1024w, /earth-textures/hero-poster.webp 1800w",
+    );
   });
 });
 

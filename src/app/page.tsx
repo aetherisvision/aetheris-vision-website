@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import Footer from "@/components/Footer";
 import HashScrollOnLoad from "@/components/HashScrollOnLoad";
 import HeroGlobe from "@/components/HeroGlobe";
+import { HERO_POSTER_MEDIA, HERO_POSTER_SIZES, HERO_POSTER_SRCSET } from "@/components/hero-globe-config";
 import Navbar from "@/components/Navbar";
 import SatelliteDisplay, { type SatelliteSource } from "@/components/SatelliteDisplay";
 import { posts } from "@/lib/posts";
@@ -11,6 +12,11 @@ import { INSIGHTS_PUBLIC } from "@/lib/features";
 import { AMS_PROFILE_URL, BRAND_POSITIONING, CORE_SEO_KEYWORDS, SITE } from "@/lib/constants";
 import { createPageMetadata } from "@/lib/seo";
 
+// Ineffective for the HTML itself and kept only for any `fetch()` done while
+// rendering: the root layout reads `headers()` for the CSP nonce, so every
+// page is rendered per request and served `private, no-store` (see
+// docs/gcp-deployment.md, "CDN cache policy"). Making the home page
+// shareable would require moving the nonce out of the layout.
 export const revalidate = 3600;
 
 export const metadata = createPageMetadata({
@@ -59,11 +65,14 @@ function TextLink({ href, children, onDark = false }: { href: string; children: 
 export default function Home() {
   return (
     <div className="flex min-h-[100dvh] flex-col bg-[#f4f1ea] text-[#17252f]">
+      {/* Desktop only: phones render no poster, so the h1 stays the LCP element. */}
       <link
         rel="preload"
-        href="/earth-textures/hero-poster.webp"
         as="image"
         type="image/webp"
+        imageSrcSet={HERO_POSTER_SRCSET}
+        imageSizes={HERO_POSTER_SIZES}
+        media={HERO_POSTER_MEDIA}
         fetchPriority="high"
       />
       <link

@@ -73,5 +73,12 @@ describe("Feature: Email Anti-Scraping Security", () => {
       expect(container.innerHTML).toContain("Sec-GPC: 1");
       expect(container.innerHTML).toContain("DNT: 1");
     });
+
+    it("names the current hosting provider and analytics tool only", () => {
+      const { container } = render(<PrivacyPage />);
+      expect(container.innerHTML).toContain("Google Cloud");
+      expect(container.innerHTML).toContain("Google Analytics");
+      expect(container.innerHTML).not.toContain("Vercel");
+    });
   });
 });

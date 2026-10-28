@@ -1,7 +1,9 @@
 # GCP deployment
 
-The application supports Cloud Run and Cloud SQL while retaining the existing
-Neon/Vercel configuration until cutover is verified.
+The application runs on Cloud Run behind a global external HTTPS load balancer
+with Cloud CDN; `aetherisvision.com` resolves to that load balancer. The code
+still supports the Neon driver and the legacy Vercel environment variables
+until the data cutover below is fully verified.
 
 ## Runtime
 
@@ -66,6 +68,100 @@ Neon/Vercel configuration until cutover is verified.
   Production never derives the origin or scheme from `request.url`; only local
   `next dev`/`next start` does.
 
+## CDN cache policy
+
+Cloud CDN is enabled on backend service `av-crm-web` with
+`cacheMode: USE_ORIGIN_HEADERS`, so the application alone decides what is
+shareable. The policy lives in `src/lib/cache-headers.ts` and is applied by
+`next.config.ts` `headers()` (tested in `tests/unit/cache-headers.test.ts`).
+Route handlers that need something different set `Cache-Control` themselves
+(for example `/api/satellite` and `/api/omni-gridder/datasets` are short public
+caches; every admin/auth/client handler already sends `no-store`).
+
+| Path | Cache-Control | Why |
+|---|---|---|
+| `/_next/static/*` | `public, max-age=31536000, immutable` | Content-hashed build output |
+| `/earth-textures/*`, `/logo/*`, `/images/*`, `/favicon.ico` | `public, max-age=604800, stale-while-revalidate=31536000` | Un-hashed files under `public/`; a week fresh, then served stale while refetched |
+| `/manifest.json`, `/robots.txt`, `/sitemap.xml` | `public, max-age=3600, stale-while-revalidate=86400` | Small metadata that must pick up edits within the hour |
+| `/admin/*`, `/client/*`, `/preview`, `/api/{admin,auth,client,expenses,receipts,preview,cron,webhooks,integrations}/*` | `private, no-store` | Session, bearer, or signature dependent; fail-closed default for new routes under these prefixes |
+| HTML pages (`/`, `/about`, ...) | `private, no-cache, no-store, max-age=0, must-revalidate` (set by Next.js) | See below |
+| Other `/api/*` | handler-defined, `no-store` unless stated | Public forms and showcase APIs |
+
+**Why HTML stays `no-store`.** `src/app/layout.tsx` reads `headers()` to pick
+up the per-request CSP nonce that `src/proxy.ts` generates, which makes every
+page dynamic. Next.js therefore ignores route-level `revalidate` for the HTML
+(the `revalidate = 3600` on the home page only affects `fetch()` calls made
+while rendering) and emits `private, no-store`. Caching HTML at the CDN would
+also serve one visitor's nonce to another and break the policy. Shareable HTML
+would need the nonce moved out of the root layout and the `Vary` story worked
+out first; not worth it while pages render in well under 100 ms at the origin.
+
+**ISR and multiple instances.** No route uses `unstable_cache`,
+`revalidateTag`, or `revalidatePath`, and (per the above) no HTML is
+statically regenerated, so Cloud Run instances never need to share a Next.js
+data cache. A custom `cacheHandler` (for example a GCS-backed one) is
+therefore not configured. Revisit only if a route starts relying on ISR; the
+permissive options are noted in the parity plan (MIT-licensed
+`@neshca/cache-handler` / `@fortedigital/nextjs-cache-handler`, or a small
+handler over `@google-cloud/storage`).
+
+The proxy skips the nonce, CSP, and rate-limit path entirely for the static
+prefixes in `STATIC_ASSET_PREFIXES` (`/_next/`, `/favicon`, `/logo/`,
+`/images/`, `/earth-textures/`), so those responses are byte-identical for
+every visitor and the CDN can coalesce them.
+
+## Pull request previews
+
+`.github/workflows/preview.yml` deploys an opt-in preview of a pull request to
+the dedicated Cloud Run service `av-crm-web-preview` (`us-central1`,
+`minScale: 0`, `maxScale: 1`, ingress `internal-and-cloud-load-balancing`).
+It is inert until the repository variable `GCP_PREVIEW_ENABLED` is `true`.
+
+- **Trigger.** Only same-repository PRs carrying the `preview` label (on
+  label, push, or reopen), or `workflow_dispatch` with a PR number. Routine
+  pushes never build a container. Create the `preview` label once in the
+  repository settings.
+- **Build and deploy.** Same `cloudbuild.yaml` and WIF identities as
+  production (`av-crm-build` builds `…/av-crm/website:pr-<N>-<sha>`,
+  `av-crm-deploy` runs `gcloud run deploy av-crm-web-preview --no-traffic
+  --tag=pr-<N>`). Only per-PR variables are merged over the service's
+  baseline env: `NEXT_PUBLIC_SITE_URL=https://pr-<N>.<suffix>`,
+  `ALLOWED_PUBLIC_HOSTS=pr-<N>.<suffix>,<suffix>`, `SITE_NOINDEX=true`. The
+  suffix defaults to `preview.aetherisvision.com` and can be overridden with the
+  repository variable `GCP_PREVIEW_HOST_SUFFIX`.
+- **Access.** The load balancer's host rules `preview.aetherisvision.com` and
+  `*.preview.aetherisvision.com` route to backend service `av-crm-web-preview`,
+  which has Google Cloud IAP enabled (`roles/iap.httpsResourceAccessor` for
+  `domain:aetherisvision.com`). Anonymous requests get a 302 to Google sign-in;
+  the workflow's smoke step accepts 200 or 302. Because ingress is LB-only,
+  the `pr-<N>---av-crm-web-preview-….run.app` tag URL is not reachable
+  directly; the PR comment lists it for reference only.
+- **Per-PR hostnames.** `https://pr-<N>.preview.aetherisvision.com` requires
+  the serverless NEG `av-crm-web-preview` to use the URL mask
+  `<tag>.preview.aetherisvision.com` so the host selects the revision tag.
+  _Confirm on the NEG_: `gcloud compute network-endpoint-groups describe
+  av-crm-web-preview --region=us-central1 --format='value(cloudRun.urlMask)'`.
+  Without a mask the hostnames all serve the service's traffic-bearing
+  revision, not the tagged one.
+- **Baseline env on the service** (set once by the infra owner, not by the
+  workflow): `GCP_LOAD_BALANCER=true`, the preview `DATABASE_URL` secret
+  (`avcrm-preview-database-url`, never `avcrm_prod`),
+  `GCS_RECEIPT_BUCKET=lucid-loader-493512-g1-crm-preview`,
+  `FIRESTORE_EXPENSES_COLLECTION=preview_expenses`,
+  `FIRESTORE_RECEIPTS_COLLECTION=preview_receipts`, and optionally
+  `PREVIEW_PASSWORD` for a second gate behind IAP. `SITE_NOINDEX=true` makes
+  the proxy add `X-Robots-Tag: noindex, nofollow` to every response at
+  runtime, since the preview runs the production image whose `robots.ts` and
+  metadata were built permissive.
+- **Comment.** One PR comment (marker `<!-- av-cloud-run-preview -->`) is
+  created and then updated in place with the URL, commit, revision tag, and
+  image digest.
+- **Cleanup.** On every PR close the `remove-preview` job removes the
+  `pr-<N>` revision tag and deletes the `pr-<N>-*` image tags, then rewrites
+  the comment. Deleting image tags needs `roles/artifactregistry.writer` on
+  the `av-crm` repository for `av-crm-deploy` (currently reader only); until
+  granted, that step warns instead of failing.
+
 ## Cutover requirements
 
 1. Back up Neon and restore into a new Cloud SQL database. Preserve all tables,
@@ -110,6 +206,13 @@ and a persistent Cloud SQL Auth Proxy on `127.0.0.1:55440`. It retrieves the
 database connection from Secret Manager at startup; Claude subscription
 authentication remains on the Mac. Radar continues using the authenticated
 website API and does not receive direct database credentials.
+
+Scheduled work runs on Cloud Scheduler + Cloud Run Jobs, not on the host:
+`av-crm-daily-receipts` (11:00 UTC) invokes the `av-crm-receipts` job, which
+calls `GET /api/cron/receipts` with `Authorization: Bearer <CRON_SECRET>`.
+The former `vercel.json` cron for the same path has been removed; before the
+Vercel project is deleted, confirm the Scheduler job with
+`gcloud scheduler jobs list --location=us-central1`.
 
 The `av-crm-lead-correspondence` Cloud Run job calls
 `/api/cron/lead-correspondence` hourly using `crm-cron-secret`; the

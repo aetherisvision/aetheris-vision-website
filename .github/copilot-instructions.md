@@ -1,14 +1,14 @@
 # Copilot Instructions — Aetheris Vision Website
 
 ## Project Overview
-This is the **Aetheris Vision** corporate website — a Next.js 16 (Turbopack) application deployed on Vercel. The company provides AI/ML weather prediction, operational meteorology consulting, and federal contracting services. It is a Veteran-Owned Small Business (VOSB).
+This is the **Aetheris Vision** corporate website — a Next.js 16 (Turbopack) application deployed on Google Cloud Run. The company provides AI/ML weather prediction, operational meteorology consulting, and federal contracting services. It is a Veteran-Owned Small Business (VOSB).
 
 ## Tech Stack
 - **Framework**: Next.js 16.x (App Router, Turbopack)
 - **Language**: TypeScript (strict mode)
 - **Styling**: Tailwind CSS 4 (PostCSS plugin)
 - **UI**: React 19, Framer Motion, Heroicons v2, clsx + tailwind-merge
-- **Deployment**: Vercel (with Vercel Analytics)
+- **Deployment**: Google Cloud Run behind Cloud Load Balancing + Cloud CDN (GitHub Actions `deploy-gcp`); analytics via Google Analytics only
 - **Testing**: Vitest + React Testing Library + Cucumber-style BDD
 - **Linting**: ESLint 9 (flat config) with next/core-web-vitals + next/typescript
 
@@ -72,7 +72,7 @@ tests/
 - Local dev: `npm run dev`
 - Production build: `npm run build` (includes env check)
 - Full CI pipeline: `npm run ci`
-- Deployed automatically via Vercel on push to `main`.
+- Deployed automatically to Cloud Run by GitHub Actions on push to `main`.
 - Git remotes: `origin` (GitHub), `backup` (GitLab).
 
 ## Session Start Protocol

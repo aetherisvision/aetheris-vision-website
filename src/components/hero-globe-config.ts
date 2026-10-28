@@ -1,4 +1,46 @@
 export const HERO_POSTER_SRC = "/earth-textures/hero-poster.webp";
+/**
+ * Responsive poster widths, smallest first. The largest is the file name
+ * without a suffix (hero-poster.webp); the rest are hero-poster-<w>.webp.
+ * All are rendered by scripts/render-hero-poster.ts from one WebGL frame.
+ */
+export const HERO_POSTER_WIDTHS = [512, 1024, 1800] as const;
+export const HERO_POSTER_INTRINSIC_SIZE = HERO_POSTER_WIDTHS[HERO_POSTER_WIDTHS.length - 1];
+
+export function heroPosterSrc(width: number): string {
+  return width === HERO_POSTER_INTRINSIC_SIZE
+    ? HERO_POSTER_SRC
+    : HERO_POSTER_SRC.replace(/\.webp$/, `-${width}.webp`);
+}
+
+export const HERO_POSTER_SRCSET = HERO_POSTER_WIDTHS.map(
+  (width) => `${heroPosterSrc(width)} ${width}w`,
+).join(", ");
+
+/**
+ * Only large viewports show the poster (see HERO_POSTER_MEDIA). The disc is
+ * 86% of the smaller hero dimension; the hero is ~830 px tall on desktop, so
+ * the poster tops out around 720 CSS px and a 1x screen takes the 1024 file.
+ */
+export const HERO_POSTER_SIZES = "min(86vw, 720px)";
+
+/**
+ * Poster and canvas share the desktop-only gate. Below this width the hero is
+ * the navy backdrop and the h1, as it was before the globe shipped, so no
+ * image competes with the heading for Largest Contentful Paint on phones.
+ */
+export const HERO_POSTER_MEDIA = "(min-width: 1024px)";
+/** Exact complement of HERO_POSTER_MEDIA (no gap at fractional widths). */
+export const HERO_POSTER_SKIP_MEDIA = `not all and ${HERO_POSTER_MEDIA}`;
+
+/**
+ * A `<picture>` source matched below the desktop breakpoint. Browsers fetch an
+ * `<img>` even when it is display:none, so phones are pointed at an inline
+ * transparent 1x1 GIF instead of any poster file. (srcset splits on
+ * whitespace, so the value must contain none.)
+ */
+export const HERO_POSTER_SKIP_SRC =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 export const HERO_EARTH_DAY_TEXTURE = "/earth-textures/day-2k.webp";
 export const HERO_EARTH_NIGHT_TEXTURE = "/earth-textures/night-2k.webp";
 export const HERO_EARTH_CLOUD_TEXTURE = "/earth-textures/storm-clouds-2k.webp";

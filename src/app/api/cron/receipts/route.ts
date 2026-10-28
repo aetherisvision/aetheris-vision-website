@@ -258,7 +258,8 @@ function unauthorized() {
 }
 
 /**
- * Vercel Cron uses GET with `Authorization: Bearer <CRON_SECRET>`.
+ * Cloud Scheduler (via the `av-crm-receipts` Cloud Run Job) uses GET with
+ * `Authorization: Bearer <CRON_SECRET>`.
  * /admin/gmail runs the same job with POST plus the admin session. GET plus
  * the session cookie is rejected so a clicked link cannot start a scan.
  */

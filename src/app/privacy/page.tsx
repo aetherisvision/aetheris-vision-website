@@ -10,7 +10,7 @@ export const metadata: Metadata = createPageMetadata({
   path: "/privacy",
 });
 
-const EFFECTIVE_DATE = "August 16, 2026";
+const EFFECTIVE_DATE = "October 28, 2026";
 
 // NOTE (internal): This policy is intentionally minimal and describes what the
 // site actually does (analytics, the processors listed below, and the client
@@ -63,12 +63,12 @@ export default function PrivacyPage() {
                 may deliver notifications and confirmations.
               </li>
               <li>
-                <strong className="text-gray-300">Analytics</strong> &mdash; Vercel Analytics
-                records cookieless, aggregate usage (page views, performance). When Google
-                Analytics is enabled, it sets first-party analytics cookies in your browser. We
-                do not use advertising cookies, and both analytics tools are automatically
-                disabled when your browser sends Global Privacy Control (<code className="text-gray-300">Sec-GPC: 1</code>)
-                or Do Not Track (<code className="text-gray-300">DNT: 1</code>).
+                <strong className="text-gray-300">Analytics</strong> &mdash; when Google
+                Analytics is enabled, it sets first-party analytics cookies in your browser and
+                records aggregate usage (page views, performance). We do not use advertising
+                cookies, and analytics is automatically disabled when your browser sends Global
+                Privacy Control (<code className="text-gray-300">Sec-GPC: 1</code>) or Do Not
+                Track (<code className="text-gray-300">DNT: 1</code>).
               </li>
               <li>
                 <strong className="text-gray-300">Client portal</strong> &mdash; if you are a
@@ -85,8 +85,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold text-white mb-3">3. Service Providers</h2>
             <p>We use a small set of service providers to operate the site and manage engagements:</p>
             <ul className="mt-3 ml-4 space-y-2 list-disc list-outside">
-              <li><strong className="text-gray-300">Vercel</strong> &mdash; website hosting and CDN (processes request logs and IP addresses).</li>
-              <li><strong className="text-gray-300">Vercel Analytics</strong> &mdash; cookieless, aggregate website analytics.</li>
+              <li><strong className="text-gray-300">Google Cloud</strong> &mdash; website hosting and CDN (Cloud Run, Cloud Load Balancing, Cloud CDN; processes request logs and IP addresses).</li>
               <li><strong className="text-gray-300">Google Analytics</strong> &mdash; site usage analytics, loaded only when a measurement ID is configured.</li>
               <li><strong className="text-gray-300">Neon</strong> &mdash; database hosting for contact, project-intake, CRM, client-portal, project, document, and invoice records.</li>
               <li>

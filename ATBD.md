@@ -212,8 +212,8 @@ This is the practical checklist of what a modern website stack contains, written
 | Document Portal | ✅ | Markdown documents stored in Postgres, rendered per-client in the portal |
 | Expense Tracker | ✅ | Full CRUD, category summaries, Excel export (SheetJS) |
 | Testing | ✅ | 82 tests (unit, integration, regression, BDD) |
-| CI/CD | ✅ | GitHub Actions → Vercel auto-deploy |
-| Analytics | ✅ | Vercel Analytics + Google Analytics (via NEXT_PUBLIC_GA_MEASUREMENT_ID) |
+| CI/CD | ✅ | GitHub Actions → Cloud Build → Cloud Run (`deploy-gcp`) |
+| Analytics | ✅ | Google Analytics (via NEXT_PUBLIC_GA_MEASUREMENT_ID) |
 
 ### What We Don't Have (Yet — Future Roadmap)
 

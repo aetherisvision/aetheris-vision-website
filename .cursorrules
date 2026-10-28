@@ -1,12 +1,12 @@
 # Aetheris Vision — Website
-# Next.js 16 App Router | TypeScript | Tailwind CSS 4 | Vercel
+# Next.js 16 App Router | TypeScript | Tailwind CSS 4 | Google Cloud Run
 
 ## Project Identity
 - Business: Aetheris Vision LLC (EIN 33-4818538)
 - Live URL: aetherisvision.com
 - Repo: github.com/aetherisvision/aetheris-vision-website
 - SSH remote: git@github-business:aetherisvision/aetheris-vision-website.git
-- Deploy: push to `main` → Vercel auto-deploys (no manual deploy steps needed)
+- Deploy: push to `main` → GitHub Actions `deploy-gcp` → Cloud Run `av-crm-web` (no manual deploy steps needed; see docs/gcp-deployment.md)
 
 ## Stack
 - Framework: Next.js 16 App Router (src/app/ directory routing)
@@ -69,5 +69,5 @@
 - App Router patterns only — no Pages Router patterns
 - Server Components by default — use `"use client"` only when necessary
 - Always use SSH git remote (never HTTPS)
-- Env vars: never hardcode secrets — all in Vercel environment variables
+- Env vars: never hardcode secrets — all on the Cloud Run service (Secret Manager) / GitHub Actions variables
 - No console.log in production code — use proper error handling

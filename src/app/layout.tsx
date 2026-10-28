@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Newsreader } from "next/font/google";
 import { headers } from "next/headers";
-import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 import { CORE_SEO_KEYWORDS, SITE } from "@/lib/constants";
 import { hasServerPrivacySignal, INLINE_CLIENT_PRIVACY_GUARD } from "@/lib/analytics";
@@ -105,7 +104,6 @@ export default async function RootLayout({
         </a>
         {children}
         <BackToTop />
-        {!privacyOptOut && <Analytics />}
 
         {/* Google Analytics — suppressed when Sec-GPC: 1 or DNT: 1 is present */}
         {!privacyOptOut && process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
