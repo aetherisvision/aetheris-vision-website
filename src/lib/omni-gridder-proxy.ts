@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import {
   DEMO_DATASETS,
@@ -60,6 +61,24 @@ export function proxyErrorResponse(err: ProxyError): NextResponse {
   return NextResponse.json(
     {
       error: err.error,
+      ...(err.budgetExhausted ? { budgetExhausted: true } : {}),
+    },
+    { status: err.status, headers: err.headers },
+  )
+}
+
+/**
+ * Render a ProxyError for public `/api/omni-gridder/*` routes, replacing any
+ * 5xx internal/upstream error message with a safe generic message.
+ */
+export function publicProxyErrorResponse(err: ProxyError): NextResponse {
+  const safeMessage =
+    err.status >= 500
+      ? 'The regridding service is temporarily unavailable. Please try again shortly.'
+      : err.error
+  return NextResponse.json(
+    {
+      error: safeMessage,
       ...(err.budgetExhausted ? { budgetExhausted: true } : {}),
     },
     { status: err.status, headers: err.headers },
@@ -283,7 +302,7 @@ export async function submitRegridBatch(
     }
   }
 
-  const batchSuffix = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+  const batchSuffix = `${Date.now().toString(36)}-${randomUUID().replace(/-/g, '').slice(0, 8)}`
 
   try {
     const submitted: SubmittedJob[] = []
@@ -432,9 +451,75 @@ export async function getRegridJobStatus(
 export const DEMO_JOB_ID_RE =
   /^demo-[a-z0-9-]+-(?:nearest|bilinear|conservative|ewa)(?:-plot)?$/
 
+export const DEMO_PLOT_JOB_ID_RE =
+  /^demo-[a-z0-9-]+-(?:nearest|bilinear|conservative|ewa)-plot$/
+
+export interface PublicSubmitResult {
+  jobs: SubmittedJob[]
+  datasetId: string
+  destinationCells: number
+  workerTriggered: boolean
+}
+
+export interface PublicJobStatus {
+  job_id: string
+  processor_type: string
+  status: OmniGridderJobStatus['status']
+  submitted_at: number
+  result_uri: string | null
+  error_message: string | null
+  diagnostics: OmniGridderJobStatus['diagnostics']
+  nextJobId?: string
+}
+
+/** Strip internal `gs://` input URIs from public submit responses. */
+export function toPublicSubmitResult(result: SubmitResult): PublicSubmitResult {
+  return {
+    jobs: result.jobs,
+    datasetId: result.datasetId,
+    destinationCells: result.destinationCells,
+    workerTriggered: result.workerTriggered,
+  }
+}
+
+/**
+ * Project a job status into an allowlisted public shape: never expose signed
+ * `storage.googleapis.com` bearer URLs, `gs://` URIs, or raw upstream error text.
+ */
+export function toPublicJobStatus(status: StatusResult): PublicJobStatus {
+  const isSucceededPlot =
+    status.job_id.endsWith(PLOT_SUFFIX) &&
+    status.status === 'succeeded' &&
+    Boolean(status.result_uri)
+
+  const safeErrorMessage =
+    status.status === 'cancelled'
+      ? 'Job was cancelled'
+      : status.status === 'failed'
+        ? 'Job execution failed'
+        : null
+
+  return {
+    job_id: status.job_id,
+    processor_type: status.processor_type,
+    status: status.status,
+    submitted_at: status.submitted_at,
+    result_uri: isSucceededPlot
+      ? `/api/omni-gridder/download?job=${encodeURIComponent(status.job_id)}&inline=1`
+      : null,
+    error_message: safeErrorMessage,
+    diagnostics: status.diagnostics ?? null,
+    ...(status.nextJobId ? { nextJobId: status.nextJobId } : {}),
+  }
+}
+
 export interface BatchStatusOptions extends StatusOptions {
   /** Which job ID in the batch is the primary job that should chain the plot. */
   primaryJobId?: string | null
+  /** Optional catalog datasetId used to resolve compare_uri server-side on public routes. */
+  datasetId?: string | null
+  /** When true, derives panels and compare_uri strictly server-side (#89). */
+  publicMode?: boolean
 }
 
 export interface BatchStatusResult {
@@ -492,13 +577,19 @@ export async function getRegridBatchStatus(
       options.primaryJobId && uniqueIds.includes(options.primaryJobId)
         ? options.primaryJobId
         : uniqueIds[0]
-    const panelsParam =
-      options.panels ?? (uniqueIds.length > 1 ? uniqueIds.join(',') : null)
+    const serverPanelsParam = uniqueIds.length > 1 ? uniqueIds.join(',') : null
+    const panelsParam = options.publicMode
+      ? serverPanelsParam
+      : options.panels ?? serverPanelsParam
+    const compareParam = options.publicMode
+      ? (options.datasetId ? datasetById(options.datasetId)?.uri ?? null : null)
+      : options.compare
+
     let chainedOutcome: ProxyOutcome<StatusResult>
     try {
       chainedOutcome = await getRegridJobStatus(primaryId, {
         chainPlot: true,
-        compare: options.compare,
+        compare: compareParam,
         panels: panelsParam,
       })
     } catch (err) {
@@ -539,7 +630,8 @@ export function getPublicDailyJobBudget(env: NodeJS.ProcessEnv = process.env): n
  * 1. Rejects cross-origin mutations (`403`).
  * 2. Requires distributed rate limiting in production (`503` if Upstash/Vercel
  *    KV is missing so per-instance memory cannot be bypassed).
- * 3. Enforces a per-IP submission limit (`2 / 10 min`).
+ * 3. Enforces a per-IP submission limit (`2 / 10 min`) using `getTrustedClientIp`
+ *    and `createOpaqueRateLimitKey` (never raw `X-Forwarded-For` in production).
  * 4. Enforces a global daily job budget (`OG_PUBLIC_DAILY_JOB_BUDGET`, default
  *    `40` jobs / 24h) across all visitors, returning `budgetExhausted: true`
  *    when the daily demo cap is reached.
@@ -565,15 +657,10 @@ export async function checkPublicShowcaseBudget(
   }
 
   const requireDistributed = process.env.NODE_ENV === 'production'
-  const clientIp =
-    getTrustedClientIp(request) ??
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    'unknown'
-  const ipKey =
-    process.env.CONTACT_VERIFICATION_SECRET &&
-    Buffer.byteLength(process.env.CONTACT_VERIFICATION_SECRET, 'utf8') >= 32
-      ? createOpaqueRateLimitKey('og-public-submit-ip', clientIp)
-      : `ip:${clientIp}`
+  const ipKey = createOpaqueRateLimitKey(
+    'og-public-submit-ip',
+    getTrustedClientIp(request),
+  )
 
   const byIp = await rateLimit(ipKey, {
     limit: PUBLIC_IP_SUBMIT_LIMIT,
@@ -641,12 +728,14 @@ export interface DownloadSuccess {
  */
 export async function downloadPlot(
   jobId: string | null,
+  options: { requireDemoPrefix?: boolean } = {},
 ): Promise<ProxyOutcome<DownloadSuccess>> {
   if (!GCS_STAGING_BUCKET) {
     return { ok: false, status: 500, error: 'OG_GCS_STAGING_BUCKET is not set' }
   }
 
-  if (!jobId || !PLOT_JOB_ID_RE.test(jobId)) {
+  const pattern = options.requireDemoPrefix ? DEMO_PLOT_JOB_ID_RE : PLOT_JOB_ID_RE
+  if (!jobId || !pattern.test(jobId)) {
     return {
       ok: false,
       status: 400,

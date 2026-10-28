@@ -322,28 +322,40 @@ describe("TurnstileWidget resilience under Brave Shields, Opera Ad Blocker, Fire
     expect(onTokenChange).toHaveBeenLastCalledWith("solved-after-36s");
   });
 
-  it("remounts the Turnstile Script element when Retry verification is clicked after a script error", async () => {
-    scriptControl.autoReady = false;
-    const onTokenChange = vi.fn();
-    render(<TurnstileWidget action="contact" onTokenChange={onTokenChange} />);
-    expect(scriptControl.mountCount).toBe(1);
-
-    act(() => {
-      scriptControl.onError?.();
+  it("resets/re-renders the widget on Retry verification and hides Retry when the script tag itself failed to load", async () => {
+    const resetSpy = vi.fn();
+    let errorCallback: (() => void) | undefined;
+    const renderSpy = vi.fn().mockImplementation((_container, options: { "error-callback": () => void }) => {
+      errorCallback = options["error-callback"];
+      return "widget-initial";
     });
-
-    expect(screen.getByRole("alert")).toHaveTextContent(/Verification could not load/);
-
-    const renderSpy = vi.fn().mockReturnValue("widget-after-script-remount");
     window.turnstile = {
       render: renderSpy,
       remove: vi.fn(),
+      reset: resetSpy,
     };
-    scriptControl.autoReady = true;
+
+    const onTokenChange = vi.fn();
+    const { unmount } = render(<TurnstileWidget action="contact" onTokenChange={onTokenChange} />);
+    await waitFor(() => expect(renderSpy).toHaveBeenCalledTimes(1));
+
+    act(() => {
+      errorCallback?.();
+    });
+    expect(screen.getByRole("alert")).toHaveTextContent(/Verification could not load/);
 
     fireEvent.click(screen.getByRole("button", { name: /retry verification/i }));
+    expect(resetSpy).toHaveBeenCalledWith("widget-initial");
+    await waitFor(() => expect(renderSpy).toHaveBeenCalledTimes(2));
+    unmount();
 
-    await waitFor(() => expect(scriptControl.mountCount).toBe(2));
-    await waitFor(() => expect(renderSpy).toHaveBeenCalledTimes(1));
+    // When the <Script> tag itself fires onError, Retry is hidden because a page refresh is required.
+    scriptControl.autoReady = false;
+    render(<TurnstileWidget action="contact" onTokenChange={onTokenChange} />);
+    act(() => {
+      scriptControl.onError?.();
+    });
+    expect(screen.getByRole("alert")).toHaveTextContent(/Refresh the page and try again/);
+    expect(screen.queryByRole("button", { name: /retry verification/i })).toBeNull();
   });
 });

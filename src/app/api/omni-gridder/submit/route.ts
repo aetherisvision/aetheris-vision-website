@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import {
   checkPublicShowcaseBudget,
-  proxyErrorResponse,
+  publicProxyErrorResponse,
   submitRegridBatch,
+  toPublicSubmitResult,
   type SubmitRequestBody,
 } from '@/lib/omni-gridder-proxy'
 
@@ -16,8 +17,8 @@ export async function POST(request: NextRequest) {
     checkPublicShowcaseBudget(request, requestedCount),
   )
 
-  if (!outcome.ok) return proxyErrorResponse(outcome)
-  return NextResponse.json(outcome.data, {
+  if (!outcome.ok) return publicProxyErrorResponse(outcome)
+  return NextResponse.json(toPublicSubmitResult(outcome.data), {
     headers: { 'Cache-Control': 'no-store' },
   })
 }

@@ -115,33 +115,77 @@ export async function PATCH(request: NextRequest) {
     )
   }
 
+  const hasCurrentPhase = 'current_phase' in body && current_phase !== undefined
+  const hasProposalDate = 'phase_proposal_date' in body
+  const hasKickoffDate = 'phase_kickoff_date' in body
+  const hasDesignDate = 'phase_design_date' in body
+  const hasDevelopmentDate = 'phase_development_date' in body
+  const hasReviewDate = 'phase_review_date' in body
+  const hasLaunchedDate = 'phase_launched_date' in body
   const hasSubmissionPatch = normalizedSubmissionId !== undefined
   const hasPreviewPatch = normalizedPreview !== undefined
 
-  await sql`
-    UPDATE projects SET
-      current_phase          = COALESCE(${current_phase ?? null}, current_phase),
-      phase_proposal_date    = ${phase_proposal_date ?? null},
-      phase_kickoff_date     = ${phase_kickoff_date ?? null},
-      phase_design_date      = ${phase_design_date ?? null},
-      phase_development_date = ${phase_development_date ?? null},
-      phase_review_date      = ${phase_review_date ?? null},
-      phase_launched_date    = ${phase_launched_date ?? null},
-      docuseal_submission_id = CASE
-        WHEN ${hasSubmissionPatch} THEN ${normalizedSubmissionId ?? null}
-        ELSE docuseal_submission_id
-      END,
-      proposal_sent_at       = CASE
-        WHEN ${hasSubmissionPatch} AND ${normalizedSubmissionId ?? null}::text IS NOT NULL
-          THEN COALESCE(proposal_sent_at, NOW())
-        ELSE proposal_sent_at
-      END,
-      preview_url            = CASE
-        WHEN ${hasPreviewPatch} THEN ${normalizedPreview ?? null}
-        ELSE preview_url
-      END,
-      updated_at             = NOW()
-    WHERE id = ${Number(id)}
-  `
+  try {
+    await sql`
+      UPDATE projects SET
+        current_phase          = CASE
+          WHEN ${hasCurrentPhase} THEN ${current_phase ?? null}
+          ELSE current_phase
+        END,
+        phase_proposal_date    = CASE
+          WHEN ${hasProposalDate} THEN ${phase_proposal_date ?? null}
+          ELSE phase_proposal_date
+        END,
+        phase_kickoff_date     = CASE
+          WHEN ${hasKickoffDate} THEN ${phase_kickoff_date ?? null}
+          ELSE phase_kickoff_date
+        END,
+        phase_design_date      = CASE
+          WHEN ${hasDesignDate} THEN ${phase_design_date ?? null}
+          ELSE phase_design_date
+        END,
+        phase_development_date = CASE
+          WHEN ${hasDevelopmentDate} THEN ${phase_development_date ?? null}
+          ELSE phase_development_date
+        END,
+        phase_review_date      = CASE
+          WHEN ${hasReviewDate} THEN ${phase_review_date ?? null}
+          ELSE phase_review_date
+        END,
+        phase_launched_date    = CASE
+          WHEN ${hasLaunchedDate} THEN ${phase_launched_date ?? null}
+          ELSE phase_launched_date
+        END,
+        docuseal_submission_id = CASE
+          WHEN ${hasSubmissionPatch} THEN ${normalizedSubmissionId ?? null}
+          ELSE docuseal_submission_id
+        END,
+        proposal_sent_at       = CASE
+          WHEN ${hasSubmissionPatch} AND ${normalizedSubmissionId ?? null}::text IS NOT NULL
+            THEN COALESCE(proposal_sent_at, NOW())
+          ELSE proposal_sent_at
+        END,
+        preview_url            = CASE
+          WHEN ${hasPreviewPatch} THEN ${normalizedPreview ?? null}
+          ELSE preview_url
+        END,
+        updated_at             = NOW()
+      WHERE id = ${Number(id)}
+    `
+  } catch (error) {
+    const code = (error as { code?: string } | null)?.code
+    const message = error instanceof Error ? error.message : String(error)
+    if (
+      code === '23505' ||
+      message.includes('projects_docuseal_submission_uidx') ||
+      message.toLowerCase().includes('duplicate key')
+    ) {
+      return NextResponse.json(
+        { error: 'That DocuSeal submission ID is already linked to another project' },
+        { status: 409 },
+      )
+    }
+    throw error
+  }
   return NextResponse.json({ ok: true })
 }

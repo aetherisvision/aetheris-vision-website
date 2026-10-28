@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mintAdminSessionToken } from '../helpers/admin-session'
 import { hashMagicLinkToken } from '@/lib/magic-link-token'
 
-// In Vitest's jsdom environment, Node's built-in TextEncoder returns a outer-realm
+// In Vitest's jsdom environment, Node's built-in TextEncoder returns an outer-realm
 // Uint8Array, which fails jose's `plaintext instanceof Uint8Array` check during
 // Auth.js v5 JWE encryption. Wrap TextEncoder.prototype.encode so it returns a
 // current-realm Uint8Array.
@@ -29,6 +29,7 @@ vi.mock('resend', () => ({
 
 const TEST_AUTH_SECRET = 'test-authjs-v5-secret-at-least-32-characters-long'
 const TEST_ADMIN_PASSPHRASE = 'test-admin-passphrase-for-portal'
+const TEST_CONTACT_SECRET = 'test-contact-verification-secret-at-least-32-bytes'
 
 function extractCookiePair(setCookieHeader: string | null): { name: string; value: string } {
   expect(setCookieHeader).toBeTruthy()
@@ -49,13 +50,14 @@ describe('Auth.js v5 magic-link login round-trip and DocuSeal client portal wiri
     vi.stubEnv('NEXTAUTH_SECRET', TEST_AUTH_SECRET)
     vi.stubEnv('RESEND_API_KEY', 're_test_key')
     vi.stubEnv('ADMIN_PASSPHRASE', TEST_ADMIN_PASSPHRASE)
+    vi.stubEnv('CONTACT_VERIFICATION_SECRET', TEST_CONTACT_SECRET)
   })
 
   afterEach(() => {
     vi.unstubAllEnvs()
   })
 
-  it('completes the full HTTPS magic-link round-trip and decodes the __Secure-authjs.session-token across client routes', async () => {
+  it('completes the full HTTPS magic-link round-trip, normalizes emails on write, and decodes __Secure-authjs.session-token across client routes', async () => {
     let storedTokenHash = ''
     let storedEmail = ''
 
@@ -69,30 +71,30 @@ describe('Auth.js v5 magic-link login round-trip and DocuSeal client portal wiri
         storedTokenHash = String(values[1])
         return []
       }
-      if (query.includes('DELETE FROM verification_tokens')) {
+      if (query.includes('DELETE FROM verification_tokens') && query.includes('RETURNING identifier')) {
         const email = String(values[0])
         const presentedHash = String(values[1])
         if (email === storedEmail && presentedHash === storedTokenHash && storedTokenHash) {
-          storedTokenHash = '' // consumed atomically
+          storedTokenHash = ''
           return [{ identifier: email }]
         }
         return []
       }
       if (query.includes('SELECT id, contact_name AS name, email')) {
-        return [{ id: 1, name: 'Finny Koshy', email: 'finny.koshy1@gmail.com' }]
+        return [{ id: 1, name: 'Jane Client', email: 'client@example.com' }]
       }
       if (query.includes('FROM projects') && query.includes('WHERE client_id =')) {
         return [
           {
             id: 1,
-            name: 'Tropical Hut OKC — Website project',
+            name: 'Example Portal Project',
             status: 'signed',
             start_date: '2026-04-01',
             signed_at: '2026-04-02T12:00:00Z',
-            docuseal_submission_id: 'sub_tropical_hut_1',
+            docuseal_submission_id: 'sub_example_project_1',
             signed_doc_url: '/api/client/projects/1/signed-sow',
             current_phase: 'development',
-            preview_url: 'https://tropicalhut-preview.aetherisvision.com',
+            preview_url: 'https://preview.example.com',
           },
         ]
       }
@@ -102,7 +104,7 @@ describe('Auth.js v5 magic-link login round-trip and DocuSeal client portal wiri
         if (projectId === 1 && clientId === 1) {
           return [
             {
-              name: 'Tropical Hut OKC',
+              name: 'Example Portal Project',
               signed_pdf_base64: Buffer.from('%PDF-1.4 signed SOW').toString('base64'),
             },
           ]
@@ -127,7 +129,7 @@ describe('Auth.js v5 magic-link login round-trip and DocuSeal client portal wiri
       return []
     })
 
-    // 1. Request magic link with mixed-case email
+    // 1. Request magic link with mixed-case email and verify lowercase storage on write
     const { POST: sendMagicPost } = await import('@/app/api/auth/send-magic/route')
     const sendRes = await sendMagicPost(
       new NextRequest('https://aetherisvision.com/api/auth/send-magic', {
@@ -137,15 +139,16 @@ describe('Auth.js v5 magic-link login round-trip and DocuSeal client portal wiri
           Origin: 'https://aetherisvision.com',
           'x-forwarded-for': '198.51.100.25',
         },
-        body: JSON.stringify({ email: 'Finny.Koshy1@Gmail.com' }),
+        body: JSON.stringify({ email: '  Jane.Client@Example.com  ' }),
       }),
     )
     expect(sendRes.status).toBe(200)
     await expect(sendRes.json()).resolves.toEqual({ sent: true })
     expect(mocks.sendEmail).toHaveBeenCalledTimes(1)
+    expect(storedEmail).toBe('jane.client@example.com')
 
-    // Extract raw token from the magic link sent via Resend
-    const emailPayload = mocks.sendEmail.mock.calls[0][0] as { html: string }
+    const emailPayload = mocks.sendEmail.mock.calls[0][0] as { html: string; to: string }
+    expect(emailPayload.to).toBe('jane.client@example.com')
     const tokenMatch = emailPayload.html.match(/token=([a-f0-9]{64})/)
     expect(tokenMatch).not.toBeNull()
     const rawToken = tokenMatch![1]
@@ -155,7 +158,7 @@ describe('Auth.js v5 magic-link login round-trip and DocuSeal client portal wiri
     const { POST: verifyMagicPost } = await import('@/app/api/auth/magic/route')
     const form = new FormData()
     form.set('token', rawToken)
-    form.set('email', 'Finny.Koshy1@Gmail.com')
+    form.set('email', 'Jane.Client@Example.com')
 
     const verifyRes = await verifyMagicPost(
       new NextRequest('https://aetherisvision.com/api/auth/magic', {
@@ -176,7 +179,7 @@ describe('Auth.js v5 magic-link login round-trip and DocuSeal client portal wiri
     // 3. Replaying the consumed magic-link token fails closed
     const replayForm = new FormData()
     replayForm.set('token', rawToken)
-    replayForm.set('email', 'finny.koshy1@gmail.com')
+    replayForm.set('email', 'jane.client@example.com')
     const replayRes = await verifyMagicPost(
       new NextRequest('https://aetherisvision.com/api/auth/magic', {
         method: 'POST',
@@ -199,12 +202,26 @@ describe('Auth.js v5 magic-link login round-trip and DocuSeal client portal wiri
       projects: Array<{ docuseal_submission_id: string; signed_doc_url: string }>
     }
     expect(projectsBody.projects[0]).toMatchObject({
-      docuseal_submission_id: 'sub_tropical_hut_1',
+      docuseal_submission_id: 'sub_example_project_1',
       signed_doc_url: '/api/client/projects/1/signed-sow',
     })
 
-    // 5. Client can stream their signed SOW PDF from /api/client/projects/1/signed-sow
+    // 5. Signed SOW route: 401 unauthenticated, 400 invalid ID, 404 other client, 200 owner
     const { GET: getSignedSow } = await import('@/app/api/client/projects/[id]/signed-sow/route')
+    const unauthSowRes = await getSignedSow(
+      new NextRequest('https://aetherisvision.com/api/client/projects/1/signed-sow'),
+      { params: Promise.resolve({ id: '1' }) },
+    )
+    expect(unauthSowRes.status).toBe(401)
+
+    const badIdSowRes = await getSignedSow(
+      new NextRequest('https://aetherisvision.com/api/client/projects/abc/signed-sow', {
+        headers: { Cookie: cookieHeader },
+      }),
+      { params: Promise.resolve({ id: 'abc' }) },
+    )
+    expect(badIdSowRes.status).toBe(400)
+
     const sowRes = await getSignedSow(
       new NextRequest('https://aetherisvision.com/api/client/projects/1/signed-sow', {
         headers: { Cookie: cookieHeader },
@@ -216,7 +233,6 @@ describe('Auth.js v5 magic-link login round-trip and DocuSeal client portal wiri
     expect(sowRes.headers.get('cache-control')).toBe('private, no-store')
     expect(await sowRes.text()).toBe('%PDF-1.4 signed SOW')
 
-    // Another project ID not owned by this client returns 404 (no IDOR)
     const otherSowRes = await getSignedSow(
       new NextRequest('https://aetherisvision.com/api/client/projects/999/signed-sow', {
         headers: { Cookie: cookieHeader },
@@ -242,22 +258,22 @@ describe('Auth.js v5 magic-link login round-trip and DocuSeal client portal wiri
     expect(invRes.status).toBe(200)
   })
 
-  it('mints a working client session via admin impersonation and wires DocuSeal submission IDs on projects (#15)', async () => {
+  it('preserves existing milestone dates on partial PATCH, returns 409 on duplicate DocuSeal ID, and supports admin impersonation (#15)', async () => {
     mocks.sql.mockImplementation(async (strings: TemplateStringsArray) => {
       const query = strings.join(' ')
       if (query.includes('SELECT id, contact_name AS name, email')) {
-        return [{ id: 1, name: 'Finny Koshy', email: 'finny.koshy1@gmail.com' }]
+        return [{ id: 1, name: 'Jane Client', email: 'client@example.com' }]
       }
       if (query.includes('FROM projects') && query.includes('WHERE client_id =')) {
-        return [{ id: 1, name: 'Tropical Hut OKC', docuseal_submission_id: 'sub_th_okc_2026' }]
+        return [{ id: 1, name: 'Example Project', docuseal_submission_id: 'sub_project_2026' }]
       }
       return []
     })
 
     const adminCookie = `av-admin-session=${mintAdminSessionToken(TEST_ADMIN_PASSPHRASE)}`
-
-    // Admin links DocuSeal submission ID and preview URL to Tropical Hut (project id=1)
     const { PATCH: patchAdminProject } = await import('@/app/api/admin/projects/route')
+
+    // 1. Partial PATCH of docuseal_submission_id only must pass has<Date> = false for all 6 milestone dates
     const patchRes = await patchAdminProject(
       new NextRequest('https://aetherisvision.com/api/admin/projects', {
         method: 'PATCH',
@@ -267,15 +283,52 @@ describe('Auth.js v5 magic-link login round-trip and DocuSeal client portal wiri
         },
         body: JSON.stringify({
           id: 1,
-          current_phase: 'proposal',
-          docuseal_submission_id: 'sub_th_okc_2026',
-          preview_url: 'https://tropicalhut-preview.aetherisvision.com',
+          docuseal_submission_id: 'sub_project_2026',
         }),
       }),
     )
     expect(patchRes.status).toBe(200)
 
-    // Invalid DocuSeal submission ID is rejected with 400
+    const updateCall = mocks.sql.mock.calls[0]
+    const updateQuery = (updateCall[0] as TemplateStringsArray).join(' ')
+    const updateValues = updateCall.slice(1)
+    expect(updateQuery).toContain('phase_proposal_date    = CASE')
+    // hasCurrentPhase, hasProposalDate, hasKickoffDate, hasDesignDate, hasDevelopmentDate, hasReviewDate, hasLaunchedDate are all false
+    expect(updateValues[0]).toBe(false) // hasCurrentPhase
+    expect(updateValues[2]).toBe(false) // hasProposalDate
+    expect(updateValues[4]).toBe(false) // hasKickoffDate
+    expect(updateValues[6]).toBe(false) // hasDesignDate
+    expect(updateValues[8]).toBe(false) // hasDevelopmentDate
+    expect(updateValues[10]).toBe(false) // hasReviewDate
+    expect(updateValues[12]).toBe(false) // hasLaunchedDate
+    expect(updateValues[14]).toBe(true) // hasSubmissionPatch
+    expect(updateValues[15]).toBe('sub_project_2026')
+
+    // 2. Duplicate docuseal_submission_id (Postgres 23505 unique violation) returns 409
+    mocks.sql.mockRejectedValueOnce(
+      Object.assign(new Error('duplicate key value violates unique constraint "projects_docuseal_submission_uidx"'), {
+        code: '23505',
+      }),
+    )
+    const dupRes = await patchAdminProject(
+      new NextRequest('https://aetherisvision.com/api/admin/projects', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          id: 2,
+          docuseal_submission_id: 'sub_project_2026',
+        }),
+      }),
+    )
+    expect(dupRes.status).toBe(409)
+    await expect(dupRes.json()).resolves.toEqual({
+      error: 'That DocuSeal submission ID is already linked to another project',
+    })
+
+    // 3. Invalid DocuSeal submission ID is rejected with 400
     const badPatchRes = await patchAdminProject(
       new NextRequest('https://aetherisvision.com/api/admin/projects', {
         method: 'PATCH',
@@ -291,7 +344,7 @@ describe('Auth.js v5 magic-link login round-trip and DocuSeal client portal wiri
     )
     expect(badPatchRes.status).toBe(400)
 
-    // Admin impersonates client id=1 and reads /api/client/projects
+    // 4. Admin impersonates client id=1 and reads /api/client/projects
     const { POST: impersonatePost } = await import('@/app/api/admin/clients/impersonate/route')
     const impRes = await impersonatePost(
       new NextRequest('https://aetherisvision.com/api/admin/clients/impersonate', {

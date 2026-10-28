@@ -126,7 +126,7 @@ Secrets load from `~/.secrets` (sourced by `~/.zshrc`); in a bare shell run `sou
 | Tropical Hut OKC | 1 | finny.koshy1@gmail.com | Pro bono — project id=1 |
 | Marston Ward | 2 | marston@aetherisvision.com | |
 
-Pending: wire Docuseal submission ID to Tropical Hut, link bank account to Stripe.
+Pending: link bank account to Stripe (#16). DocuSeal submission ID wiring is available in `/admin/projects` (#15).
 
 ---
 

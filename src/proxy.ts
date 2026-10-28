@@ -3,6 +3,7 @@ import { hasServerPrivacySignal, PRIVACY_OPT_OUT_HEADER } from '@/lib/analytics'
 import { hasCronSecret } from '@/lib/cron-auth'
 import { rateLimit } from '@/lib/rate-limit'
 import { hasPreviewSession } from '@/lib/preview-auth'
+import { getTrustedClientIp } from '@/lib/request-security'
 import { isSameOriginMutation } from '@/lib/same-origin'
 import { INSIGHTS_PUBLIC } from '@/lib/features'
 
@@ -155,10 +156,7 @@ export async function proxy(request: NextRequest) {
   // Scoped to /api/* so we don't pay a Redis round-trip on every page view;
   // the abuse surface is the API, and sensitive POST routes add their own
   // tighter per-route limits.
-  const ip = process.env.K_SERVICE
-    ? (process.env.GCP_LOAD_BALANCER === 'true' && request.headers.get('x-av-client-ip')) || 'unknown'
-    : request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
-      request.headers.get('x-real-ip') || 'unknown'
+  const ip = getTrustedClientIp(request) ?? 'unknown'
   const isApiRoute = pathname === '/api' || pathname.startsWith('/api/')
   // Authenticated admin API traffic gets a far higher ceiling: the coarse
   // limit exists for anonymous abuse, but the passphrase-gated demo page
@@ -179,7 +177,7 @@ export async function proxy(request: NextRequest) {
   // Bearer-authenticated cron is still limited, on its own counter, so a
   // scheduled run does not share the anonymous API budget.
   const cronSecretOk = isCronRoute && hasCronSecret(request)
-  const maxRequests = isAuthedAdminApi ? 2000 : isPublicShowcaseApi ? 300 : 100
+  const maxRequests = isAuthedAdminApi ? 2000 : isPublicShowcaseApi ? 150 : 100
   let ratePrefix = 'proxy-api'
   if (isAuthedAdminApi) ratePrefix = 'proxy-api-admin'
   else if (cronSecretOk) ratePrefix = 'proxy-api-cron'

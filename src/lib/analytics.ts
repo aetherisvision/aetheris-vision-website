@@ -59,9 +59,9 @@ export const INLINE_CLIENT_PRIVACY_GUARD =
  */
 export function hasServerPrivacySignal(headers: HeaderReader): boolean {
   const gpc = headers.get("sec-gpc")?.trim();
-  const dnt = headers.get("dnt")?.trim();
+  const dnt = headers.get("dnt")?.trim()?.toLowerCase();
   const forwarded = headers.get(PRIVACY_OPT_OUT_HEADER)?.trim();
-  return gpc === "1" || dnt === "1" || forwarded === "1";
+  return gpc === "1" || dnt === "1" || dnt === "yes" || forwarded === "1";
 }
 
 /**

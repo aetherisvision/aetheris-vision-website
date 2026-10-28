@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 import { rateLimit } from '@/lib/rate-limit'
+import { getTrustedClientIp } from '@/lib/request-security'
 import {
   proxyErrorResponse,
   submitRegridBatch,
@@ -16,19 +17,8 @@ export async function POST(request: NextRequest) {
 
   const body = (await request.json().catch(() => ({}))) as SubmitRequestBody
 
-  // Admin-side budget policy (authn + rate class is the route's job, not the
-  // shared proxy's). A submit triggers real Cloud Run job pickup — cheap, but
-  // not free, and not something an admin page should let run away with even
-  // though it's passphrase-gated. A comparison batch is up to 3 jobs in one
-  // call, so the per-request budget is tighter than the old single-job limit:
-  // one comparison (or a few singles) per 2-minute window per IP. Runs after
-  // validation (inside submitRegridBatch), so an invalid request never burns
-  // budget — see the checkBudget contract.
   const outcome = await submitRegridBatch(body, async () => {
-    const ip =
-      request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
-      request.headers.get('x-real-ip') ||
-      'unknown'
+    const ip = getTrustedClientIp(request) ?? 'unknown'
     const limit = await rateLimit(ip, {
       limit: 2,
       windowMs: 2 * 60 * 1000,

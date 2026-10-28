@@ -355,8 +355,7 @@ export default function OmniGridderShowcase({ mode }: OmniGridderShowcaseProps) 
         chainPlot: '1',
         primary: primary.jobId,
       })
-      if (inputUriRef.current) qs.set('compare', inputUriRef.current)
-      if (activeIds.length > 1) qs.set('panels', activeIds.join(','))
+      if (runDatasetIdRef.current) qs.set('datasetId', runDatasetIdRef.current)
       res = await fetch(`${apiBase}/status?${qs.toString()}`)
     } catch {
       if (attempt >= MAX_POLL_ATTEMPTS) {
