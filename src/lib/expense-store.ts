@@ -1,6 +1,5 @@
-import { randomUUID } from 'node:crypto'
+import { createHash } from 'node:crypto'
 import { sql } from './db'
-import { normalizeExpenseCategory } from './expense-categories'
 import {
   computeCategoryTotals,
   createFirestoreExpense,
@@ -8,16 +7,20 @@ import {
   expenseDocIdForGmailMessage,
   expenseDocIdForSqlId,
   findFirestoreExpenseByGmailMessageId,
+  getFirestoreExpenseById,
   isFirestoreExpenseStoreConfigured,
   listFirestoreExpensesByTaxYear,
+  normalizeExpenseDate,
   parseDollarAmount,
+  resolveExpenseCategory,
   updateFirestoreExpense,
   type CategoryTotal,
   type CreateExpenseInput,
   type ExpenseRecord,
   type UpdateExpenseInput,
 } from './expense-firestore'
-import { putReceipt, RECEIPT_VIEW_PATH } from './receipt-blob'
+import { putReceipt, RECEIPT_VIEW_PATH, receiptViewUrl } from './receipt-blob'
+import { getGcsReceipt, getReceiptBucketName, isValidReceiptPathname } from './receipt-gcs'
 
 export interface SqlExpenseRow {
   id: number | string
@@ -36,19 +39,12 @@ export interface SqlExpenseRow {
 export interface BackfillExpensesResult {
   scanned: number
   upserted: number
+  skippedExisting: number
   migratedBlobs: number
+  missingGcsReceipts: string[]
 }
 
 const LEGACY_VERCEL_BLOB_HOST = /\.blob\.vercel-storage\.com$/i
-
-function toIsoDate(value: string | Date): string {
-  if (value instanceof Date) return value.toISOString().slice(0, 10)
-  const str = String(value).trim()
-  const match = str.match(/^(\d{4}-\d{2}-\d{2})/)
-  if (match) return match[1]
-  const parsed = new Date(str)
-  return Number.isNaN(parsed.getTime()) ? new Date().toISOString().slice(0, 10) : parsed.toISOString().slice(0, 10)
-}
 
 function toIsoTimestamp(value: string | Date | null | undefined): string {
   if (!value) return new Date().toISOString()
@@ -79,6 +75,17 @@ function inferReceiptExtension(url: string, contentType: string | null): string 
   if (!match) return 'pdf'
   const ext = match[1].toLowerCase()
   return ext === 'jpeg' ? 'jpg' : ext
+}
+
+function extractReceiptPathnameFromViewUrl(viewUrl: string): string | null {
+  try {
+    const parsed = new URL(viewUrl, 'https://aetherisvision.com')
+    if (parsed.pathname !== RECEIPT_VIEW_PATH) return null
+    const pathParam = parsed.searchParams.get('path')
+    return isValidReceiptPathname(pathParam) ? pathParam : null
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -160,21 +167,26 @@ export async function createExpenseRecord(
     return created
   }
 
-  const normalizedCategory = normalizeExpenseCategory(input.category)
+  const normalizedDate = normalizeExpenseDate(input.date)
+  const { amount } = parseDollarAmount(input.amount)
+  const normalizedCategory = resolveExpenseCategory(
+    input.category,
+    Boolean(input.allowLegacyCategory),
+  )
   const taxYear =
     input.tax_year !== undefined && input.tax_year !== null
       ? Number.parseInt(String(input.tax_year), 10)
-      : Number.parseInt(String(input.date).slice(0, 4), 10)
+      : Number.parseInt(normalizedDate.slice(0, 4), 10)
 
   if (input.gmail_message_id) {
     const inserted = await sql`
       INSERT INTO expenses (date, vendor, description, category, amount, tax_year, receipt_url, gmail_message_id, source)
       VALUES (
-        ${input.date},
+        ${normalizedDate},
         ${input.vendor},
         ${input.description},
         ${normalizedCategory},
-        ${input.amount},
+        ${amount},
         ${taxYear},
         ${input.receipt_url || null},
         ${input.gmail_message_id},
@@ -192,11 +204,11 @@ export async function createExpenseRecord(
   const result = await sql`
     INSERT INTO expenses (date, vendor, description, category, amount, tax_year, receipt_url)
     VALUES (
-      ${input.date},
+      ${normalizedDate},
       ${input.vendor},
       ${input.description},
       ${normalizedCategory},
-      ${input.amount},
+      ${amount},
       ${taxYear},
       ${input.receipt_url || null}
     )
@@ -227,13 +239,31 @@ export async function updateExpenseRecord(
     return updateFirestoreExpense(id, patch)
   }
 
+  const normalizedDate =
+    patch.date !== undefined && patch.date !== null ? normalizeExpenseDate(patch.date) : null
+  const normalizedCategory =
+    patch.category !== undefined && patch.category !== null
+      ? resolveExpenseCategory(patch.category, false)
+      : null
+  const normalizedAmount =
+    patch.amount !== undefined && patch.amount !== null
+      ? parseDollarAmount(patch.amount).amount
+      : null
+  const recomputedTaxYear =
+    patch.tax_year !== undefined && patch.tax_year !== null
+      ? Number.parseInt(String(patch.tax_year), 10)
+      : normalizedDate
+        ? Number.parseInt(normalizedDate.slice(0, 4), 10)
+        : null
+
   const rows = await sql`
     UPDATE expenses
-    SET date        = COALESCE(${patch.date ?? null}, date),
+    SET date        = COALESCE(${normalizedDate}, date),
         vendor      = COALESCE(${patch.vendor ?? null}, vendor),
         description = COALESCE(${patch.description ?? null}, description),
-        category    = COALESCE(${patch.category ? normalizeExpenseCategory(patch.category) : null}, category),
-        amount      = COALESCE(${patch.amount ?? null}, amount),
+        category    = COALESCE(${normalizedCategory}, category),
+        amount      = COALESCE(${normalizedAmount}, amount),
+        tax_year    = COALESCE(${recomputedTaxYear}, tax_year),
         receipt_url = ${patch.receipt_url ?? null}
     WHERE id = ${Number(id)}
     RETURNING *
@@ -252,18 +282,22 @@ export async function deleteExpenseRecord(id: string | number): Promise<void> {
 
 /**
  * Migrate a legacy `@vercel/blob` receipt URL to private GCS + Firestore
- * metadata, returning the new `/api/receipts/file?path=...` reference and GCS
- * object metadata. Leaves existing `/api/receipts/file` paths untouched.
+ * metadata using a deterministic content-addressed path
+ * (`receipts/migrated/sql-${rowId}-${sha256.slice(0, 12)}.${ext}`) so reruns
+ * never re-upload or orphan objects. When a row already uses
+ * `/api/receipts/file?path=...`, verifies that the object exists in GCS.
  */
 export async function migrateLegacyReceiptUrlToGcs(
   receiptUrl: string | null | undefined,
   options: {
+    rowId?: number | string
     gmailMessageId?: string | null
     fetcher?: typeof fetch
   } = {},
 ): Promise<{
   receiptUrl: string | null
   migrated: boolean
+  missingInGcs?: string
   gcsUri?: string
   sha256?: string
   contentType?: string
@@ -274,6 +308,14 @@ export async function migrateLegacyReceiptUrlToGcs(
   }
   const trimmed = receiptUrl.trim()
   if (trimmed.startsWith(RECEIPT_VIEW_PATH)) {
+    const objectPath = extractReceiptPathnameFromViewUrl(trimmed)
+    if (objectPath && (process.env.GCS_RECEIPT_BUCKET || process.env.RECEIPT_GCS_BUCKET)) {
+      const existing = await getGcsReceipt(objectPath)
+      if (!existing) {
+        console.warn('Receipt viewer path is missing in GCS bucket', { objectPath })
+        return { receiptUrl: trimmed, migrated: false, missingInGcs: objectPath }
+      }
+    }
     return { receiptUrl: trimmed, migrated: false }
   }
   if (!isLegacyVercelBlobUrl(trimmed)) {
@@ -297,7 +339,27 @@ export async function migrateLegacyReceiptUrlToGcs(
   const contentType = response.headers.get('content-type') || 'application/pdf'
   const ext = inferReceiptExtension(trimmed, contentType)
   const bytes = Buffer.from(await response.arrayBuffer())
-  const pathname = `receipts/migrated/${Date.now()}-${randomUUID()}.${ext}`
+  const sha256 = createHash('sha256').update(bytes).digest('hex')
+  const safeRowKey =
+    options.rowId !== undefined && options.rowId !== null
+      ? String(options.rowId).replace(/[^A-Za-z0-9_-]/g, '')
+      : 'blob'
+  const pathname = `receipts/migrated/sql-${safeRowKey}-${sha256.slice(0, 12)}.${ext}`
+
+  // Check if this deterministic object path already exists in GCS before uploading.
+  const existingGcs = await getGcsReceipt(pathname).catch(() => null)
+  if (existingGcs) {
+    const bucket = getReceiptBucketName()
+    return {
+      receiptUrl: receiptViewUrl(pathname),
+      migrated: false,
+      gcsUri: `gs://${bucket}/${pathname}`,
+      sha256,
+      contentType,
+      sizeBytes: bytes.byteLength,
+    }
+  }
+
   const uploaded = await putReceipt(pathname, bytes, contentType, {
     source: 'migration',
     gmailMessageId: options.gmailMessageId ?? null,
@@ -307,29 +369,33 @@ export async function migrateLegacyReceiptUrlToGcs(
     receiptUrl: uploaded.reference,
     migrated: true,
     gcsUri: uploaded.object?.gcsUri,
-    sha256: uploaded.object?.sha256,
-    contentType: uploaded.object?.contentType,
-    sizeBytes: uploaded.object?.sizeBytes,
+    sha256: uploaded.object?.sha256 ?? sha256,
+    contentType: uploaded.object?.contentType ?? contentType,
+    sizeBytes: uploaded.object?.sizeBytes ?? bytes.byteLength,
   }
 }
 
 /**
  * Idempotently backfill PostgreSQL `expenses` rows (and any legacy Vercel Blob
  * receipt URLs) into Firestore metadata and the private GCS receipt bucket.
+ * Preserves existing Firestore documents on rerun unless `overwrite: true` is set.
  */
 export async function backfillExpensesToFirestoreAndGcs(options: {
   rows?: readonly SqlExpenseRow[]
   fetcher?: typeof fetch
+  overwrite?: boolean
 } = {}): Promise<BackfillExpensesResult> {
   const rows =
     options.rows ??
     ((await sql`SELECT * FROM expenses ORDER BY id ASC`) as unknown as SqlExpenseRow[])
 
   let upserted = 0
+  let skippedExisting = 0
   let migratedBlobs = 0
+  const missingGcsReceipts: string[] = []
 
   for (const row of rows) {
-    const date = toIsoDate(row.date)
+    const date = normalizeExpenseDate(row.date)
     const { amount } = parseDollarAmount(row.amount)
     const taxYear =
       typeof row.tax_year === 'number'
@@ -340,12 +406,24 @@ export async function backfillExpensesToFirestoreAndGcs(options: {
       ? expenseDocIdForGmailMessage(gmailMessageId)
       : expenseDocIdForSqlId(row.id)
 
+    if (!options.overwrite) {
+      const existingDoc = await getFirestoreExpenseById(docId)
+      if (existingDoc) {
+        skippedExisting++
+        continue
+      }
+    }
+
     const receiptResult = await migrateLegacyReceiptUrlToGcs(row.receipt_url, {
+      rowId: row.id,
       gmailMessageId,
       fetcher: options.fetcher,
     })
     if (receiptResult.migrated) {
       migratedBlobs++
+    }
+    if (receiptResult.missingInGcs) {
+      missingGcsReceipts.push(receiptResult.missingInGcs)
     }
 
     await createFirestoreExpense(
@@ -354,7 +432,7 @@ export async function backfillExpensesToFirestoreAndGcs(options: {
         date,
         vendor: row.vendor,
         description: row.description,
-        category: normalizeExpenseCategory(row.category),
+        category: row.category,
         amount,
         tax_year: taxYear,
         receipt_url: receiptResult.receiptUrl,
@@ -365,6 +443,7 @@ export async function backfillExpensesToFirestoreAndGcs(options: {
         gmail_message_id: gmailMessageId,
         source: row.source?.trim() || 'postgres-migration',
         created_at: toIsoTimestamp(row.created_at),
+        allowLegacyCategory: true,
       },
       { upsert: true },
     )
@@ -374,7 +453,9 @@ export async function backfillExpensesToFirestoreAndGcs(options: {
   return {
     scanned: rows.length,
     upserted,
+    skippedExisting,
     migratedBlobs,
+    missingGcsReceipts,
   }
 }
 

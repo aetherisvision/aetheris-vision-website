@@ -38,7 +38,26 @@ export const LEGACY_CATEGORY_ALIASES: Readonly<Record<string, ExpenseCategory>> 
   'Office & Equipment': 'Equipment & Hardware',
 }
 
-/** Normalize any category string to a canonical ExpenseCategory, defaulting to 'Other'. */
+/** True only when `value` is one of the canonical EXPENSE_CATEGORIES. */
+export function isExpenseCategory(value: unknown): value is ExpenseCategory {
+  return typeof value === 'string' && CATEGORY_SET.has(value.trim())
+}
+
+/**
+ * Strictly validate a category submitted via the Admin API (`POST`/`PATCH`).
+ * Returns `null` when the category is missing or not in `EXPENSE_CATEGORIES`.
+ */
+export function validateStrictExpenseCategory(raw: unknown): ExpenseCategory | null {
+  if (typeof raw !== 'string') return null
+  const trimmed = raw.trim()
+  return CATEGORY_SET.has(trimmed) ? (trimmed as ExpenseCategory) : null
+}
+
+/**
+ * Normalize a category string from automated Gmail ingestion or legacy
+ * migrations to a canonical ExpenseCategory, defaulting unknown legacy labels
+ * to 'Other'.
+ */
 export function normalizeExpenseCategory(raw: unknown): ExpenseCategory {
   if (typeof raw !== 'string') return 'Other'
   const trimmed = raw.trim()

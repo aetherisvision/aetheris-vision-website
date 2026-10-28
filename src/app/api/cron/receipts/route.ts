@@ -240,6 +240,7 @@ async function processAccount(
       receipt_size_bytes: receiptSizeBytes,
       gmail_message_id: msgId,
       source: 'gmail-' + accountLabel,
+      allowLegacyCategory: true,
     })
     if (created) {
       logged++

@@ -9,7 +9,8 @@ export async function PATCH(
 ) {
   if (!isAdmin(request)) return unauthorizedResponse()
   const { id } = await params
-  const { date, vendor, description, category, amount, receipt_url } = await request.json()
+  const { date, vendor, description, category, amount, tax_year, receipt_url } =
+    await request.json()
 
   try {
     const updated = await updateExpenseRecord(id, {
@@ -18,6 +19,7 @@ export async function PATCH(
       description: description ?? null,
       category: category ?? null,
       amount: amount ?? null,
+      tax_year: tax_year ?? null,
       receipt_url: receipt_url ?? null,
     })
 
