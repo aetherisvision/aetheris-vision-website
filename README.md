@@ -119,8 +119,10 @@ src/
         projects/route.ts      #   GET projects for authenticated client
         documents/route.ts     #   GET document list for authenticated client
         documents/[id]/route.ts#   GET single document (auth-gated to owner)
-      expenses/route.ts        #   GET/POST expenses
+      expenses/route.ts        #   GET/POST expenses (Firestore metadata primary, Postgres fallback)
       expenses/[id]/route.ts   #   PATCH/DELETE a single expense
+      receipts/upload/route.ts #   POST: upload receipt PDF/image to private GCS + Firestore metadata
+      receipts/file/route.ts   #   GET: stream private receipt from GCS to authenticated admin
       intake/route.ts          #   POST: project intake form → Resend email
 
   components/                  # 🧩 REUSABLE PARTS

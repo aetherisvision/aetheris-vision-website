@@ -3,6 +3,7 @@ export const TURNSTILE_ACTIONS = {
   intake: 'intake',
   review: 'review',
   capabilityStatement: 'capability-statement',
+  omniGridderShowcase: 'omni-gridder-showcase',
 } as const
 
 export type TurnstileAction = (typeof TURNSTILE_ACTIONS)[keyof typeof TURNSTILE_ACTIONS]

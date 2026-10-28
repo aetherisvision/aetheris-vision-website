@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
   // Only send to known clients; unknown addresses get the same reply and a
   // comparable delay so timing does not enumerate the client list.
   const started = Date.now()
-  const clients = await sql`SELECT id FROM clients WHERE email = ${email}`
+  const clients = await sql`SELECT id FROM clients WHERE lower(btrim(email)) = ${email}`
   if (clients.length > 0) {
     await sendMagicLink(email)
   } else {

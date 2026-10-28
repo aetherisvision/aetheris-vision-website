@@ -1,28 +1,23 @@
-import { get } from '@vercel/blob'
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
-import { getGcsReceipt } from '@/lib/receipt-gcs'
-
-// Only blobs this application wrote, and only inside the receipts prefix.
-const RECEIPT_PATHNAME = /^receipts\/[A-Za-z0-9._/-]{1,200}$/
+import { getGcsReceipt, isValidReceiptPathname } from '@/lib/receipt-gcs'
 
 /**
- * Streams a private receipt blob to an authenticated administrator.
- * The proxy also gates /api/receipts/*, so this is the second of two checks.
+ * Streams a private receipt object from Google Cloud Storage to an
+ * authenticated administrator. The proxy also gates /api/receipts/*, so this
+ * is the second of two checks.
  */
 export async function GET(request: NextRequest) {
   if (!isAdmin(request)) return unauthorizedResponse()
 
   const pathname = request.nextUrl.searchParams.get('path')
-  if (!pathname || pathname.includes('..') || !RECEIPT_PATHNAME.test(pathname)) {
+  if (!isValidReceiptPathname(pathname)) {
     return NextResponse.json({ error: 'Invalid receipt path' }, { status: 400 })
   }
 
-  let result: Awaited<ReturnType<typeof get>> | Awaited<ReturnType<typeof getGcsReceipt>>
+  let result: Awaited<ReturnType<typeof getGcsReceipt>>
   try {
-    result = process.env.GCS_RECEIPT_BUCKET
-      ? await getGcsReceipt(pathname)
-      : await get(pathname, { access: 'private' })
+    result = await getGcsReceipt(pathname)
   } catch (error) {
     console.error('Receipt fetch failed', {
       error: error instanceof Error ? error.name : 'UnknownError',

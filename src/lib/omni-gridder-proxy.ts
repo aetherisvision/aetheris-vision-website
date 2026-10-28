@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server'
+import { randomUUID } from 'node:crypto'
+import { NextRequest, NextResponse } from 'next/server'
 import {
   DEMO_DATASETS,
   allowedInputUris,
@@ -14,6 +15,15 @@ import {
   triggerWorkerRun,
   type OmniGridderJobStatus,
 } from './omni-gridder-client'
+import { rateLimit } from './rate-limit'
+import {
+  RequestSecurityError,
+  assertDistributedRateLimitAvailable,
+  createOpaqueRateLimitKey,
+  getTrustedClientIp,
+} from './request-security'
+import { isSameOriginMutation } from './same-origin'
+import { TURNSTILE_ACTIONS, verifyTurnstileToken } from './turnstile'
 
 // Shared, framework-light omni-gridder proxy logic — the single home for the
 // og-server orchestration that previously lived inline in the three
@@ -42,13 +52,38 @@ export interface ProxyError {
   status: number
   error: string
   headers?: Record<string, string>
+  budgetExhausted?: boolean
 }
 
 export type ProxyOutcome<T> = { ok: true; data: T } | ({ ok: false } & ProxyError)
 
 /** Render a ProxyError as the JSON error response both route families use. */
 export function proxyErrorResponse(err: ProxyError): NextResponse {
-  return NextResponse.json({ error: err.error }, { status: err.status, headers: err.headers })
+  return NextResponse.json(
+    {
+      error: err.error,
+      ...(err.budgetExhausted ? { budgetExhausted: true } : {}),
+    },
+    { status: err.status, headers: err.headers },
+  )
+}
+
+/**
+ * Render a ProxyError for public `/api/omni-gridder/*` routes, replacing any
+ * 5xx internal/upstream error message with a safe generic message.
+ */
+export function publicProxyErrorResponse(err: ProxyError): NextResponse {
+  const safeMessage =
+    err.status >= 500
+      ? 'The regridding service is temporarily unavailable. Please try again shortly.'
+      : err.error
+  return NextResponse.json(
+    {
+      error: safeMessage,
+      ...(err.budgetExhausted ? { budgetExhausted: true } : {}),
+    },
+    { status: err.status, headers: err.headers },
+  )
 }
 
 // ---- Submit ----------------------------------------------------------------
@@ -76,6 +111,8 @@ export interface SubmitRequestBody {
    * catalog by URI and rejected if it does not match a catalogued dataset.
    */
   inputUri?: string
+  /** Optional Cloudflare Turnstile token required on public showcase submissions when Turnstile is configured. */
+  turnstileToken?: string | null
 }
 
 export interface SubmittedJob {
@@ -268,7 +305,7 @@ export async function submitRegridBatch(
     }
   }
 
-  const batchSuffix = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+  const batchSuffix = `${Date.now().toString(36)}-${randomUUID().replace(/-/g, '').slice(0, 8)}`
 
   try {
     const submitted: SubmittedJob[] = []
@@ -414,6 +451,295 @@ export async function getRegridJobStatus(
   return { ok: true, data: status }
 }
 
+export const DEMO_JOB_ID_RE =
+  /^demo-[a-z0-9-]+-(?:nearest|bilinear|conservative|ewa)(?:-plot)?$/
+
+export const DEMO_PLOT_JOB_ID_RE =
+  /^demo-[a-z0-9-]+-(?:nearest|bilinear|conservative|ewa)-plot$/
+
+export interface PublicSubmitResult {
+  jobs: SubmittedJob[]
+  datasetId: string
+  destinationCells: number
+  workerTriggered: boolean
+}
+
+export interface PublicJobStatus {
+  job_id: string
+  processor_type: string
+  status: OmniGridderJobStatus['status']
+  submitted_at: number
+  result_uri: string | null
+  error_message: string | null
+  diagnostics: OmniGridderJobStatus['diagnostics']
+  nextJobId?: string
+}
+
+/** Strip internal `gs://` input URIs from public submit responses. */
+export function toPublicSubmitResult(result: SubmitResult): PublicSubmitResult {
+  return {
+    jobs: result.jobs,
+    datasetId: result.datasetId,
+    destinationCells: result.destinationCells,
+    workerTriggered: result.workerTriggered,
+  }
+}
+
+/**
+ * Project a job status into an allowlisted public shape: never expose signed
+ * `storage.googleapis.com` bearer URLs, `gs://` URIs, or raw upstream error text.
+ */
+export function toPublicJobStatus(status: StatusResult): PublicJobStatus {
+  const isSucceededPlot =
+    status.job_id.endsWith(PLOT_SUFFIX) &&
+    status.status === 'succeeded' &&
+    Boolean(status.result_uri)
+
+  const safeErrorMessage =
+    status.status === 'cancelled'
+      ? 'Job was cancelled'
+      : status.status === 'failed'
+        ? 'Job execution failed'
+        : null
+
+  return {
+    job_id: status.job_id,
+    processor_type: status.processor_type,
+    status: status.status,
+    submitted_at: status.submitted_at,
+    result_uri: isSucceededPlot
+      ? `/api/omni-gridder/download?job=${encodeURIComponent(status.job_id)}&inline=1`
+      : null,
+    error_message: safeErrorMessage,
+    diagnostics: status.diagnostics ?? null,
+    ...(status.nextJobId ? { nextJobId: status.nextJobId } : {}),
+  }
+}
+
+export interface BatchStatusOptions extends StatusOptions {
+  /** Which job ID in the batch is the primary job that should chain the plot. */
+  primaryJobId?: string | null
+  /** Optional catalog datasetId used to resolve compare_uri server-side on public routes. */
+  datasetId?: string | null
+  /** When true, derives panels and compare_uri strictly server-side (#89). */
+  publicMode?: boolean
+}
+
+export interface BatchStatusResult {
+  jobs: StatusResult[]
+}
+
+/**
+ * Poll 1–4 showcase job IDs in a single request so comparison runs do not
+ * multiply HTTP requests by the number of methods (#89 item 4). When
+ * `chainPlot` is enabled and all regrid jobs in the batch have succeeded,
+ * chains the single comparison Plot job on `primaryJobId` (or `jobIds[0]`).
+ */
+export async function getRegridBatchStatus(
+  jobIds: readonly string[],
+  options: BatchStatusOptions,
+): Promise<ProxyOutcome<BatchStatusResult>> {
+  if (!GCS_STAGING_BUCKET) {
+    return { ok: false, status: 500, error: 'OG_GCS_STAGING_BUCKET is not set' }
+  }
+  const uniqueIds = [...new Set(jobIds.map((id) => id.trim()).filter(Boolean))]
+  if (
+    uniqueIds.length === 0 ||
+    uniqueIds.length > 4 ||
+    uniqueIds.some((id) => !DEMO_JOB_ID_RE.test(id))
+  ) {
+    return {
+      ok: false,
+      status: 400,
+      error: 'jobs query param must contain 1–4 valid demo job ids',
+    }
+  }
+
+  let statuses: (OmniGridderJobStatus | null)[]
+  try {
+    statuses = await Promise.all(uniqueIds.map((id) => getJobStatus(id)))
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    return { ok: false, status: 502, error: `Job status lookup failed: ${message}` }
+  }
+
+  if (statuses.some((s) => s === null)) {
+    return { ok: false, status: 404, error: 'Job not found' }
+  }
+
+  const resolved = statuses as OmniGridderJobStatus[]
+  const allRegridSucceeded = resolved.every(
+    (s) =>
+      s.processor_type === 'regrid' &&
+      !s.job_id.endsWith(PLOT_SUFFIX) &&
+      s.status === 'succeeded',
+  )
+
+  if (options.chainPlot && allRegridSucceeded) {
+    const primaryId =
+      options.primaryJobId && uniqueIds.includes(options.primaryJobId)
+        ? options.primaryJobId
+        : uniqueIds[0]
+    const serverPanelsParam = uniqueIds.length > 1 ? uniqueIds.join(',') : null
+    const panelsParam = options.publicMode
+      ? serverPanelsParam
+      : options.panels ?? serverPanelsParam
+    const compareParam = options.publicMode
+      ? (options.datasetId ? datasetById(options.datasetId)?.uri ?? null : null)
+      : options.compare
+
+    let chainedOutcome: ProxyOutcome<StatusResult>
+    try {
+      chainedOutcome = await getRegridJobStatus(primaryId, {
+        chainPlot: true,
+        compare: compareParam,
+        panels: panelsParam,
+      })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      return { ok: false, status: 502, error: `Plot job chaining failed: ${message}` }
+    }
+    if (!chainedOutcome.ok) return chainedOutcome
+
+    return {
+      ok: true,
+      data: {
+        jobs: resolved.map((s) =>
+          s.job_id === primaryId ? chainedOutcome.data : s,
+        ),
+      },
+    }
+  }
+
+  return { ok: true, data: { jobs: resolved } }
+}
+
+// ---- Public showcase spend control (#89 item 3) ----------------------------
+
+const PUBLIC_IP_SUBMIT_LIMIT = 2
+const PUBLIC_IP_SUBMIT_WINDOW_MS = 10 * 60 * 1000
+const DEFAULT_PUBLIC_DAILY_JOB_BUDGET = 40
+const PUBLIC_DAILY_WINDOW_MS = 24 * 60 * 60 * 1000
+
+export function getPublicDailyJobBudget(env: NodeJS.ProcessEnv = process.env): number {
+  const raw = env.OG_PUBLIC_DAILY_JOB_BUDGET?.trim()
+  if (!raw) return DEFAULT_PUBLIC_DAILY_JOB_BUDGET
+  const parsed = Number.parseInt(raw, 10)
+  return Number.isFinite(parsed) && parsed > 0 ? Math.min(500, parsed) : DEFAULT_PUBLIC_DAILY_JOB_BUDGET
+}
+
+export function isPublicShowcaseTurnstileConfigured(
+  env: NodeJS.ProcessEnv = process.env,
+): boolean {
+  return Boolean(
+    env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || env.TURNSTILE_SECRET_KEY?.trim(),
+  )
+}
+
+/**
+ * Spend-control policy hook for `POST /api/omni-gridder/submit` (#89):
+ * 1. Rejects cross-origin mutations (`403`).
+ * 2. Requires distributed rate limiting in production (`503` if Upstash/Vercel
+ *    KV is missing so per-instance memory cannot be bypassed).
+ * 3. When Turnstile is configured (`NEXT_PUBLIC_TURNSTILE_SITE_KEY` /
+ *    `TURNSTILE_SECRET_KEY`), verifies `turnstileToken` against
+ *    `TURNSTILE_ACTIONS.omniGridderShowcase` before consuming any budget.
+ * 4. Enforces a per-IP submission limit (`2 / 10 min`) using `getTrustedClientIp`
+ *    and `createOpaqueRateLimitKey` (never raw `X-Forwarded-For` in production).
+ * 5. Enforces a global daily job budget (`OG_PUBLIC_DAILY_JOB_BUDGET`, default
+ *    `40` jobs / 24h) across all visitors, returning `budgetExhausted: true`
+ *    when the daily demo cap is reached.
+ */
+export async function checkPublicShowcaseBudget(
+  request: NextRequest,
+  jobCount = 1,
+  turnstileToken?: string | null,
+): Promise<ProxyError | null> {
+  if (!isSameOriginMutation(request)) {
+    return { status: 403, error: 'Request origin is not allowed' }
+  }
+
+  try {
+    assertDistributedRateLimitAvailable()
+  } catch (error) {
+    if (error instanceof RequestSecurityError) {
+      return {
+        status: error.status,
+        error: 'The public live demo is temporarily unavailable.',
+      }
+    }
+    throw error
+  }
+
+  if (isPublicShowcaseTurnstileConfigured()) {
+    const verification = await verifyTurnstileToken({
+      token: turnstileToken,
+      expectedAction: TURNSTILE_ACTIONS.omniGridderShowcase,
+      expectedHostname: new URL(request.url).hostname,
+    })
+    if (!verification.ok) {
+      if (verification.reason === 'missing') {
+        return {
+          status: 400,
+          error: 'Please complete the human verification before starting a live run.',
+        }
+      }
+      const unavailable =
+        verification.reason === 'unavailable' ||
+        verification.reason === 'timeout' ||
+        verification.reason === 'misconfigured'
+      return {
+        status: unavailable ? 503 : 403,
+        error: unavailable
+          ? 'Human verification is temporarily unavailable. Please try again shortly.'
+          : 'Human verification could not be confirmed. Please refresh and try again.',
+      }
+    }
+  }
+
+  const requireDistributed = process.env.NODE_ENV === 'production'
+  const ipKey = createOpaqueRateLimitKey(
+    'og-public-submit-ip',
+    getTrustedClientIp(request),
+  )
+
+  const byIp = await rateLimit(ipKey, {
+    limit: PUBLIC_IP_SUBMIT_LIMIT,
+    windowMs: PUBLIC_IP_SUBMIT_WINDOW_MS,
+    prefix: 'og-public-submit-ip',
+    requireDistributed,
+  })
+  if (!byIp.success) {
+    return {
+      status: 429,
+      error: 'Rate limit exceeded — please wait a few minutes before starting another live run.',
+      headers: { 'Retry-After': byIp.retryAfterSeconds.toString() },
+    }
+  }
+
+  const dailyBudget = getPublicDailyJobBudget()
+  const count = Math.max(1, Math.min(4, Math.trunc(jobCount)))
+  for (let i = 0; i < count; i++) {
+    const globalLimit = await rateLimit('global-daily', {
+      limit: dailyBudget,
+      windowMs: PUBLIC_DAILY_WINDOW_MS,
+      prefix: 'og-public-daily-budget',
+      requireDistributed,
+    })
+    if (!globalLimit.success) {
+      return {
+        status: 429,
+        budgetExhausted: true,
+        error:
+          "Today's public live-demo compute budget has been reached. You can still explore the dataset catalog, compatibility matrix, and pre-verified comparisons above, or book a consultation for a live walkthrough.",
+        headers: { 'Retry-After': globalLimit.retryAfterSeconds.toString() },
+      }
+    }
+  }
+
+  return null
+}
+
 // ---- Download (signed-URL proxy) -------------------------------------------
 
 // Job IDs are our own generated strings (see submitRegridBatch /
@@ -443,12 +769,14 @@ export interface DownloadSuccess {
  */
 export async function downloadPlot(
   jobId: string | null,
+  options: { requireDemoPrefix?: boolean } = {},
 ): Promise<ProxyOutcome<DownloadSuccess>> {
   if (!GCS_STAGING_BUCKET) {
     return { ok: false, status: 500, error: 'OG_GCS_STAGING_BUCKET is not set' }
   }
 
-  if (!jobId || !PLOT_JOB_ID_RE.test(jobId)) {
+  const pattern = options.requireDemoPrefix ? DEMO_PLOT_JOB_ID_RE : PLOT_JOB_ID_RE
+  if (!jobId || !pattern.test(jobId)) {
     return {
       ok: false,
       status: 400,

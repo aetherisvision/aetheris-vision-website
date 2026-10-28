@@ -8,6 +8,7 @@ import { sql } from './db'
 import { hashMagicLinkToken } from './magic-link-token'
 
 export async function sendMagicLink(email: string): Promise<void> {
+  const normalizedEmail = email.trim().toLowerCase()
   const resend = new Resend(process.env.RESEND_API_KEY)
   const baseUrl = process.env.NEXTAUTH_URL ?? 'https://aetherisvision.com'
   // The plaintext token travels only in the email link; only its hash is
@@ -18,18 +19,18 @@ export async function sendMagicLink(email: string): Promise<void> {
 
   // Purge only expired tokens: a fresh request must not invalidate a live link
   // the client is about to click (each token is single-use regardless).
-  await sql`DELETE FROM verification_tokens WHERE identifier = ${email} AND expires < NOW()`
+  await sql`DELETE FROM verification_tokens WHERE lower(btrim(identifier)) = ${normalizedEmail} AND expires < NOW()`
 
   await sql`
     INSERT INTO verification_tokens (identifier, token, expires)
-    VALUES (${email}, ${tokenHash}, ${expires})
+    VALUES (${normalizedEmail}, ${tokenHash}, ${expires})
   `
 
-  const confirmUrl = `${baseUrl}/client/confirm?token=${token}&email=${encodeURIComponent(email)}`
+  const confirmUrl = `${baseUrl}/client/confirm?token=${token}&email=${encodeURIComponent(normalizedEmail)}`
 
   await resend.emails.send({
     from: 'Aetheris Vision <noreply@aetherisvision.com>',
-    to: email,
+    to: normalizedEmail,
     replyTo: 'contact@aetherisvision.com',
     subject: 'Your Aetheris Vision login link',
     html: `

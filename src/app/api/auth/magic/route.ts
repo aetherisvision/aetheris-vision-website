@@ -13,8 +13,8 @@ import { hashMagicLinkToken } from '@/lib/magic-link-token'
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData()
-  const token = (formData.get('token') ?? '') as string
-  const email = (formData.get('email') ?? '') as string
+  const token = String(formData.get('token') ?? '').trim()
+  const email = String(formData.get('email') ?? '').trim().toLowerCase()
 
   const errorUrl = new URL('/client/login?error=1', request.url)
   const dashboardUrl = new URL('/client/dashboard', request.url)
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   const tokenHash = hashMagicLinkToken(token)
   const rows = await sql`
     DELETE FROM verification_tokens
-    WHERE identifier = ${email}
+    WHERE lower(btrim(identifier)) = ${email}
       AND token = ${tokenHash}
       AND expires > NOW()
     RETURNING identifier
@@ -38,11 +38,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.redirect(errorUrl, { status: 303 })
   }
 
-  // Look up the client record
+  // Look up the client record (case-insensitive to match clients_email_normalized_uidx)
   const clients = await sql`
     SELECT id, contact_name AS name, email
     FROM clients
-    WHERE email = ${email}
+    WHERE lower(btrim(email)) = ${email}
   `
 
   if (clients.length === 0) {

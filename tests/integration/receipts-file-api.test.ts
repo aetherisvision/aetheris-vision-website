@@ -3,7 +3,14 @@ import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({
   isAdmin: vi.fn(),
-  get: vi.fn(),
+  getGcsReceipt: vi.fn(),
+  isValidReceiptPathname: vi.fn(
+    (p: unknown) =>
+      typeof p === "string" &&
+      !p.includes("..") &&
+      !p.startsWith("receipts//") &&
+      /^receipts\/[A-Za-z0-9._/-]{1,200}$/.test(p),
+  ),
 }));
 
 vi.mock("@/lib/admin-auth", () => ({
@@ -12,7 +19,10 @@ vi.mock("@/lib/admin-auth", () => ({
     new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 }),
 }));
 
-vi.mock("@vercel/blob", () => ({ get: mocks.get }));
+vi.mock("@/lib/receipt-gcs", () => ({
+  getGcsReceipt: mocks.getGcsReceipt,
+  isValidReceiptPathname: mocks.isValidReceiptPathname,
+}));
 
 let GET: (request: NextRequest) => Promise<Response>;
 
@@ -24,9 +34,10 @@ function requestFor(path: string | null): NextRequest {
 
 beforeEach(async () => {
   vi.resetModules();
-  for (const mock of Object.values(mocks)) mock.mockReset();
+  mocks.isAdmin.mockReset();
+  mocks.getGcsReceipt.mockReset();
   mocks.isAdmin.mockReturnValue(true);
-  mocks.get.mockResolvedValue({
+  mocks.getGcsReceipt.mockResolvedValue({
     stream: new ReadableStream(),
     blob: { contentType: "application/pdf" },
   });
@@ -38,13 +49,13 @@ describe("GET /api/receipts/file", () => {
     mocks.isAdmin.mockReturnValue(false);
     const response = await GET(requestFor("receipts/abc.pdf"));
     expect(response.status).toBe(401);
-    expect(mocks.get).not.toHaveBeenCalled();
+    expect(mocks.getGcsReceipt).not.toHaveBeenCalled();
   });
 
-  it("streams a private receipt to an administrator without caching it", async () => {
+  it("streams a private GCS receipt to an administrator without caching it", async () => {
     const response = await GET(requestFor("receipts/abc.pdf"));
     expect(response.status).toBe(200);
-    expect(mocks.get).toHaveBeenCalledWith("receipts/abc.pdf", { access: "private" });
+    expect(mocks.getGcsReceipt).toHaveBeenCalledWith("receipts/abc.pdf");
     expect(response.headers.get("Cache-Control")).toBe("private, no-store");
     expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
   });
@@ -54,17 +65,17 @@ describe("GET /api/receipts/file", () => {
       const response = await GET(requestFor(path));
       expect(response.status).toBe(400);
     }
-    expect(mocks.get).not.toHaveBeenCalled();
+    expect(mocks.getGcsReceipt).not.toHaveBeenCalled();
   });
 
   it("reports a missing receipt as 404 rather than an error", async () => {
-    mocks.get.mockResolvedValue(null);
+    mocks.getGcsReceipt.mockResolvedValue(null);
     const response = await GET(requestFor("receipts/gone.pdf"));
     expect(response.status).toBe(404);
   });
 
   it("does not leak provider errors to the caller", async () => {
-    mocks.get.mockRejectedValue(new Error("blob store exploded"));
+    mocks.getGcsReceipt.mockRejectedValue(new Error("gcs bucket exploded"));
     const response = await GET(requestFor("receipts/abc.pdf"));
     expect(response.status).toBe(502);
     await expect(response.json()).resolves.toEqual({ error: "Receipt unavailable" });

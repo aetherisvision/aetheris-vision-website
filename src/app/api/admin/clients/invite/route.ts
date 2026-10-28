@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
 
   const { email } = await request.json()
 
-  const trimmed = typeof email === 'string' ? email.trim() : ''
+  const trimmed = typeof email === 'string' ? email.trim().toLowerCase() : ''
   // RFC 5322-compatible basic check: local@domain.tld — rejects whitespace-only values
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
   if (!trimmed || !EMAIL_RE.test(trimmed)) {

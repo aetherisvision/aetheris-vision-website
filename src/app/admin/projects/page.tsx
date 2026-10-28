@@ -39,6 +39,9 @@ interface Project {
   intake_id?: number | null
   status?: string | null
   signed_at?: string | null
+  docuseal_submission_id?: string | null
+  has_signed_pdf?: boolean
+  preview_url?: string | null
   can_delete?: boolean
   current_phase: string
   phase_proposal_date: string | null
@@ -230,7 +233,13 @@ export default function AdminProjectsPage() {
                       {project.lead_id && <Link href={`/admin/leads#lead-${project.lead_id}`} style={{ color: dark.blue }}>Lead #{project.lead_id}</Link>}
                       {project.intake_id && <Link href={`/admin/intake#intake-${project.intake_id}`} style={{ color: dark.blue }}>Intake #{project.intake_id}</Link>}
                       {project.client_id && <Link href={`/admin/clients#client-${project.client_id}`} style={{ color: dark.blue }}>{lifecycle === 'proposal' ? 'Prospect' : 'Client'} #{project.client_id}</Link>}
-                      {project.signed_at && <span style={{ color: dark.textDim }}>Signed {new Date(project.signed_at).toLocaleDateString()}</span>}
+                      {project.signed_at ? (
+                        <span style={{ color: dark.successText }}>Signed {new Date(project.signed_at).toLocaleDateString()}</span>
+                      ) : project.docuseal_submission_id ? (
+                        <span style={{ color: '#fbbf24' }}>DocuSeal awaiting signature ({project.docuseal_submission_id})</span>
+                      ) : (
+                        <span style={{ color: dark.textDim }}>DocuSeal not linked</span>
+                      )}
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -261,6 +270,31 @@ export default function AdminProjectsPage() {
                         </button>
                       )
                     })}
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '11px', marginBottom: '20px' }}>
+                  <div>
+                    <label htmlFor={`docuseal-${project.id}`} style={labelStyle}>DocuSeal submission ID / slug</label>
+                    <input
+                      id={`docuseal-${project.id}`}
+                      type="text"
+                      placeholder="e.g. sub_12345 or signing slug"
+                      style={inputStyle}
+                      value={getField(project, 'docuseal_submission_id')}
+                      onChange={event => setField(project.id, 'docuseal_submission_id', event.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor={`preview-${project.id}`} style={labelStyle}>Client preview URL (optional)</label>
+                    <input
+                      id={`preview-${project.id}`}
+                      type="url"
+                      placeholder="https://..."
+                      style={inputStyle}
+                      value={getField(project, 'preview_url')}
+                      onChange={event => setField(project.id, 'preview_url', event.target.value)}
+                    />
                   </div>
                 </div>
 

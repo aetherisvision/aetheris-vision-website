@@ -31,7 +31,13 @@ export async function POST(request: NextRequest) {
 
   const filename = `receipts/${crypto.randomUUID()}.${ext}`
 
-  const stored = await putReceipt(filename, file, file.type)
+  const stored = await putReceipt(filename, file, file.type, {
+    source: 'admin-upload',
+  })
 
-  return NextResponse.json({ url: stored.reference })
+  return NextResponse.json({
+    url: stored.reference,
+    gcsUri: stored.object?.gcsUri ?? null,
+    sha256: stored.object?.sha256 ?? null,
+  })
 }

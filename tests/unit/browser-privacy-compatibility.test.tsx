@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   CONVERSIONS,
   hasServerPrivacySignal,
+  INLINE_CLIENT_PRIVACY_GUARD,
   isClientPrivacySignalActive,
   trackAnalyticsEvent,
   trackConversion,
@@ -17,6 +18,7 @@ import TurnstileWidget, { TURNSTILE_LOAD_TIMEOUT_MS } from "@/components/Turnsti
 
 const scriptControl = vi.hoisted(() => ({
   autoReady: true,
+  mountCount: 0,
   onReady: undefined as (() => void) | undefined,
   onError: undefined as (() => void) | undefined,
 }));
@@ -32,6 +34,7 @@ vi.mock("next/script", () => ({
     scriptControl.onReady = onReady;
     scriptControl.onError = onError;
     React.useEffect(() => {
+      scriptControl.mountCount += 1;
       if (scriptControl.autoReady) onReady?.();
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -85,6 +88,10 @@ describe("Global Privacy Control (Sec-GPC) and DNT across Brave, Firefox, Opera,
     expect(isClientPrivacySignalActive()).toBe(true);
     trackConversion(CONVERSIONS.consultationBooked);
     expect(gtag).toHaveBeenCalledTimes(1);
+
+    expect(INLINE_CLIENT_PRIVACY_GUARD).toContain("navigator.globalPrivacyControl !== true");
+    expect(INLINE_CLIENT_PRIVACY_GUARD).toContain("navigator.doNotTrack !== 'yes'");
+    expect(INLINE_CLIENT_PRIVACY_GUARD).toContain("navigator.msDoNotTrack !== '1'");
   });
 });
 
@@ -237,6 +244,7 @@ describe("TurnstileWidget resilience under Brave Shields, Opera Ad Blocker, Fire
   beforeEach(() => {
     vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "site-key");
     scriptControl.autoReady = true;
+    scriptControl.mountCount = 0;
     delete window.turnstile;
   });
 
@@ -312,5 +320,42 @@ describe("TurnstileWidget resilience under Brave Shields, Opera Ad Blocker, Fire
 
     expect(screen.getByRole("status")).toHaveTextContent("Human verification complete");
     expect(onTokenChange).toHaveBeenLastCalledWith("solved-after-36s");
+  });
+
+  it("resets/re-renders the widget on Retry verification and hides Retry when the script tag itself failed to load", async () => {
+    const resetSpy = vi.fn();
+    let errorCallback: (() => void) | undefined;
+    const renderSpy = vi.fn().mockImplementation((_container, options: { "error-callback": () => void }) => {
+      errorCallback = options["error-callback"];
+      return "widget-initial";
+    });
+    window.turnstile = {
+      render: renderSpy,
+      remove: vi.fn(),
+      reset: resetSpy,
+    };
+
+    const onTokenChange = vi.fn();
+    const { unmount } = render(<TurnstileWidget action="contact" onTokenChange={onTokenChange} />);
+    await waitFor(() => expect(renderSpy).toHaveBeenCalledTimes(1));
+
+    act(() => {
+      errorCallback?.();
+    });
+    expect(screen.getByRole("alert")).toHaveTextContent(/Verification could not load/);
+
+    fireEvent.click(screen.getByRole("button", { name: /retry verification/i }));
+    expect(resetSpy).toHaveBeenCalledWith("widget-initial");
+    await waitFor(() => expect(renderSpy).toHaveBeenCalledTimes(2));
+    unmount();
+
+    // When the <Script> tag itself fires onError, Retry is hidden because a page refresh is required.
+    scriptControl.autoReady = false;
+    render(<TurnstileWidget action="contact" onTokenChange={onTokenChange} />);
+    act(() => {
+      scriptControl.onError?.();
+    });
+    expect(screen.getByRole("alert")).toHaveTextContent(/Refresh the page and try again/);
+    expect(screen.queryByRole("button", { name: /retry verification/i })).toBeNull();
   });
 });

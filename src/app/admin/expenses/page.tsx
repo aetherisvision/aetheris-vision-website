@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import DatePicker from '../components/DatePicker'
 import { SITE } from '@/lib/constants'
+import { EXPENSE_CATEGORIES } from '@/lib/expense-categories'
 
 const dark = {
   surface: '#0d1b2e',
@@ -21,29 +22,10 @@ const dark = {
   dangerBorder: 'rgba(220,38,38,0.25)',
 }
 
-const CATEGORIES = [
-  'Software Subscriptions',
-  'Cloud Services',
-  'Domain & Hosting',
-  'Design Tools',
-  'Contractors & Subcontractors',
-  'Legal & Professional Fees',
-  'Professional Certifications',
-  'Professional Development & Training',
-  'Conferences & Events',
-  'Books & Research Materials',
-  'Marketing & Advertising',
-  'Business Insurance',
-  'Banking & Financial Fees',
-  'Equipment & Hardware',
-  'Office Supplies',
-  'Home Office',
-  'Travel & Transportation',
-  'Other',
-]
+const CATEGORIES = EXPENSE_CATEGORIES
 
 type Expense = {
-  id: number
+  id: number | string
   date: string
   vendor: string
   description: string
@@ -79,11 +61,18 @@ export default function ExpensesPage() {
   const [showForm, setShowForm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editingId, setEditingId] = useState<number | string | null>(null)
   const [editRow, setEditRow] = useState<Partial<Expense>>({})
   const [savingEdit, setSavingEdit] = useState(false)
-  const [deletingId, setDeletingId] = useState<number | null>(null)
-  const [form, setForm] = useState({
+  const [deletingId, setDeletingId] = useState<number | string | null>(null)
+  const [form, setForm] = useState<{
+    date: string
+    vendor: string
+    description: string
+    category: string
+    amount: string
+    receipt_url: string
+  }>({
     date: new Date().toISOString().split('T')[0],
     vendor: '',
     description: '',
@@ -139,9 +128,9 @@ export default function ExpensesPage() {
     })
   }
 
-  async function saveEdit(id: number) {
+  async function saveEdit(id: number | string) {
     setSavingEdit(true)
-    await fetch(`/api/expenses/${id}`, {
+    await fetch(`/api/expenses/${encodeURIComponent(String(id))}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(editRow),
@@ -151,9 +140,9 @@ export default function ExpensesPage() {
     fetchExpenses()
   }
 
-  async function deleteExpense(id: number) {
+  async function deleteExpense(id: number | string) {
     setDeletingId(id)
-    await fetch(`/api/expenses/${id}`, { method: 'DELETE' })
+    await fetch(`/api/expenses/${encodeURIComponent(String(id))}`, { method: 'DELETE' })
     setDeletingId(null)
     fetchExpenses()
   }

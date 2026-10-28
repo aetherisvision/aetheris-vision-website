@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   HERO_GLOBE_CLOUD_SCALE,
   HERO_GLOBE_DIAMETER_RATIO,
@@ -19,17 +19,15 @@ type NavigatorWithConnection = Navigator & {
   connection?: { saveData?: boolean };
 };
 
-function supportsWebGL2(): boolean {
-  return probeWebGL2Support();
-}
-
 const POSTER_WIDTH = `min(calc(${HERO_GLOBE_DIAMETER_RATIO * 100}cqw * ${HERO_GLOBE_CLOUD_SCALE}), calc((100cqh - ${HERO_GLOBE_OBSCURED_TOP_PX}px) * ${HERO_GLOBE_DIAMETER_RATIO} * ${HERO_GLOBE_CLOUD_SCALE}))`;
 
 export default function HeroGlobe() {
   const [showCanvas, setShowCanvas] = useState(false);
   const [ready, setReady] = useState(false);
+  const contextLostRef = useRef(false);
   const handleReady = useCallback(() => setReady(true), []);
   const handleContextLost = useCallback(() => {
+    contextLostRef.current = true;
     setReady(false);
     setShowCanvas(false);
   }, []);
@@ -37,7 +35,8 @@ export default function HeroGlobe() {
   useEffect(() => {
     // Phone width, save-data, and missing WebGL2 are read once. Reduced motion
     // stays live: turning it on after the globe is ready must take the canvas
-    // down and bring the poster back, and turning it off mounts a new canvas.
+    // down and bring the poster back, and turning it off mounts a new canvas
+    // unless the WebGL context was already lost.
     const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     const saveData = (navigator as NavigatorWithConnection).connection?.saveData === true;
@@ -48,13 +47,13 @@ export default function HeroGlobe() {
       const reducedMotion = motionQuery.matches;
       if (isDesktop && !reducedMotion && !saveData && !webgl2Checked) {
         webgl2Checked = true;
-        webgl2 = supportsWebGL2();
+        webgl2 = probeWebGL2Support();
       }
       const mount = shouldMountHeroCanvas({
         isDesktop,
         reducedMotion,
         saveData,
-        webgl2,
+        webgl2: webgl2 && !contextLostRef.current,
       });
       setShowCanvas(mount);
       if (!mount) setReady(false);

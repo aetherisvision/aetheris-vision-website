@@ -1,37 +1,52 @@
-import { sql } from '@/lib/db'
 import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
+import { FirestoreExpenseStoreError } from '@/lib/expense-firestore'
+import { deleteExpenseRecord, updateExpenseRecord } from '@/lib/expense-store'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   if (!isAdmin(request)) return unauthorizedResponse()
   const { id } = await params
-  const { date, vendor, description, category, amount, receipt_url } = await request.json()
+  const { date, vendor, description, category, amount, tax_year, receipt_url } =
+    await request.json()
 
-  const rows = await sql`
-    UPDATE expenses
-    SET date        = COALESCE(${date ?? null}, date),
-        vendor      = COALESCE(${vendor ?? null}, vendor),
-        description = COALESCE(${description ?? null}, description),
-        category    = COALESCE(${category ?? null}, category),
-        amount      = COALESCE(${amount ?? null}, amount),
-        receipt_url = ${receipt_url ?? null}
-    WHERE id = ${Number(id)}
-    RETURNING *
-  `
+  try {
+    const updated = await updateExpenseRecord(id, {
+      date: date ?? null,
+      vendor: vendor ?? null,
+      description: description ?? null,
+      category: category ?? null,
+      amount: amount ?? null,
+      tax_year: tax_year ?? null,
+      receipt_url: receipt_url ?? null,
+    })
 
-  if (rows.length === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  return NextResponse.json(rows[0])
+    if (!updated) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    return NextResponse.json(updated)
+  } catch (error) {
+    if (error instanceof FirestoreExpenseStoreError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
+    throw error
+  }
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   if (!isAdmin(request)) return unauthorizedResponse()
   const { id } = await params
-  await sql`DELETE FROM expenses WHERE id = ${Number(id)}`
-  return NextResponse.json({ ok: true })
+
+  try {
+    await deleteExpenseRecord(id)
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    if (error instanceof FirestoreExpenseStoreError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
+    throw error
+  }
 }

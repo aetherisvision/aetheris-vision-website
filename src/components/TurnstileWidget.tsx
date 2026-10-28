@@ -22,6 +22,7 @@ interface TurnstileApi {
     },
   ) => string;
   remove: (widgetId: string) => void;
+  reset?: (widgetId?: string) => void;
 }
 
 declare global {
@@ -53,7 +54,9 @@ export default function TurnstileWidget({
   const callbackRef = useRef(onTokenChange);
   const loadTimerRef = useRef<number | null>(null);
   const renderedCycleRef = useRef<string | null>(null);
+  const widgetIdRef = useRef<string | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
+  const [scriptLoadFailed, setScriptLoadFailed] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const cycleKey = `${String(resetKey)}:${retryCount}`;
   const [statusState, setStatusState] = useState<{
@@ -138,6 +141,7 @@ export default function TurnstileWidget({
 
     // The script loaded and the challenge mounted; clear the script-load
     // watchdog so interactive challenge solving can take longer than 12s.
+    widgetIdRef.current = widgetId;
     renderedCycleRef.current = cycleKey;
     if (loadTimerRef.current !== null) {
       window.clearTimeout(loadTimerRef.current);
@@ -145,6 +149,7 @@ export default function TurnstileWidget({
     }
 
     return () => {
+      widgetIdRef.current = null;
       try {
         window.turnstile?.remove(widgetId);
       } catch {
@@ -180,8 +185,12 @@ export default function TurnstileWidget({
         id="cloudflare-turnstile"
         src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
         strategy="afterInteractive"
-        onReady={() => setScriptReady(true)}
+        onReady={() => {
+          setScriptLoadFailed(false);
+          setScriptReady(true);
+        }}
         onError={() => {
+          setScriptLoadFailed(true);
           setStatusState({ cycleKey, value: "error" });
           callbackRef.current(null);
         }}
@@ -195,11 +204,18 @@ export default function TurnstileWidget({
         >
           {statusMessage}
         </p>
-        {(status === "error" || status === "expired") && (
+        {(status === "error" || status === "expired") && !scriptLoadFailed && (
           <button
             type="button"
             onClick={() => {
               callbackRef.current(null);
+              if (widgetIdRef.current && typeof window.turnstile?.reset === "function") {
+                try {
+                  window.turnstile.reset(widgetIdRef.current);
+                } catch {
+                  /* fall through to remove + render via retryCount */
+                }
+              }
               setRetryCount((count) => count + 1);
             }}
             className="text-xs font-medium text-blue-300 underline underline-offset-4 hover:text-white"

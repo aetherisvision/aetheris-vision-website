@@ -12,11 +12,20 @@ vi.mock("@/components/RotatingEarth", () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require("react") as typeof import("react");
   return {
-    default: function MockEarth({ onReady }: { onReady?: () => void }) {
+    default: function MockEarth({
+      onReady,
+      onContextLost,
+    }: {
+      onReady?: () => void;
+      onContextLost?: () => void;
+    }) {
       React.useEffect(() => {
         onReady?.();
       }, [onReady]);
-      return React.createElement("div", { "data-testid": "rotating-earth" });
+      return React.createElement(
+        "div",
+        { "data-testid": "rotating-earth", onClick: () => onContextLost?.() },
+      );
     },
   };
 });
@@ -157,6 +166,31 @@ describe("HeroGlobe", () => {
     act(() => media.emit("(prefers-reduced-motion: reduce)"));
 
     expect(await screen.findByTestId("rotating-earth")).toBeInTheDocument();
+  });
+
+  it("keeps the poster and does not remount the canvas after a WebGL context loss", async () => {
+    const media = installMatchMedia((query) => query === "(min-width: 1024px)");
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(((type: string) =>
+      type === "webgl2" ? ({} as WebGL2RenderingContext) : null) as typeof HTMLCanvasElement.prototype.getContext);
+
+    render(<HeroGlobe />);
+
+    const earth = await screen.findByTestId("rotating-earth");
+    act(() => earth.click());
+
+    expect(screen.queryByTestId("rotating-earth")).toBeNull();
+    expect(document.querySelector("img")?.closest("div")?.className).toContain("opacity-100");
+
+    // Toggling reduced-motion on and off after context loss must keep the poster.
+    media.setMatches(
+      (query) => query === "(min-width: 1024px)" || query === "(prefers-reduced-motion: reduce)",
+    );
+    act(() => media.emit("(prefers-reduced-motion: reduce)"));
+    media.setMatches((query) => query === "(min-width: 1024px)");
+    act(() => media.emit("(prefers-reduced-motion: reduce)"));
+
+    expect(screen.queryByTestId("rotating-earth")).toBeNull();
+    expect(document.querySelector("img")?.closest("div")?.className).toContain("opacity-100");
   });
 });
 

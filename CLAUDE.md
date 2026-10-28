@@ -24,7 +24,7 @@ Root manifest at `~/Developer/CLAUDE.md` has the full business identity, secrets
 | Auth | NextAuth.js custom magic-link flow |
 | Payments | Stripe — invoicing live as of Mar 24, 2026 |
 | E-signing | Docuseal API |
-| Email cron | Vercel Cron (daily 0 11 * * * UTC) → `/api/cron/receipts` → Gmail API → Neon `expenses` |
+| Email cron | Scheduled `GET /api/cron/receipts` → Gmail API → Firestore `expenses` + private GCS (`GCS_RECEIPT_BUCKET`, PostgreSQL fallback) |
 
 ---
 
@@ -91,8 +91,8 @@ Admin auth verified 2026-08-21: `/admin/*` pages are gated in `proxy.ts` and eve
 
 ## Expense Ingestion
 
-Vercel Cron: daily `0 11 * * *` UTC → `GET /api/cron/receipts` with `CRON_SECRET`
-Gmail API scans connected accounts → inserts into Neon `expenses` table (PDFs → Vercel Blob).
+Daily `0 11 * * *` UTC → `GET /api/cron/receipts` with `CRON_SECRET`
+Gmail API scans connected accounts → records expense and receipt metadata in Firestore (`FIRESTORE_PROJECT_ID`, with PostgreSQL `expenses` fallback) and stores PDFs in private GCS (`GCS_RECEIPT_BUCKET`).
 OAuth flow: `/admin/gmail` → stores in `oauth_tokens` table.
 
 ---
@@ -126,7 +126,7 @@ Secrets load from `~/.secrets` (sourced by `~/.zshrc`); in a bare shell run `sou
 | Tropical Hut OKC | 1 | finny.koshy1@gmail.com | Pro bono — project id=1 |
 | Marston Ward | 2 | marston@aetherisvision.com | |
 
-Pending: wire Docuseal submission ID to Tropical Hut, link bank account to Stripe.
+Pending: link bank account to Stripe (#16). DocuSeal submission ID wiring is available in `/admin/projects` (#15).
 
 ---
 

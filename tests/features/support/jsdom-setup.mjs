@@ -40,6 +40,10 @@ const nodeKeepKeys = new Set([
   "TextEncoder", "TextDecoder", "TextEncoderStream", "TextDecoderStream",
   "AbortController", "AbortSignal", "structuredClone", "crypto", "performance",
   "URL", "URLSearchParams", "MessageChannel", "MessagePort", "WebSocket",
+  "btoa", "atob", "ArrayBuffer", "SharedArrayBuffer", "DataView",
+  "Uint8Array", "Uint8ClampedArray", "Int8Array", "Uint16Array", "Int16Array",
+  "Uint32Array", "Int32Array", "Float32Array", "Float64Array",
+  "BigInt64Array", "BigUint64Array",
 ]);
 
 const isClassLike = (name) => name[0] === name[0].toUpperCase();
@@ -93,3 +97,9 @@ if (globalThis.document?.defaultView) {
 
 // React 19 / testing-library run in an "act" environment for predictable updates.
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+// Keep Cucumber scenarios hermetic even when developer shell secrets are loaded.
+delete process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+delete process.env.TURNSTILE_SECRET_KEY;
+delete process.env.ADMIN_SESSION_SECRET;
+delete process.env.PREVIEW_PASSWORD;

@@ -1,86 +1,113 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const put = vi.hoisted(() => vi.fn());
+const mocks = vi.hoisted(() => ({
+  putGcsReceipt: vi.fn(),
+  isValidReceiptPathname: vi.fn((p: unknown) => typeof p === "string" && /^receipts\/[A-Za-z0-9._/-]{1,200}$/.test(p) && !p.includes("..")),
+  isFirestoreExpenseStoreConfigured: vi.fn(() => false),
+  recordFirestoreReceiptMetadata: vi.fn(),
+}));
 
-class BlobError extends Error {}
-class BlobAccessError extends BlobError {}
-class BlobServiceRateLimited extends BlobError {}
-class BlobServiceNotAvailable extends BlobError {}
-class BlobStoreSuspendedError extends BlobError {}
-class BlobStoreNotFoundError extends BlobError {}
-class BlobClientTokenExpiredError extends BlobError {}
-class BlobPreconditionFailedError extends BlobError {}
-class BlobRequestAbortedError extends BlobError {}
+vi.mock("@/lib/receipt-gcs", () => ({
+  putGcsReceipt: mocks.putGcsReceipt,
+  isValidReceiptPathname: mocks.isValidReceiptPathname,
+}));
 
-vi.mock("@vercel/blob", () => ({
-  put,
-  BlobAccessError,
-  BlobServiceRateLimited,
-  BlobServiceNotAvailable,
-  BlobStoreSuspendedError,
-  BlobStoreNotFoundError,
-  BlobClientTokenExpiredError,
-  BlobPreconditionFailedError,
-  BlobRequestAbortedError,
+vi.mock("@/lib/expense-firestore", () => ({
+  isFirestoreExpenseStoreConfigured: mocks.isFirestoreExpenseStoreConfigured,
+  recordFirestoreReceiptMetadata: mocks.recordFirestoreReceiptMetadata,
 }));
 
 let putReceipt: typeof import("@/lib/receipt-blob").putReceipt;
 
 beforeEach(async () => {
   vi.resetModules();
-  put.mockReset();
+  mocks.putGcsReceipt.mockReset();
+  mocks.recordFirestoreReceiptMetadata.mockReset();
+  mocks.isFirestoreExpenseStoreConfigured.mockReturnValue(false);
   vi.spyOn(console, "warn").mockImplementation(() => {});
   ({ putReceipt } = await import("@/lib/receipt-blob"));
 });
 
 const PATH = "receipts/abc.pdf";
 
-describe("putReceipt", () => {
-  it("stores privately and returns the gated viewer path", async () => {
-    put.mockResolvedValueOnce({ url: "https://blob.example/x" });
+describe("putReceipt (GCS + Firestore metadata)", () => {
+  it("stores privately in GCS and returns the gated viewer path", async () => {
+    mocks.putGcsReceipt.mockResolvedValueOnce({
+      bucket: "private-crm-test",
+      objectPath: PATH,
+      gcsUri: "gs://private-crm-test/receipts/abc.pdf",
+      contentType: "application/pdf",
+      sizeBytes: 1,
+      sha256: "a".repeat(64),
+    });
+
     const result = await putReceipt(PATH, Buffer.from("x"), "application/pdf");
 
-    expect(put).toHaveBeenCalledTimes(1);
-    expect(put.mock.calls[0][2]).toMatchObject({ access: "private" });
+    expect(mocks.putGcsReceipt).toHaveBeenCalledTimes(1);
+    expect(mocks.putGcsReceipt).toHaveBeenCalledWith(PATH, Buffer.from("x"), "application/pdf");
     expect(result).toEqual({
       reference: "/api/receipts/file?path=receipts%2Fabc.pdf",
       isPrivate: true,
+      object: {
+        bucket: "private-crm-test",
+        objectPath: PATH,
+        gcsUri: "gs://private-crm-test/receipts/abc.pdf",
+        contentType: "application/pdf",
+        sizeBytes: 1,
+        sha256: "a".repeat(64),
+      },
+    });
+    expect(mocks.recordFirestoreReceiptMetadata).not.toHaveBeenCalled();
+  });
+
+  it("records structured receipt metadata in Firestore when configured", async () => {
+    mocks.isFirestoreExpenseStoreConfigured.mockReturnValue(true);
+    mocks.putGcsReceipt.mockResolvedValueOnce({
+      bucket: "private-crm-test",
+      objectPath: PATH,
+      gcsUri: "gs://private-crm-test/receipts/abc.pdf",
+      contentType: "application/pdf",
+      sizeBytes: 42,
+      sha256: "b".repeat(64),
+    });
+    mocks.recordFirestoreReceiptMetadata.mockResolvedValueOnce({});
+
+    const result = await putReceipt(PATH, Buffer.from("x"), "application/pdf", {
+      source: "gmail-cron",
+      gmailMessageId: "msg-123",
+    });
+
+    expect(result.isPrivate).toBe(true);
+    expect(mocks.recordFirestoreReceiptMetadata).toHaveBeenCalledWith({
+      object_path: PATH,
+      bucket: "private-crm-test",
+      gcs_uri: "gs://private-crm-test/receipts/abc.pdf",
+      view_url: "/api/receipts/file?path=receipts%2Fabc.pdf",
+      content_type: "application/pdf",
+      size_bytes: 42,
+      sha256: "b".repeat(64),
+      source: "gmail-cron",
+      gmail_message_id: "msg-123",
     });
   });
 
-  it("falls back to public only when the store cannot do private at all", async () => {
-    put
-      .mockRejectedValueOnce(new BlobAccessError("private access is not enabled for this store"))
-      .mockResolvedValueOnce({ url: "https://blob.example/receipts/abc-9f2.pdf" });
-
-    const result = await putReceipt(PATH, Buffer.from("x"), "application/pdf");
-    expect(put).toHaveBeenCalledTimes(2);
-    expect(put.mock.calls[1][2]).toMatchObject({ access: "public", addRandomSuffix: true });
-    expect(result).toEqual({
-      reference: "https://blob.example/receipts/abc-9f2.pdf",
-      isPrivate: false,
-    });
+  it("rejects paths outside the receipts prefix before touching storage", async () => {
+    for (const badPath of ["oauth/tokens.json", "../../secrets", "receipts/../oauth", ""]) {
+      await expect(putReceipt(badPath, Buffer.from("x"), "application/pdf")).rejects.toThrow(
+        "Invalid receipt path",
+      );
+    }
+    expect(mocks.putGcsReceipt).not.toHaveBeenCalled();
   });
 
   it.each([
-    ["a rate limit", new BlobServiceRateLimited("too many requests")],
-    ["an outage", new BlobServiceNotAvailable("service unavailable")],
-    ["a suspended store", new BlobStoreSuspendedError("store suspended")],
-    ["a missing store", new BlobStoreNotFoundError("store not found")],
-    ["an expired token", new BlobClientTokenExpiredError("token expired")],
-    ["a pathname collision", new BlobPreconditionFailedError("blob already exists")],
-    ["an aborted request", new BlobRequestAbortedError("aborted")],
+    ["a permission failure", Object.assign(new Error("Forbidden"), { code: 403 })],
+    ["a storage outage", Object.assign(new Error("Service Unavailable"), { code: 503 })],
+    ["a precondition collision", Object.assign(new Error("Precondition Failed"), { code: 412 })],
     ["an unknown failure", new Error("socket hang up")],
-  ])("never publishes a receipt because of %s", async (_label, error) => {
-    put.mockRejectedValueOnce(error);
+  ])("never downgrades a receipt to public on %s", async (_label, error) => {
+    mocks.putGcsReceipt.mockRejectedValueOnce(error);
     await expect(putReceipt(PATH, Buffer.from("x"), "application/pdf")).rejects.toThrow();
-    // Critically: no second, public write.
-    expect(put).toHaveBeenCalledTimes(1);
-  });
-
-  it("does not treat an outage as a private-support problem even if it says 'private'", async () => {
-    put.mockRejectedValueOnce(new BlobServiceNotAvailable("private store temporarily unavailable"));
-    await expect(putReceipt(PATH, Buffer.from("x"))).rejects.toThrow();
-    expect(put).toHaveBeenCalledTimes(1);
+    expect(mocks.putGcsReceipt).toHaveBeenCalledTimes(1);
   });
 });
