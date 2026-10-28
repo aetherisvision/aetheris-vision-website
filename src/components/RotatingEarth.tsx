@@ -163,10 +163,6 @@ function Scene({ animate, onReady }: { animate: boolean; onReady?: () => void })
   );
 }
 
-function supportsWebGL2() {
-  return probeWebGL2Support();
-}
-
 export default function RotatingEarth({
   onReady,
   onContextLost,
@@ -185,7 +181,7 @@ export default function RotatingEarth({
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setHasWebGL(supportsWebGL2());
+    setHasWebGL(probeWebGL2Support());
   }, []);
 
   useEffect(() => {

@@ -66,7 +66,9 @@ export default function PrivacyPage() {
                 <strong className="text-gray-300">Analytics</strong> &mdash; Vercel Analytics
                 records cookieless, aggregate usage (page views, performance). When Google
                 Analytics is enabled, it sets first-party analytics cookies in your browser. We
-                do not use advertising cookies.
+                do not use advertising cookies, and both analytics tools are automatically
+                disabled when your browser sends Global Privacy Control (<code className="text-gray-300">Sec-GPC: 1</code>)
+                or Do Not Track (<code className="text-gray-300">DNT: 1</code>).
               </li>
               <li>
                 <strong className="text-gray-300">Client portal</strong> &mdash; if you are a

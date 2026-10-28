@@ -31,3 +31,9 @@ Feature: Email Anti-Scraping Security
     Then the rendered HTML should contain "customer relationship management (CRM)"
     And the rendered HTML should contain "Anthropic"
     And the rendered HTML should contain "business, contact, and project details"
+
+  Scenario: Privacy page explains Global Privacy Control and Do Not Track opt-out
+    Given the privacy page content is rendered
+    Then the rendered HTML should contain "Global Privacy Control"
+    And the rendered HTML should contain "Sec-GPC: 1"
+    And the rendered HTML should contain "DNT: 1"

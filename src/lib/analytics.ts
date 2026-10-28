@@ -45,6 +45,14 @@ type HeaderReader = {
 export const PRIVACY_OPT_OUT_HEADER = "x-privacy-opt-out";
 
 /**
+ * Inline JavaScript condition evaluated before initializing Google Analytics in
+ * `src/app/layout.tsx`. Matches `isClientPrivacySignalActive()` so the server
+ * inline script and client event helpers enforce the exact same rule.
+ */
+export const INLINE_CLIENT_PRIVACY_GUARD =
+  "navigator.globalPrivacyControl !== true && navigator.doNotTrack !== '1' && navigator.doNotTrack !== 'yes' && window.doNotTrack !== '1' && window.doNotTrack !== 'yes' && navigator.msDoNotTrack !== '1'";
+
+/**
  * True when request headers carry Global Privacy Control (`Sec-GPC: 1`, sent by
  * default in Brave and supported in Firefox ETP), Do Not Track (`DNT: 1`), or
  * the proxy-forwarded `x-privacy-opt-out: 1` header.

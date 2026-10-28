@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { Analytics } from "@vercel/analytics/react";
 import Script from "next/script";
 import { CORE_SEO_KEYWORDS, SITE } from "@/lib/constants";
-import { hasServerPrivacySignal } from "@/lib/analytics";
+import { hasServerPrivacySignal, INLINE_CLIENT_PRIVACY_GUARD } from "@/lib/analytics";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/jsonld";
 import "./globals.css";
 import BackToTop from "@/components/BackToTop";
@@ -117,7 +117,7 @@ export default async function RootLayout({
             />
             <Script id="google-analytics" strategy="afterInteractive" nonce={nonce}>
               {`
-                if (navigator.globalPrivacyControl !== true && navigator.doNotTrack !== '1' && window.doNotTrack !== '1') {
+                if (${INLINE_CLIENT_PRIVACY_GUARD}) {
                   window.dataLayer = window.dataLayer || [];
                   function gtag(){dataLayer.push(arguments);}
                   window.gtag = gtag;

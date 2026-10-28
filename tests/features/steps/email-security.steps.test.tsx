@@ -66,5 +66,12 @@ describe("Feature: Email Anti-Scraping Security", () => {
       expect(container.innerHTML).toContain("Anthropic");
       expect(container.innerHTML).toContain("business, contact, and project details");
     });
+
+    it("explains Global Privacy Control and Do Not Track opt-out", () => {
+      const { container } = render(<PrivacyPage />);
+      expect(container.innerHTML).toContain("Global Privacy Control");
+      expect(container.innerHTML).toContain("Sec-GPC: 1");
+      expect(container.innerHTML).toContain("DNT: 1");
+    });
   });
 });

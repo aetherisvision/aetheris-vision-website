@@ -177,11 +177,13 @@ export default function TurnstileWidget({
   return (
     <div className="space-y-2">
       <Script
+        key={`cloudflare-turnstile-${retryCount}`}
         id="cloudflare-turnstile"
         src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
         strategy="afterInteractive"
         onReady={() => setScriptReady(true)}
         onError={() => {
+          setScriptReady(false);
           setStatusState({ cycleKey, value: "error" });
           callbackRef.current(null);
         }}
@@ -200,6 +202,9 @@ export default function TurnstileWidget({
             type="button"
             onClick={() => {
               callbackRef.current(null);
+              if (typeof window.turnstile?.render !== "function") {
+                setScriptReady(false);
+              }
               setRetryCount((count) => count + 1);
             }}
             className="text-xs font-medium text-blue-300 underline underline-offset-4 hover:text-white"
