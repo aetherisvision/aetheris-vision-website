@@ -6,6 +6,7 @@ import {
   sanitizePreviewReturnPath,
 } from '@/lib/preview-auth'
 import { rateLimit } from '@/lib/rate-limit'
+import { publicUrl } from '@/lib/request-origin'
 import { getTrustedClientIp } from '@/lib/request-security'
 
 const SESSION_MAX_AGE = 30 * 24 * 60 * 60
@@ -50,11 +51,11 @@ export async function POST(request: NextRequest) {
   // If the lock was removed between rendering and submission, continue rather
   // than trapping the visitor on a login page that is no longer required.
   if (!configuredPassword) {
-    return NextResponse.redirect(new URL(next, request.url), 303)
+    return NextResponse.redirect(publicUrl(request, next), 303)
   }
 
   if (!safePreviewEqual(password, configuredPassword)) {
-    const loginUrl = new URL('/preview', request.url)
+    const loginUrl = publicUrl(request, '/preview')
     loginUrl.searchParams.set('error', 'incorrect')
     loginUrl.searchParams.set('next', next)
     return NextResponse.redirect(loginUrl, 303)
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
     return new NextResponse('Preview access is not configured.', { status: 500 })
   }
 
-  const response = NextResponse.redirect(new URL(next, request.url), 303)
+  const response = NextResponse.redirect(publicUrl(request, next), 303)
   response.cookies.set(PREVIEW_COOKIE, token, {
     httpOnly: true,
     secure: new URL(request.url).protocol === 'https:',

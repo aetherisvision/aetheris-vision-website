@@ -157,10 +157,50 @@ jobs:
           workload_identity_provider: projects/169759401670/locations/global/workloadIdentityPools/av-crm-github/providers/github
           service_account: av-crm-deploy@lucid-loader-493512-g1.iam.gserviceaccount.com
       - name: Deploy verified image
+        id: deploy
         env:
           IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
         run: |
+          set -euo pipefail
+          # Remember the serving revision so a failed smoke test can restore it.
+          previous=$(gcloud run services describe av-crm-web --region=us-central1 \
+            --format='value(status.traffic[0].revisionName)')
+          echo "previous=$previous" >> "$GITHUB_OUTPUT"
           gcloud run services update av-crm-web --region=us-central1 --quiet \
             --image="us-central1-docker.pkg.dev/lucid-loader-493512-g1/av-crm/website@$IMAGE_DIGEST"
-          test "$(curl -sS -o /dev/null -w '%{http_code}' https://aetherisvision.com/)" = 200
-          test "$(curl -sS -o /dev/null -w '%{http_code}' https://aetherisvision.com/api/admin/leads)" = 401
+          # A previous rollback pins traffic to a named revision; make sure the
+          # new revision actually receives traffic.
+          gcloud run services update-traffic av-crm-web --region=us-central1 --quiet --to-latest
+      - name: Smoke test the public origin
+        id: smoke
+        run: |
+          set -euo pipefail
+          origin=https://aetherisvision.com
+          test "$(curl -sS -o /dev/null -w '%{http_code}' "$origin/")" = 200
+          test "$(curl -sS -o /dev/null -w '%{http_code}' "$origin/api/admin/leads")" = 401
+          # Same-origin browser POST must not be rejected as cross-origin. An
+          # empty JSON body fails validation (400) before any side effect, so
+          # anything other than 403 proves the origin check sees the public host.
+          code=$(curl -sS -o /dev/null -w '%{http_code}' -X POST "$origin/api/contact" \
+            -H "Origin: $origin" -H 'Sec-Fetch-Site: same-origin' \
+            -H 'Content-Type: application/json' --data '{}')
+          echo "POST /api/contact -> $code"
+          test "$code" != 403
+          # Route-handler redirects must carry the public host, not the
+          # container listener address. An empty form never touches the database.
+          location=$(curl -sS -o /dev/null -w '%{redirect_url}' -X POST "$origin/api/auth/magic" \
+            -H 'Content-Type: application/x-www-form-urlencoded' --data 'token=&email=')
+          echo "POST /api/auth/magic -> $location"
+          case "$location" in
+            "$origin"/*) ;;
+            *) echo "redirect left the public origin"; exit 1 ;;
+          esac
+      - name: Roll back traffic to the previous revision
+        if: failure() && steps.smoke.conclusion == 'failure' && steps.deploy.outputs.previous != ''
+        env:
+          PREVIOUS_REVISION: ${{ steps.deploy.outputs.previous }}
+        run: |
+          set -euo pipefail
+          gcloud run services update-traffic av-crm-web --region=us-central1 --quiet \
+            --to-revisions="$PREVIOUS_REVISION=100"
+          echo "::error::Smoke test failed; traffic restored to $PREVIOUS_REVISION"

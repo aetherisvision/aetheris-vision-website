@@ -2,6 +2,7 @@ import { sql } from '@/lib/db'
 import { encryptToken } from '@/lib/token-crypto'
 import { isAdmin, safeEqual, unauthorizedResponse } from '@/lib/admin-auth'
 import { clearStateCookie, stateCookieName } from '@/lib/gmail-oauth'
+import { getPublicOrigin } from '@/lib/request-origin'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
@@ -13,7 +14,9 @@ export async function GET(request: NextRequest) {
   const stateParts = (searchParams.get('state') ?? '').split(':')
   const [account, nonce] = stateParts
 
-  const origin = request.nextUrl.origin
+  // Must equal the origin used by /api/auth/gmail/start: the token exchange
+  // repeats redirect_uri and Google rejects any mismatch.
+  const origin = getPublicOrigin(request)
 
   if (account !== 'biz' && account !== 'per') {
     return NextResponse.redirect(`${origin}/admin/gmail?error=invalid_state`)

@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import { isAdmin, unauthorizedResponse } from '@/lib/admin-auth'
 import { setStateCookie } from '@/lib/gmail-oauth'
+import { getPublicOrigin } from '@/lib/request-origin'
 import { NextRequest, NextResponse } from 'next/server'
 
 // gmail.compose technically authorizes drafts.send (a token holder COULD
@@ -22,12 +23,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'account must be biz or per' }, { status: 400 })
   }
 
+  // Google matches redirect_uri byte-for-byte against the console allowlist,
+  // so it must be built from the public origin rather than request.nextUrl.
+  const origin = getPublicOrigin(request)
+
   if (!process.env.GMAIL_CLIENT_ID) {
-    return NextResponse.redirect(`${request.nextUrl.origin}/admin/gmail?error=missing_gmail_client_id`)
+    return NextResponse.redirect(`${origin}/admin/gmail?error=missing_gmail_client_id`)
   }
 
   const nonce = crypto.randomBytes(16).toString('hex')
-  const redirectUri = `${request.nextUrl.origin}/api/auth/gmail/callback`
+  const redirectUri = `${origin}/api/auth/gmail/callback`
   const params = new URLSearchParams({
     client_id: process.env.GMAIL_CLIENT_ID,
     redirect_uri: redirectUri,
@@ -48,7 +53,7 @@ export async function GET(request: NextRequest) {
     const response = NextResponse.json({
       ok: true,
       account,
-      origin: request.nextUrl.origin,
+      origin,
       redirectUri,
       authUrl,
       hint: 'Ensure redirectUri is listed under Google Cloud → APIs & Services → Credentials → OAuth 2.0 Client IDs → Authorized redirect URIs.',

@@ -46,6 +46,14 @@ Neon/Vercel configuration until cutover is verified.
   caller input). Restrict Cloud Run ingress to `internal-and-cloud-load-balancing`
   before setting `GCP_LOAD_BALANCER=true`; public-form rate limits then use the
   verified visitor address. Never enable this flag on an unrestricted service.
+- The same flag (or `TRUSTED_PROXY=true` behind another reverse proxy) makes
+  `X-Forwarded-Host`/`Host` plus `X-Forwarded-Proto` the source of the public
+  origin (`src/lib/request-origin.ts`). Next.js standalone builds `request.url`
+  from `HOSTNAME`/`PORT` (`https://0.0.0.0:8080` in the container), so
+  same-origin checks, absolute redirects (magic link, preview, admin), the
+  Gmail OAuth `redirect_uri`, and the Turnstile hostname check all read
+  `getPublicOrigin()` instead. Without a trusted flag, production falls back to
+  `NEXT_PUBLIC_SITE_URL`/`SITE.url`; local `next dev` uses the request URL.
 
 ## Cutover requirements
 
@@ -78,6 +86,12 @@ variable `GCP_DEPLOY_ENABLED=true` and restricted to `main`. Its federated
 identity must be explicitly provisioned before enabling it; no service-account
 key or application secret belongs in GitHub. `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
 is the only required public build variable. Cloud Build uses `cloudbuild.yaml`.
+After the image is deployed, the job smoke-tests the public origin (`/` is
+200, `/api/admin/leads` is 401, a same-origin `POST /api/contact` is not 403,
+and `POST /api/auth/magic` redirects within `https://aetherisvision.com`). If
+the smoke test fails, traffic is moved back to the previously serving revision;
+the next successful deploy runs `update-traffic --to-latest` so the pin does
+not outlive the rollback.
 
 The local Claude subscription worker uses `scripts/run-claude-worker-gcp.mjs`
 and a persistent Cloud SQL Auth Proxy on `127.0.0.1:55440`. It retrieves the

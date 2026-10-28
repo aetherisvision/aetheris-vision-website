@@ -4,6 +4,7 @@ import { Resend } from 'resend'
 import { SITE } from '@/lib/constants'
 import { createReview, ensureReviewsTable, getApprovedReviews } from '@/lib/db/reviews'
 import { rateLimit } from '@/lib/rate-limit'
+import { getPublicHostname, getPublicOrigin } from '@/lib/request-origin'
 import {
   assertDistributedRateLimitAvailable,
   assertSameOrigin,
@@ -47,18 +48,13 @@ function assertAllowedReadContext(request: NextRequest): void {
   }
 
   const origin = request.headers.get('origin')
-  if (origin && origin !== request.nextUrl.origin) {
+  if (origin && origin !== getPublicOrigin(request)) {
     throw new RequestSecurityError('invalid-origin', 403, 'Request origin is not allowed')
   }
 }
 
 function getExpectedHostname(request: NextRequest): string {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? SITE.url
-  try {
-    return new URL(siteUrl).hostname
-  } catch {
-    return request.nextUrl.hostname
-  }
+  return getPublicHostname(request)
 }
 
 function textField(value: unknown): string {

@@ -47,7 +47,7 @@ function requestSecurityError(
 
 /**
  * Require browser mutation requests to originate from the exact public origin
- * represented by the Request URL. Missing Origin headers fail closed.
+ * of the deployment (`getPublicOrigin`). Missing Origin headers fail closed.
  */
 export function assertSameOrigin(request: Request): void {
   if (!isSameOriginMutation(request)) {

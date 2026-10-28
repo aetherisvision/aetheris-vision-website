@@ -180,6 +180,44 @@ describe("POST /api/contact", () => {
     expect(mocks.complete).not.toHaveBeenCalled();
   });
 
+  it("accepts the public origin behind the Cloud Run load balancer and verifies Turnstile against it", async () => {
+    // On Cloud Run the request URL is the container listener, not the site.
+    vi.stubEnv("GCP_LOAD_BALANCER", "true");
+    const headers = new Headers({
+      "Sec-Fetch-Site": "same-origin",
+      "User-Agent": "Mozilla/5.0 Chrome/127.0.0.0 Safari/537.36",
+      "Content-Type": "application/json",
+      Origin: "https://aetherisvision.com",
+      host: "aetherisvision.com",
+      "x-forwarded-host": "aetherisvision.com",
+      "x-forwarded-proto": "https",
+      "x-av-client-ip": "198.51.100.10",
+    });
+    const cloudRun = (origin: string) => {
+      const requestHeaders = new Headers(headers);
+      requestHeaders.set("Origin", origin);
+      return new Request("https://0.0.0.0:8080/api/contact", {
+        method: "POST",
+        body: JSON.stringify(validPayload()),
+        headers: requestHeaders,
+      });
+    };
+
+    const response = await POST(cloudRun("https://aetherisvision.com"));
+    expect(response.status).toBe(202);
+    expect(mocks.turnstile).toHaveBeenCalledWith(
+      expect.objectContaining({ expectedHostname: "aetherisvision.com" }),
+    );
+
+    // The container address must never pass as "same origin".
+    expect((await POST(cloudRun("https://0.0.0.0:8080"))).status).toBe(403);
+
+    // Untrusted ingress: a spoofed X-Forwarded-Host cannot pick the expected origin.
+    vi.stubEnv("GCP_LOAD_BALANCER", "");
+    headers.set("x-forwarded-host", "evil.example");
+    expect((await POST(cloudRun("https://evil.example"))).status).toBe(403);
+  });
+
   it("uses opaque rate-limit keys rather than raw IP or email", async () => {
     await POST(requestFor(validPayload()));
 

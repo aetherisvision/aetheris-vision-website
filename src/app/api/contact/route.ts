@@ -10,6 +10,7 @@ import {
 import { SITE } from "@/lib/constants";
 import { captureContactLead } from "@/lib/crm";
 import { rateLimit } from "@/lib/rate-limit";
+import { getPublicHostname } from "@/lib/request-origin";
 import {
   assertDistributedRateLimitAvailable,
   assertSameOrigin,
@@ -415,7 +416,7 @@ export async function POST(request: NextRequest) {
       turnstile = await verifyTurnstileToken({
         token: formData.turnstileToken,
         expectedAction: TURNSTILE_ACTIONS.contact,
-        expectedHostname: new URL(request.url).hostname,
+        expectedHostname: getPublicHostname(request),
       });
     } catch (error) {
       console.error("Contact anti-spam verification failed", {
