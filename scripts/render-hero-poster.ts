@@ -2,7 +2,15 @@
  * Render the hero poster with the same three.js materials as RotatingEarth.
  * The still is the initial rotation only: day, night lights, and clouds.
  *
+ * One WebGL render at the largest width in HERO_POSTER_WIDTHS is downscaled
+ * into every responsive variant (hero-poster.webp, hero-poster-1024.webp,
+ * hero-poster-512.webp) so the srcset candidates share identical framing.
+ *
  *   npx tsx scripts/render-hero-poster.ts
+ *   npx tsx scripts/render-hero-poster.ts --from-existing   # resize only
+ *
+ * `--from-existing` skips Chrome and derives the smaller variants from the
+ * committed 1800 px poster; use it on machines without a WebGL-capable Chrome.
  */
 import { createServer } from "node:http";
 import { readFileSync } from "node:fs";
@@ -22,13 +30,15 @@ import {
   HERO_GLOBE_LIGHT_DIRECTION,
   HERO_GLOBE_NIGHT_SCALE,
   HERO_GLOBE_ROTATION,
+  HERO_POSTER_WIDTHS,
+  heroPosterSrc,
   NIGHT_FRAGMENT_SHADER,
   NIGHT_VERTEX_SHADER,
 } from "../src/components/hero-globe-config";
 
 const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..");
-const SIZE = 1800;
-const OUT = join(ROOT, "public/earth-textures/hero-poster.webp");
+const SIZE = HERO_POSTER_WIDTHS[HERO_POSTER_WIDTHS.length - 1];
+const outputPath = (width: number) => join(ROOT, "public", heroPosterSrc(width));
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -205,7 +215,38 @@ function startServer(html: string): Promise<{ url: string; close: () => Promise<
   });
 }
 
+async function writeVariants(source: Buffer) {
+  for (const width of HERO_POSTER_WIDTHS) {
+    const out = outputPath(width);
+    await sharp(source)
+      .resize(width, width, { fit: "fill", kernel: "lanczos3" })
+      .webp({ quality: 90, alphaQuality: 100, effort: 6, smartSubsample: true })
+      .toFile(out);
+    const stat = await sharp(out).metadata();
+    console.log(`wrote ${out} ${stat.width}x${stat.height} ${stat.format}`);
+  }
+}
+
 async function main() {
+  if (process.argv.includes("--from-existing")) {
+    const largest = readFileSync(outputPath(SIZE));
+    const meta = await sharp(largest).metadata();
+    if (meta.width !== SIZE || meta.height !== SIZE) {
+      throw new Error(`${outputPath(SIZE)} is ${meta.width}x${meta.height}; expected ${SIZE}x${SIZE}`);
+    }
+    // Only the smaller variants are rewritten; the source poster is left as is.
+    for (const width of HERO_POSTER_WIDTHS.slice(0, -1)) {
+      const out = outputPath(width);
+      await sharp(largest)
+        .resize(width, width, { fit: "fill", kernel: "lanczos3" })
+        .webp({ quality: 90, alphaQuality: 100, effort: 6, smartSubsample: true })
+        .toFile(out);
+      const stat = await sharp(out).metadata();
+      console.log(`wrote ${out} ${stat.width}x${stat.height} ${stat.format}`);
+    }
+    return;
+  }
+
   const html = pageHtml();
   const server = await startServer(html);
   const browser = await chromium.launch({
@@ -231,12 +272,7 @@ async function main() {
       throw new Error("Poster center is transparent. WebGL did not draw the earth.");
     }
 
-    await sharp(png)
-      .webp({ quality: 90, alphaQuality: 100, effort: 6, smartSubsample: true })
-      .toFile(OUT);
-
-    const stat = await sharp(OUT).metadata();
-    console.log(`wrote ${OUT} ${stat.width}x${stat.height} ${stat.format}`);
+    await writeVariants(png);
   } finally {
     await browser.close();
     await server.close();

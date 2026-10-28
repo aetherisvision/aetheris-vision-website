@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import Footer from "@/components/Footer";
 import HashScrollOnLoad from "@/components/HashScrollOnLoad";
 import HeroGlobe from "@/components/HeroGlobe";
+import { HERO_POSTER_MEDIA, HERO_POSTER_SIZES, HERO_POSTER_SRCSET } from "@/components/hero-globe-config";
 import Navbar from "@/components/Navbar";
 import SatelliteDisplay, { type SatelliteSource } from "@/components/SatelliteDisplay";
 import { posts } from "@/lib/posts";
@@ -59,11 +60,14 @@ function TextLink({ href, children, onDark = false }: { href: string; children: 
 export default function Home() {
   return (
     <div className="flex min-h-[100dvh] flex-col bg-[#f4f1ea] text-[#17252f]">
+      {/* Desktop only: phones render no poster, so the h1 stays the LCP element. */}
       <link
         rel="preload"
-        href="/earth-textures/hero-poster.webp"
         as="image"
         type="image/webp"
+        imageSrcSet={HERO_POSTER_SRCSET}
+        imageSizes={HERO_POSTER_SIZES}
+        media={HERO_POSTER_MEDIA}
         fetchPriority="high"
       />
       <link
