@@ -17,7 +17,6 @@ const navLinks = [
   { label: "How We Work", href: "/#how-we-work" },
   { label: "Selected Work", href: "/#selected-work" },
   { label: "Principal", href: "/about" },
-  { label: "Federal", href: "/capabilities" },
   ...(INSIGHTS_PUBLIC ? [{ label: "Insights", href: "/blog" }] : []),
 ];
 
@@ -27,6 +26,9 @@ export default function Navbar() {
   const mobileTriggerRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
   const consultationHref = "/book";
+  // Government buyers (military, federal, state) go straight to registration data and codes.
+  const governmentHref = "/capabilities";
+  const governmentLabel = "Government Buyers";
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMobileOpen(false), [pathname]);
@@ -150,7 +152,7 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* Desktop Nav — seven labels plus the CTA need ~1,190px beside the
+        {/* Desktop Nav — six labels plus the two CTAs need ~1,190px beside the
             logo, so the full row only appears from xl (1280px); the hamburger
             covers 1024–1279px, where the last links would slide under the CTA. */}
         <div className="hidden min-w-0 items-center gap-7 text-sm xl:flex">
@@ -172,13 +174,31 @@ export default function Navbar() {
               </Link>
             ))}
           </nav>
-          <Link
-            href={consultationHref}
-            className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap border border-white/40 px-4 text-xs font-semibold text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-[#0a1628]"
-          >
-            Get in touch
-          </Link>
+          <div className="flex shrink-0 items-center gap-3">
+            <Link
+              href={governmentHref}
+              aria-current={isActive(governmentHref) ? "page" : undefined}
+              className="inline-flex min-h-11 items-center justify-center whitespace-nowrap border border-[#5BA8D9] px-4 text-xs font-semibold text-[#9fd0ef] transition-colors duration-200 hover:bg-[#5BA8D9]/15 hover:text-white"
+            >
+              {governmentLabel}
+            </Link>
+            <Link
+              href={consultationHref}
+              className="inline-flex min-h-11 items-center justify-center whitespace-nowrap bg-[#5BA8D9] px-4 text-xs font-semibold text-[#0a1628] transition-colors duration-200 hover:bg-white"
+            >
+              Get in touch
+            </Link>
+          </div>
         </div>
+
+        {/* Tablet: the government CTA stays visible beside the menu button. */}
+        <Link
+          href={governmentHref}
+          aria-current={isActive(governmentHref) ? "page" : undefined}
+          className="ml-auto hidden min-h-11 shrink-0 items-center justify-center whitespace-nowrap border border-[#5BA8D9] px-4 text-xs font-semibold text-[#9fd0ef] transition-colors duration-200 hover:bg-[#5BA8D9]/15 hover:text-white min-[480px]:inline-flex xl:hidden"
+        >
+          {governmentLabel}
+        </Link>
 
         {/* Mobile Hamburger */}
         <button
@@ -209,6 +229,14 @@ export default function Navbar() {
             className="mx-auto flex max-w-7xl flex-col px-5 pt-5 sm:px-8"
             style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom, 0px))" }}
           >
+            <Link
+              href={governmentHref}
+              aria-current={isActive(governmentHref) ? "page" : undefined}
+              onClick={() => setMobileOpen(false)}
+              className="mb-3 inline-flex min-h-12 items-center justify-center border border-[#5BA8D9] px-4 py-2 text-sm font-semibold text-[#9fd0ef] transition hover:bg-[#5BA8D9]/15 hover:text-white"
+            >
+              {governmentLabel}: Capabilities &amp; Codes
+            </Link>
             {navLinks.map((link) => (
               <Link
                 key={link.label}
@@ -231,7 +259,7 @@ export default function Navbar() {
             <Link
               href={consultationHref}
               onClick={() => setMobileOpen(false)}
-              className="mt-6 inline-flex min-h-12 items-center justify-center border border-white/40 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-[#0a1628]"
+              className="mt-6 inline-flex min-h-12 items-center justify-center bg-[#5BA8D9] px-4 py-2 text-sm font-semibold text-[#0a1628] transition hover:bg-white"
             >
               Get in touch
             </Link>
