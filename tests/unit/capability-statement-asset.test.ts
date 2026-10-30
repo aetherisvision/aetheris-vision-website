@@ -7,7 +7,7 @@ import { CAPABILITY_STATEMENT_REQUEST_HREF } from "@/lib/constants";
 const ROOT = join(__dirname, "..", "..");
 const CAPABILITY_STATEMENT_PATH = join(ROOT, "private", "capability-statement.pdf");
 const CURRENT_CERTIFIED_RELEASE_SHA256 =
-  "12e1734f56d8759454d4f8d4a22444438e0b8b79e05dded3d5792b079ce155e0";
+  "8b1c361c537ada27fd1b3b1569a5a87e624cca310feaa4097a74da6748f53ee6";
 
 describe("capability statement asset", () => {
   it("is present for the API route to read", () => {
