@@ -84,6 +84,8 @@ export const FEDERAL_SEO_KEYWORDS = [
   "veteran-owned weather consulting",
   "federal meteorology consulting",
   "defense weather support",
+  "METOC support",
+  "meteorological and oceanographic services",
   "Air Force weather veteran",
   "weather data engineering",
   "NAICS 541690",

@@ -8,25 +8,25 @@ import { createPageMetadata } from "@/lib/seo";
 
 const PAGE_PATH = "/services/federal-weather";
 const PAGE_URL = `${SITE.url}${PAGE_PATH}`;
-const PAGE_DESCRIPTION = `Federal and defense weather, meteorology, and Earth-data consulting from an ${SAM.setAside}.`;
+const PAGE_DESCRIPTION = `METOC, weather, and Earth-data consulting for defense and federal programs from an ${SAM.setAside}.`;
 
 export const metadata = createPageMetadata({
-  title: `Federal & Defense Weather Data Services | ${SITE.name}`,
+  title: `Defense METOC & Federal Weather Services | ${SITE.name}`,
   description: PAGE_DESCRIPTION,
   path: PAGE_PATH,
   keywords: [...FEDERAL_SEO_KEYWORDS],
   socialDescription:
-    "Applied meteorology, weather data engineering, and AI evaluation for defense and civil agencies, delivered as a prime or a subcontractor.",
+    "METOC support, weather data engineering, and AI evaluation for defense and civil agencies. Available as a prime contractor or subcontractor.",
 });
 
 const capabilities = [
   {
     title: "Weather impacts to operations",
-    body: "Translate forecasts, observations, and climatology into the thresholds a mission or program actually uses, with the uncertainty stated plainly.",
+    body: "Translate METOC forecasts, observations, and climatology into the thresholds a mission or program actually uses, with the uncertainty stated plainly.",
   },
   {
     title: "Weather and Earth-data engineering",
-    body: "Ingest, regrid, and validate model, satellite, radar, and station data (GRIB, NetCDF, HDF) into documented pipelines a program office can maintain.",
+    body: "Ingest, regrid, and validate atmospheric and ocean model, satellite, radar, and station data (GRIB, NetCDF, HDF) into documented pipelines a program office can maintain.",
   },
   {
     title: "AI and machine-learning evaluation",
@@ -55,7 +55,7 @@ const background = [
 ];
 
 /** The registered codes most relevant to weather and Earth-data work, drawn from SAM. */
-const FEATURED_CODES = ["541690", "541360", "541511", "R427", "R425", "B529"];
+const FEATURED_CODES = ["541690", "541360", "541511", "R427", "R425", "B526", "B529"];
 const codes = [
   ...SAM.naics.map((c) => ({
     code: c.code,
@@ -82,6 +82,7 @@ const serviceJsonLd = {
     url: SITE.url,
   },
   serviceType: [
+    "METOC (meteorological and oceanographic) support",
     "Federal meteorology consulting",
     "Defense weather data support",
     "Weather data engineering",
@@ -106,11 +107,12 @@ export default function FederalWeatherPage() {
               Weather Support for Federal &amp; Defense Programs
             </h1>
             <p className="mt-7 max-w-3xl text-lg font-light leading-8 text-gray-400 sm:text-xl">
-              Applied meteorology, weather and Earth-data engineering, and AI evaluation for defense and
-              civil agencies, delivered as a prime or a subcontractor by an {SAM.setAside}.
+              Meteorological and oceanographic (METOC) support, weather and Earth-data engineering, and
+              AI evaluation for defense and civil agencies, available as a prime contract or subcontract
+              through an {SAM.setAside}.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              {["Defense weather support", "Federal meteorology", "Weather data engineering", "Forecast verification", "Cleared delivery"].map((item) => (
+              {["METOC support", "Defense weather support", "Federal meteorology", "Weather data engineering", "Forecast verification", "Cleared delivery"].map((item) => (
                 <span key={item} className="rounded-full border border-white/15 px-4 py-2 text-xs text-gray-300">
                   {item}
                 </span>

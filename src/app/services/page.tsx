@@ -211,7 +211,7 @@ export default function ServicesPage() {
                     href="/services/federal-weather"
                     className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition"
                   >
-                    Weather support for federal and defense programs <ArrowRightIcon className="h-3.5 w-3.5" />
+                    Federal weather and defense METOC support <ArrowRightIcon className="h-3.5 w-3.5" />
                   </a>
                   <a
                     href={CAPABILITY_STATEMENT_REQUEST_HREF}
