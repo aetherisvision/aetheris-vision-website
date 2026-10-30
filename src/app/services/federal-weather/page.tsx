@@ -59,7 +59,7 @@ const background = [
 ];
 
 /** The registered codes most relevant to weather and Earth-data work, drawn from SAM. */
-const FEATURED_CODES = ["541690", "541360", "541511", "R427", "R425", "B526", "B529"];
+const FEATURED_CODES = ["541690", "541715", "541360", "R427", "AJ12", "AH52", "B526", "B529"];
 const codes = [
   ...SAM.naics.map((c) => ({
     code: c.code,

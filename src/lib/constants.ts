@@ -151,33 +151,47 @@ const certificationList = (() => {
 })();
 
 /**
- * NAICS codes registered in SAM.gov, with official 2022 NAICS titles.
- * Keep in step with the SAM.gov entity record; do not list a code here first.
+ * NAICS codes registered in SAM.gov (entity record read 2026-10-30), with official
+ * 2022 NAICS titles. Keep in step with SAM.gov; do not list a code here first.
  */
 const NAICS_CODES = [
   { code: "541690", description: "Other Scientific and Technical Consulting Services", primary: true },
+  { code: "541715", description: "Research and Development in the Physical, Engineering, and Life Sciences (except Nanotechnology and Biotechnology)", primary: false },
+  { code: "541360", description: "Geophysical Surveying and Mapping Services", primary: false },
   { code: "541511", description: "Custom Computer Programming Services", primary: false },
   { code: "541512", description: "Computer Systems Design Services", primary: false },
   { code: "541519", description: "Other Computer Related Services", primary: false },
-  { code: "541360", description: "Geophysical Surveying and Mapping Services", primary: false },
   { code: "541618", description: "Other Management Consulting Services", primary: false },
   { code: "541620", description: "Environmental Consulting Services", primary: false },
+  { code: "541990", description: "All Other Professional, Scientific, and Technical Services", primary: false },
 ] as const;
 
-/** PSC codes, with titles exactly as in the GSA PSC Manual (FY2025 edition). */
+/**
+ * PSC codes registered in SAM.gov (entity record read 2026-10-30), with titles as in
+ * the GSA PSC Manual (FY2025 edition).
+ */
 const PSC_CODES = [
   { code: "R427", description: "Support- Professional: Weather Reporting/Observation" },
   { code: "R425", description: "Support- Professional: Engineering/Technical" },
+  { code: "R410", description: "Support- Professional: Program Evaluation/Review/Development" },
   { code: "R408", description: "Support- Professional: Program Management/Support" },
   { code: "R405", description: "Support- Professional: Operations Research/Quantitative Analysis" },
-  { code: "DA01", description: "IT and Telecom - Business Application/Application Development Support Services (Labor)" },
-  { code: "DA10", description: "IT and Telecom - Business Application/Application Development Software as a Service" },
-  { code: "DB02", description: "IT and Telecom - Compute Support Services, Non-HPC (Labor)" },
+  { code: "R702", description: "Support- Management: Data Collection" },
+  { code: "AJ12", description: "General Science and Technology R&D Services; General science and technology; Applied Research" },
+  { code: "AJ13", description: "General Science and Technology R&D Services; General science and technology; Experimental Development" },
+  { code: "AH52", description: "Natural Resources and Environment R&D Services; Other natural resources; Applied Research" },
+  { code: "AH53", description: "Natural Resources and Environment R&D Services; Other natural resources; Experimental Development" },
   { code: "B510", description: "Special Studies/Analysis- Environmental Assessments" },
+  { code: "B518", description: "Special Studies/Analysis- Geophysical" },
   { code: "B524", description: "Special Studies/Analysis- Mathematical/Statistical" },
   { code: "B526", description: "Special Studies/Analysis- Oceanological" },
   { code: "B529", description: "Special Studies/Analysis- Scientific Data" },
+  { code: "B539", description: "Special Studies/Analysis- Aeronautical/Space" },
   { code: "B544", description: "Special Studies/Analysis- Technology" },
+  { code: "DA01", description: "IT and Telecom - Business Application/Application Development Support Services (Labor)" },
+  { code: "DA10", description: "IT and Telecom - Business Application/Application Development Software as a Service" },
+  { code: "DB01", description: "IT and Telecom - High Performance Computing (HPC) Support Services (Labor)" },
+  { code: "DB02", description: "IT and Telecom - Compute Support Services, Non-HPC (Labor)" },
 ] as const;
 
 /** Federal contracting registration data */
