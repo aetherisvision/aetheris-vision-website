@@ -179,13 +179,13 @@ export default function WebServicesPage() {
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
                 <Link
                   href="/contact?requirement=Web%20%26%20Digital%20Systems#contact-form"
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-white px-8 text-sm font-medium text-black transition hover:bg-gray-200"
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-md bg-[#5BA8D9] px-8 text-sm font-medium text-[#0a1628] transition hover:bg-white"
                 >
                   Start the conversation <ArrowRightIcon className="h-4 w-4" />
                 </Link>
                 <Link
                   href="/intake"
-                  className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 px-8 text-sm font-medium text-white transition hover:bg-white/5"
+                  className="inline-flex h-12 items-center justify-center rounded-md border border-[#5BA8D9] px-8 text-sm font-medium text-[#9fd0ef] transition hover:bg-[#5BA8D9]/15 hover:text-white"
                 >
                   Project intake form
                 </Link>

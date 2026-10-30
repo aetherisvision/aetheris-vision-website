@@ -14,7 +14,7 @@ interface TurnstileApi {
       sitekey: string;
       action: string;
       theme: "dark";
-      size: "flexible";
+      size: "flexible" | "compact";
       callback: (token: string) => void;
       "expired-callback": () => void;
       "error-callback": () => void;
@@ -104,12 +104,18 @@ export default function TurnstileWidget({
 
     callbackRef.current(null);
     let widgetId: string | null = null;
+    // "flexible" never shrinks below 300px; on the narrowest phones (320px screens
+    // inside padded forms) that pushes the page sideways, so fall back to the
+    // 150px-wide "compact" layout when the container cannot hold 300px.
+    const size = containerRef.current.clientWidth > 0 && containerRef.current.clientWidth < 300
+      ? "compact"
+      : "flexible";
     try {
       widgetId = window.turnstile.render(containerRef.current, {
         sitekey: siteKey,
         action,
         theme: "dark",
-        size: "flexible",
+        size,
         callback: (token) => {
           setStatusState({ cycleKey, value: "verified" });
           callbackRef.current(token);

@@ -73,11 +73,15 @@ test("navigation switches cleanly between desktop and compact layouts", async ({
   const desktopNavigation = page.getByRole("navigation", { name: "Primary navigation" });
   const menuButton = page.getByRole("button", { name: "Open navigation" });
 
-  if (viewport!.width >= 1024) {
+  // The full desktop row appears at Tailwind's xl breakpoint (1280px).
+  if (viewport!.width >= 1280) {
     await expect(desktopNavigation).toBeVisible();
     await expect(menuButton).toBeHidden();
     await expect(
       page.getByRole("banner").getByRole("link", { name: "Get in touch" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("banner").getByRole("link", { name: "Government Buyers" }),
     ).toBeVisible();
   } else {
     await expect(desktopNavigation).toBeHidden();
@@ -91,6 +95,9 @@ test("navigation switches cleanly between desktop and compact layouts", async ({
     const mobileNavigation = page.getByRole("navigation", { name: "Mobile navigation" });
     await expect(mobileNavigation).toBeVisible();
     await expect(mobileNavigation.getByRole("link", { name: "Get in touch" })).toBeVisible();
+    await expect(
+      mobileNavigation.getByRole("link", { name: /Government Buyers/ }),
+    ).toBeVisible();
 
     const compactTargets = mobileNavigation.locator("a[href], button:not([disabled])");
     const targetCount = await compactTargets.count();

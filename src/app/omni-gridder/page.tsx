@@ -122,7 +122,7 @@ export default function OmniGridderPage() {
             </div>
             <a
               href="/book"
-              className="inline-flex min-h-12 w-full items-center justify-center gap-3 bg-[#f4f1ea] px-7 text-sm font-semibold text-[#0a1628] transition-colors duration-200 hover:bg-white sm:w-auto lg:justify-self-end"
+              className="inline-flex min-h-12 w-full items-center justify-center gap-3 bg-[#5BA8D9] px-7 text-sm font-semibold text-[#0a1628] transition-colors duration-200 hover:bg-white sm:w-auto lg:justify-self-end"
             >
               Get in touch <ArrowRightIcon className="h-4 w-4" />
             </a>

@@ -19,7 +19,7 @@ export const metadata = createPageMetadata({
 
 const companyData: { label: string; value: ReactNode }[] = [
   { label: "Legal Name", value: SITE.legalName },
-  { label: "Business Type", value: "Veteran-owned small business" },
+  { label: "Business Type", value: "Service-disabled veteran-owned small business (SDVOSB)" },
   { label: "UEI", value: <span className="font-mono">{SAM.uei}</span> },
   { label: "CAGE", value: <span className="font-mono">{SAM.cage}</span> },
   { label: "SAM.gov", value: "Active" },
@@ -28,7 +28,7 @@ const companyData: { label: string; value: ReactNode }[] = [
     label: "Certifications",
     value: SAM.setAsidePills.join(". "),
   },
-  { label: "Security Clearance", value: "Active U.S. Government Secret, held by principal" },
+  { label: "Security Clearance", value: SAM.clearanceNote },
   {
     label: "Primary Contact",
     value: (
@@ -42,30 +42,8 @@ const companyData: { label: string; value: ReactNode }[] = [
   },
 ];
 
-const naicsCodes = [
-  { code: "541690", description: "Other Scientific and Technical Consulting Services", primary: true },
-  { code: "541511", description: "Custom Computer Programming Services", primary: false },
-  { code: "541512", description: "Computer Systems Design Services", primary: false },
-  { code: "541519", description: "Other Computer Related Services", primary: false },
-  { code: "541360", description: "Geophysical Surveying and Mapping Services", primary: false },
-  { code: "541618", description: "Other Management Consulting Services", primary: false },
-  { code: "541620", description: "Environmental Consulting Services", primary: false },
-];
-
-const pscCodes = [
-  { code: "R427", description: "Support, Professional: Weather Reporting/Observation" },
-  { code: "R425", description: "Support, Professional: Engineering/Technical" },
-  { code: "R408", description: "Support, Professional: Program Management/Support" },
-  { code: "R405", description: "Support, Professional: Operations Research/Quantitative Analysis" },
-  { code: "DA01", description: "IT and Telecom, Business Application/Application Development Support Services (Labor)" },
-  { code: "DA10", description: "IT and Telecom, Business Application/Application Development Software as a Service" },
-  { code: "DB02", description: "IT and Telecom, Compute Support Services, Non-HPC (Labor)" },
-  { code: "B510", description: "Special Studies/Analysis, Environmental Assessments" },
-  { code: "B524", description: "Special Studies/Analysis, Mathematical/Statistical" },
-  { code: "B526", description: "Special Studies/Analysis, Oceanological" },
-  { code: "B529", description: "Special Studies/Analysis, Scientific Data" },
-  { code: "B544", description: "Special Studies/Analysis, Technology" },
-];
+const naicsCodes = SAM.naics;
+const pscCodes = SAM.psc;
 
 const competencies = [
   {
@@ -101,8 +79,8 @@ const competencies = [
     items: [
       `SAM.gov registered: UEI ${SAM.uei}, CAGE ${SAM.cage}`,
       ...SAM.setAsidePills,
-      "Oklahoma Supplier Portal: state-level contracting access (registration in progress)",
-      "Active U.S. Government Secret clearance held by the principal",
+      "Oklahoma Supplier Portal: active supplier record for state-level contracting",
+      SAM.clearanceNote,
     ],
   },
   {
@@ -136,7 +114,27 @@ const differentiators = [
   },
   {
     title: "Government Contracting Foundation",
-    body: `Aetheris Vision is active in SAM.gov, has an assigned UEI and CAGE code, and is an SBA-certified SDVOSB, VOSB, and HUBZone small business. Certifications are ${SAM.certificationTerm.toLowerCase()}. An active Secret clearance is held by the principal.`,
+    body: `Aetheris Vision is active in SAM.gov, has an assigned UEI and CAGE code, and is an ${SAM.setAside}. Certifications are ${SAM.certificationTerm.toLowerCase()}. An active Secret clearance is held by the principal.`,
+  },
+];
+
+/**
+ * Plain-English buying paths for contracting officers and primes. Deliberately
+ * free of dollar thresholds and percentages that change with FAR revisions,
+ * except the long-standing statutory HUBZone price evaluation preference.
+ */
+const contractingPaths = [
+  {
+    title: "SDVOSB and VOSB Set-Asides",
+    body: "Contracting officers may set aside requirements for service-disabled veteran-owned small businesses, and may make sole-source awards to an SDVOSB within the limits the FAR sets. The Department of Veterans Affairs may also set aside requirements for SDVOSBs and VOSBs under its Veterans First program.",
+  },
+  {
+    title: "HUBZone Set-Asides and Price Preference",
+    body: "Agencies may set aside requirements for certified HUBZone small businesses. In full and open competition, an eligible HUBZone offer may receive a 10 percent price evaluation preference when the otherwise successful offer is from a large business, subject to the exceptions in FAR 19.1307.",
+  },
+  {
+    title: "Subcontracting for Primes",
+    body: "Work subcontracted to Aetheris Vision counts toward a prime contractor's small business subcontracting goals, including the veteran-owned, service-disabled veteran-owned, and HUBZone categories.",
   },
 ];
 
@@ -156,7 +154,7 @@ function CodeTable({
   rows,
 }: {
   caption: string;
-  rows: { code: string; description: string; primary?: boolean }[];
+  rows: readonly { code: string; description: string; primary?: boolean }[];
 }) {
   return (
     <div className="overflow-x-auto">
@@ -222,13 +220,13 @@ export default function CapabilitiesPage() {
               <div className="flex flex-col sm:flex-row gap-3 shrink-0">
                 <a
                   href="#contracting-codes"
-                  className="inline-flex h-11 items-center gap-2 rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
+                  className="inline-flex h-11 items-center gap-2 rounded-md bg-[#5BA8D9] px-6 text-sm font-medium text-[#0a1628] hover:bg-white transition"
                 >
                   View NAICS &amp; PSC Codes
                 </a>
                 <a
                   href={CAPABILITY_STATEMENT_REQUEST_HREF}
-                  className="inline-flex h-11 items-center gap-2 rounded-md border border-white/20 px-6 text-sm font-medium text-white hover:bg-white/10 transition"
+                  className="inline-flex h-11 items-center gap-2 rounded-md border border-[#5BA8D9] px-6 text-sm font-medium text-[#9fd0ef] hover:bg-[#5BA8D9]/15 hover:text-white transition"
                 >
                   Get the Statement (PDF)
                 </a>
@@ -302,13 +300,31 @@ export default function CapabilitiesPage() {
             </div>
           </section>
 
+          {/* Contracting paths */}
+          <section id="how-to-contract" className="mb-16 scroll-mt-28" aria-labelledby="sec-how-to-contract">
+            <SectionHeading id="sec-how-to-contract" title="How to Contract With Us" />
+            <p className="mb-8 max-w-3xl text-sm font-light leading-relaxed text-gray-400">
+              Aetheris Vision is an {SAM.setAside}, registered
+              in SAM.gov under UEI {SAM.uei} and CAGE {SAM.cage}. Each certification opens a
+              different path to award.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-8">
+              {contractingPaths.map((path) => (
+                <div key={path.title}>
+                  <h3 className="text-white font-medium text-sm mb-2">{path.title}</h3>
+                  <p className="text-gray-400 text-sm font-light leading-relaxed">{path.body}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
           {/* Capability statement delivery */}
           <section
             id="capability-statement"
             className="mb-14 scroll-mt-24 border-t border-white/15 pt-10"
             aria-labelledby="sec-capability-statement"
           >
-            <div className="grid gap-8 md:grid-cols-2 md:gap-12">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12">
               <div>
                 <h2
                   id="sec-capability-statement"
@@ -339,7 +355,7 @@ export default function CapabilitiesPage() {
             <div className="flex flex-col sm:flex-row gap-4">
               <a
                 href="/book"
-                className="inline-flex h-11 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
+                className="inline-flex h-11 items-center justify-center rounded-md bg-[#5BA8D9] px-6 text-sm font-medium text-[#0a1628] hover:bg-white transition"
               >
                 Get in touch
               </a>

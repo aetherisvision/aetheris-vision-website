@@ -428,7 +428,7 @@ export default function QuickContactForm() {
           !humanAttestation ||
           (requiresTurnstile && !turnstileToken)
         }
-        className="mt-6 inline-flex min-h-12 items-center justify-center bg-white px-7 text-sm font-semibold text-[#0a1628] transition hover:bg-[#dbe8f0] disabled:cursor-not-allowed disabled:opacity-55"
+        className="mt-6 inline-flex min-h-12 items-center justify-center bg-[#5BA8D9] px-7 text-sm font-semibold text-[#0a1628] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-55"
       >
         {status === "submitting" ? "Sending…" : "Send message"}
       </button>

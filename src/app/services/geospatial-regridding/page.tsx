@@ -1,6 +1,7 @@
 import ServiceBreadcrumbs from "@/components/ServiceBreadcrumbs";
 import Link from "next/link";
 import { ArrowRightIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import FederalDeliveryNote from "@/components/FederalDeliveryNote";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { GEOSPATIAL_SEO_KEYWORDS, SITE } from "@/lib/constants";
@@ -160,16 +161,18 @@ export default function GeospatialRegriddingPage() {
                 Omni Gridder demonstrates how the same synthetic meteorological field changes geometry while its scientific meaning is preserved.
               </p>
             </div>
-            <Link href="/omni-gridder" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/20 px-5 text-sm font-medium text-white transition hover:bg-white/5">
+            <Link href="/omni-gridder" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#5BA8D9] px-5 text-sm font-medium text-[#9fd0ef] transition hover:bg-[#5BA8D9]/15 hover:text-white">
               Explore Omni Gridder <ArrowRightIcon className="h-4 w-4" />
             </Link>
           </div>
+
+          <FederalDeliveryNote topic="GIS and geospatial data" />
 
           <div className="mt-16 flex flex-col gap-6 border-t border-white/10 pt-10 sm:flex-row sm:items-center sm:justify-between">
             <p className="max-w-2xl text-lg font-light text-gray-300">
               Have GIS or Earth data that does not line up with the system that needs it?
             </p>
-            <Link href="/contact#contact-form" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-white px-7 text-sm font-medium text-black transition hover:bg-gray-200">
+            <Link href="/contact#contact-form" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#5BA8D9] px-7 text-sm font-medium text-[#0a1628] transition hover:bg-white">
               Discuss Your Data <ArrowRightIcon className="h-4 w-4" />
             </Link>
           </div>

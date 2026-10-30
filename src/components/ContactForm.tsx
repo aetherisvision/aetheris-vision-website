@@ -539,7 +539,7 @@ export default function ContactForm() {
             !humanAttestation ||
             (requiresTurnstile && !turnstileToken)
           }
-          className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-black hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex h-12 items-center justify-center rounded-md bg-[#5BA8D9] px-8 text-sm font-medium text-[#0a1628] hover:bg-white transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {status === "submitting" ? "Sending…" : "Send inquiry"}
         </button>

@@ -167,13 +167,13 @@ export default async function BlogPost({ params }: Props) {
             <div className="flex flex-col sm:flex-row gap-3 shrink-0">
               <a
                 href={CAPABILITY_STATEMENT_REQUEST_HREF}
-                className="inline-flex h-10 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
+                className="inline-flex h-10 items-center justify-center rounded-md bg-[#5BA8D9] px-6 text-sm font-medium text-[#0a1628] hover:bg-white transition"
               >
                 Get the capability statement
               </a>
               <a
                 href="/contact"
-                className="inline-flex h-10 items-center justify-center rounded-md border border-white/10 px-6 text-sm font-medium text-white hover:bg-white/5 transition"
+                className="inline-flex h-10 items-center justify-center rounded-md border border-[#5BA8D9] px-6 text-sm font-medium text-[#9fd0ef] hover:bg-[#5BA8D9]/15 hover:text-white transition"
               >
                 Contact Us
               </a>

@@ -195,7 +195,7 @@ export default function SecurityPage() {
               </p>
               <a
                 href="/contact"
-                className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-black transition-colors hover:bg-gray-200"
+                className="inline-flex h-12 items-center justify-center rounded-md bg-[#5BA8D9] px-8 text-sm font-medium text-[#0a1628] transition-colors hover:bg-white"
               >
                 Contact Aetheris Vision
               </a>

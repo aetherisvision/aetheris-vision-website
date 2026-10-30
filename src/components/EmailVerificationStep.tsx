@@ -78,7 +78,7 @@ export default function EmailVerificationStep({
         <button
           type="submit"
           disabled={submitting || code.length !== 6}
-          className="inline-flex min-h-12 items-center justify-center rounded-md bg-white px-7 text-sm font-semibold text-[#0a1628] transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex min-h-12 items-center justify-center rounded-md bg-[#5BA8D9] px-7 text-sm font-semibold text-[#0a1628] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
         >
           {submitting ? "Confirming…" : submitLabel}
         </button>

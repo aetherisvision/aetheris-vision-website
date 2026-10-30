@@ -2,6 +2,7 @@ import ServiceBreadcrumbs from "@/components/ServiceBreadcrumbs";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRightIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import FederalDeliveryNote from "@/components/FederalDeliveryNote";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { SITE, WEATHER_SEO_KEYWORDS } from "@/lib/constants";
@@ -96,7 +97,7 @@ export default function WeatherAiPage() {
               Scientific guidance and working technical delivery for organizations evaluating, building, or operating AI/ML weather systems—from data and baselines through verification, uncertainty, and production use.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              {["AI weather forecasting", "Applied meteorology", "Forecast verification", "NWP/ML systems", "Weather & climate data"].map((item) => (
+              {["AI weather forecasting", "Applied meteorology", "Atmospheric research", "Forecast verification", "NWP/ML systems", "Weather & climate data"].map((item) => (
                 <span key={item} className="rounded-full border border-white/15 px-4 py-2 text-xs text-gray-300">
                   {item}
                 </span>
@@ -171,16 +172,18 @@ export default function WeatherAiPage() {
                 Training, inference, and verification often require regridding model fields, observations, and targets across different coordinate systems and resolutions.
               </p>
             </div>
-            <Link href="/services/geospatial-regridding" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/20 px-5 text-sm font-medium text-white transition hover:bg-white/5">
+            <Link href="/services/geospatial-regridding" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#5BA8D9] px-5 text-sm font-medium text-[#9fd0ef] transition hover:bg-[#5BA8D9]/15 hover:text-white">
               Explore geospatial services <ArrowRightIcon className="h-4 w-4" />
             </Link>
           </div>
+
+          <FederalDeliveryNote topic="weather AI and meteorology" />
 
           <div className="mt-16 flex flex-col gap-6 border-t border-white/10 pt-10 sm:flex-row sm:items-center sm:justify-between">
             <p className="max-w-2xl text-lg font-light text-gray-300">
               Evaluating an AI weather product or moving a forecasting workflow toward production?
             </p>
-            <Link href="/contact#contact-form" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-white px-7 text-sm font-medium text-black transition hover:bg-gray-200">
+            <Link href="/contact#contact-form" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#5BA8D9] px-7 text-sm font-medium text-[#0a1628] transition hover:bg-white">
               Discuss the system <ArrowRightIcon className="h-4 w-4" />
             </Link>
           </div>
@@ -188,7 +191,7 @@ export default function WeatherAiPage() {
       </main>
 
       <Footer />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd).replace(/</g, "\\u003c") }} />
     </div>
   );
 }

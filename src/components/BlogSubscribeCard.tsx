@@ -33,7 +33,7 @@ export default function BlogSubscribeCard() {
             />
             <button
               type="submit"
-              className="h-11 rounded-md bg-white px-5 text-sm font-medium text-black transition-colors hover:bg-gray-200"
+              className="h-11 rounded-md bg-[#5BA8D9] px-5 text-sm font-medium text-[#0a1628] transition-colors hover:bg-white"
             >
               Subscribe
             </button>
@@ -41,7 +41,7 @@ export default function BlogSubscribeCard() {
         ) : (
           <a
             href="/feed.xml"
-            className="inline-flex h-11 items-center justify-center rounded-md bg-white px-5 text-sm font-medium text-black transition-colors hover:bg-gray-200"
+            className="inline-flex h-11 items-center justify-center rounded-md bg-[#5BA8D9] px-5 text-sm font-medium text-[#0a1628] transition-colors hover:bg-white"
           >
             Subscribe via RSS
           </a>
