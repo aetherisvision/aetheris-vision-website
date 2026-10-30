@@ -97,7 +97,7 @@ export default function WeatherAiPage() {
               Scientific guidance and working technical delivery for organizations evaluating, building, or operating AI/ML weather systems—from data and baselines through verification, uncertainty, and production use.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              {["AI weather forecasting", "Applied meteorology", "Forecast verification", "NWP/ML systems", "Weather & climate data"].map((item) => (
+              {["AI weather forecasting", "Applied meteorology", "Atmospheric research", "Forecast verification", "NWP/ML systems", "Weather & climate data"].map((item) => (
                 <span key={item} className="rounded-full border border-white/15 px-4 py-2 text-xs text-gray-300">
                   {item}
                 </span>

@@ -29,8 +29,12 @@ const capabilities = [
     body: "Ingest, regrid, and validate atmospheric and ocean model, satellite, radar, and station data (GRIB, NetCDF, HDF) into documented pipelines a program office can maintain.",
   },
   {
-    title: "AI and machine-learning evaluation",
-    body: "Independent assessment of AI weather models and ML products against meteorological baselines, across the lead times, regions, and conditions the program depends on.",
+    title: "AI weather model evaluation",
+    body: "Independent assessment of AI weather forecasting models and ML products against NWP and observational baselines, across the lead times, regions, and conditions the program depends on.",
+  },
+  {
+    title: "Atmospheric research support",
+    body: "Analysis for atmospheric, climate, and Earth-system research programs: model evaluation against observations, reanalysis and satellite comparisons, and reproducible research code.",
   },
   {
     title: "Forecast verification",
@@ -83,6 +87,8 @@ const serviceJsonLd = {
   },
   serviceType: [
     "METOC (meteorological and oceanographic) support",
+    "AI weather forecasting evaluation",
+    "Atmospheric research support",
     "Federal meteorology consulting",
     "Defense weather data support",
     "Weather data engineering",
@@ -112,7 +118,7 @@ export default function FederalWeatherPage() {
               through an {SAM.setAside}.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              {["METOC support", "Defense weather support", "Federal meteorology", "Weather data engineering", "Forecast verification", "Cleared delivery"].map((item) => (
+              {["METOC support", "USAF forecasting experience (1988–1998)", "AI weather", "Atmospheric research", "Weather data engineering", "Cleared delivery"].map((item) => (
                 <span key={item} className="rounded-full border border-white/15 px-4 py-2 text-xs text-gray-300">
                   {item}
                 </span>
@@ -153,7 +159,7 @@ export default function FederalWeatherPage() {
                 Operational Weather Experience
               </h2>
               <p className="mt-6 max-w-xl font-light leading-7 text-white/65">
-                The principal began his career forecasting weather for Air Force operations, then spent
+                The principal began his career as an Air Force Weather forecaster supporting operations, then spent
                 decades in research, international meteorology, and software delivery. That range is what
                 the program gets.
               </p>
