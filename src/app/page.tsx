@@ -9,7 +9,7 @@ import Navbar from "@/components/Navbar";
 import SatelliteDisplay, { type SatelliteSource } from "@/components/SatelliteDisplay";
 import { posts } from "@/lib/posts";
 import { INSIGHTS_PUBLIC } from "@/lib/features";
-import { AMS_PROFILE_URL, BRAND_POSITIONING, CORE_SEO_KEYWORDS, SITE } from "@/lib/constants";
+import { AMS_PROFILE_URL, BRAND_POSITIONING, CORE_SEO_KEYWORDS, SAM, SITE } from "@/lib/constants";
 import { createPageMetadata } from "@/lib/seo";
 
 // Ineffective for the HTML itself and kept only for any `fetch()` done while
@@ -22,7 +22,7 @@ export const revalidate = 3600;
 export const metadata = createPageMetadata({
   title: `Weather AI & Geospatial Consulting | ${SITE.name}`,
   description:
-    "Scientific consulting in applied meteorology, AI weather forecasting, GIS data transformation, geospatial regridding, and Earth-system data pipelines.",
+    "SBA-certified SDVOSB and HUBZone small business for applied meteorology, AI weather forecasting, GIS, geospatial regridding, and Earth-system data pipelines.",
   path: "/",
   keywords: [...CORE_SEO_KEYWORDS],
 });
@@ -125,6 +125,13 @@ export default function Home() {
                 </p>
                 <p className="mt-4 max-w-2xl text-base leading-8 text-white/70">
                   Principal-led consulting grounded in more than 35 years across operational weather, scientific analysis, software delivery, and research.
+                </p>
+                <p className="mt-5 max-w-2xl text-xs font-semibold uppercase leading-6 tracking-[0.08em] text-[#9bc3df]">
+                  <a href="/capabilities" className="underline-offset-4 hover:underline">
+                    SBA-certified SDVOSB, VOSB &amp; HUBZone small business
+                  </a>{" "}
+                  <span aria-hidden="true" className="px-1 text-[#7eabca]">|</span>{" "}
+                  <span className="whitespace-nowrap">CAGE {SAM.cage}</span>
                 </p>
                 <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
                   <a

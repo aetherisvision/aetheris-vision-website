@@ -33,6 +33,31 @@ describe("JSON-LD structured data", () => {
     });
   });
 
+  describe("federal identifiers", () => {
+    it("carries UEI, CAGE, and primary NAICS from the SAM constant", async () => {
+      const { SAM } = await import("@/lib/constants");
+      expect(organizationJsonLd.naics).toBe(SAM.naicsPrimary);
+      const ids = Object.fromEntries(
+        organizationJsonLd.identifier.map((id) => [id.propertyID, id.value]),
+      );
+      expect(ids).toEqual({ UEI: SAM.uei, CAGE: SAM.cage });
+    });
+
+    it("lists each SBA certification recognized by the SBA", () => {
+      const names = organizationJsonLd.hasCredential.map((c) => c.name);
+      expect(names).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining("SDVOSB"),
+          expect.stringContaining("VOSB"),
+          expect.stringContaining("HUBZone"),
+        ]),
+      );
+      for (const credential of organizationJsonLd.hasCredential) {
+        expect(credential.recognizedBy.name).toBe("U.S. Small Business Administration");
+      }
+    });
+  });
+
   describe("publisherRef", () => {
     it("is a minimal Organization reference", () => {
       expect(publisherRef["@type"]).toBe("Organization");

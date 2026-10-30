@@ -19,7 +19,7 @@ export const metadata = createPageMetadata({
 
 const companyData: { label: string; value: ReactNode }[] = [
   { label: "Legal Name", value: SITE.legalName },
-  { label: "Business Type", value: "Veteran-owned small business" },
+  { label: "Business Type", value: "Service-disabled veteran-owned small business (SDVOSB)" },
   { label: "UEI", value: <span className="font-mono">{SAM.uei}</span> },
   { label: "CAGE", value: <span className="font-mono">{SAM.cage}</span> },
   { label: "SAM.gov", value: "Active" },
@@ -101,7 +101,7 @@ const competencies = [
     items: [
       `SAM.gov registered: UEI ${SAM.uei}, CAGE ${SAM.cage}`,
       ...SAM.setAsidePills,
-      "Oklahoma Supplier Portal: state-level contracting access (registration in progress)",
+      "Oklahoma Supplier Portal: active supplier record for state-level contracting",
       "Active U.S. Government Secret clearance held by the principal",
     ],
   },
@@ -137,6 +137,26 @@ const differentiators = [
   {
     title: "Government Contracting Foundation",
     body: `Aetheris Vision is active in SAM.gov, has an assigned UEI and CAGE code, and is an SBA-certified SDVOSB, VOSB, and HUBZone small business. Certifications are ${SAM.certificationTerm.toLowerCase()}. An active Secret clearance is held by the principal.`,
+  },
+];
+
+/**
+ * Plain-English buying paths for contracting officers and primes. Deliberately
+ * free of dollar thresholds and percentages that change with FAR revisions,
+ * except the long-standing statutory HUBZone price evaluation preference.
+ */
+const contractingPaths = [
+  {
+    title: "SDVOSB and VOSB Set-Asides",
+    body: "Contracting officers may set aside requirements for service-disabled veteran-owned small businesses, and may make sole-source awards to an SDVOSB within the limits the FAR sets. The Department of Veterans Affairs may also set aside requirements for SDVOSBs and VOSBs under its Veterans First program.",
+  },
+  {
+    title: "HUBZone Set-Asides and Price Preference",
+    body: "Agencies may set aside requirements for certified HUBZone small businesses. In full and open competition, a certified HUBZone firm receives a 10 percent price evaluation preference.",
+  },
+  {
+    title: "Subcontracting for Primes",
+    body: "Work subcontracted to Aetheris Vision counts toward a prime contractor's small business subcontracting goals, including the veteran-owned, service-disabled veteran-owned, and HUBZone categories.",
   },
 ];
 
@@ -297,6 +317,24 @@ export default function CapabilitiesPage() {
                     {d.title}
                   </h3>
                   <p className="text-gray-400 text-sm font-light leading-relaxed">{d.body}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Contracting paths */}
+          <section id="how-to-contract" className="mb-16 scroll-mt-28" aria-labelledby="sec-how-to-contract">
+            <SectionHeading id="sec-how-to-contract" title="How to Contract With Us" />
+            <p className="mb-8 max-w-3xl text-sm font-light leading-relaxed text-gray-400">
+              Aetheris Vision is an SBA-certified SDVOSB, VOSB, and HUBZone small business, registered
+              in SAM.gov under UEI {SAM.uei} and CAGE {SAM.cage}. Each certification opens a
+              different path to award.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-8">
+              {contractingPaths.map((path) => (
+                <div key={path.title}>
+                  <h3 className="text-white font-medium text-sm mb-2">{path.title}</h3>
+                  <p className="text-gray-400 text-sm font-light leading-relaxed">{path.body}</p>
                 </div>
               ))}
             </div>

@@ -1,6 +1,7 @@
 import ServiceBreadcrumbs from "@/components/ServiceBreadcrumbs";
 import Link from "next/link";
 import { ArrowRightIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import FederalDeliveryNote from "@/components/FederalDeliveryNote";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { GEOSPATIAL_SEO_KEYWORDS, SITE } from "@/lib/constants";
@@ -164,6 +165,8 @@ export default function GeospatialRegriddingPage() {
               Explore Omni Gridder <ArrowRightIcon className="h-4 w-4" />
             </Link>
           </div>
+
+          <FederalDeliveryNote topic="GIS and geospatial data" />
 
           <div className="mt-16 flex flex-col gap-6 border-t border-white/10 pt-10 sm:flex-row sm:items-center sm:justify-between">
             <p className="max-w-2xl text-lg font-light text-gray-300">

@@ -60,6 +60,7 @@ describe("Regression: sitemap completeness", () => {
     const urls = sitemap().map((e) => e.url);
     expect(urls).toContain(`${SITE.url}/services/weather-ai`);
     expect(urls).toContain(`${SITE.url}/services/geospatial-regridding`);
+    expect(urls).toContain(`${SITE.url}/services/federal-weather`);
   });
 });
 

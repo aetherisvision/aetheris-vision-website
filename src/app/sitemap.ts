@@ -35,6 +35,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${SITE.url}/services/federal-weather`,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
       url: `${SITE.url}/capabilities`,
       changeFrequency: "monthly",
       priority: 0.8,

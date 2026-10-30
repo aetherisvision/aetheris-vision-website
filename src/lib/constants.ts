@@ -78,6 +78,18 @@ export const GEOSPATIAL_SEO_KEYWORDS = [
   "GRIB NetCDF HDF",
 ] as const;
 
+export const FEDERAL_SEO_KEYWORDS = [
+  "SDVOSB weather consulting",
+  "HUBZone meteorology",
+  "veteran-owned weather consulting",
+  "federal meteorology consulting",
+  "defense weather support",
+  "Air Force weather veteran",
+  "weather data engineering",
+  "NAICS 541690",
+  "PSC R427",
+] as const;
+
 export const CREDENTIAL_SEO_KEYWORDS = [
   "Marston Ward CCM",
   "Certified Consulting Meteorologist (CCM)",
@@ -85,6 +97,8 @@ export const CREDENTIAL_SEO_KEYWORDS = [
   "American Meteorological Society (AMS)",
   "applied meteorologist",
   "weather consulting",
+  "Air Force weather forecaster",
+  "veteran meteorologist",
 ] as const;
 
 /** Request form for owner-reviewed capability statement requests. */
@@ -115,5 +129,11 @@ export const SAM = {
   certificationTerm: "Active August 28, 2026 through August 27, 2029",
   // Single source of truth for public set-aside status badges.
   setAsidePills: ["SDVOSB — Active", "VOSB — Active", "HUBZone — Active"],
+  // Full certification names for structured data and plain-text copy.
+  certifications: [
+    "Service-Disabled Veteran-Owned Small Business (SDVOSB)",
+    "Veteran-Owned Small Business (VOSB)",
+    "HUBZone small business",
+  ],
   samUrl: "https://sam.gov",
 } as const;

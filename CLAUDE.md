@@ -47,7 +47,7 @@ the admin session itself; Google's OAuth redirect cannot carry the preview cooki
 Unset `PREVIEW_PASSWORD` = site fully open; this is opt-in, not opt-out.
 
 Marston declared the site OPEN on 2026-08-30 — `PREVIEW_PASSWORD` should be
-removed from Vercel production env (removal + redeploy required; the value in
+removed from the Cloud Run production env (removal + redeploy required; the value in
 `~/.secrets` is then only for re-locking). The `/preview` page remains in the
 code, inert while the variable is unset.
 
@@ -104,14 +104,14 @@ DATABASE_URL=           # Neon
 NEXTAUTH_URL=
 NEXTAUTH_SECRET=
 ADMIN_PASSPHRASE=       # /admin/* protection
-PREVIEW_PASSWORD=       # Site lock (value in ~/.secrets / Vercel env; rotate to a long random string)
+PREVIEW_PASSWORD=       # Site lock (value in ~/.secrets / Cloud Run env; rotate to a long random string)
 CRON_SECRET=            # Cloud Scheduler / Cloud Run Job bearer for /api/cron/*
 ADMIN_SESSION_SECRET=   # Signs admin session cookies (32-byte hex); derived from ADMIN_PASSPHRASE if unset
 TOKEN_ENCRYPTION_KEY=   # AES-256-GCM key for stored Gmail refresh tokens; derived from NEXTAUTH_SECRET if unset
 STRIPE_SECRET_KEY=      # Stripe dashboard → Developers → API keys
 STRIPE_WEBHOOK_SECRET=
 DOCUSEAL_API_KEY=       # in ~/.secrets
-VERCEL_TEAM_SCOPE=      # Auto-resolved via scripts/vercel-resolve-scope.mjs
+VERCEL_TEAM_SCOPE=      # Legacy (Vercel retired Oct 2026); only for scripts not yet migrated
 ```
 
 All secrets in `~/.secrets` (chmod 600, single source of truth — no external vault).

@@ -1,4 +1,19 @@
-import { AMS_PROFILE_URL, CCM_CREDENTIAL, GITHUB_ORG_URL, SITE } from "./constants";
+import { AMS_PROFILE_URL, CCM_CREDENTIAL, GITHUB_ORG_URL, SAM, SITE } from "./constants";
+
+const SBA = {
+  "@type": "Organization" as const,
+  name: "U.S. Small Business Administration",
+  url: "https://www.sba.gov",
+};
+
+/** SBA certifications, generated from SAM so the badge text and schema never drift. */
+const SBA_CREDENTIALS = SAM.certifications.map((name) => ({
+  "@type": "EducationalOccupationalCredential" as const,
+  name,
+  credentialCategory: "Government small business certification",
+  recognizedBy: SBA,
+  description: SAM.certificationTerm,
+}));
 
 /** Matches the visible navigation on each focused service page. */
 export function serviceBreadcrumbJsonLd(name: string, path: `/services/${string}`) {
@@ -40,12 +55,29 @@ export const organizationJsonLd = {
   },
   areaServed: "US",
   priceRange: "$$",
+  naics: SAM.naicsPrimary,
+  identifier: [
+    {
+      "@type": "PropertyValue" as const,
+      propertyID: "UEI",
+      name: "SAM.gov Unique Entity ID",
+      value: SAM.uei,
+    },
+    {
+      "@type": "PropertyValue" as const,
+      propertyID: "CAGE",
+      name: "CAGE code",
+      value: SAM.cage,
+    },
+  ],
+  hasCredential: SBA_CREDENTIALS,
   founder: {
     "@type": "Person" as const,
     "@id": `${SITE.url}/about#marston-ward`,
     name: "Marston Ward, Ph.D., CCM",
     url: `${SITE.url}/about`,
     jobTitle: "Founder and Principal Consultant",
+    description: "U.S. Air Force veteran and former Air Force weather forecaster (1988–1998).",
     sameAs: CCM_CREDENTIAL.profileUrl,
     hasCredential: {
       "@type": "EducationalOccupationalCredential" as const,
@@ -71,6 +103,8 @@ export const organizationJsonLd = {
     "Satellite swath resampling",
     "Earth-system data",
     "Scientific data pipelines",
+    "Operational military weather forecasting",
+    "Federal scientific and technical consulting",
   ],
   hasOfferCatalog: {
     "@type": "OfferCatalog" as const,
@@ -98,6 +132,14 @@ export const organizationJsonLd = {
           "@type": "Service" as const,
           name: "Scientific software and Earth-data pipelines",
           url: `${SITE.url}/services`,
+        },
+      },
+      {
+        "@type": "Offer" as const,
+        itemOffered: {
+          "@type": "Service" as const,
+          name: "Weather and Earth-data services for federal and defense programs",
+          url: `${SITE.url}/services/federal-weather`,
         },
       },
     ],

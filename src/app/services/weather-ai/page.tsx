@@ -2,6 +2,7 @@ import ServiceBreadcrumbs from "@/components/ServiceBreadcrumbs";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRightIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import FederalDeliveryNote from "@/components/FederalDeliveryNote";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { SITE, WEATHER_SEO_KEYWORDS } from "@/lib/constants";
@@ -175,6 +176,8 @@ export default function WeatherAiPage() {
               Explore geospatial services <ArrowRightIcon className="h-4 w-4" />
             </Link>
           </div>
+
+          <FederalDeliveryNote topic="weather AI and meteorology" />
 
           <div className="mt-16 flex flex-col gap-6 border-t border-white/10 pt-10 sm:flex-row sm:items-center sm:justify-between">
             <p className="max-w-2xl text-lg font-light text-gray-300">

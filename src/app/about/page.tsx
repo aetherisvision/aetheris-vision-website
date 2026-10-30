@@ -6,9 +6,9 @@ import { AMS_PROFILE_URL, CREDENTIAL_SEO_KEYWORDS, SITE, SAM } from "@/lib/const
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata = createPageMetadata({
-  title: `Marston Ward, PhD, CCM | ${SITE.name}`,
+  title: `Marston Ward, PhD, CCM | USAF Weather Veteran | ${SITE.name}`,
   description:
-    `Meet Marston Ward, PhD, AMS Certified Consulting Meteorologist and founder of ${SITE.name}. Applied meteorology, weather AI, and geospatial consulting.`,
+    `Meet Marston Ward, PhD, CCM: former U.S. Air Force weather forecaster and founder of ${SITE.name}, an SBA-certified SDVOSB and HUBZone consultancy.`,
   path: "/about",
   keywords: [...CREDENTIAL_SEO_KEYWORDS],
 });
