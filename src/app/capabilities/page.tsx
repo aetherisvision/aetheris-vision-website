@@ -324,7 +324,7 @@ export default function CapabilitiesPage() {
             className="mb-14 scroll-mt-24 border-t border-white/15 pt-10"
             aria-labelledby="sec-capability-statement"
           >
-            <div className="grid gap-8 md:grid-cols-2 md:gap-12">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12">
               <div>
                 <h2
                   id="sec-capability-statement"
