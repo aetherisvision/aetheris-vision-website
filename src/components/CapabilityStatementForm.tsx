@@ -133,7 +133,7 @@ export default function CapabilityStatementForm() {
       <button
         type="submit"
         disabled={status === "sending"}
-        className="inline-flex min-h-12 w-full items-center justify-center gap-2 bg-white px-6 text-sm font-semibold text-black transition hover:bg-white/85 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+        className="inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[#5BA8D9] px-6 text-sm font-semibold text-[#0a1628] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
         {status === "sending" ? "Sending…" : "Request the capability statement"}
         {status !== "sending" && <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />}

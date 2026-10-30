@@ -279,13 +279,13 @@ export default function AboutPage() {
             <div className="mt-12 flex flex-col gap-4 sm:flex-row">
               <a
                 href="/contact#contact-form"
-                className="inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-black transition hover:bg-gray-200"
+                className="inline-flex h-12 items-center justify-center rounded-md bg-[#5BA8D9] px-8 text-sm font-medium text-[#0a1628] transition hover:bg-white"
               >
                 Discuss a Project
               </a>
               <a
                 href="/services"
-                className="inline-flex h-12 items-center justify-center rounded-md border border-white/10 px-8 text-sm font-medium text-white transition hover:bg-white/5"
+                className="inline-flex h-12 items-center justify-center rounded-md border border-[#5BA8D9] px-8 text-sm font-medium text-[#9fd0ef] transition hover:bg-[#5BA8D9]/15 hover:text-white"
               >
                 Explore Services
               </a>

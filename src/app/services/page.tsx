@@ -153,13 +153,13 @@ export default function ServicesPage() {
                   <div className="flex shrink-0 flex-wrap gap-3">
                     <a
                       href="/book"
-                      className="inline-flex h-11 items-center justify-center rounded-md bg-white px-5 text-sm font-medium text-black transition hover:bg-gray-200"
+                      className="inline-flex h-11 items-center justify-center rounded-md bg-[#5BA8D9] px-5 text-sm font-medium text-[#0a1628] transition hover:bg-white"
                     >
                       Discuss Your Data
                     </a>
                     <a
                       href="/omni-gridder"
-                      className="inline-flex h-11 items-center justify-center gap-1 rounded-md border border-white/15 px-5 text-sm text-white transition hover:bg-white/5"
+                      className="inline-flex h-11 items-center justify-center gap-1 rounded-md border border-[#5BA8D9] px-5 text-sm text-[#9fd0ef] transition hover:bg-[#5BA8D9]/15 hover:text-white"
                     >
                       See a worked example <ArrowRightIcon className="h-3.5 w-3.5" />
                     </a>
@@ -249,7 +249,7 @@ export default function ServicesPage() {
             </p>
             <a
               href="/book"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-white px-8 text-sm font-medium text-black hover:bg-gray-200 transition"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[#5BA8D9] px-8 text-sm font-medium text-[#0a1628] hover:bg-white transition"
             >
               Discuss Your Data
             </a>

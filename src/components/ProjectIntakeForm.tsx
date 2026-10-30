@@ -315,13 +315,13 @@ export default function ProjectIntakeForm() {
         <div className="mt-8">
           <a
             href="/services/web"
-            className="inline-flex h-11 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition mr-4"
+            className="inline-flex h-11 items-center justify-center rounded-md bg-[#5BA8D9] px-6 text-sm font-medium text-[#0a1628] hover:bg-white transition mr-4"
           >
             See what we build
           </a>
           <a
             href="/book"
-            className="inline-flex h-11 items-center justify-center rounded-md border border-white/20 bg-black/50 px-6 text-sm font-medium text-white hover:bg-white/5 transition"
+            className="inline-flex h-11 items-center justify-center rounded-md border border-[#5BA8D9] bg-black/50 px-6 text-sm font-medium text-[#9fd0ef] hover:bg-[#5BA8D9]/15 hover:text-white transition"
           >
             Book a free consultation
           </a>
@@ -889,7 +889,7 @@ export default function ProjectIntakeForm() {
             !humanAttestation ||
             (requiresTurnstile && !turnstileToken)
           }
-          className="w-full inline-flex h-12 items-center justify-center rounded-md bg-white px-8 text-sm font-medium text-black transition-colors hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full inline-flex h-12 items-center justify-center rounded-md bg-[#5BA8D9] px-8 text-sm font-medium text-[#0a1628] transition-colors hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? "Sending..." : "Send project details"}
         </button>

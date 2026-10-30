@@ -172,7 +172,7 @@ export default function WeatherAiPage() {
                 Training, inference, and verification often require regridding model fields, observations, and targets across different coordinate systems and resolutions.
               </p>
             </div>
-            <Link href="/services/geospatial-regridding" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/20 px-5 text-sm font-medium text-white transition hover:bg-white/5">
+            <Link href="/services/geospatial-regridding" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#5BA8D9] px-5 text-sm font-medium text-[#9fd0ef] transition hover:bg-[#5BA8D9]/15 hover:text-white">
               Explore geospatial services <ArrowRightIcon className="h-4 w-4" />
             </Link>
           </div>
@@ -183,7 +183,7 @@ export default function WeatherAiPage() {
             <p className="max-w-2xl text-lg font-light text-gray-300">
               Evaluating an AI weather product or moving a forecasting workflow toward production?
             </p>
-            <Link href="/contact#contact-form" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-white px-7 text-sm font-medium text-black transition hover:bg-gray-200">
+            <Link href="/contact#contact-form" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#5BA8D9] px-7 text-sm font-medium text-[#0a1628] transition hover:bg-white">
               Discuss the system <ArrowRightIcon className="h-4 w-4" />
             </Link>
           </div>

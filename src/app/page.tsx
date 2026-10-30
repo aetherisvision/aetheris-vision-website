@@ -136,7 +136,7 @@ export default function Home() {
                 <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
                   <a
                     href="/book"
-                    className="inline-flex min-h-12 items-center justify-center gap-3 bg-white px-7 text-sm font-semibold text-[#0a1628] transition-colors duration-200 hover:bg-[#dbe8f0]"
+                    className="inline-flex min-h-12 items-center justify-center gap-3 bg-[#5BA8D9] px-7 text-sm font-semibold text-[#0a1628] transition-colors duration-200 hover:bg-white"
                   >
                     Get in touch <ArrowRightIcon className="h-4 w-4" />
                   </a>
@@ -438,7 +438,7 @@ export default function Home() {
               <div className="mt-8 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
                 <a
                   href="/book"
-                  className="inline-flex min-h-12 items-center justify-center gap-3 bg-[#0a1628] px-7 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[#29426c]"
+                  className="inline-flex min-h-12 items-center justify-center gap-3 bg-[#5BA8D9] px-7 text-sm font-semibold text-[#0a1628] transition-colors duration-200 hover:bg-[#29426c] hover:text-white"
                 >
                   Get in touch <ArrowRightIcon className="h-4 w-4" />
                 </a>

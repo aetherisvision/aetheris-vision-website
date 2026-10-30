@@ -213,10 +213,10 @@ export default function FederalWeatherPage() {
               Planning a requirement, a sources-sought response, or a teaming arrangement?
             </p>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Link href="/contact#contact-form" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-white px-7 text-sm font-medium text-black transition hover:bg-gray-200">
+              <Link href="/contact#contact-form" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#5BA8D9] px-7 text-sm font-medium text-[#0a1628] transition hover:bg-white">
                 Discuss a requirement <ArrowRightIcon className="h-4 w-4" />
               </Link>
-              <Link href={CAPABILITY_STATEMENT_REQUEST_HREF} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-white/20 px-7 text-sm font-medium text-white transition hover:bg-white/5">
+              <Link href={CAPABILITY_STATEMENT_REQUEST_HREF} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-[#5BA8D9] px-7 text-sm font-medium text-[#9fd0ef] transition hover:bg-[#5BA8D9]/15 hover:text-white">
                 Capability statement
               </Link>
             </div>

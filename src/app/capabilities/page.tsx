@@ -220,13 +220,13 @@ export default function CapabilitiesPage() {
               <div className="flex flex-col sm:flex-row gap-3 shrink-0">
                 <a
                   href="#contracting-codes"
-                  className="inline-flex h-11 items-center gap-2 rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
+                  className="inline-flex h-11 items-center gap-2 rounded-md bg-[#5BA8D9] px-6 text-sm font-medium text-[#0a1628] hover:bg-white transition"
                 >
                   View NAICS &amp; PSC Codes
                 </a>
                 <a
                   href={CAPABILITY_STATEMENT_REQUEST_HREF}
-                  className="inline-flex h-11 items-center gap-2 rounded-md border border-white/20 px-6 text-sm font-medium text-white hover:bg-white/10 transition"
+                  className="inline-flex h-11 items-center gap-2 rounded-md border border-[#5BA8D9] px-6 text-sm font-medium text-[#9fd0ef] hover:bg-[#5BA8D9]/15 hover:text-white transition"
                 >
                   Get the Statement (PDF)
                 </a>
@@ -355,7 +355,7 @@ export default function CapabilitiesPage() {
             <div className="flex flex-col sm:flex-row gap-4">
               <a
                 href="/book"
-                className="inline-flex h-11 items-center justify-center rounded-md bg-white px-6 text-sm font-medium text-black hover:bg-gray-200 transition"
+                className="inline-flex h-11 items-center justify-center rounded-md bg-[#5BA8D9] px-6 text-sm font-medium text-[#0a1628] hover:bg-white transition"
               >
                 Get in touch
               </a>
