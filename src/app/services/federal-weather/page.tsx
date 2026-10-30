@@ -119,7 +119,7 @@ export default function FederalWeatherPage() {
               through an {SAM.setAside}.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              {["METOC support", "USAF forecasting experience (1988–1998)", "AI weather", "Atmospheric research", "Weather data engineering", "Cleared delivery"].map((item) => (
+              {["METOC support", "USAF forecasting experience (1988–1998)", "AI weather", "Atmospheric research", "Weather data engineering", "Cleared principal"].map((item) => (
                 <span key={item} className="rounded-full border border-white/15 px-4 py-2 text-xs text-gray-300">
                   {item}
                 </span>
