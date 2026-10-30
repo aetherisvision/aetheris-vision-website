@@ -174,11 +174,11 @@ export default function Navbar() {
               </Link>
             ))}
           </nav>
-          <div className="flex shrink-0 items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2">
             <Link
               href={governmentHref}
               aria-current={isActive(governmentHref) ? "page" : undefined}
-              className="inline-flex min-h-11 items-center justify-center whitespace-nowrap border border-[#5BA8D9] px-4 text-xs font-semibold text-[#9fd0ef] transition-colors duration-200 hover:bg-[#5BA8D9]/15 hover:text-white"
+              className="inline-flex min-h-11 items-center justify-center whitespace-nowrap bg-[#6EC4D6] px-4 text-xs font-semibold text-[#0a1628] transition-colors duration-200 hover:bg-white"
             >
               {governmentLabel}
             </Link>
@@ -195,7 +195,7 @@ export default function Navbar() {
         <Link
           href={governmentHref}
           aria-current={isActive(governmentHref) ? "page" : undefined}
-          className="ml-auto hidden min-h-11 shrink-0 items-center justify-center whitespace-nowrap border border-[#5BA8D9] px-4 text-xs font-semibold text-[#9fd0ef] transition-colors duration-200 hover:bg-[#5BA8D9]/15 hover:text-white min-[480px]:inline-flex xl:hidden"
+          className="ml-auto hidden min-h-11 shrink-0 items-center justify-center whitespace-nowrap bg-[#6EC4D6] px-4 text-xs font-semibold text-[#0a1628] transition-colors duration-200 hover:bg-white min-[480px]:inline-flex xl:hidden"
         >
           {governmentLabel}
         </Link>
@@ -233,7 +233,7 @@ export default function Navbar() {
               href={governmentHref}
               aria-current={isActive(governmentHref) ? "page" : undefined}
               onClick={() => setMobileOpen(false)}
-              className="mb-3 inline-flex min-h-12 items-center justify-center border border-[#5BA8D9] px-4 py-2 text-sm font-semibold text-[#9fd0ef] transition hover:bg-[#5BA8D9]/15 hover:text-white"
+              className="mb-3 inline-flex min-h-12 items-center justify-center bg-[#6EC4D6] px-4 py-2 text-sm font-semibold text-[#0a1628] transition hover:bg-white"
             >
               {governmentLabel}: Capabilities &amp; Codes
             </Link>
