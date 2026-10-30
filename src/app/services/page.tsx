@@ -177,25 +177,25 @@ export default function ServicesPage() {
             </section>
           </FadeIn>
 
-          {/* Federal and cleared delivery */}
+          {/* Federal and defense delivery */}
           <FadeIn delay={0.15}>
             <section className="mb-8" aria-labelledby="sec-federal">
               <div className="rounded-2xl border border-white/5 bg-black p-6 sm:p-8 md:p-12">
                 <div className="border-b border-white/15 pb-3 mb-6">
                   <h2 id="sec-federal" className="text-lg font-semibold text-white tracking-tight uppercase">
-                    Federal &amp; Cleared Delivery
+                    Federal &amp; Defense Delivery
                   </h2>
                 </div>
                 <p className="max-w-2xl text-gray-400 font-light leading-relaxed mb-8">
-                  Both disciplines above are deliverable through federal, prime-teaming,
-                  and cleared channels. That is how we deliver, not a separate offering.
+                  Both disciplines above are deliverable through federal and prime-teaming
+                  channels. That is how we deliver, not a separate offering.
                 </p>
                 <div className="flex flex-wrap gap-3 mb-8">
                   {[
                     ...SAM.setAsidePills,
                     `CAGE ${SAM.cage}`,
                     `UEI ${SAM.uei}`,
-                    "U.S. Government Secret Clearance",
+                    "Secret Clearance (Previously Held)",
                     "Prime Teaming",
                   ].map((tag) => (
                     <span

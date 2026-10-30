@@ -725,7 +725,7 @@ export default function ProjectIntakeForm() {
 
           <div className="bg-gray-900 border border-white/5 rounded-lg p-4">
             <p className="text-xs text-gray-400 leading-relaxed">
-              <strong className="text-gray-300">Security Expertise:</strong> The principal holds an active U.S. Government Secret clearance and applies NIST and CMMC frameworks where a project requires them.
+              <strong className="text-gray-300">Security Expertise:</strong> The principal previously held a U.S. Government Secret clearance and applies NIST and CMMC frameworks where a project requires them.
             </p>
           </div>
         </div>

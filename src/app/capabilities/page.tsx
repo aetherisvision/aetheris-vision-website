@@ -114,7 +114,7 @@ const differentiators = [
   },
   {
     title: "Government Contracting Foundation",
-    body: `Aetheris Vision is active in SAM.gov, has an assigned UEI and CAGE code, and is an ${SAM.setAside}. Certifications are ${SAM.certificationTerm.toLowerCase()}. An active Secret clearance is held by the principal.`,
+    body: `Aetheris Vision is active in SAM.gov, has an assigned UEI and CAGE code, and is an ${SAM.setAside}. Certifications are ${SAM.certificationTerm.toLowerCase()}. The principal previously held a Secret clearance.`,
   },
 ];
 

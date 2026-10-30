@@ -51,7 +51,7 @@ const credentials = [
   },
   {
     label: "U.S. Government Secret Clearance",
-    detail: "Active clearance held by the principal",
+    detail: "Previously held by the principal",
   },
   {
     label: "SDVOSB / VOSB",
