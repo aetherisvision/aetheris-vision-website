@@ -208,6 +208,7 @@ export const SAM = {
   certifications: SBA_CERTIFICATIONS,
   naics: NAICS_CODES,
   psc: PSC_CODES,
-  clearanceNote: "Active U.S. Government Secret clearance held by the principal",
+  // Matches the capability statement (V31): the clearance is no longer active.
+  clearanceNote: "U.S. Government Secret clearance previously held by the principal",
   samUrl: "https://sam.gov",
 } as const;
