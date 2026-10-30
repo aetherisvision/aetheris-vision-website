@@ -128,7 +128,7 @@ export default function Home() {
                 </p>
                 <p className="mt-5 max-w-2xl text-xs font-semibold uppercase leading-6 tracking-[0.08em] text-[#9bc3df]">
                   <a href="/capabilities" className="underline-offset-4 hover:underline">
-                    SBA-certified SDVOSB, VOSB &amp; HUBZone small business
+                    {SAM.setAside}
                   </a>{" "}
                   <span aria-hidden="true" className="px-1 text-[#7eabca]">|</span>{" "}
                   <span className="whitespace-nowrap">CAGE {SAM.cage}</span>

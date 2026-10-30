@@ -3,13 +3,12 @@ import Link from "next/link";
 import { ArrowRightIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import { CAPABILITY_STATEMENT_REQUEST_HREF, FEDERAL_SEO_KEYWORDS, SAM, SITE } from "@/lib/constants";
+import { CAPABILITY_STATEMENT_REQUEST_HREF, FEDERAL_SEO_KEYWORDS, FOUNDER, SAM, SITE } from "@/lib/constants";
 import { createPageMetadata } from "@/lib/seo";
 
 const PAGE_PATH = "/services/federal-weather";
 const PAGE_URL = `${SITE.url}${PAGE_PATH}`;
-const PAGE_DESCRIPTION =
-  "Weather, meteorology, and Earth-data services for federal and defense programs from an SBA-certified SDVOSB, VOSB, and HUBZone small business led by a former Air Force weather forecaster.";
+const PAGE_DESCRIPTION = `Federal and defense weather, meteorology, and Earth-data consulting from an ${SAM.setAside}.`;
 
 export const metadata = createPageMetadata({
   title: `Federal & Defense Weather Data Services | ${SITE.name}`,
@@ -48,21 +47,22 @@ const capabilities = [
 ];
 
 const background = [
-  "Former U.S. Air Force weather forecaster (1988–1998)",
+  FOUNDER.militaryService,
   "AMS Certified Consulting Meteorologist (CCM)",
-  "Active U.S. Government Secret clearance held by the principal",
+  SAM.clearanceNote,
   `Active in SAM.gov: UEI ${SAM.uei}, CAGE ${SAM.cage}`,
-  `SBA-certified SDVOSB, VOSB, and HUBZone, ${SAM.certificationTerm.toLowerCase()}`,
+  `SBA-certified ${SAM.certificationList}, ${SAM.certificationTerm.toLowerCase()}`,
 ];
 
+/** The registered codes most relevant to weather and Earth-data work, drawn from SAM. */
+const FEATURED_CODES = ["541690", "541360", "541511", "R427", "R425", "B529"];
 const codes = [
-  { code: "541690", label: "NAICS: Other Scientific and Technical Consulting Services (primary)" },
-  { code: "541360", label: "NAICS: Geophysical Surveying and Mapping Services" },
-  { code: "541511", label: "NAICS: Custom Computer Programming Services" },
-  { code: "R427", label: "PSC: Support, Professional: Weather Reporting/Observation" },
-  { code: "R425", label: "PSC: Support, Professional: Engineering/Technical" },
-  { code: "B529", label: "PSC: Special Studies/Analysis, Scientific Data" },
-];
+  ...SAM.naics.map((c) => ({
+    code: c.code,
+    label: `NAICS: ${c.description}${c.primary ? " (primary)" : ""}`,
+  })),
+  ...SAM.psc.map((c) => ({ code: c.code, label: `PSC: ${c.description}` })),
+].filter((c) => FEATURED_CODES.includes(c.code));
 
 const serviceJsonLd = {
   "@context": "https://schema.org",
@@ -100,15 +100,14 @@ export default function FederalWeatherPage() {
         <header className="border-b border-white/10">
           <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-400">
-              SDVOSB &middot; VOSB &middot; HUBZone
+              {SAM.certifications.map((c) => c.abbr).join(" · ")}
             </p>
             <h1 className="mt-5 max-w-5xl font-serif text-4xl leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl">
               Weather Support for Federal &amp; Defense Programs
             </h1>
             <p className="mt-7 max-w-3xl text-lg font-light leading-8 text-gray-400 sm:text-xl">
               Applied meteorology, weather and Earth-data engineering, and AI evaluation for defense and
-              civil agencies, delivered as a prime or a subcontractor by an SBA-certified service-disabled
-              veteran-owned and HUBZone small business.
+              civil agencies, delivered as a prime or a subcontractor by an {SAM.setAside}.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
               {["Defense weather support", "Federal meteorology", "Weather data engineering", "Forecast verification", "Cleared delivery"].map((item) => (

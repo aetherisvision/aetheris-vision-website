@@ -28,7 +28,7 @@ const companyData: { label: string; value: ReactNode }[] = [
     label: "Certifications",
     value: SAM.setAsidePills.join(". "),
   },
-  { label: "Security Clearance", value: "Active U.S. Government Secret, held by principal" },
+  { label: "Security Clearance", value: SAM.clearanceNote },
   {
     label: "Primary Contact",
     value: (
@@ -42,30 +42,8 @@ const companyData: { label: string; value: ReactNode }[] = [
   },
 ];
 
-const naicsCodes = [
-  { code: "541690", description: "Other Scientific and Technical Consulting Services", primary: true },
-  { code: "541511", description: "Custom Computer Programming Services", primary: false },
-  { code: "541512", description: "Computer Systems Design Services", primary: false },
-  { code: "541519", description: "Other Computer Related Services", primary: false },
-  { code: "541360", description: "Geophysical Surveying and Mapping Services", primary: false },
-  { code: "541618", description: "Other Management Consulting Services", primary: false },
-  { code: "541620", description: "Environmental Consulting Services", primary: false },
-];
-
-const pscCodes = [
-  { code: "R427", description: "Support, Professional: Weather Reporting/Observation" },
-  { code: "R425", description: "Support, Professional: Engineering/Technical" },
-  { code: "R408", description: "Support, Professional: Program Management/Support" },
-  { code: "R405", description: "Support, Professional: Operations Research/Quantitative Analysis" },
-  { code: "DA01", description: "IT and Telecom, Business Application/Application Development Support Services (Labor)" },
-  { code: "DA10", description: "IT and Telecom, Business Application/Application Development Software as a Service" },
-  { code: "DB02", description: "IT and Telecom, Compute Support Services, Non-HPC (Labor)" },
-  { code: "B510", description: "Special Studies/Analysis, Environmental Assessments" },
-  { code: "B524", description: "Special Studies/Analysis, Mathematical/Statistical" },
-  { code: "B526", description: "Special Studies/Analysis, Oceanological" },
-  { code: "B529", description: "Special Studies/Analysis, Scientific Data" },
-  { code: "B544", description: "Special Studies/Analysis, Technology" },
-];
+const naicsCodes = SAM.naics;
+const pscCodes = SAM.psc;
 
 const competencies = [
   {
@@ -102,7 +80,7 @@ const competencies = [
       `SAM.gov registered: UEI ${SAM.uei}, CAGE ${SAM.cage}`,
       ...SAM.setAsidePills,
       "Oklahoma Supplier Portal: active supplier record for state-level contracting",
-      "Active U.S. Government Secret clearance held by the principal",
+      SAM.clearanceNote,
     ],
   },
   {
@@ -136,7 +114,7 @@ const differentiators = [
   },
   {
     title: "Government Contracting Foundation",
-    body: `Aetheris Vision is active in SAM.gov, has an assigned UEI and CAGE code, and is an SBA-certified SDVOSB, VOSB, and HUBZone small business. Certifications are ${SAM.certificationTerm.toLowerCase()}. An active Secret clearance is held by the principal.`,
+    body: `Aetheris Vision is active in SAM.gov, has an assigned UEI and CAGE code, and is an ${SAM.setAside}. Certifications are ${SAM.certificationTerm.toLowerCase()}. An active Secret clearance is held by the principal.`,
   },
 ];
 
@@ -152,7 +130,7 @@ const contractingPaths = [
   },
   {
     title: "HUBZone Set-Asides and Price Preference",
-    body: "Agencies may set aside requirements for certified HUBZone small businesses. In full and open competition, a certified HUBZone firm receives a 10 percent price evaluation preference.",
+    body: "Agencies may set aside requirements for certified HUBZone small businesses. In full and open competition, an eligible HUBZone offer may receive a 10 percent price evaluation preference when the otherwise successful offer is from a large business, subject to the exceptions in FAR 19.1307.",
   },
   {
     title: "Subcontracting for Primes",
@@ -176,7 +154,7 @@ function CodeTable({
   rows,
 }: {
   caption: string;
-  rows: { code: string; description: string; primary?: boolean }[];
+  rows: readonly { code: string; description: string; primary?: boolean }[];
 }) {
   return (
     <div className="overflow-x-auto">
@@ -326,7 +304,7 @@ export default function CapabilitiesPage() {
           <section id="how-to-contract" className="mb-16 scroll-mt-28" aria-labelledby="sec-how-to-contract">
             <SectionHeading id="sec-how-to-contract" title="How to Contract With Us" />
             <p className="mb-8 max-w-3xl text-sm font-light leading-relaxed text-gray-400">
-              Aetheris Vision is an SBA-certified SDVOSB, VOSB, and HUBZone small business, registered
+              Aetheris Vision is an {SAM.setAside}, registered
               in SAM.gov under UEI {SAM.uei} and CAGE {SAM.cage}. Each certification opens a
               different path to award.
             </p>

@@ -1,4 +1,4 @@
-import { AMS_PROFILE_URL, CCM_CREDENTIAL, GITHUB_ORG_URL, SAM, SITE } from "./constants";
+import { AMS_PROFILE_URL, CCM_CREDENTIAL, FOUNDER, GITHUB_ORG_URL, SAM, SITE } from "./constants";
 
 const SBA = {
   "@type": "Organization" as const,
@@ -7,7 +7,7 @@ const SBA = {
 };
 
 /** SBA certifications, generated from SAM so the badge text and schema never drift. */
-const SBA_CREDENTIALS = SAM.certifications.map((name) => ({
+const SBA_CREDENTIALS = SAM.certifications.map(({ name }) => ({
   "@type": "EducationalOccupationalCredential" as const,
   name,
   credentialCategory: "Government small business certification",
@@ -77,7 +77,7 @@ export const organizationJsonLd = {
     name: "Marston Ward, Ph.D., CCM",
     url: `${SITE.url}/about`,
     jobTitle: "Founder and Principal Consultant",
-    description: "U.S. Air Force veteran and former Air Force weather forecaster (1988–1998).",
+    description: `${FOUNDER.militaryService}.`,
     sameAs: CCM_CREDENTIAL.profileUrl,
     hasCredential: {
       "@type": "EducationalOccupationalCredential" as const,

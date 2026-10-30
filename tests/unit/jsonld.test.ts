@@ -58,6 +58,15 @@ describe("JSON-LD structured data", () => {
     });
   });
 
+  describe("offer catalog", () => {
+    it("lists the federal and defense weather service page", () => {
+      const urls = organizationJsonLd.hasOfferCatalog.itemListElement.map(
+        (offer) => offer.itemOffered.url,
+      );
+      expect(urls).toContain(`${SITE.url}/services/federal-weather`);
+    });
+  });
+
   describe("publisherRef", () => {
     it("is a minimal Organization reference", () => {
       expect(publisherRef["@type"]).toBe("Organization");
