@@ -26,7 +26,7 @@ const capabilities = [
   },
   {
     title: "Weather and Earth-data engineering",
-    body: "Ingest, regrid, and validate atmospheric and ocean model, satellite, radar, and station data (GRIB, NetCDF, HDF) into documented pipelines a program office can maintain.",
+    body: "Ingest, regrid, and validate atmospheric and ocean model, satellite, radar, and station data (GRIB, NetCDF, HDF) into documented pipelines a program office can maintain, including naval and maritime METOC data.",
   },
   {
     title: "AI weather model evaluation",
@@ -87,6 +87,7 @@ const serviceJsonLd = {
   },
   serviceType: [
     "METOC (meteorological and oceanographic) support",
+    "Navy and joint METOC data support",
     "AI weather forecasting evaluation",
     "Atmospheric research support",
     "Federal meteorology consulting",
@@ -113,8 +114,8 @@ export default function FederalWeatherPage() {
               Weather Support for Federal &amp; Defense Programs
             </h1>
             <p className="mt-7 max-w-3xl text-lg font-light leading-8 text-gray-400 sm:text-xl">
-              Meteorological and oceanographic (METOC) support, weather and Earth-data engineering, and
-              AI evaluation for defense and civil agencies, available as a prime contract or subcontract
+              Meteorological and oceanographic (METOC) support available to Navy, Marine Corps, Air Force,
+              and joint programs, plus weather and Earth-data engineering and AI evaluation for defense and civil agencies, available as a prime contract or subcontract
               through an {SAM.setAside}.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">

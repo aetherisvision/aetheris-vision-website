@@ -88,6 +88,8 @@ export const FEDERAL_SEO_KEYWORDS = [
   "federal meteorology consulting",
   "defense weather support",
   "METOC support",
+  "Navy METOC support",
+  "naval oceanography data",
   "meteorological and oceanographic services",
   "Air Force weather veteran",
   "Air Force Weather experience",
